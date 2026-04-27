@@ -39,17 +39,5 @@ MyFinance adalah aplikasi pencatat keuangan personal dengan antarmuka **Premium 
     npm run dev
     ```
 5.  Buka browser dan akses alamat yang tertera (biasanya `http://localhost:5173`).
-
-## 🌐 Cara Deploy (Hosting)
-
-Untuk mempublikasikan aplikasi ini ke internet, kamu bisa menggunakan layanan seperti **Netlify**, **Vercel**, atau **GitHub Pages**.
-
-1.  Lakukan build aplikasi:
-    ```bash
-    npm run build
-    ```
-2.  Folder hasil build bernama `dist` akan tercipta.
-3.  Upload isi dari folder `dist` tersebut ke provider hosting pilihan kamu.
-
 ---
 *Dibuat dengan ❤️ untuk membantu kamu mengelola keuangan lebih cerdas.*
