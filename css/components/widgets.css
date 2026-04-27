@@ -1,0 +1,60 @@
+/* Budget & Widgets Section */
+.widgets-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.widget-card {
+  background-color: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.widget-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.budget-item {
+  margin-bottom: 1.25rem;
+}
+
+.budget-item:last-of-type {
+  margin-bottom: 0;
+}
+
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.budget-percent {
+  font-weight: 700;
+}
+
+.budget-footer {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.widget-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--white);
+}
+
+.widget-primary h3, 
+.widget-primary p,
+.widget-primary .stat-label,
+.widget-primary .stat-value {
+  color: var(--white);
+}

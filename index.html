@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Finance Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Sortable JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  </head>
+  <body>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Login View -->
+    <div id="login-view" style="display: none;"></div>
+
+    <!-- Main Dashboard Layout -->
+    <div class="dashboard-container" id="app-layout" style="display: none;">
+      
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo-container">
+          <button class="icon-btn" id="btn-toggle-sidebar"><i class="ph ph-list"></i></button>
+          <div class="logo-wrapper">
+            <div class="logo-icon">
+              <i class="ph-fill ph-wallet"></i>
+            </div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebar-nav">
+          <a href="#dashboard" class="nav-item" data-route="dashboard" data-tooltip-right="Dashboard">
+            <i class="ph ph-squares-four"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="#transaksi" class="nav-item" data-route="transaksi" data-tooltip-right="Transaksi">
+            <i class="ph ph-receipt"></i>
+            <span>Transaksi</span>
+          </a>
+          <a href="#anggaran" class="nav-item" data-route="anggaran" data-tooltip-right="Atur Anggaran">
+            <i class="ph ph-chart-pie-slice"></i>
+            <span>Anggaran</span>
+          </a>
+          <a href="#tabungan" class="nav-item" data-route="tabungan" data-tooltip-right="Wishlist">
+            <i class="ph ph-heart"></i>
+            <span>Wishlist</span>
+          </a>
+          <a href="#laporan" class="nav-item" data-route="laporan" data-tooltip-right="Laporan Keuangan">
+            <i class="ph ph-chart-bar"></i>
+            <span>Laporan</span>
+          </a>
+          <a href="#akun" class="nav-item" data-route="akun" data-tooltip-right="Profil Saya">
+            <i class="ph ph-user"></i>
+            <span>Akun</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="btn btn-primary btn-full" id="btn-tambah-global">
+            <i class="ph ph-plus"></i> <span>Tambah Transaksi</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+          <button class="icon-btn mobile-only" id="btn-open-sidebar-mobile">
+            <i class="ph ph-list"></i>
+          </button>
+          <div class="search-bar">
+            <i class="ph ph-magnifying-glass search-icon"></i>
+            <input type="text" id="global-search" placeholder="Cari transaksi..." />
+          </div>
+
+          <div class="header-actions">
+            <button class="icon-btn" id="btn-theme-toggle" title="Ganti Tema">
+              <i class="ph ph-moon"></i>
+            </button>
+            <button class="icon-btn"><i class="ph-fill ph-bell"></i></button>
+            <button class="icon-btn"><i class="ph-fill ph-gear"></i></button>
+            <div class="user-profile" id="user-profile-trigger">
+              <img id="user-avatar" src="https://i.pravatar.cc/150?img=11" alt="User" />
+              <div class="profile-dropdown" id="profile-dropdown">
+                <div class="dropdown-header">
+                  <p class="user-name">Admin</p>
+                  <p class="user-email text-sm text-muted">admin@myfinance.com</p>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="#akun" class="dropdown-item">
+                  <i class="ph ph-user"></i> Profil Saya
+                </a>
+                <a href="#laporan" class="dropdown-item">
+                  <i class="ph ph-chart-bar"></i> Laporan
+                </a>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item text-red" id="btn-logout">
+                  <i class="ph ph-sign-out"></i> Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Dynamic Page Content -->
+        <div id="page-content" class="dashboard-content">
+          <!-- Pages injected here -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal Container for CRUD -->
+    <div id="modal-container"></div>
+
+    <!-- Global Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loading-content">
+        <video src="./assets/coin.webm" autoplay loop muted playsinline width="180" height="180"></video>
+        <p>Sedang memproses...</p>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

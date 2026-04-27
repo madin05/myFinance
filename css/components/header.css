@@ -1,0 +1,130 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.header-title .text-primary { color: var(--primary); }
+.header-title .text-secondary { color: #818CF8; }
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--white);
+  border-radius: var(--radius-full);
+  padding: 0.75rem 1.5rem;
+  width: 400px;
+  border: 1px solid var(--border);
+}
+
+.search-bar .search-icon {
+  color: var(--text-light);
+  font-size: 1.2rem;
+  margin-right: 0.75rem;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  font-family: inherit;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-light);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.user-profile {
+  position: relative;
+}
+
+.user-profile img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.user-profile img:hover {
+  border-color: var(--primary);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 0;
+  width: 240px;
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  z-index: 1000;
+  display: none;
+}
+
+.profile-dropdown.active {
+  display: block;
+}
+
+.dropdown-header {
+  padding: 1rem;
+}
+
+.dropdown-header .user-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border);
+  margin: 0.5rem 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  background: transparent;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.dropdown-item i {
+  font-size: 1.1rem;
+}

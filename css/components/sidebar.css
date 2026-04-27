@@ -1,0 +1,136 @@
+.sidebar {
+  width: 280px;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  border-right: 1px solid var(--border);
+  position: fixed;
+  height: 100vh;
+  z-index: 1100;
+  transition: width 0.3s ease;
+  white-space: nowrap;
+  overflow: visible !important;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 40px;
+  margin-bottom: 3rem;
+  flex-shrink: 0;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.logo-text p {
+  font-size: 0.6rem;
+  color: var(--text-light);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  height: 48px;
+  text-decoration: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  position: relative;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 4px;
+  background-color: var(--primary);
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-item i {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.nav-item span {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+}
+
+#btn-toggle-sidebar {
+  margin-left: 0;
+  color: var(--text-main);
+  font-size: 1.5rem;
+  padding: 0;
+  flex-shrink: 0;
+}
