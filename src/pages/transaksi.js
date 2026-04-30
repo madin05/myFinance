@@ -1,4 +1,5 @@
 import { store, formatRupiah, formatDate } from '../store.js';
+import { initCustomSelects } from '../ui/select.js';
 
 let filterState = {
   type: 'all',
@@ -177,12 +178,21 @@ export function renderTransaksi() {
       module.openAddTransactionModal(() => renderTransaksi());
     });
   });
+
+  initCustomSelects(container.querySelector('#filter-popover'));
 }
 
 function renderTableBody(container) {
   const tbody = container.querySelector('#tx-table-body');
-  let filteredTxs = store.transactions;
+  let filteredTxs = [...store.transactions];
   
+  // Sortir: Terbaru di atas (Berdasarkan tanggal, lalu ID sebagai penentu jika tanggal sama)
+  filteredTxs.sort((a, b) => {
+    const dateDiff = new Date(b.tanggal) - new Date(a.tanggal);
+    if (dateDiff !== 0) return dateDiff;
+    return (b.id || 0) - (a.id || 0);
+  });
+
   filteredTxs = filteredTxs.filter(tx => {
     const txDate = new Date(tx.tanggal);
     const absHarga = Math.abs(tx.harga);
@@ -190,9 +200,9 @@ function renderTableBody(container) {
     const matchType = filterState.type === 'all' || tx.type === filterState.type;
     const matchMonth = filterState.month === 'all' || txDate.getMonth() == filterState.month;
     const matchYear = filterState.year === 'all' || txDate.getFullYear() == filterState.year;
-    const matchKategori = filterState.kategori === 'all' || tx.kategori === filterState.kategori;
+    const matchKategori = filterState.kategori === 'all' || (tx.kategori || '').includes(filterState.kategori);
     const matchMetode = filterState.metode === 'all' || tx.metode === filterState.metode;
-    const matchSearch = !filterState.searchQuery || tx.keterangan.toLowerCase().includes(filterState.searchQuery);
+    const matchSearch = !filterState.searchQuery || (tx.keterangan || '').toLowerCase().includes(filterState.searchQuery);
     
     let matchPrice = true;
     if (filterState.priceValue !== '') {
@@ -212,7 +222,7 @@ function renderTableBody(container) {
     const sign = isIncome ? '+ ' : '- ';
     
     let badgeClass = 'badge-blue';
-    const lowerKategori = tx.kategori.toLowerCase();
+    const lowerKategori = (tx.kategori || '').toLowerCase();
     if(lowerKategori.includes('gaji')) badgeClass = 'badge-green';
     else if(lowerKategori.includes('makan')) badgeClass = 'badge-orange';
     else if(lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
@@ -225,14 +235,14 @@ function renderTableBody(container) {
         <td>${tx.keterangan}</td>
         <td class="text-right ${colorClass} font-bold">${sign}${formatRupiah(Math.abs(tx.harga))}</td>
         <td class="text-right" style="white-space: nowrap;">
-          <button class="icon-btn text-blue btn-edit" data-id="${tx.id}" style="margin-right: 8px;"><i class="ph ph-pencil-simple"></i></button>
-          <button class="icon-btn text-red btn-delete" data-id="${tx.id}"><i class="ph ph-trash"></i></button>
+          <button class="icon-btn text-blue btn-edit" data-id="${tx.id}" style="margin-right: 8px;" data-tooltip="Edit Transaksi"><i class="ph ph-pencil-simple"></i></button>
+          <button class="icon-btn text-red btn-delete" data-id="${tx.id}" data-tooltip="Hapus Transaksi"><i class="ph ph-trash"></i></button>
         </td>
       </tr>
     `;
   }).join('');
 
-  tbody.innerHTML = txHtml || '<tr><td colspan="6" class="text-center text-muted">Belum ada transaksi yang sesuai filter</td></tr>';
+  tbody.innerHTML = txHtml || '<tr><td colspan="6" class="text-center text-muted">Belum ada transaksi</td></tr>';
 
   const editBtns = tbody.querySelectorAll('.btn-edit');
   editBtns.forEach(btn => {
@@ -256,8 +266,10 @@ function renderTableBody(container) {
           'Hapus Transaksi?',
           'Data yang dihapus tidak bisa dikembalikan lagi bre.',
           () => {
-            store.deleteTransaction(Number(id));
-            renderTransaksi();
+            store.deleteTransactionRemote(Number(id)).then(renderTransaksi).catch((err) => {
+              alert('Gagal hapus transaksi: ' + (err?.message || err));
+              renderTransaksi();
+            });
           }
         );
       });

@@ -54,9 +54,9 @@ body {
 
 .main-content {
   flex-grow: 1;
-  margin-left: 280px;
+  margin-left: var(--sidebar-width);
   padding: 2rem 2.5rem;
-  width: calc(100% - 280px);
+  width: calc(100% - var(--sidebar-width));
   transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
@@ -125,4 +125,34 @@ body {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* Skeleton Loading Shimmer */
+.skeleton {
+  background: var(--border-light);
+  background: linear-gradient(
+    90deg,
+    var(--border-light) 25%,
+    var(--bg-color) 50%,
+    var(--border-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.skeleton-circle {
+  border-radius: 50% !important;
+}
+
+.skeleton-text {
+  height: 0.8rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

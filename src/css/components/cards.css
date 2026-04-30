@@ -88,40 +88,79 @@
 }
 .avatar-group img:first-child { margin-left: 0; }
 
-/* Wishlist Layouts */
-.wishlist-grid {
+/* Wishlist Layout (Single Unified Design) */
+.wishlist-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
 
-.wishlist-list {
+.wishlist-item {
+  transition: all 0.3s ease;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.wishlist-actions {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.wishlist-list .stat-card {
-  flex-direction: row;
+  gap: 0.5rem;
   align-items: center;
-  padding: 1.25rem 2rem !important;
-  gap: 2rem;
 }
 
-.wishlist-list .stat-card .icon-box {
+.btn-action-sm {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
   flex-shrink: 0;
+  padding: 0;
 }
 
-.wishlist-list .progress-bar-container {
-  flex-grow: 1;
-  margin-bottom: 0 !important;
-  margin-top: 0 !important;
+.btn-action-sm:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.9);
 }
 
-.stat-card[draggable="true"] {
+.btn-action-sm i {
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.btn-action-sm.primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-action-sm.danger {
+  background-color: var(--red-light);
+  color: var(--red);
+}
+
+
+.wishlist-item:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.drag-handle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: var(--text-light);
   cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.wishlist-item:hover .drag-handle {
+  opacity: 1;
 }
 
 .stat-card.dragging {
@@ -129,17 +168,9 @@
   border: 2px dashed var(--primary);
 }
 
-.drag-handle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  cursor: grab;
-  padding-right: 0.5rem;
-}
-
-.wishlist-grid .drag-handle {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
+@media (max-width: 768px) {
+  .wishlist-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }

@@ -18,15 +18,24 @@
     left: 0;
     top: 0;
     transform: translateX(-100%);
-    z-index: 1000;
-    width: 280px;
+    z-index: 1100;
+    width: var(--sidebar-width);
     box-shadow: var(--shadow-lg);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .sidebar.mobile-active {
     transform: translateX(0);
-    width: 280px !important;
+    width: var(--sidebar-width) !important;
+  }
+
+  .sidebar.mobile-active .logo-container {
+    justify-content: space-between !important;
+    padding: 0 0.3rem !important; /* ATUR JARAK MANUAL DI SINI (0 = nempel banget, makin besar makin ke tengah) */
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-bottom: 2.5rem !important;
   }
 
   .sidebar.mobile-active .logo-wrapper,
@@ -41,10 +50,18 @@
     justify-content: flex-start !important;
   }
 
-  .sidebar.mobile-active #btn-toggle-sidebar {
-    display: none;
+  .sidebar.mobile-active #btn-tambah-global {
+    width: 100% !important;
+    height: 50px !important;
+    padding: 0 1.5rem !important;
+    justify-content: flex-start !important;
+    border-radius: 12px !important;
   }
-  
+
+  .sidebar.mobile-active #btn-tambah-global span {
+    display: inline !important;
+  }
+
   .main-content,
   .dashboard-container.sidebar-collapsed .main-content {
     margin-left: 0 !important;
@@ -121,12 +138,13 @@
   .sidebar-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 999;
+    background: var(--overlay-bg);
+    z-index: 1050;
     display: block;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
   }
 
   .sidebar-overlay.active {
@@ -167,12 +185,16 @@
   }
 
   .transactions-table tr {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border-light);
+    padding: 1.25rem 0;
+    border-bottom: 1.5px solid var(--border);
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+  }
+
+  .transactions-table tr:last-child {
+    border-bottom: none;
   }
 
   .transactions-table td {
@@ -256,18 +278,91 @@
     max-width: 320px !important;
     min-width: 0 !important;
   }
+
+  /* Modal & Alert Adjustments for Mobile */
+  .modal-content, 
+  .custom-alert-card {
+    padding: 1.5rem !important;
+    width: calc(100% - 2rem) !important;
+    max-width: 340px !important;
+    margin: 1rem;
+  }
+
+  .modal-content h3,
+  .custom-alert-card h3 {
+    font-size: 1.1rem !important;
+  }
+
+  .modal-content p,
+  .custom-alert-card p {
+    font-size: 0.85rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .icon-box {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Wishlist Responsive Fixes */
+  .wishlist-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .wishlist-item {
+    padding: 1.5rem !important;
+  }
+
+  .wishlist-list .stat-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1.25rem !important;
+    padding: 1.5rem !important;
+  }
+
+  .wishlist-list .progress-bar-container {
+    margin: 1rem 0 !important;
+    width: 100% !important;
+  }
+
+  .wishlist-list .stat-card > div:last-child {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .sidebar.mobile-active ~ .menu-tooltip-container {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+  }
+
+  /* Sidebar Buttons Visibility */
+  .sidebar.mobile-active #btn-toggle-sidebar {
+    display: none !important;
+  }
+
+  .sidebar.mobile-active #btn-close-sidebar {
+    display: flex !important;
+    color: var(--text-main);
+    font-size: 1.5rem;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* Desktop-Only Collapsed Sidebar State */
 @media (min-width: 769px) {
   .dashboard-container.sidebar-collapsed .sidebar {
-    width: 88px;
+    width: var(--sidebar-collapsed-width);
     padding-right: 1rem;
   }
 
   .dashboard-container.sidebar-collapsed .main-content {
-    margin-left: 88px;
-    width: calc(100% - 88px);
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
   }
 
   .dashboard-container.sidebar-collapsed .logo-wrapper,

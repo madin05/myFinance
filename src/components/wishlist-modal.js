@@ -1,5 +1,6 @@
 import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
+import { initCustomSelects } from '../ui/select.js';
 
 export function openAddWishlistModal(onSuccess) {
   const container = document.getElementById('modal-container');
@@ -49,6 +50,8 @@ export function openAddWishlistModal(onSuccess) {
     </div>
   `;
 
+  initCustomSelects(container);
+
   // Format currency input
   const targetInput = document.getElementById('wishlist-target');
   targetInput.addEventListener('input', (e) => {
@@ -62,7 +65,7 @@ export function openAddWishlistModal(onSuccess) {
     if (e.target.id === 'wishlist-overlay') close();
   });
   
-  document.getElementById('form-wishlist').addEventListener('submit', (e) => {
+  document.getElementById('form-wishlist').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('wishlist-name').value;
     const target = Number(document.getElementById('wishlist-target').value.replace(/\./g, ''));
@@ -70,12 +73,13 @@ export function openAddWishlistModal(onSuccess) {
     const color = document.querySelector('input[name="wishlist-color"]:checked').value;
 
     showLoading();
-    setTimeout(() => {
-      store.addSaving({ name, target, current: 0, icon, color });
-      hideLoading();
+    try {
+      await store.createSaving({ name, target, current: 0, icon, color });
       close();
       if (onSuccess) onSuccess();
-    }, 1000);
+    } finally {
+      hideLoading();
+    }
   });
 }
 
@@ -107,17 +111,18 @@ export function openAddFundsModal(id, currentName, onSuccess) {
   const close = () => container.innerHTML = '';
   document.getElementById('btn-cancel-fund').addEventListener('click', close);
   
-  document.getElementById('btn-save-fund').addEventListener('click', () => {
+  document.getElementById('btn-save-fund').addEventListener('click', async () => {
     const amount = Number(amountInput.value.replace(/\./g, ''));
     if (!amount) return alert('Masukkan nominal dulu bre!');
 
     showLoading();
-    setTimeout(() => {
-      store.updateSaving(id, amount);
-      hideLoading();
+    try {
+      await store.addSavingFunds(id, amount);
       close();
       if (onSuccess) onSuccess();
-    }, 1000);
+    } finally {
+      hideLoading();
+    }
   });
 
   document.getElementById('funds-overlay').addEventListener('click', (e) => {

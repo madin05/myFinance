@@ -1,5 +1,6 @@
 import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
+import { initCustomSelects } from '../ui/select.js';
 
 export function openAddTransactionModal(onSuccess, txToEdit = null) {
   const container = document.getElementById('modal-container');
@@ -140,6 +141,8 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
         if (onSuccess) onSuccess();
       }, 1000);
     });
+
+    initCustomSelects(document.getElementById('form-tambah'));
   }, 0);
 }
 
