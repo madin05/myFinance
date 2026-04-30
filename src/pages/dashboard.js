@@ -5,9 +5,18 @@ let savingInterval = null;
 
 export function renderDashboard() {
   const container = document.getElementById('page-content');
+  if (!container) return;
+  
   const stats = store.getStats();
   
-  const topTransactions = store.transactions.slice(0, 4);
+  // Sortir terbaru: Tanggal desc, lalu ID desc
+  const sortedTxs = [...store.transactions].sort((a, b) => {
+    const dateDiff = new Date(b.tanggal) - new Date(a.tanggal);
+    if (dateDiff !== 0) return dateDiff;
+    return (b.id || 0) - (a.id || 0);
+  });
+  
+  const topTransactions = sortedTxs.slice(0, 4);
   const txHtml = topTransactions.map(tx => {
     const isIncome = tx.type === 'income';
     const colorClass = isIncome ? 'text-green' : 'text-red';

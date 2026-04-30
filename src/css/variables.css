@@ -35,6 +35,10 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 9999px;
+  --card-bg: var(--white);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 88px;
   --font-main: 'Poppins', sans-serif;
 }
 
@@ -63,6 +67,8 @@
   --blue-light: rgba(59, 130, 246, 0.2);
   --orange: #F59E0B;
   --orange-light: rgba(245, 158, 11, 0.2);
+  --card-bg: #1E1E1E;
+  --overlay-bg: rgba(0, 0, 0, 0.7);
   --purple: #8B5CF6;
   --purple-light: rgba(139, 92, 246, 0.2);
 }

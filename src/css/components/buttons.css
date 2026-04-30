@@ -1,0 +1,476 @@
+.btn {
+  padding: 0 1rem;
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.btn-full { width: 100%; flex-shrink: 0; justify-content: flex-start; }
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--primary-light);
+  color: var(--primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-light);
+}
+
+.btn-white {
+  background-color: var(--white);
+  color: var(--primary);
+}
+
+.btn-white:hover {
+  background-color: #f8fafc;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.btn-icon-absolute {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--white);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-icon-absolute:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.filter-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background-color: var(--white);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+}
+
+.filter-btn.btn-primary {
+  background-color: var(--primary);
+  color: var(--white);
+  box-shadow: 0 4px 15px rgba(63, 54, 229, 0.2);
+  border-color: var(--primary);
+}
+
+.filter-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  left: auto;
+  background-color: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 320px;
+  z-index: 1000;
+  display: none;
+  transform-origin: top right;
+  animation: dropdownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.popover-header {
+  padding: 8px 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.popover-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.popover-item:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.popover-item.active {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.popover-item i {
+  font-size: 1.1rem;
+}
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+
+/* Ensure absolute buttons stay absolute even with tooltips */
+.btn-icon-absolute[data-tooltip] {
+  position: absolute;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background-color: var(--white);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1100;
+  border: 1px solid var(--border);
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+/* Tooltip Right (for Sidebar) */
+[data-tooltip-right] {
+  position: relative;
+}
+
+[data-tooltip-right]::after {
+  content: attr(data-tooltip-right);
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 5px);
+  transform: translateY(-50%) translateX(10px);
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+[data-tooltip-right]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(15px);
+}
+
+/* Disable tooltips on mobile/tablet */
+@media (max-width: 1024px) {
+  [data-tooltip]::after,
+  [data-tooltip-right]::after {
+    display: none !important;
+  }
+}
+
+/* Floating Action Menu (FAM) */
+.menu-tooltip-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  overflow: visible !important; /* PENTING: Biar gak kepotong pas mekar */
+}
+
+.fam-trigger {
+  width: 54px;
+  height: 54px;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  z-index: 1502;
+  position: absolute;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(63, 54, 229, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+#fam-toggle {
+  display: none;
+}
+
+#fam-toggle:checked + .fam-trigger {
+  transform: rotate(135deg);
+  background-color: var(--red);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+}
+
+.fam-item {
+  position: absolute;
+  transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Kurva ultra smooth */
+  transition-delay: calc(0.08s * var(--i)); /* Efek staggered yang lebih berasa */
+  transform: scale(0) rotate(-90deg); /* Putaran lebih kalem */
+  z-index: 1501;
+  pointer-events: none;
+}
+
+#fam-toggle:checked ~ .fam-item {
+  transform: scale(1) rotate(0deg);
+  pointer-events: auto;
+}
+
+/* Item 1: Lurus ke Atas + Spin */
+#fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
+  transform: scale(1) rotate(0deg) translateY(-65px);
+}
+
+/* Item 2: Serong Kiri Atas + Spin */
+#fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
+  transform: scale(1) rotate(0deg) translateX(-55px) translateY(-55px);
+}
+
+/* Item 3: Lurus ke Kiri + Spin */
+#fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
+  transform: scale(1) rotate(0deg) translateX(-65px);
+}
+
+.fam-anchor {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.fam-anchor:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.bg-primary { background-color: var(--primary); }
+.bg-pink { background-color: #ec4899; }
+
+/* Tooltip Left for FAM */
+[data-tooltip-left]::after {
+  content: attr(data-tooltip-left);
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 12px);
+  transform: translateY(-50%) translateX(10px);
+  background-color: var(--card-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  border: 1px solid var(--border);
+}
+
+.fam-anchor:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* --- MOBILE OPTIMIZATIONS --- */
+@media (max-width: 768px) {
+  .menu-tooltip-container {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .fam-trigger {
+    width: 48px;
+    height: 48px;
+    font-size: 1.15rem;
+  }
+
+  .fam-anchor {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
+    transform: scale(1) rotate(0deg) translateY(-60px);
+  }
+
+  #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
+    transform: scale(1) rotate(0deg) translateX(-50px) translateY(-50px);
+  }
+
+  .fam-anchor:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Hide tooltips on mobile FAM to keep it clean */
+  [data-tooltip-left]::after {
+    display: none !important;
+  }
+
+  .sidebar.mobile-active ~ .menu-tooltip-container {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0);
+  }
+}
+
+
+/* Animated Hamburger Menu (Uiverse.io) */
+.hamburger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hamburger input {
+  display: none;
+}
+
+.hamburger svg {
+  height: 2.5rem;
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hamburger .line {
+  fill: none;
+  stroke: var(--text-main);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  transition:
+    stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.line-top-bottom {
+  stroke-dasharray: 12 63;
+}
+
+.hamburger input:checked + svg {
+  transform: rotate(-45deg);
+}
+
+.hamburger input:checked + svg .line-top-bottom {
+  stroke-dasharray: 20 300;
+  stroke-dashoffset: -32.42;
+}

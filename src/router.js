@@ -1,17 +1,49 @@
-import { getDashboardSkeleton, getTableSkeleton } from './components/skeleton.js';
+import {
+  getDashboardSkeleton,
+  getTableSkeleton,
+  getTransaksiSkeleton,
+  getAnggaranSkeleton,
+  getTabunganSkeleton,
+  getLaporanSkeleton,
+  getAkunSkeleton
+} from './components/skeleton.js';
 
-export function showSkeleton(type) {
+export function showSkeleton(routeHash) {
   const container = document.getElementById('page-content');
-  if (type === 'dashboard') {
-    container.innerHTML = getDashboardSkeleton();
-  } else {
-    container.innerHTML = getTableSkeleton();
+  if (!container) return;
+
+  switch (routeHash) {
+    case '#dashboard':
+      container.innerHTML = getDashboardSkeleton();
+      break;
+    case '#transaksi':
+      container.innerHTML = getTransaksiSkeleton();
+      break;
+    case '#anggaran':
+      container.innerHTML = getAnggaranSkeleton();
+      break;
+    case '#tabungan':
+      container.innerHTML = getTabunganSkeleton(localStorage.getItem('wishlist-view') || 'grid');
+      break;
+    case '#laporan':
+      container.innerHTML = getLaporanSkeleton();
+      break;
+    case '#akun':
+      container.innerHTML = getAkunSkeleton();
+      break;
+    default:
+      container.innerHTML = getTableSkeleton();
+      break;
   }
 }
 
 export function handleRoute() {
   const hash = window.location.hash || '#dashboard';
   const container = document.getElementById('page-content');
+  const modalContainer = document.getElementById('modal-container');
+  
+  // Bersihkan modal yang mungkin masih terbuka
+  if (modalContainer) modalContainer.innerHTML = '';
   
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -22,8 +54,7 @@ export function handleRoute() {
   });
 
   // Show skeleton for a smooth transition
-  const type = hash === '#dashboard' ? 'dashboard' : 'table';
-  showSkeleton(type);
+  showSkeleton(hash);
 
   // Small delay to simulate "loading" and show off the skeleton
   setTimeout(() => {

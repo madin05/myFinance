@@ -1,5 +1,5 @@
 .sidebar {
-  width: 280px;
+  width: var(--sidebar-width);
   background-color: var(--white);
   display: flex;
   flex-direction: column;
@@ -134,3 +134,52 @@
   padding: 0;
   flex-shrink: 0;
 }
+
+#btn-close-sidebar {
+  display: none;
+}
+
+/* --- SIDEBAR COLLAPSED STATE --- */
+.sidebar-collapsed .sidebar {
+  width: var(--sidebar-collapsed-width);
+  padding: 2rem 1rem;
+}
+
+.sidebar-collapsed .logo-wrapper,
+.sidebar-collapsed .nav-item span,
+.sidebar-collapsed .sidebar-footer span {
+  display: none;
+}
+
+.sidebar-collapsed .logo-container {
+  justify-content: center;
+}
+
+.sidebar-collapsed #btn-toggle-sidebar {
+  margin-left: 0;
+}
+
+.sidebar-collapsed .main-content {
+  margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+.sidebar-collapsed .sidebar-footer {
+  text-align: center;
+}
+
+.sidebar-collapsed #btn-tambah-global {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+}
+
+/* Tooltip for Collapsed Sidebar (Optional but Pro) */
+.sidebar-collapsed .nav-item {
+  justify-content: center;
+}
+

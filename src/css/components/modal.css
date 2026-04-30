@@ -5,7 +5,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 2000;
 }
 
 .modal-content {
@@ -57,18 +57,31 @@
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
-  background-color: var(--white);
+  background-color: var(--card-bg);
   color: var(--text-main);
   border-radius: var(--radius-md);
   font-family: inherit;
   font-size: 0.95rem;
   outline: none;
   transition: all 0.2s;
+  appearance: none; /* Hide default arrow */
+}
+
+/* Custom Arrow for Select */
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 256 256'%3E%3Cpath fill='%236B7280' d='m213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
 }
 
 [data-theme="dark"] .form-control {
-  background-color: #121212;
-  border-color: #27272A;
+  background-color: #1a1a1c;
+  border-color: #2D2D30;
+}
+
+[data-theme="dark"] select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 256 256'%3E%3Cpath fill='%23A1A1AA' d='m213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E");
 }
 
 .form-control:focus {
