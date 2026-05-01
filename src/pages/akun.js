@@ -243,6 +243,9 @@ export function renderAkun() {
           try {
             await store.updateProfile({ avatar: compressedBase64 });
             showToast('Foto profil berhasil disinkron!', 'success');
+            // Tutup modal preview kalau lagi kebuka
+            const modal = document.getElementById('pp-preview-modal');
+            if (modal) modal.style.display = 'none';
           } catch (err) {
             showToast('Gagal sinkron ke server, tapi lokal aman.', 'warning');
             console.error(err);
