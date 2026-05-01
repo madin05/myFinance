@@ -116,16 +116,28 @@ export const store = {
   updateUI() {
     if (this.user) {
       const avatarElements = document.querySelectorAll('.user-avatar-img, #user-avatar, #profile-preview, #full-pp-preview');
-      const nameElements = document.querySelectorAll('.user-name, #user-name-display');
+      const nameElements = document.querySelectorAll('.user-name, #user-name-display, #nav-user-name');
+      const emailElements = document.querySelectorAll('.user-email, #nav-user-email');
       
       const avatarUrl = this.user.avatar || 'https://ui-avatars.com/api/?name=' + this.user.name;
       
       avatarElements.forEach(el => {
-        if (el.tagName === 'IMG') el.src = avatarUrl;
+        if (el.tagName === 'IMG') {
+          el.src = avatarUrl;
+          el.style.opacity = '1';
+          const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+          if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+        }
       });
       
       nameElements.forEach(el => {
         el.textContent = this.user.name;
+        el.classList.remove('skeleton', 'skeleton-text');
+      });
+
+      emailElements.forEach(el => {
+        el.textContent = this.user.email;
+        el.classList.remove('skeleton', 'skeleton-text');
       });
     }
   },
