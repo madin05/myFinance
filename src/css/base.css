@@ -55,7 +55,7 @@ body {
 .main-content {
   flex-grow: 1;
   margin-left: var(--sidebar-width);
-  padding: 2rem 2.5rem;
+  padding: 1.25rem 1.5rem;
   width: calc(100% - var(--sidebar-width));
   transition: margin-left 0.3s ease, width 0.3s ease;
 }
