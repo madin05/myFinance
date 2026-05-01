@@ -45,37 +45,45 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-green-light text-green"><i class="ph-bold ph-trend-up"></i></div>
-          <div class="badge badge-green">+12.5%</div>
+          <div class="stat-badge up"><i class="ph-bold ph-caret-up"></i> 12.5%</div>
         </div>
-        <p class="stat-label">Total Pemasukan</p>
-        <h2 class="stat-value">${formatRupiah(stats.income)}</h2>
-        <div class="progress-bar-container mt-md">
-          <div class="progress-bar bg-green" style="width: 65%;"></div>
+        <div class="stat-body">
+          <p class="stat-label">Total Pemasukan</p>
+          <h2 class="stat-value">${formatRupiah(stats.income)}</h2>
         </div>
+        <div class="stat-footer">
+          <div class="stat-line"><div class="stat-line-fill bg-green" style="width: 70%"></div></div>
+        </div>
+        <i class="ph-fill ph-trend-up stat-watermark"></i>
       </div>
 
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-red-light text-red"><i class="ph-bold ph-trend-down"></i></div>
-          <div class="badge badge-red">-4.2%</div>
+          <div class="stat-badge down"><i class="ph-bold ph-caret-down"></i> 4.2%</div>
         </div>
-        <p class="stat-label">Total Pengeluaran</p>
-        <h2 class="stat-value">${formatRupiah(stats.expense)}</h2>
-        <div class="progress-bar-container mt-md">
-          <div class="progress-bar bg-red" style="width: 75%;"></div>
+        <div class="stat-body">
+          <p class="stat-label">Total Pengeluaran</p>
+          <h2 class="stat-value">${formatRupiah(stats.expense)}</h2>
         </div>
+        <div class="stat-footer">
+          <div class="stat-line"><div class="stat-line-fill bg-red" style="width: 45%"></div></div>
+        </div>
+        <i class="ph-fill ph-trend-down stat-watermark"></i>
       </div>
 
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-blue-light text-blue"><i class="ph-fill ph-bank"></i></div>
         </div>
-        <p class="stat-label">Sisa Saldo</p>
-        <h2 class="stat-value text-blue">${formatRupiah(stats.balance)}</h2>
-        <div class="stat-footer mt-md">
-          <i class="ph ph-clock-counter-clockwise text-muted mr-xs"></i>
-          <span class="text-sm text-muted">Sinkronisasi Lokal: Baru saja</span>
+        <div class="stat-body">
+          <p class="stat-label">Saldo Saat Ini</p>
+          <h2 class="stat-value">${formatRupiah(stats.balance)}</h2>
         </div>
+        <div class="stat-footer">
+          <div class="stat-line"><div class="stat-line-fill bg-blue" style="width: 85%"></div></div>
+        </div>
+        <i class="ph-fill ph-bank stat-watermark"></i>
       </div>
     </div>
 
