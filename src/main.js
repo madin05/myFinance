@@ -44,15 +44,26 @@ export async function checkAuth() {
 
     if (user) {
       const token = await user.getIdToken();
-      const userData = {
-        uid: user.uid,
-        name: user.displayName || 'User MyFinance',
-        email: user.email,
-        avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-        token: token
-      };
       
-      store.setUser(userData);
+      // FIX: Jangan asal timpa data store pake data Firebase (biar nama 'Madins' gak balik ke nama panjang Google)
+      if (store.user && store.user.uid === user.uid) {
+        console.log('🔄 User already exists in store, updating token and syncing...');
+        store.user.token = token;
+        store.save();
+        store.sync();
+      } else {
+        console.log('🆕 First time login or session expired, setting user from Firebase...');
+        const userData = {
+          uid: user.uid,
+          name: user.displayName || 'User MyFinance',
+          email: user.email,
+          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+          token: token
+        };
+        store.setUser(userData);
+      }
+
+      const userData = store.user; // Pake data terbaru dari store
 
       // Update Navbar UI
       if (avatarImg) {
