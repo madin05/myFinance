@@ -123,10 +123,21 @@ export const store = {
       
       avatarElements.forEach(el => {
         if (el.tagName === 'IMG') {
-          el.src = avatarUrl;
-          el.style.opacity = '1';
-          const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
-          if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+          // Hanya pasang src kalau beda (biar gak flicker)
+          if (el.getAttribute('data-src-loaded') !== avatarUrl) {
+            el.src = avatarUrl;
+            el.onload = () => {
+              el.style.opacity = '1';
+              el.setAttribute('data-src-loaded', avatarUrl);
+              const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+              if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+            };
+          } else {
+            // Kalau udah pernah loaded, pastiin tetep kelihatan
+            el.style.opacity = '1';
+            const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+            if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+          }
         }
       });
       
