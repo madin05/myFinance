@@ -12,9 +12,11 @@ export function initNavigation() {
     const safeTheme = theme === 'dark' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', safeTheme);
     localStorage.setItem('theme', safeTheme);
-    const iconEl = document.querySelector('#btn-theme-toggle i');
-    if (iconEl) {
-      iconEl.className = safeTheme === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+    
+    // Sync animated toggle checkbox
+    const toggleInput = document.getElementById('themeToggle');
+    if (toggleInput) {
+      toggleInput.checked = safeTheme === 'dark';
     }
   };
 
@@ -45,15 +47,15 @@ export function initNavigation() {
       closeMobileSidebar();
     }
 
-    // Close Sidebar on Nav Click (Mobile Only)
-    if (e.target.closest('.nav-item') && window.innerWidth <= 768) {
+    // Close Sidebar on Nav Click or Logo Click (Mobile Only)
+    if ((e.target.closest('.nav-item') || e.target.closest('.logo-wrapper')) && window.innerWidth <= 768) {
       closeMobileSidebar();
     }
 
-    // Theme Toggle
-    if (e.target.closest('#btn-theme-toggle')) {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    // Theme Toggle (Animated Checkbox)
+    const themeInput = e.target.closest('#themeToggle');
+    if (themeInput) {
+      const newTheme = themeInput.checked ? 'dark' : 'light';
       applyTheme(newTheme);
     }
 

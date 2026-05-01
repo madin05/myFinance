@@ -10,6 +10,7 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* Prevent horizontal scroll bre */
 }
 
 /* Utilities */
@@ -155,4 +156,20 @@ body {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Date Picker Fixes */
+input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 256 256'%3E%3Cpath fill='%2364748B' d='M208 32h-24v-8a8 8 0 0 0-16 0v8H88v-8a8 8 0 0 0-16 0v8H48a24 24 0 0 0-24 24v152a24 24 0 0 0 24 24h160a24 24 0 0 0 24-24V56a24 24 0 0 0-24-24Zm8 176a8 8 0 0 1-8 8H48a8 8 0 0 1-8-8V88h176ZM40 72V56a8 8 0 0 1 8-8h24v8a8 8 0 0 0 16 0v-8h80v8a8 8 0 0 0 16 0v-8h24a8 8 0 0 1 8 8v16Z'/%3E%3C/svg%3E") !important;
+}
+
+[data-theme="dark"] input::-webkit-calendar-picker-indicator {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 256 256'%3E%3Cpath fill='%23FFFFFF' d='M208 32h-24v-8a8 8 0 0 0-16 0v8H88v-8a8 8 0 0 0-16 0v8H48a24 24 0 0 0-24 24v152a24 24 0 0 0 24 24h160a24 24 0 0 0 24-24V56a24 24 0 0 0-24-24Zm8 176a8 8 0 0 1-8 8H48a8 8 0 0 1-8-8V88h176ZM40 72V56a8 8 0 0 1 8-8h24v8a8 8 0 0 0 16 0v-8h80v8a8 8 0 0 0 16 0v-8h24a8 8 0 0 1 8 8v16Z'/%3E%3C/svg%3E") !important;
+}
+
+input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }

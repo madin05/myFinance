@@ -183,31 +183,22 @@ export function getAkunSkeleton() {
     <div class="account-settings">
       <div class="section-header">
         <div>
-          <div class="skeleton" style="width: 240px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div>
-          <div class="skeleton" style="width: 320px; height: 18px; border-radius: 8px;"></div>
+          <div class="skeleton" style="width: 260px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div>
+          <div class="skeleton" style="width: 340px; height: 18px; border-radius: 8px;"></div>
         </div>
       </div>
 
-      <div class="account-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-top: 1.5rem;">
-        <div class="stat-card" style="padding: 3rem 1.5rem; text-align: center;">
-          <div class="skeleton" style="width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 1.5rem;"></div>
-          <div class="skeleton" style="width: 220px; height: 22px; border-radius: 10px; margin: 0 auto 10px;"></div>
-          <div class="skeleton" style="width: 260px; height: 16px; border-radius: 8px; margin: 0 auto 28px;"></div>
-          <div class="skeleton" style="width: 160px; height: 32px; border-radius: 999px; margin: 0 auto;"></div>
+      <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+        <!-- Left Column Skeletons -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="stat-card skeleton" style="height: 320px; border-radius: 24px; border: none;"></div>
+          <div class="stat-card skeleton" style="height: 140px; border-radius: 24px; border: none;"></div>
         </div>
 
-        <div class="stat-card" style="padding: 2.5rem;">
-          <div class="skeleton" style="width: 240px; height: 22px; border-radius: 10px; margin-bottom: 2rem;"></div>
-          <div class="skeleton" style="width: 140px; height: 16px; border-radius: 8px; margin-bottom: 10px;"></div>
-          <div class="skeleton" style="height: 52px; width: 100%; border-radius: 14px; margin-bottom: 10px;"></div>
-          <div class="skeleton" style="width: 220px; height: 14px; border-radius: 8px; margin-bottom: 2rem;"></div>
-          <div class="skeleton" style="width: 160px; height: 16px; border-radius: 8px; margin-bottom: 10px;"></div>
-          <div class="skeleton" style="height: 52px; width: 100%; border-radius: 14px; margin-bottom: 2.5rem;"></div>
-          <div class="skeleton" style="height: 1px; width: 100%; border-radius: 999px; margin: 2.5rem 0;"></div>
-          <div style="display: flex; justify-content: flex-end; gap: 1.25rem;">
-            <div class="skeleton" style="width: 130px; height: 44px; border-radius: 12px;"></div>
-            <div class="skeleton" style="width: 180px; height: 50px; border-radius: 12px;"></div>
-          </div>
+        <!-- Right Column Skeletons -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="stat-card skeleton" style="height: 380px; border-radius: 24px; border: none;"></div>
+          <div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div>
         </div>
       </div>
     </div>

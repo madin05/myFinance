@@ -1,14 +1,15 @@
-import { store } from '../store.js';
+import { store, formatDate } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert, showConfirm } from '../components/notifications.js';
 import { openEditUsernameModal } from '../components/modal.js';
+import { initCustomSelect } from '../components/customSelect.js';
 
 export function renderAkun() {
   const container = document.getElementById('page-content');
   const user = store.user;
   
-  // Format join date (simulasi jika tidak ada di DB)
-  const joinDate = user.joinDate || '12 Maret 2024';
+  // Format join date dari data riil
+  const joinDate = user.createdAt ? formatDate(user.createdAt) : '12 Maret 2024';
 
   container.innerHTML = `
     <div class="account-settings">
@@ -45,6 +46,39 @@ export function renderAkun() {
 
           <div class="stat-card" style="padding: 1.5rem;">
             <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+              <i class="ph-fill ph-gear" style="color: var(--primary);"></i>
+              Preferensi Keuangan
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="text-xs text-muted mb-xs block" style="display: block; margin-bottom: 4px;">Tanggal Mulai Periode (Gajian)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="number" id="financial-start-day" class="form-control" min="1" max="31" value="${user.financialStartDay || 1}" style="width: 80px; height: 38px;">
+                  <span class="text-xs text-muted">Tiap bulan</span>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="text-xs text-muted mb-xs block" style="display: block; margin-bottom: 4px;">Mata Uang Default</label>
+                <select id="user-currency" class="form-control" style="height: 38px; font-size: 0.85rem; padding: 0 10px;">
+                  <option value="IDR" ${user.currency === 'IDR' || !user.currency ? 'selected' : ''}>IDR - Rupiah</option>
+                  <option value="USD" ${user.currency === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
+                  <option value="EUR" ${user.currency === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
+                  <option value="SGD" ${user.currency === 'SGD' ? 'selected' : ''}>SGD - Singapore Dollar</option>
+                  <option value="MYR" ${user.currency === 'MYR' ? 'selected' : ''}>MYR - Malaysian Ringgit</option>
+                  <option value="JPY" ${user.currency === 'JPY' ? 'selected' : ''}>JPY - Japanese Yen</option>
+                </select>
+              </div>
+
+              <div style="border-top: 1px dashed var(--border); pt-md: 1rem; margin-top: 0.5rem; padding-top: 1rem;">
+                <p class="text-xs text-muted mb-md">Laporan & Anggaran bakal ngikutin siklus dan mata uang ini.</p>
+                <button class="btn btn-primary btn-full" id="btn-save-financial-start" style="height: 38px; font-size: 0.8rem; border-radius: 8px;">Simpan Perubahan</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card" style="padding: 1.5rem;">
+            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
               <i class="ph-fill ph-info" style="color: var(--primary);"></i>
               Informasi Akun
             </h4>
@@ -69,16 +103,34 @@ export function renderAkun() {
               Pusat Keamanan
             </h4>
             
-            <!-- Change Password Form -->
-            <form id="form-change-password" style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border);">
-              <div class="form-group" style="margin-bottom: 1rem;">
-                <label class="text-sm font-bold mb-xs d-block">Ubah Password</label>
-                <input type="password" placeholder="Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;">
-                <button type="submit" class="btn btn-outline" style="width: 100%; height: 44px; font-size: 0.85rem; border-radius: 10px;">
-                  Update Password
-                </button>
-              </div>
-            </form>
+            ${user.provider === 'password' ? `
+            <!-- Change Password Dropdown -->
+            <details class="password-details" style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+              <summary style="list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.875rem; color: var(--text-main); padding: 0.5rem 0;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="ph-fill ph-key" style="color: var(--primary); font-size: 1.1rem;"></i>
+                  Ubah Password
+                </div>
+                <i class="ph ph-caret-down caret-icon" style="transition: transform 0.3s; font-size: 1rem;"></i>
+              </summary>
+              
+              <form id="form-change-password" style="margin-top: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                  <input type="password" id="old-password" placeholder="Password Lama" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;" required>
+                  <input type="password" id="new-password" placeholder="Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;" required>
+                  <input type="password" id="confirm-password" placeholder="Konfirmasi Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 1rem;" required>
+                  <button type="submit" class="btn btn-primary btn-full" style="height: 48px; font-size: 0.9rem; border-radius: 12px;">
+                    Update Password
+                  </button>
+                </div>
+              </form>
+            </details>
+            ` : `
+            <div style="margin-bottom: 2rem; padding: 1rem; border-radius: 12px; background: var(--bg-color); color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 10px; align-items: center; border: 1px solid var(--border);">
+              <i class="ph ph-google-logo" style="font-size: 1.2rem; color: var(--primary);"></i>
+              <span>Kamu masuk via Google Auth. Pengaturan password dikelola langsung oleh Google bre.</span>
+            </div>
+            `}
 
             <!-- 2FA Toggle -->
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -86,7 +138,7 @@ export function renderAkun() {
                 <p class="font-bold text-sm" style="margin: 0;">Autentikasi 2 Faktor (2FA)</p>
                 <p class="text-muted text-xs">Amankan akun dengan kode OTP.</p>
               </div>
-      <label class="switch">
+              <label class="switch">
                 <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? 'checked' : ''}>
                 <span class="slider round"></span>
               </label>
@@ -123,8 +175,17 @@ export function renderAkun() {
       .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
       input:checked + .slider { background-color: var(--primary); }
       input:checked + .slider:before { transform: translateX(20px); }
+
+      .password-details summary::-webkit-details-marker { display: none; }
+      .password-details[open] .caret-icon { transform: rotate(180deg); }
     </style>
   `;
+
+  // --- Initialize Custom UI Elements ---
+  const currencySelect = document.getElementById('user-currency');
+  if (currencySelect) {
+    initCustomSelect(currencySelect);
+  }
 
   // --- Handlers ---
   
@@ -135,6 +196,27 @@ export function renderAkun() {
     document.getElementById('pp-preview-modal').style.display = 'none';
   };
   
+  document.getElementById('btn-save-financial-start').onclick = async () => {
+    const newDay = document.getElementById('financial-start-day').value;
+    const newCurrency = document.getElementById('user-currency').value;
+    
+    showLoading();
+    try {
+      await store.updateProfile({ 
+        financialStartDay: parseInt(newDay),
+        currency: newCurrency
+      });
+      showToast('Berhasil diperbaharui!', 'success');
+      
+      // Refresh UI to update currency symbols
+      renderAkun();
+    } catch (err) {
+      showAlert('Gagal', err.message, 'error');
+    } finally {
+      hideLoading();
+    }
+  };
+
   document.getElementById('btn-edit-username').onclick = () => {
     openEditUsernameModal(user.name, async (newName) => {
       showLoading();
@@ -151,13 +233,22 @@ export function renderAkun() {
   };
 
   document.getElementById('btn-delete-account').onclick = async () => {
-    const confirmed = await showConfirm('Hapus Akun?', 'Yakin mau hapus akun bre? Semua data transaksi dan tabungan bakal ilang selamanya loh.');
+    const confirmed = await showConfirm('Hapus Akun Permanen?', 'Yakin mau hapus akun bre? Semua data transaksi, wishlist, dan budget kamu bakal ILANG SELAMANYA loh. Gak bisa dibalikin!');
     if (confirmed) {
-      showToast('Permintaan hapus akun sedang diproses...', 'info');
-      // Simulasi proses
-      setTimeout(() => {
-        showToast('Akun berhasil dihapus (Mock)', 'success');
-      }, 2000);
+      showLoading();
+      try {
+        await store.deleteAccountRemote();
+        hideLoading();
+        showToast('Akun dan data berhasil dihapus bre. Sampai jumpa!', 'success');
+        
+        setTimeout(() => {
+          window.location.hash = '#login';
+          window.location.reload();
+        }, 2000);
+      } catch (err) {
+        hideLoading();
+        showAlert('Gagal Hapus Akun', err.message, 'error');
+      }
     }
   };
 
@@ -255,4 +346,46 @@ export function renderAkun() {
       showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
     }
   };
+
+  // Change Password Handler
+  const changePassForm = document.getElementById('form-change-password');
+  if (changePassForm) {
+    changePassForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const oldPass = document.getElementById('old-password').value;
+      const newPass = document.getElementById('new-password').value;
+      const confirmPass = document.getElementById('confirm-password').value;
+
+      // 1. Frontend Validation
+      if (newPass.length < 6) {
+        return showAlert('Validasi Gagal', 'Password baru minimal 6 karakter bre!', 'warning');
+      }
+      if (newPass !== confirmPass) {
+        return showAlert('Validasi Gagal', 'Konfirmasi password baru tidak cocok bre!', 'warning');
+      }
+
+      const confirmed = await showConfirm('Konfirmasi Ubah Password', 'Password kamu bakal diganti dan kamu bakal otomatis logout bre. Lanjut?');
+      if (!confirmed) return;
+
+      showLoading();
+      try {
+        // 2. Call Store (Backend verification happens here)
+        await store.changePassword(oldPass, newPass);
+        
+        hideLoading();
+        showToast('Password berhasil diubah, silakan login ulang', 'success');
+        
+        // 3. Auto Logout & Redirect
+        setTimeout(() => {
+          store.logout();
+          window.location.hash = '#login';
+          window.location.reload(); 
+        }, 2000);
+        
+      } catch (err) {
+        hideLoading();
+        showAlert('Gagal Ubah Password', err.message, 'error');
+      }
+    };
+  }
 }

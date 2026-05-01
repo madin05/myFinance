@@ -21,44 +21,46 @@ export const store = {
     };
   },
 
-  async sync() {
+  async sync(extraData = {}) {
     if (!this.user?.token) return;
     
     try {
-      // 1. Sync User info (Upsert)
+      // 1. Sync User info (Upsert) - Sequential because it's foundational
       const userRes = await fetch(`${API_URL}/users/sync`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.user.token}` 
+        },
+        body: JSON.stringify(extraData)
       });
       
       if (userRes.ok) {
         const dbUser = await userRes.json();
         this.user = { ...this.user, ...dbUser };
-        // Save immediately so UI reflects DB user even if other fetches fail.
+        // Save user info immediately to update avatar/name in sidebar
         this.save();
       }
 
-      // 2. Fetch Transactions
-      const txRes = await fetch(`${API_URL}/transactions`, {
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
-      });
+      // 2. Fetch everything else in PARALLEL to boost performance
+      const [txRes, budgetRes, savingRes] = await Promise.all([
+        fetch(`${API_URL}/transactions`, { headers: { 'Authorization': `Bearer ${this.user.token}` } }),
+        fetch(`${API_URL}/budgets`, { headers: { 'Authorization': `Bearer ${this.user.token}` } }),
+        fetch(`${API_URL}/savings`, { headers: { 'Authorization': `Bearer ${this.user.token}` } })
+      ]);
+
+      // Process Transactions
       if (txRes.ok) {
         const dbTxs = await txRes.json();
         this.transactions = dbTxs.map(tx => this._mapTransaction(tx));
       }
 
-      // 3. Fetch Budgets
-      const budgetRes = await fetch(`${API_URL}/budgets`, {
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
-      });
+      // Process Budgets
       if (budgetRes.ok) {
         this.budgets = await budgetRes.json();
       }
 
-      // 4. Fetch Savings (Wishlist)
-      const savingRes = await fetch(`${API_URL}/savings`, {
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
-      });
+      // Process Savings
       if (savingRes.ok) {
         const dbSavings = await savingRes.json();
         this.savings = dbSavings.map(s => ({
@@ -74,12 +76,27 @@ export const store = {
     } catch (err) {
       console.error('Sync Error:', err);
     } finally {
-      // Always persist latest known state (user/tx/budgets) to avoid UI mismatch.
+      // Final save to trigger a single UI refresh with all data loaded
       this.save();
     }
   },
 
-  async updateBudget(category, amount) {
+  async fetchBudgets(period) {
+    if (!this.user?.token) return;
+    try {
+      const url = period ? `${API_URL}/budgets?period=${period}` : `${API_URL}/budgets`;
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${this.user.token}` } });
+      if (res.ok) {
+        this.budgets = await res.json();
+        this.save();
+        return this.budgets;
+      }
+    } catch (err) {
+      console.error('Fetch Budgets Error:', err);
+    }
+  },
+
+  async updateBudget(category, amount, period) {
     if (!this.user?.token) return;
     try {
       const res = await fetch(`${API_URL}/budgets`, {
@@ -88,7 +105,7 @@ export const store = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.user.token}`
         },
-        body: JSON.stringify({ category, amount })
+        body: JSON.stringify({ category, amount, period })
       });
       if (res.ok) {
         const newBudget = await res.json();
@@ -99,6 +116,25 @@ export const store = {
       }
     } catch (err) {
       console.error('Update Budget Error:', err);
+    }
+  },
+
+  async deleteBudget(id) {
+    if (!this.user?.token) return;
+    try {
+      const res = await fetch(`${API_URL}/budgets/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.user.token}` }
+      });
+      if (res.ok) {
+        this.budgets = this.budgets.filter(b => b.id !== id);
+        this.save();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Delete Budget Error:', err);
+      return false;
     }
   },
 
@@ -157,10 +193,10 @@ export const store = {
     }
   },
 
-  setUser(userData) {
+  setUser(userData, extraData = {}) {
     this.user = userData;
     this.save();
-    this.sync();
+    this.sync(extraData);
   },
 
   async updateProfile(profileData) {
@@ -225,6 +261,46 @@ export const store = {
     } catch (err) {
       console.error('2FA Update Error:', err);
       return false;
+    }
+  },
+
+  async changePassword(oldPassword, newPassword) {
+    if (!this.user?.token) return;
+    try {
+      const res = await fetch(`${API_URL}/users/update-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.user.token}`
+        },
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal ubah password');
+      return data;
+    } catch (err) {
+      console.error('Change Password Error:', err);
+      throw err;
+    }
+  },
+
+  async deleteAccountRemote() {
+    if (!this.user?.token) return;
+    try {
+      const res = await fetch(`${API_URL}/users`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.user.token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Gagal hapus akun');
+      }
+      this.logout();
+      return true;
+    } catch (err) {
+      console.error('Delete Account Error:', err);
+      throw err;
     }
   },
 
@@ -330,17 +406,50 @@ export const store = {
   },
 
   getStats() {
-    let income = 0;
-    let expense = 0;
+    const now = new Date();
+    const fourWeeksAgo = new Date(now.getTime() - (28 * 24 * 60 * 60 * 1000));
+    const eightWeeksAgo = new Date(now.getTime() - (56 * 24 * 60 * 60 * 1000));
+
+    let currentIncome = 0;
+    let currentExpense = 0;
+    let prevIncome = 0;
+    let prevExpense = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
+
     this.transactions.forEach(t => {
       const amount = Number(t.amount || t.harga || 0);
-      if (t.type === 'income') income += amount;
-      else expense += Math.abs(amount);
+      const txDate = new Date(t.tanggal);
+      
+      // Lifetime totals for Balance
+      if (t.type === 'income') totalIncome += amount;
+      else totalExpense += Math.abs(amount);
+
+      // Current Period (Last 28 days)
+      if (txDate >= fourWeeksAgo && txDate <= now) {
+        if (t.type === 'income') currentIncome += amount;
+        else currentExpense += Math.abs(amount);
+      }
+      // Previous Period (28-56 days ago)
+      else if (txDate >= eightWeeksAgo && txDate < fourWeeksAgo) {
+        if (t.type === 'income') prevIncome += amount;
+        else prevExpense += Math.abs(amount);
+      }
     });
+
+    const calcDiff = (curr, prev) => {
+      if (prev === 0) return curr > 0 ? 100 : 0;
+      return ((curr - prev) / prev) * 100;
+    };
+
     return {
-      income,
-      expense,
-      balance: income - expense
+      income: currentIncome,
+      expense: currentExpense,
+      balance: totalIncome - totalExpense,
+      incomeDiff: calcDiff(currentIncome, prevIncome),
+      expenseDiff: calcDiff(currentExpense, prevExpense),
+      totalIncome,
+      totalExpense
     };
   },
 
@@ -514,8 +623,19 @@ export const store = {
   }
 };
 
+export function formatCurrency(number) {
+  const currency = store.user?.currency || 'IDR';
+  const locale = currency === 'IDR' ? 'id-ID' : 'en-US';
+  
+  return new Intl.NumberFormat(locale, { 
+    style: 'currency', 
+    currency: currency, 
+    minimumFractionDigits: 0 
+  }).format(number || 0);
+}
+
 export function formatRupiah(number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number || 0);
+  return formatCurrency(number);
 }
 
 export function formatDate(dateString) {

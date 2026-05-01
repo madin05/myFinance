@@ -33,11 +33,16 @@ export function renderTransaksi() {
             
             <div class="filter-popover" id="filter-popover" style="display: none;">
               <!-- Tipe Section -->
-              <div class="popover-header">Tipe Transaksi</div>
+              <div class="popover-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                Tipe Transaksi
+                <button class="mobile-only icon-btn" id="close-filter-mobile" style="width: 32px; height: 32px; margin-top: -8px;">
+                  <i class="ph ph-x"></i>
+                </button>
+              </div>
               <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
-                <button class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; padding: 10px; font-size: 0.85rem;">Semua</button>
-                <button class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; padding: 10px; font-size: 0.85rem;">Masuk</button>
-                <button class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; padding: 10px; font-size: 0.85rem;">Keluar</button>
+                <button class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; padding: 10px; font-size: 0.85rem; justify-content: center;">Semua</button>
+                <button class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; padding: 10px; font-size: 0.85rem; justify-content: center;">Masuk</button>
+                <button class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; padding: 10px; font-size: 0.85rem; justify-content: center;">Keluar</button>
               </div>
 
               <!-- Waktu Section -->
@@ -123,6 +128,13 @@ export function renderTransaksi() {
       popover.style.display = 'none';
     }
   });
+
+  const closeFilterMobile = container.querySelector('#close-filter-mobile');
+  if (closeFilterMobile) {
+    closeFilterMobile.onclick = () => {
+      popover.style.display = 'none';
+    };
+  }
 
   const updateFilter = () => {
     filterState.month = document.getElementById('filter-month').value;

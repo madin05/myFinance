@@ -7,5 +7,6 @@ router.use(authMiddleware);
 
 router.get('/', budgetController.getBudgets);
 router.post('/', budgetController.upsertBudget);
+router.delete('/:id', budgetController.deleteBudget);
 
 module.exports = router;
