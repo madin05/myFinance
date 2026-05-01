@@ -129,8 +129,12 @@ export const store = {
             el.onload = () => {
               el.style.opacity = '1';
               el.setAttribute('data-src-loaded', avatarUrl);
-              const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
-              if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+              
+              // Kasih delay biar shimmer skeleton-nya kelihatan di belakang pas lagi fade-in
+              setTimeout(() => {
+                const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+                if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+              }, 300);
             };
           } else {
             // Kalau udah pernah loaded, pastiin tetep kelihatan
