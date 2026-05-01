@@ -60,7 +60,7 @@ export async function checkAuth() {
       if (store.user && store.user.uid === user.uid) {
         console.log('🔄 User already exists, updating token...');
         store.user.token = token;
-        store.save(); // Ini bakal trigger store-updated -> refresh UI
+        store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
         store.sync();
       } else {
         console.log('🆕 First time login, setting user...');
@@ -71,8 +71,11 @@ export async function checkAuth() {
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
           token: token
         };
-        store.setUser(userData);
+        store.setUser(userData); // Ini juga bakal panggil updateUI & lepas skeleton
       }
+
+      // Pastiin sekali lagi UI ke-update pake data terbaru (lokal/cloud)
+      store.updateUI();
 
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
