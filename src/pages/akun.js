@@ -1,6 +1,7 @@
 import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast, showAlert } from '../components/notifications.js';
+import { showToast, showAlert, showConfirm } from '../components/notifications.js';
+import { openEditUsernameModal } from '../components/modal.js';
 
 export function renderAkun() {
   const container = document.getElementById('page-content');
@@ -30,7 +31,12 @@ export function renderAkun() {
               </label>
               <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
             </div>
-            <h3 style="margin-bottom: 0.25rem;">@${user.name || 'user'}</h3>
+            <h3 style="margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              @${user.name || 'user'}
+              <button class="icon-btn" id="btn-edit-username" style="width: 28px; height: 28px; font-size: 0.8rem; background: var(--bg-color); border-radius: 50%;" title="Ubah Username">
+                <i class="ph ph-pencil-simple"></i>
+              </button>
+            </h3>
             <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">${user.email}</p>
             <div class="account-badge" style="background: var(--primary-light); color: var(--primary); padding: 6px 16px; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">
               VERIFIED USER
@@ -107,7 +113,7 @@ export function renderAkun() {
     <!-- Lightbox Modal -->
     <div id="pp-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center;">
       <div style="position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);" id="pp-modal-close"></div>
-      <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + user.name}" id="full-pp-preview" style="position: relative; max-width: 400px; width: 85vw; height: 85vw; border-radius: 50%; object-fit: cover; border: 4px solid var(--white);">
+      <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + user.name}" id="full-pp-preview" style="position: relative; width: min(400px, 85vw); height: min(400px, 85vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
     </div>
 
     <style>
@@ -128,11 +134,31 @@ export function renderAkun() {
   document.getElementById('pp-modal-close').onclick = () => {
     document.getElementById('pp-preview-modal').style.display = 'none';
   };
-
-  document.getElementById('btn-delete-account').onclick = () => {
-    showAlert('Hapus Akun?', 'Yakin mau hapus akun bre? Semua data transaksi dan tabungan bakal ilang selamanya loh.', 'warning', () => {
-      showToast('Permintaan hapus akun sedang diproses...', 'info');
+  
+  document.getElementById('btn-edit-username').onclick = () => {
+    openEditUsernameModal(user.name, async (newName) => {
+      showLoading();
+      try {
+        await store.updateProfile({ name: newName });
+        renderAkun(); // Re-render to reflect changes
+        showToast('Username diupdate bre!', 'success');
+      } catch (err) {
+        showAlert('Gagal', err.message, 'error');
+      } finally {
+        hideLoading();
+      }
     });
+  };
+
+  document.getElementById('btn-delete-account').onclick = async () => {
+    const confirmed = await showConfirm('Hapus Akun?', 'Yakin mau hapus akun bre? Semua data transaksi dan tabungan bakal ilang selamanya loh.');
+    if (confirmed) {
+      showToast('Permintaan hapus akun sedang diproses...', 'info');
+      // Simulasi proses
+      setTimeout(() => {
+        showToast('Akun berhasil dihapus (Mock)', 'success');
+      }, 2000);
+    }
   };
 
   const toggle2FA = document.getElementById('toggle-2fa');

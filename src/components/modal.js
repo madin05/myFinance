@@ -192,3 +192,54 @@ export function openConfirmModal(title, message, onConfirm) {
   };
   window.addEventListener('keydown', handleKeyDown);
 }
+
+export function openEditUsernameModal(currentName, onUpdate) {
+  const container = document.getElementById('modal-container');
+  
+  container.innerHTML = `
+    <div class="modal-overlay" id="edit-name-overlay">
+      <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+          <h3>Ubah Username</h3>
+          <button class="modal-close" id="btn-close-edit-name"><i class="ph ph-x"></i></button>
+        </div>
+        <form id="form-edit-name">
+          <div class="form-group">
+            <label>Username Baru</label>
+            <input type="text" class="form-control" id="new-username" value="${currentName}" placeholder="Masukkan username..." required autocomplete="off">
+          </div>
+          <div style="display: flex; gap: 1rem;">
+            <button type="button" class="btn btn-outline" style="flex: 1; justify-content: center;" id="btn-cancel-edit-name">Batal</button>
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const close = () => { container.innerHTML = ''; };
+
+  document.getElementById('btn-close-edit-name').addEventListener('click', close);
+  document.getElementById('btn-cancel-edit-name').addEventListener('click', close);
+  document.getElementById('edit-name-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'edit-name-overlay') close();
+  });
+
+  document.getElementById('form-edit-name').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newName = document.getElementById('new-username').value.trim();
+    if (newName && newName !== currentName) {
+      close();
+      onUpdate(newName);
+    } else {
+      close();
+    }
+  });
+
+  // Focus input
+  setTimeout(() => {
+    document.getElementById('new-username').focus();
+    document.getElementById('new-username').select();
+  }, 0);
+}
+
