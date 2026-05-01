@@ -170,10 +170,11 @@ function updateSavingWidget() {
   setTimeout(() => {
     container.innerHTML = `
       <p class="text-white-dim mb-lg">${saving.name}</p>
-      <h2 class="text-white mb-md flex-end" style="font-size: 1.5rem;">
-        ${formatRupiah(saving.current)} <span class="text-xs text-white-dim font-normal ml-xs" style="opacity: 0.7;">/ ${formatRupiah(saving.target)}</span>
+      <h2 class="text-white mb-md" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; font-size: 1.2rem; line-height: 1.2;">
+        ${formatRupiah(saving.current)} 
+        <span class="text-xs text-white-dim font-normal" style="opacity: 0.7; white-space: nowrap;">/ ${formatRupiah(saving.target)}</span>
       </h2>
-      <div class="progress-bar-container bg-white-dim mb-lg" style="height: 8px;">
+      <div class="progress-bar-container bg-white-dim mb-lg" style="height: 8px; margin-top: 0.5rem;">
         <div class="progress-bar bg-white" style="width: ${percent}%;"></div>
       </div>
     `;
