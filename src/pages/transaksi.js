@@ -31,7 +31,7 @@ export function renderTransaksi() {
               <i class="ph ph-funnel"></i>
             </button>
             
-            <div class="filter-popover" id="filter-popover" style="display: none; padding: 1.5rem; min-width: 320px; top: calc(100% + 10px);">
+            <div class="filter-popover" id="filter-popover" style="display: none;">
               <!-- Tipe Section -->
               <div class="popover-header">Tipe Transaksi</div>
               <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
