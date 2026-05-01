@@ -1,5 +1,5 @@
 // src/store.js
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const store = {
   user: JSON.parse(localStorage.getItem('user')) || null,
