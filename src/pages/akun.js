@@ -203,15 +203,14 @@ export function renderAkun() {
       return showAlert('Error', 'File harus berupa gambar bre!', 'error');
     }
 
-    showLoading();
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const img = new Image();
         img.onload = async () => {
-          // Kompresi Gambar menggunakan Canvas
+          // Kompresi Gambar (Cepat)
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 600; // Ukuran cukup buat avatar, biar enteng
+          const MAX_WIDTH = 600;
           const MAX_HEIGHT = 600;
           let width = img.width;
           let height = img.height;
@@ -232,32 +231,27 @@ export function renderAkun() {
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-
-          // Convert ke base64 dengan kualitas 0.7 (JPG) biar kecil tapi tetep tajem
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
 
-          // OPTIMISTIC UI: Ganti gambar langsung di layar tanpa nunggu server
+          // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
           store.user.avatar = compressedBase64;
           store.updateUI();
+          
+          const modal = document.getElementById('pp-preview-modal');
+          if (modal) modal.style.display = 'none';
 
+          // 2. BACKGROUND SYNC: Kirim ke server diem-diem
           try {
             await store.updateProfile({ avatar: compressedBase64 });
-            showToast('Foto profil berhasil disinkron!', 'success');
-            // Tutup modal preview kalau lagi kebuka
-            const modal = document.getElementById('pp-preview-modal');
-            if (modal) modal.style.display = 'none';
+            showToast('Foto profil disinkron!', 'success');
           } catch (err) {
-            showToast('Gagal sinkron ke server, tapi lokal aman.', 'warning');
-            console.error(err);
-          } finally {
-            hideLoading();
+            showToast('Gagal sinkron, tapi profil lokal aman.', 'warning');
           }
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      hideLoading();
       showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
     }
   };
