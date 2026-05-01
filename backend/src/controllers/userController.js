@@ -9,14 +9,15 @@ exports.syncUser = async (req, res) => {
 
     console.log('🔄 Syncing user:', fbEmail || uid);
 
-    const userExists = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-
+    // Langsung UPSERT biar cuma 1x panggil DB (lebih kenceng)
     const user = await prisma.user.upsert({
       where: { firebaseUid: uid },
       update: {
-        name: name || (userExists ? userExists.name : fbName) || 'User',
-        email: email || (userExists ? userExists.email : fbEmail) || '',
-        avatar: avatar || (userExists ? userExists.avatar : picture) || ''
+        // Cuma update kalau ada data baru yang dikirim di body
+        // Kalau sync biasa (refresh), body kosong, jadi data di DB tetep aman
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(avatar && { avatar })
       },
       create: {
         firebaseUid: uid,
