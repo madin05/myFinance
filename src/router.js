@@ -56,7 +56,8 @@ export function handleRoute() {
   // Show skeleton for a smooth transition
   showSkeleton(hash);
 
-  // Small delay to simulate "loading" and show off the skeleton
+  // Small delay to simulate "loading" and show off the skeleton if needed, 
+  // but keep it snappy (50ms instead of 400ms)
   setTimeout(() => {
     if (hash === '#dashboard') {
       import('./pages/dashboard.js').then(module => module.renderDashboard());
@@ -73,7 +74,7 @@ export function handleRoute() {
     } else {
       container.innerHTML = `<h2>Page ${hash} under construction</h2>`;
     }
-  }, 400); // 400ms is enough to see the shimmer but not feel slow
+  }, 50);
 }
 
 // Fungsi buat render ulang halaman aktif TANPA skeleton (biar gak flicker pas sync data)

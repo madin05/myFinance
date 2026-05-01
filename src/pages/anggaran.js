@@ -3,13 +3,14 @@ import { showLoading, hideLoading } from '../utils.js';
 import { showToast } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 
+let currentViewDate = new Date();
+
 export function renderAnggaran() {
   const container = document.getElementById('page-content');
   
-  // Hitung pengeluaran per kategori bulan ini
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const currentMonth = currentViewDate.getMonth();
+  const currentYear = currentViewDate.getFullYear();
+  const periodKey = currentViewDate.toISOString().slice(0, 7); // Format "YYYY-MM"
   
   const spendingByCategory = {};
   store.transactions.forEach(tx => {
@@ -31,10 +32,22 @@ export function renderAnggaran() {
   
   container.innerHTML = `
     <div class="budget-section">
-      <div class="section-header">
-        <div>
-          <h3>Anggaran Bulanan</h3>
-          <p class="text-muted text-sm">Bulan: ${now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</p>
+      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+          <div>
+            <h3>Anggaran Bulanan</h3>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+              <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+                <i class="ph ph-caret-left"></i>
+              </button>
+              <span class="font-bold" style="min-width: 120px; text-align: center; color: var(--primary);">
+                ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+              </span>
+              <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+                <i class="ph ph-caret-right"></i>
+              </button>
+            </div>
+          </div>
         </div>
         <button class="btn btn-primary" id="btn-set-budget">
           <i class="ph ph-plus-circle"></i> Atur Anggaran
@@ -49,8 +62,18 @@ export function renderAnggaran() {
                 <h4 style="font-size: 1.1rem; margin-bottom: 4px;">${b.category}</h4>
                 <p class="text-muted text-xs">Target: ${formatRupiah(b.amount)}</p>
               </div>
-              <div class="badge-soft ${b.percent > 90 ? 'badge-red' : b.percent > 70 ? 'badge-orange' : 'badge-green'}">
-                ${Math.round(b.percent)}% Terpakai
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                <div class="badge-soft ${b.percent > 90 ? 'badge-red' : b.percent > 70 ? 'badge-orange' : 'badge-green'}" style="font-size: 0.7rem;">
+                  ${Math.round(b.percent)}% Terpakai
+                </div>
+                <div style="display: flex; gap: 4px;">
+                  <button class="icon-btn btn-edit-budget" data-category="${b.category}" data-amount="${b.amount}" style="width: 28px; height: 28px; font-size: 0.85rem;" title="Edit">
+                    <i class="ph ph-pencil-simple"></i>
+                  </button>
+                  <button class="icon-btn btn-delete-budget" data-id="${b.id}" data-category="${b.category}" style="width: 28px; height: 28px; font-size: 0.85rem; color: var(--red);" title="Hapus">
+                    <i class="ph ph-trash"></i>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -74,7 +97,7 @@ export function renderAnggaran() {
         `).join('') : `
           <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: var(--card-bg); border-radius: 24px; border: 2px dashed var(--border);">
             <i class="ph ph-chart-pie-slice" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
-            <h4 class="text-muted">Belum ada anggaran yang diatur bre.</h4>
+            <h4 class="text-muted">Belum ada anggaran yang diatur nih.</h4>
             <p class="text-muted text-sm mb-lg">Klik tombol "Atur Anggaran" di atas buat mulai ngerem pengeluaran.</p>
           </div>
         `}
@@ -85,28 +108,29 @@ export function renderAnggaran() {
     <div id="budget-modal-container"></div>
   `;
 
-  // Event Listener buat tombol "Atur Anggaran"
-  document.getElementById('btn-set-budget').onclick = () => {
+  const openBudgetModal = (existingCategory = '', existingAmount = '') => {
     const modalContainer = document.getElementById('budget-modal-container');
+    const isEdit = existingCategory !== '';
+
     modalContainer.innerHTML = `
       <div class="modal-overlay" id="budget-modal-overlay">
         <div class="modal-content" style="max-width: 450px;">
           <div class="modal-header">
-            <h3>Setel Jatah Bulanan</h3>
+            <h3>${isEdit ? 'Ubah Jatah Bulanan' : 'Setel Jatah Bulanan'}</h3>
             <button class="modal-close" id="close-budget-modal"><i class="ph ph-x"></i></button>
           </div>
           <form id="form-set-budget" style="padding-top: 1rem;">
             <div class="form-group">
               <label>Pilih Kategori</label>
-              <select class="form-control" id="budget-category" required>
-                ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+              <select class="form-control" id="budget-category" ${isEdit ? 'disabled' : ''} required>
+                ${categories.map(c => `<option value="${c}" ${c === existingCategory ? 'selected' : ''}>${c}</option>`).join('')}
               </select>
             </div>
             <div class="form-group" style="margin-top: 1.5rem;">
               <label>Target Nominal (Rp)</label>
-              <input type="text" class="form-control" id="budget-amount" placeholder="Contoh: 1.000.000" required>
+              <input type="text" class="form-control" id="budget-amount" placeholder="Contoh: 1.000.000" value="${existingAmount ? new Intl.NumberFormat('id-ID').format(existingAmount) : ''}" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-full mt-lg">Simpan Anggaran</button>
+            <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Update Anggaran' : 'Simpan Anggaran'}</button>
           </form>
         </div>
       </div>
@@ -128,11 +152,57 @@ export function renderAnggaran() {
       const amount = Number(amountInput.value.replace(/\./g, ''));
 
       showLoading();
-      await store.updateBudget(category, amount);
+      await store.updateBudget(category, amount, periodKey);
       hideLoading();
       modalContainer.innerHTML = '';
-      showToast(`Anggaran ${category} berhasil disetel!`, 'success');
+      showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'disetel'}!`, 'success');
       renderAnggaran();
     };
   };
+
+  // Event Listeners
+  document.getElementById('btn-set-budget').onclick = () => openBudgetModal();
+
+  document.getElementById('prev-month').onclick = async () => {
+    currentViewDate.setMonth(currentViewDate.getMonth() - 1);
+    showLoading();
+    await store.fetchBudgets(currentViewDate.toISOString().slice(0, 7));
+    hideLoading();
+    renderAnggaran();
+  };
+
+  document.getElementById('next-month').onclick = async () => {
+    currentViewDate.setMonth(currentViewDate.getMonth() + 1);
+    showLoading();
+    await store.fetchBudgets(currentViewDate.toISOString().slice(0, 7));
+    hideLoading();
+    renderAnggaran();
+  };
+
+  document.querySelectorAll('.btn-edit-budget').forEach(btn => {
+    btn.onclick = () => {
+      const { category, amount } = btn.dataset;
+      openBudgetModal(category, amount);
+    };
+  });
+
+  document.querySelectorAll('.btn-delete-budget').forEach(btn => {
+    btn.onclick = async () => {
+      const { id, category } = btn.dataset;
+      const { showConfirm } = await import('../components/notifications.js');
+      const confirmed = await showConfirm('Hapus Anggaran?', `Yakin mau hapus anggaran untuk kategori "${category}" ini bre?`);
+      
+      if (confirmed) {
+        showLoading();
+        const success = await store.deleteBudget(Number(id));
+        hideLoading();
+        if (success) {
+          showToast(`Anggaran ${category} berhasil dihapus!`, 'info');
+          renderAnggaran();
+        } else {
+          showToast('Gagal hapus anggaran bre!', 'error');
+        }
+      }
+    };
+  });
 }

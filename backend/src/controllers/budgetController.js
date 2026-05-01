@@ -49,3 +49,15 @@ exports.upsertBudget = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.deleteBudget = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.budget.delete({
+      where: { id: parseInt(id) }
+    });
+    res.json({ message: 'Anggaran berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

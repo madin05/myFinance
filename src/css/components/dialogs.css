@@ -11,23 +11,31 @@
 
 .toast {
   padding: 16px 24px;
-  border-radius: 16px;
-  background: var(--card-bg);
-  color: var(--text-color);
-  box-shadow: var(--shadow-lg);
+  border-radius: 20px;
+  background: rgba(var(--card-bg-rgb), 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  color: var(--text-main);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 300px;
-  border: 1px solid var(--border);
-  backdrop-filter: blur(10px);
-  animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  transition: all 0.3s ease;
+  gap: 16px;
+  min-width: 320px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: toastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 
-.toast.success { border-left: 5px solid var(--green); }
-.toast.error { border-left: 5px solid var(--red); }
-.toast.info { border-left: 5px solid var(--primary); }
+.toast:active {
+  cursor: grabbing;
+}
+
+.toast.success { border-left: 6px solid var(--green); }
+.toast.error { border-left: 6px solid var(--red); }
+.toast.info { border-left: 6px solid var(--primary); }
 
 .toast i { font-size: 1.5rem; }
 .toast.success i { color: var(--green); }

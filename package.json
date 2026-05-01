@@ -9,16 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "firebase": "^12.12.1",
     "@prisma/client": "^6.19.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "firebase": "^12.12.1",
     "firebase-admin": "^13.8.0",
-    "morgan": "^1.10.1"
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "morgan": "^1.10.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "vite": "^8.0.10",
-    "prisma": "^6.19.3"
+    "prisma": "^6.19.3",
+    "vite": "^8.0.10"
   }
 }

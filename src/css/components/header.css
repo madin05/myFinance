@@ -59,18 +59,27 @@
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
+  border: 2px solid var(--border);
+  padding: 2px;
+  transition: all 0.3s ease;
+  background-color: var(--white);
 }
 
 .user-profile img:hover {
   border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+[data-theme="dark"] .user-profile img {
+  background-color: #262629;
+  border-color: #3f3f46;
 }
 
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 15px);
   right: 0;
+  left: auto !important;
   width: 240px;
   background-color: var(--card-bg);
   backdrop-filter: blur(12px);

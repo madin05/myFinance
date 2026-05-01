@@ -1,43 +1,94 @@
-# MyFinance - Premium Financial Dashboard
+# 💎 MyFinance - Ultimate Personal Financial Dashboard
 
-MyFinance adalah aplikasi pencatat keuangan personal dengan antarmuka **Premium Dark Mode** yang modern, intuitif, dan interaktif. Dibangun dengan fokus pada pengalaman pengguna (*UX*) dan estetika visual yang tinggi.
+MyFinance adalah platform pengelolaan keuangan personal *full-stack* yang menggabungkan estetika desain premium dengan fungsionalitas analisis yang mendalam. Dibangun menggunakan arsitektur modern untuk memberikan pengalaman pengguna yang sangat responsif, aman, dan intuitif.
 
-## ✨ Fitur Utama
+---
 
-1.  **Dashboard Interaktif**: Ringkasan pemasukan, pengeluaran, dan saldo sisa secara real-time.
-2.  **Wishlist Carousel**: Widget target tabungan yang otomatis berganti dengan animasi *smooth* untuk memotivasi kamu mencapai barang impian.
-3.  **Manajemen Wishlist Canggih**:
-    *   Tampilan **Grid** & **List** yang bisa diganti.
-    *   **Drag & Drop Reordering**: Susun prioritas barang impian kamu dengan cara digeser.
-    *   **Customization**: Pilih ikon unik dan warna aksen untuk setiap target.
-4.  **Transaksi Lengkap**: Pencatatan pengeluaran dan pemasukan dengan filter kategori, metode, dan pencarian real-time.
-5.  **Pengaturan Profil**: Kustomisasi nama, email, dan foto profil yang langsung sinkron ke seluruh aplikasi.
-6.  **Premium Aesthetics**:
-    *   **Dark & Light Mode** otomatis.
-    *   **Skeleton Loading** untuk transisi halaman yang mulus.
-    *   **Custom Gold Coin Loader** untuk proses penambahan/penghapusan data.
-    *   **Smart Tooltips** pada sidebar navigasi.
+## ✨ Fitur Unggulan
 
-## 🚀 Teknologi
+### 📊 Analisis & Visualisasi Canggih
+*   **Visual Charts**: Integrasi Chart.js untuk analisis pengeluaran (Doughnut Chart) dan tren arus kas (Line Chart) yang interaktif.
+*   **Laporan Professional**: Ekspor data ke format **PDF Premium** (lengkap dengan grafik visual) atau **Excel Detail** (3-Sheet breakdown).
+*   **Real-time Analytics**: Ringkasan saldo, pemasukan, dan pengeluaran yang diperbarui secara instan.
 
-*   **Frontend**: Vanilla Javascript (ES6+)
-*   **Styling**: Vanilla CSS (Modern CSS Variables)
-*   **Icons**: Phosphor Icons (Web)
-*   **Utility**: SortableJS (untuk Drag & Drop)
+### 🎯 Manajemen Keuangan Cerdas
+*   **Siklus Keuangan Kustom**: Atur tanggal gajian kamu sebagai awal periode laporan.
+*   **Multi-Currency Support**: Pilih mata uang default (IDR, USD, EUR, dsb.) dengan format angka otomatis yang cerdas.
+*   **Wishlist & Budgeting**: Kelola target tabungan dengan fitur *Drag & Drop reordering* dan pantau sisa jatah belanja tiap kategori.
+
+### 🛡️ Keamanan & Profil
+*   **Pusat Keamanan**: Dukungan **Autentikasi 2 Faktor (2FA)** dan manajemen password yang terenkripsi.
+*   **Sync Profile**: Integrasi Firebase Auth untuk sinkronisasi identitas dan preferensi user secara cloud.
+*   **Optimistic Avatar Upload**: Ganti foto profil dengan fitur kompresi otomatis dan update UI instan.
+
+### 🎨 Estetika & UX Premium
+*   **Glassmorphism UI**: Antarmuka modern dengan efek blur kaca dan saturasi tinggi.
+*   **Smart Notifications**: Toast notification dengan efek glassmorphism dan fitur **Swipe-to-Dismiss** (geser untuk tutup).
+*   **Responsive Engine**: Pengalaman yang mulus baik di desktop maupun perangkat mobile tanpa horizontal overflow.
+*   **Micro-interactions**: Skeleton loading, gold-coin loader, dan animasi transisi navigasi yang presisi.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+*   **Core**: Vanilla Javascript (ES6+)
+*   **Styling**: Pure CSS (Modern Variables, Flexbox/Grid, Backdrop-filters)
+*   **Visual**: Chart.js, Phosphor Icons
+*   **Utilities**: SortableJS (Drag & Drop), jsPDF (Report Engine), XLSX (Excel Engine)
 *   **Build Tool**: Vite.js
 
-## 📦 Cara Menjalankan Secara Lokal
+### Backend & Database
+*   **Engine**: Node.js & Express.js
+*   **Database**: PostgreSQL (via Neon.tech)
+*   **ORM**: Prisma (Type-safe database client)
+*   **Authentication**: Firebase Admin SDK & Bcrypt
 
-1.  Clone repository ini atau download source code-nya.
-2.  Buka terminal di folder project.
-3.  Install dependencies:
-    ```bash
-    npm install
-    ```
-4.  Jalankan aplikasi dalam mode development:
-    ```bash
-    npm run dev
-    ```
-5.  Buka browser dan akses alamat yang tertera (biasanya `http://localhost:5173`).
 ---
-*Dibuat dengan ❤️ untuk membantu kamu mengelola keuangan lebih cerdas.*
+
+## 🚀 Instalasi Lokal
+
+### 1. Prasyarat
+*   Node.js terinstal di sistem kamu.
+*   Database PostgreSQL (atau ganti koneksi string di `.env`).
+
+### 2. Setup Frontend
+```bash
+# Masuk ke folder root
+npm install
+npm run dev
+```
+
+### 3. Setup Backend
+```bash
+# Masuk ke folder backend
+cd backend
+npm install
+
+# Setup Database (Prisma)
+npx prisma db push
+npx prisma generate
+
+# Jalankan server
+npm run dev
+```
+
+---
+
+## 📁 Struktur Proyek
+```text
+myfinance/
+├── src/                # Frontend Source
+│   ├── components/     # UI Reusable Components (Toasts, Selects)
+│   ├── pages/          # Page Logic (Dashboard, Akun, Laporan)
+│   ├── services/       # External API & Export Services
+│   └── css/            # Modular CSS Components
+├── backend/            # Backend API (Node + Express)
+│   ├── prisma/         # Database Schema & Migrations
+│   └── src/controllers # API Logic
+└── index.html          # Main Entry
+```
+
+---
+
+*Dibuat dengan ❤️ oleh **Antigravity** untuk membantu kamu mengelola masa depan finansial yang lebih baik.*

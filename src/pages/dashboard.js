@@ -8,6 +8,16 @@ export function renderDashboard() {
   if (!container) return;
   
   const stats = store.getStats();
+
+  const getBadge = (diff, type) => {
+    const isPositive = diff >= 0;
+    const absDiff = Math.abs(diff).toFixed(1);
+    const icon = isPositive ? 'ph-caret-up' : 'ph-caret-down';
+    // Income up = green(up), Income down = red(down)
+    // Expense up = red(down), Expense down = green(up)
+    const badgeClass = type === 'income' ? (isPositive ? 'up' : 'down') : (isPositive ? 'down' : 'up');
+    return `<div class="stat-badge ${badgeClass}"><i class="ph-bold ${icon}"></i> ${absDiff}%</div>`;
+  };
   
   // Sortir terbaru: Tanggal desc, lalu ID desc
   const sortedTxs = [...store.transactions].sort((a, b) => {
@@ -45,14 +55,14 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-green-light text-green"><i class="ph-bold ph-trend-up"></i></div>
-          <div class="stat-badge up"><i class="ph-bold ph-caret-up"></i> 12.5%</div>
+          ${getBadge(stats.incomeDiff, 'income')}
         </div>
         <div class="stat-body">
-          <p class="stat-label">Total Pemasukan</p>
+          <p class="stat-label">Pemasukan (4 Minggu)</p>
           <h2 class="stat-value">${formatRupiah(stats.income)}</h2>
         </div>
         <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-green" style="width: 70%"></div></div>
+          <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
         </div>
         <i class="ph-fill ph-trend-up stat-watermark"></i>
       </div>
@@ -60,14 +70,14 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-red-light text-red"><i class="ph-bold ph-trend-down"></i></div>
-          <div class="stat-badge down"><i class="ph-bold ph-caret-down"></i> 4.2%</div>
+          ${getBadge(stats.expenseDiff, 'expense')}
         </div>
         <div class="stat-body">
-          <p class="stat-label">Total Pengeluaran</p>
+          <p class="stat-label">Pengeluaran (4 Minggu)</p>
           <h2 class="stat-value">${formatRupiah(stats.expense)}</h2>
         </div>
         <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-red" style="width: 45%"></div></div>
+          <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
         </div>
         <i class="ph-fill ph-trend-down stat-watermark"></i>
       </div>
@@ -81,7 +91,7 @@ export function renderDashboard() {
           <h2 class="stat-value">${formatRupiah(stats.balance)}</h2>
         </div>
         <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-blue" style="width: 85%"></div></div>
+          <div class="stat-line"><div class="stat-line-fill bg-blue" style="width: 100%"></div></div>
         </div>
         <i class="ph-fill ph-bank stat-watermark"></i>
       </div>
