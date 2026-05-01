@@ -192,25 +192,70 @@ export function renderAkun() {
     }
   };
 
-  // Avatar handling logic reuse
+  // Avatar handling logic with compression & optimistic UI
   const avatarUpload = document.getElementById('avatar-upload');
   avatarUpload.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validasi tipe file
+    if (!file.type.startsWith('image/')) {
+      return showAlert('Error', 'File harus berupa gambar bre!', 'error');
+    }
+
     showLoading();
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const result = event.target.result;
-        document.getElementById('profile-preview').src = result;
-        await store.updateProfile({ avatar: result });
-        showToast('Foto profil diupdate!', 'success');
-        hideLoading();
+        const img = new Image();
+        img.onload = async () => {
+          // Kompresi Gambar menggunakan Canvas
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 600; // Ukuran cukup buat avatar, biar enteng
+          const MAX_HEIGHT = 600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert ke base64 dengan kualitas 0.7 (JPG) biar kecil tapi tetep tajem
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          // OPTIMISTIC UI: Ganti gambar langsung di layar tanpa nunggu server
+          store.user.avatar = compressedBase64;
+          store.updateUI();
+
+          try {
+            await store.updateProfile({ avatar: compressedBase64 });
+            showToast('Foto profil berhasil disinkron!', 'success');
+          } catch (err) {
+            showToast('Gagal sinkron ke server, tapi lokal aman.', 'warning');
+            console.error(err);
+          } finally {
+            hideLoading();
+          }
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     } catch (err) {
       hideLoading();
-      showAlert('Gagal', 'Gagal update foto profil.', 'error');
+      showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
     }
   };
 }
