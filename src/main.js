@@ -4,7 +4,7 @@ import { store } from './store.js';
 import { auth, onAuthStateChanged } from './firebase-config.js';
 import { renderLogin } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
-import { handleRoute } from './router.js';
+import { handleRoute, refreshCurrentPage } from './router.js';
 import { hideLoading } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
@@ -24,7 +24,24 @@ import './css/responsive.css';
 import './css/components/custom-select.css';
 import './style.css';
 
-
+// --- reactive UI update ---
+window.addEventListener('store-updated', () => {
+  refreshCurrentPage();
+  
+  // Update Navbar UI secara reaktif
+  const userData = store.user;
+  if (userData) {
+    const avatarImg = document.getElementById('user-avatar');
+    const navName = document.getElementById('nav-user-name');
+    const navEmail = document.getElementById('nav-user-email');
+    
+    if (avatarImg && avatarImg.src !== userData.avatar) {
+      avatarImg.src = userData.avatar;
+    }
+    if (navName) navName.textContent = userData.name;
+    if (navEmail) navEmail.textContent = userData.email;
+  }
+});
 
 // --- AUTH LOGIC ---
 export async function checkAuth() {
@@ -33,26 +50,20 @@ export async function checkAuth() {
 
   console.log('🔍 Checking Auth State...');
 
-  // Observer tunggal untuk status login
   onAuthStateChanged(auth, async (user) => {
     console.log('👤 Auth State Changed:', user ? 'Logged In' : 'Logged Out');
     
-    const avatarImg = document.getElementById('user-avatar');
-    const avatarWrapper = document.querySelector('.avatar-wrapper');
-    const navName = document.getElementById('nav-user-name');
-    const navEmail = document.getElementById('nav-user-email');
-
     if (user) {
       const token = await user.getIdToken();
       
-      // FIX: Jangan asal timpa data store pake data Firebase (biar nama 'Madins' gak balik ke nama panjang Google)
+      // FIX: Jangan asal timpa data store pake data Firebase
       if (store.user && store.user.uid === user.uid) {
-        console.log('🔄 User already exists in store, updating token and syncing...');
+        console.log('🔄 User already exists, updating token...');
         store.user.token = token;
-        store.save();
+        store.save(); // Ini bakal trigger store-updated -> refresh UI
         store.sync();
       } else {
-        console.log('🆕 First time login or session expired, setting user from Firebase...');
+        console.log('🆕 First time login, setting user...');
         const userData = {
           uid: user.uid,
           name: user.displayName || 'User MyFinance',
@@ -61,25 +72,6 @@ export async function checkAuth() {
           token: token
         };
         store.setUser(userData);
-      }
-
-      const userData = store.user; // Pake data terbaru dari store
-
-      // Update Navbar UI
-      if (avatarImg) {
-        avatarImg.src = userData.avatar;
-        avatarImg.onload = () => {
-          avatarImg.style.opacity = '1';
-          avatarWrapper?.classList.remove('skeleton', 'skeleton-circle');
-        };
-      }
-      if (navName) {
-        navName.textContent = userData.name;
-        navName.classList.remove('skeleton', 'skeleton-text');
-      }
-      if (navEmail) {
-        navEmail.textContent = userData.email;
-        navEmail.classList.remove('skeleton', 'skeleton-text');
       }
 
       loginView.style.display = 'none';
