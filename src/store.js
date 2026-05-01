@@ -112,10 +112,18 @@ export const store = {
 
   updateUI() {
     if (this.user) {
-      const avatarEl = document.getElementById('user-avatar');
-      const nameEl = document.querySelector('.user-name');
-      if (avatarEl) avatarEl.src = this.user.avatar || 'https://ui-avatars.com/api/?name=' + this.user.name;
-      if (nameEl) nameEl.textContent = this.user.name;
+      const avatarElements = document.querySelectorAll('.user-avatar-img, #user-avatar, #profile-preview, #full-pp-preview');
+      const nameElements = document.querySelectorAll('.user-name, #user-name-display');
+      
+      const avatarUrl = this.user.avatar || 'https://ui-avatars.com/api/?name=' + this.user.name;
+      
+      avatarElements.forEach(el => {
+        if (el.tagName === 'IMG') el.src = avatarUrl;
+      });
+      
+      nameElements.forEach(el => {
+        el.textContent = this.user.name;
+      });
     }
   },
 
