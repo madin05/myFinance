@@ -4,11 +4,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/backend/src/app.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
     }
-  ],
-  "functions": {
-    "backend/src/app.js": {
-      "runtime": "@vercel/node"
-    }
-  }
+  ]
 }
