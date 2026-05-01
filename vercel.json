@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "_comment": "force redeploy 1",
   "rewrites": [
     {
       "source": "/api/(.*)",
