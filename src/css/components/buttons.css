@@ -291,8 +291,8 @@
   position: absolute;
   transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(63, 54, 229, 0.35);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(63, 54, 229, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.8); /* Lebih tipis & estetik */
 }
 
 #fam-toggle {
