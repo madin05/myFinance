@@ -75,3 +75,22 @@ export function handleRoute() {
     }
   }, 400); // 400ms is enough to see the shimmer but not feel slow
 }
+
+// Fungsi buat render ulang halaman aktif TANPA skeleton (biar gak flicker pas sync data)
+export function refreshCurrentPage() {
+  const hash = window.location.hash || '#dashboard';
+  
+  if (hash === '#dashboard') {
+    import('./pages/dashboard.js').then(m => m.renderDashboard());
+  } else if (hash === '#transaksi') {
+    import('./pages/transaksi.js').then(m => m.renderTransaksi());
+  } else if (hash === '#anggaran') {
+    import('./pages/anggaran.js').then(m => m.renderAnggaran());
+  } else if (hash === '#tabungan') {
+    import('./pages/tabungan.js').then(m => m.renderTabungan());
+  } else if (hash === '#laporan') {
+    import('./pages/laporan.js').then(m => m.renderLaporan());
+  } else if (hash === '#akun') {
+    import('./pages/akun.js').then(m => m.renderAkun());
+  }
+}

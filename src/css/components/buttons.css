@@ -319,14 +319,14 @@
   pointer-events: auto;
 }
 
-/* Item 1: Lurus ke Atas + Spin */
+/* Item 1: Lurus ke Kiri (Ganti dari serong biar gak bentrok) */
 #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
-  transform: scale(1) rotate(0deg) translateY(-65px);
+  transform: scale(1) rotate(0deg) translateX(-70px);
 }
 
-/* Item 2: Serong Kiri Atas + Spin */
+/* Item 2: Lurus ke Atas */
 #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-  transform: scale(1) rotate(0deg) translateX(-55px) translateY(-55px);
+  transform: scale(1) rotate(0deg) translateY(-70px);
 }
 
 /* Item 3: Lurus ke Kiri + Spin */
@@ -386,6 +386,35 @@
   opacity: 1;
   visibility: visible;
   transform: translateY(-50%) translateX(0);
+}
+
+/* Tooltip Top for FAM */
+[data-tooltip-top]::after {
+  content: attr(data-tooltip-top);
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background-color: var(--card-bg);
+  backdrop-filter: blur(8px);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  border: 1px solid var(--border);
+}
+
+.fam-anchor:hover[data-tooltip-top]::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* --- MOBILE OPTIMIZATIONS --- */

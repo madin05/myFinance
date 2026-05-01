@@ -108,6 +108,9 @@ export const store = {
     localStorage.setItem('savings', JSON.stringify(this.savings));
     localStorage.setItem('budgets', JSON.stringify(this.budgets));
     this.updateUI();
+    
+    // Kirim sinyal ke seluruh aplikasi kalau data berubah
+    window.dispatchEvent(new CustomEvent('store-updated'));
   },
 
   updateUI() {
