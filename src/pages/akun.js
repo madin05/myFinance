@@ -1,5 +1,6 @@
 import { store, formatDate } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
+import { navigateTo } from '../router.js';
 import { showToast, showAlert, showConfirm } from '../components/notifications.js';
 import { openEditUsernameModal, openDeleteAccountModal } from '../components/modal.js';
 import { initCustomSelect } from '../components/customSelect.js';
@@ -260,7 +261,7 @@ export function renderAkun() {
         showToast('Akun telah dihapus secara permanen.', 'success');
 
         setTimeout(() => {
-          window.location.hash = '#login';
+          navigateTo('/login');
           window.location.reload();
         }, 2000);
       } catch (err) {
@@ -402,8 +403,8 @@ export function renderAkun() {
         // 3. Auto Logout & Redirect
         setTimeout(() => {
           store.logout();
-          window.location.hash = '#login';
-          window.location.reload(); 
+          navigateTo('/login');
+          window.location.reload();
         }, 2000);
         
       } catch (err) {

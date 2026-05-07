@@ -8,27 +8,37 @@ import {
   getAkunSkeleton
 } from './components/skeleton.js';
 
-export function showSkeleton(routeHash) {
+// --- URL Security & Sanitization Layer (Anti-XSS / Anti-Path Traversal) ---
+export function sanitizePath(path) {
+  if (!path) return '/dashboard';
+  // Ambil bagian path utama (sebelum query parameter ?)
+  const mainPath = path.split('?')[0];
+  // Bersihkan karakter ilegal selain huruf, angka, slash, dash, dan underscore
+  const clean = mainPath.replace(/[^a-zA-Z0-9\/\-_]/g, '');
+  return (clean === '/' || clean === '') ? '/dashboard' : clean;
+}
+
+export function showSkeleton(routePath) {
   const container = document.getElementById('page-content');
   if (!container) return;
 
-  switch (routeHash) {
-    case '#dashboard':
+  switch (routePath) {
+    case '/dashboard':
       container.innerHTML = getDashboardSkeleton();
       break;
-    case '#transaksi':
+    case '/transaksi':
       container.innerHTML = getTransaksiSkeleton();
       break;
-    case '#anggaran':
+    case '/anggaran':
       container.innerHTML = getAnggaranSkeleton();
       break;
-    case '#tabungan':
+    case '/tabungan':
       container.innerHTML = getTabunganSkeleton(localStorage.getItem('wishlist-view') || 'grid');
       break;
-    case '#laporan':
+    case '/laporan':
       container.innerHTML = getLaporanSkeleton();
       break;
-    case '#akun':
+    case '/akun':
       container.innerHTML = getAkunSkeleton();
       break;
     default:
@@ -38,60 +48,71 @@ export function showSkeleton(routeHash) {
 }
 
 export function handleRoute() {
-  const hash = window.location.hash || '#dashboard';
   const container = document.getElementById('page-content');
   const modalContainer = document.getElementById('modal-container');
   
   // Bersihkan modal yang mungkin masih terbuka
   if (modalContainer) modalContainer.innerHTML = '';
+
+  // Keamanan URL: Dapatkan rute yang aman & bersih
+  const route = sanitizePath(window.location.pathname);
   
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.remove('active');
-    if (item.getAttribute('href') === hash) {
+    const itemRoute = item.getAttribute('href');
+    if (itemRoute === route) {
       item.classList.add('active');
     }
   });
 
   // Show skeleton for a smooth transition
-  showSkeleton(hash);
+  showSkeleton(route);
 
-  // Small delay to simulate "loading" and show off the skeleton if needed, 
-  // but keep it snappy (50ms instead of 400ms)
+  // Snappy routing
   setTimeout(() => {
-    if (hash === '#dashboard') {
+    if (route === '/dashboard') {
       import('./pages/dashboard.js').then(module => module.renderDashboard());
-    } else if (hash === '#transaksi') {
+    } else if (route === '/transaksi') {
       import('./pages/transaksi.js').then(module => module.renderTransaksi());
-    } else if (hash === '#anggaran') {
+    } else if (route === '/anggaran') {
       import('./pages/anggaran.js').then(module => module.renderAnggaran());
-    } else if (hash === '#tabungan') {
+    } else if (route === '/tabungan') {
       import('./pages/tabungan.js').then(module => module.renderTabungan());
-    } else if (hash === '#laporan') {
+    } else if (route === '/laporan') {
       import('./pages/laporan.js').then(module => module.renderLaporan());
-    } else if (hash === '#akun') {
+    } else if (route === '/akun') {
       import('./pages/akun.js').then(module => module.renderAkun());
     } else {
-      container.innerHTML = `<h2>Page ${hash} under construction</h2>`;
+      // Fallback Keamanan: rute tidak dikenal diarahkan kembali ke dashboard
+      window.history.replaceState(null, null, '/dashboard');
+      import('./pages/dashboard.js').then(module => module.renderDashboard());
     }
   }, 50);
 }
 
+// Fungsi bantu navigasi aman tanpa memicu reload halaman
+export function navigateTo(path) {
+  const safePath = sanitizePath(path);
+  window.history.pushState(null, null, safePath);
+  handleRoute();
+}
+
 // Fungsi buat render ulang halaman aktif TANPA skeleton (biar gak flicker pas sync data)
 export function refreshCurrentPage() {
-  const hash = window.location.hash || '#dashboard';
+  const route = sanitizePath(window.location.pathname);
   
-  if (hash === '#dashboard') {
+  if (route === '/dashboard') {
     import('./pages/dashboard.js').then(m => m.renderDashboard());
-  } else if (hash === '#transaksi') {
+  } else if (route === '/transaksi') {
     import('./pages/transaksi.js').then(m => m.renderTransaksi());
-  } else if (hash === '#anggaran') {
+  } else if (route === '/anggaran') {
     import('./pages/anggaran.js').then(m => m.renderAnggaran());
-  } else if (hash === '#tabungan') {
+  } else if (route === '/tabungan') {
     import('./pages/tabungan.js').then(m => m.renderTabungan());
-  } else if (hash === '#laporan') {
+  } else if (route === '/laporan') {
     import('./pages/laporan.js').then(m => m.renderLaporan());
-  } else if (hash === '#akun') {
+  } else if (route === '/akun') {
     import('./pages/akun.js').then(m => m.renderAkun());
   }
 }

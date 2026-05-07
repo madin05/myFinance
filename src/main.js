@@ -4,7 +4,7 @@ import { store } from './store.js';
 import { auth, onAuthStateChanged } from './firebase-config.js';
 import { renderLogin } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
-import { handleRoute, refreshCurrentPage } from './router.js';
+import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
 import { hideLoading } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
@@ -99,17 +99,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-fam-add-tx')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
     openAddTransactionModal(() => {
-      const hash = window.location.hash || '#dashboard';
-      if (hash === '#dashboard' || hash === '#transaksi') handleRoute();
+      const path = window.location.pathname || '/dashboard';
+      if (path === '/dashboard' || path === '/transaksi') handleRoute();
     });
   });
 
   document.getElementById('btn-fam-wishlist')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
-    window.location.hash = '#tabungan';
+    navigateTo('/tabungan');
   });
 
-  // 3. Click Outside to Close FAM
+  // 3. Click Outside to Close FAM & Intercept Sidebar Link Clicks (SPA Routing)
   document.addEventListener('click', (e) => {
     const famContainer = document.querySelector('.menu-tooltip-container');
     const famToggle = document.getElementById('fam-toggle');
@@ -117,16 +117,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (famToggle && famToggle.checked && famContainer && !famContainer.contains(e.target)) {
       famToggle.checked = false;
     }
+
+    // Intercept relative internal link clicks starting with '/' for SPA Browser routing
+    const link = e.target.closest('a');
+    if (link) {
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('/')) {
+        e.preventDefault();
+        navigateTo(href);
+      }
+    }
   });
 
   // 4. Search Bar
   document.getElementById('global-search')?.addEventListener('input', (e) => {
-    if (e.target.value && window.location.hash !== '#transaksi') {
-      window.location.hash = '#transaksi';
+    if (e.target.value && window.location.pathname !== '/transaksi') {
+      navigateTo('/transaksi');
     }
   });
 
 
 });
 
-window.addEventListener('hashchange', handleRoute);
+window.addEventListener('popstate', handleRoute);
