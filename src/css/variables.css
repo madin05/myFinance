@@ -1,10 +1,10 @@
 :root {
   color-scheme: light dark;
-  --bg-color: #F8F9FE;
+  --bg-color: #F0F9FF;
   --white: #FFFFFF;
-  --primary: #3F36E5;
-  --primary-light: #EEEDFD;
-  --primary-dark: #2B249E;
+  --primary: #0EA5E9;
+  --primary-light: #E0F2FE;
+  --primary-dark: #0369A1;
   
   --text-main: #1E293B;
   --text-muted: #64748B;
