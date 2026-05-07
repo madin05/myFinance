@@ -1,6 +1,7 @@
 import { store } from '../store.js';
 import { auth } from '../firebase-config.js';
 import { showConfirm } from '../components/notifications.js';
+import { navigateTo } from '../router.js';
 
 export function initNavigation() {
   const layout = document.getElementById('app-layout');
@@ -74,7 +75,7 @@ export function initNavigation() {
       if (yakin) {
         auth.signOut().then(() => {
           store.logout();
-          window.location.hash = '#login';
+          navigateTo('/login');
         });
       }
     }

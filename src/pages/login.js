@@ -2,6 +2,7 @@ import { store } from '../store.js';
 import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert } from '../components/notifications.js';
+import { navigateTo } from '../router.js';
 
 export function renderLogin(mode = 'login') {
   const container = document.getElementById('login-view');
@@ -82,7 +83,7 @@ export function renderLogin(mode = 'login') {
         provider: 'google'
       });
 
-      window.location.hash = '#dashboard';
+      navigateTo('/dashboard');
     } catch (error) {
       showToast('Login Google gagal! ' + error.message, 'error');
     } finally {
@@ -132,7 +133,7 @@ export function renderLogin(mode = 'login') {
           });
         }
       }
-      window.location.hash = '#dashboard';
+      navigateTo('/dashboard');
     } catch (error) {
       showAlert('Gagal', error.message, 'error');
     } finally {

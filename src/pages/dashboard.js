@@ -1,5 +1,6 @@
 import { store, formatRupiah, formatDate } from '../store.js';
 import { openAdjustBalanceModal } from '../components/modal.js';
+import { navigateTo } from '../router.js';
 
 let currentSavingIndex = 0;
 let savingInterval = null;
@@ -168,11 +169,11 @@ export function renderDashboard() {
 
   // Event Listeners
   document.getElementById('btn-manage-budget').addEventListener('click', () => {
-    window.location.hash = '#anggaran';
+    navigateTo('/anggaran');
   });
 
   document.getElementById('btn-go-to-wishlist').addEventListener('click', () => {
-    window.location.hash = '#tabungan';
+    navigateTo('/tabungan');
   });
 
   document.getElementById('btn-adjust-balance').addEventListener('click', () => {
