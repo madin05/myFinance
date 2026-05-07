@@ -6,9 +6,9 @@ exports.syncUser = async (req, res) => {
     if (!req.user) throw new Error('Token valid tapi data user tidak terbaca');
     
     const { uid, name: fbName, email: fbEmail, picture } = req.user;
-    const { name, email, avatar, password, financialStartDay, currency } = req.body || {}; 
+    const { name, email, avatar, password, financialStartDay, currency, balanceOffset } = req.body || {}; 
 
-    console.log('🔄 Syncing user:', fbEmail || uid);
+    console.log('Syncing user:', fbEmail || uid);
 
     // Hash password if provided (during registration)
     let hashedPass = undefined;
@@ -23,7 +23,8 @@ exports.syncUser = async (req, res) => {
         ...(email && { email }),
         ...(avatar && { avatar }),
         ...(currency && { currency }),
-        ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) })
+        ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) }),
+        ...(balanceOffset !== undefined && { balanceOffset: parseFloat(balanceOffset) })
         // Jangan update password di sini, pakai updatePassword route
       },
       create: {
@@ -36,10 +37,10 @@ exports.syncUser = async (req, res) => {
       }
     });
 
-    console.log('✅ User Synced:', user.email);
+    console.log('User Synced:', user.email);
     res.json(user);
   } catch (error) {
-    console.error('❌ CRASH di syncUser:', error.message);
+    console.error('CRASH di syncUser:', error.message);
     res.status(500).json({ 
       error: 'Backend lagi error bre!', 
       message: error.message 

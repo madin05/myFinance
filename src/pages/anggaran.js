@@ -31,76 +31,83 @@ export function renderAnggaran() {
   const categories = ["Makanan & Minuman", "Transportasi", "Belanja", "Tagihan", "Hiburan", "Lainnya"];
   
   container.innerHTML = `
-    <div class="budget-section">
+    <div class="transactions-section">
       <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-          <div>
-            <h3>Anggaran Bulanan</h3>
-            <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
-              <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
-                <i class="ph ph-caret-left"></i>
-              </button>
-              <span class="font-bold" style="min-width: 120px; text-align: center; color: var(--primary);">
-                ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-              </span>
-              <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
-                <i class="ph ph-caret-right"></i>
-              </button>
-            </div>
+        <div>
+          <h3>Anggaran Bulanan</h3>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+            <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+              <i class="ph ph-caret-left"></i>
+            </button>
+            <span class="font-bold" style="min-width: 120px; text-align: center; color: var(--primary);">
+              ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+            </span>
+            <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+              <i class="ph ph-caret-right"></i>
+            </button>
           </div>
         </div>
         <button class="btn btn-primary" id="btn-set-budget">
-          <i class="ph ph-plus-circle"></i> Atur Anggaran
+          <i class="ph ph-plus"></i> Atur Anggaran
         </button>
       </div>
 
-      <div class="budget-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-        ${budgetList.length > 0 ? budgetList.map(b => `
-          <div class="stat-card budget-card">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
-              <div>
-                <h4 style="font-size: 1.1rem; margin-bottom: 4px;">${b.category}</h4>
-                <p class="text-muted text-xs">Target: ${formatRupiah(b.amount)}</p>
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                <div class="badge-soft ${b.percent > 90 ? 'badge-red' : b.percent > 70 ? 'badge-orange' : 'badge-green'}" style="font-size: 0.7rem;">
-                  ${Math.round(b.percent)}% Terpakai
+      <div class="table-container">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Kategori</th>
+              <th>Progress</th>
+              <th>Terpakai</th>
+              <th>Target</th>
+              <th>Sisa</th>
+              <th class="text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${budgetList.length > 0 ? budgetList.map(b => `
+            <tr>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <span class="font-bold" style="font-size:0.9rem;">${b.category}</span>
+                  <span class="badge-soft ${b.percent > 90 ? 'badge-red' : b.percent > 70 ? 'badge-orange' : 'badge-green'}" style="font-size:0.65rem; width:fit-content;">
+                    ${Math.round(b.percent)}% Terpakai
+                  </span>
                 </div>
-                <div style="display: flex; gap: 4px;">
-                  <button class="icon-btn btn-edit-budget" data-category="${b.category}" data-amount="${b.amount}" style="width: 28px; height: 28px; font-size: 0.85rem;" title="Edit">
-                    <i class="ph ph-pencil-simple"></i>
-                  </button>
-                  <button class="icon-btn btn-delete-budget" data-id="${b.id}" data-category="${b.category}" style="width: 28px; height: 28px; font-size: 0.85rem; color: var(--red);" title="Hapus">
-                    <i class="ph ph-trash"></i>
-                  </button>
+              </td>
+              <td style="min-width:160px;">
+                <div style="height:8px; background:var(--bg-color); border-radius:99px; overflow:hidden;">
+                  <div style="width:${Math.min(b.percent, 100)}%; height:100%; background:${b.percent > 90 ? 'var(--red)' : b.percent > 70 ? 'var(--orange)' : 'var(--green)'}; border-radius:99px; transition:width 0.5s ease;"></div>
                 </div>
-              </div>
-            </div>
-
-            <div class="progress-container" style="height: 10px; background: var(--bg-color); border-radius: 10px; overflow: hidden; margin-bottom: 1rem;">
-              <div class="progress-bar" style="width: ${Math.min(b.percent, 100)}%; height: 100%; background: ${b.percent > 90 ? 'var(--red)' : b.percent > 70 ? 'var(--orange)' : 'var(--green)'}; transition: width 0.5s ease;"></div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-              <div>
-                <span class="text-muted">Terpakai:</span>
-                <span class="font-bold" style="margin-left: 4px;">${formatRupiah(b.spent)}</span>
-              </div>
-              <div>
-                <span class="text-muted">Sisa:</span>
-                <span class="font-bold ${b.amount - b.spent < 0 ? 'text-red' : 'text-green'}" style="margin-left: 4px;">
-                  ${formatRupiah(b.amount - b.spent)}
-                </span>
-              </div>
-            </div>
-          </div>
-        `).join('') : `
-          <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: var(--card-bg); border-radius: 24px; border: 2px dashed var(--border);">
-            <i class="ph ph-chart-pie-slice" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
-            <h4 class="text-muted">Belum ada anggaran yang diatur nih.</h4>
-            <p class="text-muted text-sm mb-lg">Klik tombol "Atur Anggaran" di atas buat mulai ngerem pengeluaran.</p>
-          </div>
-        `}
+              </td>
+              <td class="font-bold" style="font-size:0.85rem;">${formatRupiah(b.spent)}</td>
+              <td class="text-muted" style="font-size:0.85rem;">${formatRupiah(b.amount)}</td>
+              <td class="font-bold ${b.amount - b.spent < 0 ? 'text-red' : 'text-green'}" style="font-size:0.85rem;">${formatRupiah(b.amount - b.spent)}</td>
+              <td class="text-right">
+                <div class="kebab-wrapper" style="display:inline-block;">
+                  <button class="kebab-trigger" data-id="${b.id}" title="Opsi lainnya">
+                    <i class="ph-bold ph-dots-three"></i>
+                  </button>
+                  <div class="kebab-dropdown" data-kebab-for="budget-${b.id}">
+                    <button class="kebab-item kebab-edit-budget" data-category="${b.category}" data-amount="${b.amount}">
+                      <i class="ph ph-pencil-simple"></i> Edit
+                    </button>
+                    <div class="kebab-divider"></div>
+                    <button class="kebab-item danger kebab-delete-budget" data-id="${b.id}" data-category="${b.category}">
+                      <i class="ph ph-trash"></i> Hapus
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            `).join('') : `
+              <tr><td colspan="6" style="text-align:center; padding: 3rem; color: var(--text-muted);">
+                <i class="ph ph-chart-pie-slice" style="font-size: 2.5rem; display:block; margin-bottom:0.75rem; opacity:0.5;"></i>
+                Belum ada anggaran. Klik "Atur Anggaran" untuk mulai.
+              </td></tr>
+            `}
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -179,18 +186,57 @@ export function renderAnggaran() {
     renderAnggaran();
   };
 
-  document.querySelectorAll('.btn-edit-budget').forEach(btn => {
-    btn.onclick = () => {
+  // --- Kebab Menu Logic for Budget Cards ---
+  const closeAllBudgetKebabs = () => {
+    document.querySelectorAll('.kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.kebab-trigger.active').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.budget-row').forEach(row => row.style.zIndex = '');
+  };
+
+  document.querySelectorAll('.kebab-trigger').forEach(trigger => {
+    trigger.onclick = (e) => {
+      e.stopPropagation();
+      const dropdown = trigger.nextElementSibling;
+      const row = trigger.closest('tr');
+
+      // Close others
+      document.querySelectorAll('.kebab-dropdown.open').forEach(d => {
+        if (d !== dropdown) {
+          d.classList.remove('open');
+          const otherRow = d.closest('tr');
+          if (otherRow) otherRow.style.zIndex = '';
+        }
+      });
+      document.querySelectorAll('.kebab-trigger.active').forEach(t => {
+        if (t !== trigger) t.classList.remove('active');
+      });
+
+      const isOpen = dropdown.classList.toggle('open');
+      trigger.classList.toggle('active');
+
+      // Lift row above others so dropdown isn't clipped
+      if (row) row.style.zIndex = isOpen ? '10' : '';
+    };
+  });
+
+  document.addEventListener('click', closeAllBudgetKebabs);
+
+  document.querySelectorAll('.kebab-edit-budget').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      closeAllBudgetKebabs();
       const { category, amount } = btn.dataset;
       openBudgetModal(category, amount);
     };
   });
 
-  document.querySelectorAll('.btn-delete-budget').forEach(btn => {
-    btn.onclick = async () => {
+  document.querySelectorAll('.kebab-delete-budget').forEach(btn => {
+    btn.onclick = async (e) => {
+      e.stopPropagation();
+      closeAllBudgetKebabs();
       const { id, category } = btn.dataset;
       const { showConfirm } = await import('../components/notifications.js');
-      const confirmed = await showConfirm('Hapus Anggaran?', `Yakin mau hapus anggaran untuk kategori "${category}" ini bre?`);
+      const confirmed = await showConfirm('Hapus Anggaran?', `Apakah Anda yakin ingin menghapus anggaran untuk kategori "${category}" ini?`);
       
       if (confirmed) {
         showLoading();
@@ -200,7 +246,7 @@ export function renderAnggaran() {
           showToast(`Anggaran ${category} berhasil dihapus!`, 'info');
           renderAnggaran();
         } else {
-          showToast('Gagal hapus anggaran bre!', 'error');
+          showToast('Gagal menghapus anggaran.', 'error');
         }
       }
     };

@@ -38,6 +38,8 @@
   --radius-full: 9999px;
   --card-bg: var(--white);
   --overlay-bg: rgba(0, 0, 0, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.5);
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 88px;
   --font-main: 'Poppins', sans-serif;
@@ -45,32 +47,34 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-color: #121212;
-  --white: #1E1E1E;
-  --primary: #6366F1;
-  --primary-light: rgba(99, 102, 241, 0.15);
-  --primary-dark: #4F46E5;
+  --bg-color: radial-gradient(circle at top left, #1A1333 0%, #0B0716 100%);
+  --white: #15121B;
+  --primary: #9D4EDD;
+  --primary-light: rgba(157, 78, 221, 0.15);
+  --primary-dark: #7B2CBF;
   
-  --text-main: #FFFFFF;
-  --text-muted: #A1A1AA;
-  --text-light: #71717A;
+  --text-main: #F3E8FF;
+  --text-muted: #BFA5D6;
+  --text-light: #8B72A4;
   
-  --border: #333333;
-  --border-light: #1E1E1E;
+  --border: #37323E;
+  --border-light: #221A2B;
   
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.8);
+  --shadow: 0 4px 20px rgba(11, 7, 22, 0.6);
+  --shadow-lg: 0 10px 40px rgba(11, 7, 22, 0.8);
 
   --green: #10B981;
-  --green-light: rgba(16, 185, 129, 0.2);
+  --green-light: rgba(16, 185, 129, 0.15);
   --red: #EF4444;
-  --red-light: rgba(239, 68, 68, 0.2);
+  --red-light: rgba(239, 68, 68, 0.15);
   --blue: #3B82F6;
-  --blue-light: rgba(59, 130, 246, 0.2);
+  --blue-light: rgba(59, 130, 246, 0.15);
   --orange: #F59E0B;
-  --orange-light: rgba(245, 158, 11, 0.2);
-  --card-bg: #1E1E1E;
-  --overlay-bg: rgba(0, 0, 0, 0.7);
-  --purple: #8B5CF6;
-  --purple-light: rgba(139, 92, 246, 0.2);
+  --orange-light: rgba(245, 158, 11, 0.15);
+  --card-bg: #15121B;
+  --overlay-bg: rgba(11, 7, 22, 0.8);
+  --glass-bg: rgba(21, 18, 27, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --purple: #C77DFF;
+  --purple-light: rgba(199, 125, 255, 0.15);
 }

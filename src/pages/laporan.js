@@ -182,7 +182,7 @@ export function renderLaporan() {
           Rincian Kategori
         </h4>
         <div style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
-          ${breakdownHtml || '<div style="text-align: center; padding: 3rem 0;"><p class="text-muted text-sm">Gak ada data buat periode ini bre.</p></div>'}
+          ${breakdownHtml || '<div style="text-align: center; padding: 3rem 0;"><p class="text-muted text-sm">Tidak ada data untuk periode ini.</p></div>'}
         </div>
       </div>
     </div>
@@ -236,7 +236,7 @@ export function renderLaporan() {
 
   const handleExport = (format) => {
     if (filteredTransactions.length === 0) {
-      return showToast('Gak ada data buat diexport bre!', 'warning');
+      return showToast('Tidak ada data untuk diekspor.', 'warning');
     }
 
     showLoading();
@@ -260,7 +260,7 @@ export function renderLaporan() {
       showToast(`Laporan ${format.toUpperCase()} berhasil didownload!`, 'success');
     } catch (err) {
       console.error(err);
-      showToast('Gagal export data bre.', 'error');
+      showToast('Gagal mengekspor data.', 'error');
     } finally {
       hideLoading();
     }
@@ -359,7 +359,8 @@ export function renderLaporan() {
               backgroundColor: 'rgba(16, 185, 129, 0.1)',
               fill: true,
               tension: 0.4,
-              pointRadius: 0
+              pointRadius: 0,
+              pointHoverRadius: 6
             },
             {
               label: 'Pengeluaran',
@@ -368,15 +369,42 @@ export function renderLaporan() {
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               fill: true,
               tension: 0.4,
-              pointRadius: 0
+              pointRadius: 0,
+              pointHoverRadius: 6
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
           plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              titleColor: isDark ? '#fff' : '#111',
+              bodyColor: isDark ? '#a1a1aa' : '#4b5563',
+              borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+              borderWidth: 1,
+              padding: 12,
+              boxPadding: 6,
+              usePointStyle: true,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(context.parsed.y);
+                  }
+                  return label;
+                }
+              }
+            }
           },
           scales: {
             x: {

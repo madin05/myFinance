@@ -1,4 +1,5 @@
 import { store, formatRupiah, formatDate } from '../store.js';
+import { openAdjustBalanceModal } from '../components/modal.js';
 
 let currentSavingIndex = 0;
 let savingInterval = null;
@@ -85,6 +86,9 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-blue-light text-blue"><i class="ph-fill ph-bank"></i></div>
+          <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:1px solid var(--border);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)';this.style.borderColor='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">
+            <i class="ph ph-pencil-simple" style="font-size:1rem;"></i>
+          </button>
         </div>
         <div class="stat-body">
           <p class="stat-label">Saldo Saat Ini</p>
@@ -116,7 +120,21 @@ export function renderDashboard() {
               </tr>
             </thead>
             <tbody>
-              ${txHtml || '<tr><td colspan="5" class="text-center text-muted">Belum ada transaksi</td></tr>'}
+              ${txHtml || `
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 3rem 1.5rem;">
+                    <style>
+                      [data-theme="light"] .tx-illustration-dark { display: none !important; }
+                      [data-theme="dark"] .tx-illustration-light { display: none !important; }
+                    </style>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
+                      <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 130px; height: 130px;" />
+                      <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 130px; height: 130px;" />
+                      <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi</p>
+                    </div>
+                  </td>
+                </tr>
+              `}
             </tbody>
           </table>
         </div>
@@ -125,13 +143,8 @@ export function renderDashboard() {
       <div class="widgets-section">
         <div class="widget-card">
           <h3 class="mb-lg">Anggaran Bulan Ini</h3>
-          <div class="budget-item">
-            <div class="budget-header"><span class="budget-name">Makanan</span><span class="budget-percent">75%</span></div>
-            <div class="progress-bar-container bg-gray-light"><div class="progress-bar bg-green" style="width: 75%;"></div></div>
-          </div>
-          <div class="budget-item mt-md">
-            <div class="budget-header"><span class="budget-name">Transportasi</span><span class="budget-percent">92%</span></div>
-            <div class="progress-bar-container bg-gray-light"><div class="progress-bar bg-red" style="width: 92%;"></div></div>
+          <div id="budget-widget-content" style="min-height: 100px;">
+            <!-- Content injected by JS -->
           </div>
           <button class="btn btn-outline btn-full mt-lg" id="btn-manage-budget">Kelola Anggaran</button>
         </div>
@@ -147,7 +160,8 @@ export function renderDashboard() {
     </div>
   `;
 
-  // Init Saving Widget
+  // Init Saving & Budget Widgets
+  renderBudgetWidget();
   updateSavingWidget();
   if (savingInterval) clearInterval(savingInterval);
   savingInterval = setInterval(updateSavingWidget, 4000);
@@ -160,6 +174,67 @@ export function renderDashboard() {
   document.getElementById('btn-go-to-wishlist').addEventListener('click', () => {
     window.location.hash = '#tabungan';
   });
+
+  document.getElementById('btn-adjust-balance').addEventListener('click', () => {
+    openAdjustBalanceModal(stats.balance, () => renderDashboard());
+  });
+}
+
+function renderBudgetWidget() {
+  const container = document.getElementById('budget-widget-content');
+  if (!container) return;
+
+  if (store.budgets.length === 0) {
+    container.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0; opacity: 0.7;">
+        <i class="ph ph-wallet" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
+        <p class="text-sm text-muted text-center">Belum ada anggaran.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Hitung pengeluaran bulan ini (seperti di anggaran.js)
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  const spendingByCategory = {};
+  store.transactions.forEach(tx => {
+    const d = new Date(tx.tanggal);
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear && tx.type === 'expense') {
+      spendingByCategory[tx.kategori] = (spendingByCategory[tx.kategori] || 0) + Math.abs(tx.harga);
+    }
+  });
+
+  // Tampilkan max 3 anggaran
+  const topBudgets = store.budgets.slice(0, 3);
+  
+  let html = '';
+  topBudgets.forEach((b, index) => {
+    const spent = spendingByCategory[b.category] || 0;
+    const percent = b.amount > 0 ? (spent / b.amount) * 100 : 0;
+    const roundedPercent = Math.round(percent);
+    
+    // Tentukan warna progress bar
+    let colorClass = 'bg-green';
+    if (percent > 90) colorClass = 'bg-red';
+    else if (percent > 70) colorClass = 'bg-orange';
+
+    html += `
+      <div class="budget-item ${index > 0 ? 'mt-md' : ''}">
+        <div class="budget-header">
+          <span class="budget-name">${b.category}</span>
+          <span class="budget-percent" style="color: ${percent > 90 ? 'var(--red)' : percent > 70 ? 'var(--orange)' : 'var(--text-main)'}">${roundedPercent}%</span>
+        </div>
+        <div class="progress-bar-container bg-gray-light">
+          <div class="progress-bar ${colorClass}" style="width: ${Math.min(percent, 100)}%;"></div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
 }
 
 function updateSavingWidget() {
@@ -171,10 +246,7 @@ function updateSavingWidget() {
   
   if (store.savings.length === 0) {
     container.innerHTML = `
-      <p class="text-white-dim mb-lg">Belum ada wishlist bre. Yuk buat target baru!</p>
-      <div class="progress-bar-container bg-white-dim mb-lg" style="height: 8px; opacity: 0.3;">
-        <div class="progress-bar bg-white" style="width: 0%;"></div>
-      </div>
+      <p class="text-white-dim mb-lg">Belum ada wishlist. Mari buat target baru!</p>
     `;
     return;
   }

@@ -90,7 +90,7 @@ export function openAddFundsModal(id, currentName, onSuccess) {
     <div class="modal-overlay" id="funds-overlay">
       <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
         <h3 class="mb-xs">Tabung Buat ${currentName}</h3>
-        <p class="text-muted mb-lg">Masukkan nominal yang mau kamu tabung bre.</p>
+        <p class="text-muted mb-lg">Masukkan nominal yang ingin ditabung.</p>
         
         <input type="text" id="fund-amount" class="form-control mb-lg" placeholder="Rp 0" style="text-align: center; font-size: 1.5rem; height: 60px; font-weight: 700;">
         
@@ -113,7 +113,7 @@ export function openAddFundsModal(id, currentName, onSuccess) {
   
   document.getElementById('btn-save-fund').addEventListener('click', async () => {
     const amount = Number(amountInput.value.replace(/\./g, ''));
-    if (!amount) return alert('Masukkan nominal dulu bre!');
+    if (!amount) return alert('Harap masukkan nominal terlebih dahulu.');
 
     showLoading();
     try {

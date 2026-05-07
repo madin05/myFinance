@@ -196,6 +196,7 @@ export function renderTransaksi() {
 
 function renderTableBody(container) {
   const tbody = container.querySelector('#tx-table-body');
+  const isMobile = window.innerWidth <= 768;
   let filteredTxs = [...store.transactions];
   
   // Sortir: Terbaru di atas (Berdasarkan tanggal, lalu ID sebagai penentu jika tanggal sama)
@@ -228,38 +229,127 @@ function renderTableBody(container) {
     return matchType && matchMonth && matchYear && matchKategori && matchMetode && matchPrice && matchSearch;
   });
 
+  const kebabHtml = (id) => `
+    <div class="kebab-wrapper">
+      <button class="kebab-trigger" data-id="${id}" title="Opsi lainnya">
+        <i class="ph-bold ph-dots-three"></i>
+      </button>
+      <div class="kebab-dropdown" data-kebab-for="${id}">
+        <button class="kebab-item kebab-edit" data-id="${id}">
+          <i class="ph ph-pencil-simple"></i> Edit
+        </button>
+        <div class="kebab-divider"></div>
+        <button class="kebab-item danger kebab-delete" data-id="${id}">
+          <i class="ph ph-trash"></i> Hapus
+        </button>
+      </div>
+    </div>
+  `;
+
   const txHtml = filteredTxs.map(tx => {
     const isIncome = tx.type === 'income';
     const colorClass = isIncome ? 'text-green' : 'text-red';
-    const sign = isIncome ? '+ ' : '- ';
-    
+    const sign = isIncome ? '+' : '-';
     let badgeClass = 'badge-blue';
     const lowerKategori = (tx.kategori || '').toLowerCase();
-    if(lowerKategori.includes('gaji')) badgeClass = 'badge-green';
-    else if(lowerKategori.includes('makan')) badgeClass = 'badge-orange';
-    else if(lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
+    if (lowerKategori.includes('gaji')) badgeClass = 'badge-green';
+    else if (lowerKategori.includes('makan')) badgeClass = 'badge-orange';
+    else if (lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
 
+    if (isMobile) {
+      // === MOBILE: render sebagai card <div>, bukan <tr> ===
+      return `
+        <tr class="tx-mobile-card" data-id="${tx.id}">
+          <td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;">
+            <div style="
+              background: var(--card-bg);
+              border: 1px solid var(--border);
+              border-radius: 16px;
+              padding: 0.9rem 1rem;
+              position: relative;
+              min-height: 78px;
+            ">
+              <!-- Baris 1: Badge + Harga -->
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <span class="badge-soft ${badgeClass}" style="font-size:0.68rem; padding:2px 9px;">${tx.kategori}</span>
+                <span class="${colorClass} font-bold" style="font-size:0.88rem; white-space:nowrap;">${sign} ${formatRupiah(Math.abs(tx.harga))}</span>
+              </div>
+              <!-- Baris 2: Keterangan -->
+              <div style="font-weight:600; font-size:0.88rem; color:var(--text-main); line-height:1.4; margin-bottom:4px; padding-right:36px;">
+                ${tx.keterangan}
+              </div>
+              <!-- Baris 3: Tanggal • Metode -->
+              <div style="font-size:0.72rem; color:var(--text-light);">
+                ${formatDate(tx.tanggal)} &bull; ${tx.metode}
+              </div>
+              <!-- Kebab absolute bottom-right -->
+              <div style="position:absolute; bottom:0.65rem; right:0.6rem;">
+                ${kebabHtml(tx.id)}
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    // === DESKTOP: render normal table row ===
     return `
       <tr>
         <td>${formatDate(tx.tanggal)}</td>
         <td><span class="badge-soft ${badgeClass}">${tx.kategori}</span></td>
         <td>${tx.metode}</td>
         <td>${tx.keterangan}</td>
-        <td class="text-right ${colorClass} font-bold">${sign}${formatRupiah(Math.abs(tx.harga))}</td>
-        <td class="text-right" style="white-space: nowrap;">
-          <button class="icon-btn text-blue btn-edit" data-id="${tx.id}" style="margin-right: 8px;" data-tooltip="Edit Transaksi"><i class="ph ph-pencil-simple"></i></button>
-          <button class="icon-btn text-red btn-delete" data-id="${tx.id}" data-tooltip="Hapus Transaksi"><i class="ph ph-trash"></i></button>
+        <td class="text-right ${colorClass} font-bold">${sign} ${formatRupiah(Math.abs(tx.harga))}</td>
+        <td class="text-right">
+          ${kebabHtml(tx.id)}
         </td>
       </tr>
     `;
   }).join('');
 
-  tbody.innerHTML = txHtml || '<tr><td colspan="6" class="text-center text-muted">Belum ada transaksi</td></tr>';
+  const emptyMsg = `
+    <tr>
+      <td colspan="6" style="${isMobile ? 'display:block;' : ''}text-align: center; padding: 4rem 1.5rem;">
+        <style>
+          [data-theme="light"] .tx-illustration-dark { display: none !important; }
+          [data-theme="dark"] .tx-illustration-light { display: none !important; }
+        </style>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
+          <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 140px; height: 140px;" />
+          <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 140px; height: 140px;" />
+          <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi</p>
+        </div>
+      </td>
+    </tr>
+  `;
 
-  const editBtns = tbody.querySelectorAll('.btn-edit');
-  editBtns.forEach(btn => {
+  tbody.innerHTML = txHtml || emptyMsg;
+
+  // --- Kebab Menu Logic (sama untuk mobile & desktop) ---
+  const closeAllKebabs = () => {
+    tbody.querySelectorAll('.kebab-dropdown.open').forEach(d => d.classList.remove('open'));
+    tbody.querySelectorAll('.kebab-trigger.active').forEach(t => t.classList.remove('active'));
+  };
+
+  tbody.querySelectorAll('.kebab-trigger').forEach(trigger => {
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = trigger.dataset.id;
+      const dropdown = tbody.querySelector(`.kebab-dropdown[data-kebab-for="${id}"]`);
+      tbody.querySelectorAll('.kebab-dropdown.open').forEach(d => { if (d !== dropdown) d.classList.remove('open'); });
+      tbody.querySelectorAll('.kebab-trigger.active').forEach(t => { if (t !== trigger) t.classList.remove('active'); });
+      dropdown.classList.toggle('open');
+      trigger.classList.toggle('active');
+    });
+  });
+
+  document.addEventListener('click', closeAllKebabs);
+
+  tbody.querySelectorAll('.kebab-edit').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const id = e.currentTarget.getAttribute('data-id');
+      e.stopPropagation();
+      closeAllKebabs();
+      const id = btn.dataset.id;
       const txToEdit = store.getTransactionById(Number(id));
       if (txToEdit) {
         import('../components/modal.js').then(module => {
@@ -269,14 +359,15 @@ function renderTableBody(container) {
     });
   });
 
-  const deleteBtns = tbody.querySelectorAll('.btn-delete');
-  deleteBtns.forEach(btn => {
+  tbody.querySelectorAll('.kebab-delete').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const id = e.currentTarget.getAttribute('data-id');
+      e.stopPropagation();
+      closeAllKebabs();
+      const id = btn.dataset.id;
       import('../components/modal.js').then(module => {
         module.openConfirmModal(
           'Hapus Transaksi?',
-          'Data yang dihapus tidak bisa dikembalikan lagi bre.',
+          'Data yang dihapus tidak dapat dikembalikan.',
           () => {
             store.deleteTransactionRemote(Number(id)).then(renderTransaksi).catch((err) => {
               alert('Gagal hapus transaksi: ' + (err?.message || err));

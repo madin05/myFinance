@@ -4,10 +4,10 @@ export function renderTabungan() {
   const container = document.getElementById('page-content');
   const goals = store.savings;
 
-    const goalsHtml = goals.map(g => {
+  const goalsHtml = goals.map(g => {
     const percent = Math.min((g.current / g.target) * 100, 100);
     return `
-      <div class="stat-card wishlist-item" style="padding: 1.5rem; position: relative;" draggable="true" data-id="${g.id}">
+      <div class="stat-card wishlist-item" style="padding: 1.5rem; position: relative;" data-id="${g.id}">
         <div class="drag-handle"><i class="ph-bold ph-dots-six-vertical"></i></div>
         
         <div style="display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1.5rem;">
@@ -49,28 +49,55 @@ export function renderTabungan() {
     <div class="section-header">
       <div>
         <h3>My Wishlist & Savings</h3>
-        <p class="text-muted">Kumpulin pundi-pundi buat barang impian kamu.</p>
       </div>
       <div style="display: flex; gap: 1rem; align-items: center;">
-        <button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i> Buat Target Baru</button>
+        ${goals.length > 0 ? '<button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i> Buat Target Baru</button>' : ''}
       </div>
     </div>
 
     <div class="wishlist-container" id="wishlist-container">
-      ${goalsHtml || '<div style="grid-column: 1/-1; text-align: center; padding: 4rem;"><p class="text-muted">Belum ada wishlist bre. Yuk buat target baru!</p></div>'}
+      ${goalsHtml || `
+        <div class="wishlist-empty-state" style="grid-column: 1/-1; text-align: center; padding: 3rem 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;">
+          <style>
+            @keyframes floatAnim {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-10px); }
+            }
+            [data-theme="light"] .illustration-dark { display: none !important; }
+            [data-theme="dark"] .illustration-light { display: none !important; }
+          </style>
+          <img class="illustration-light" src="/assets/wishlist-light.svg" alt="Wishlist Empty" style="width: 220px; height: 220px; animation: floatAnim 4s ease-in-out infinite;" />
+          <img class="illustration-dark" src="/assets/wishlist-dark.svg" alt="Wishlist Empty" style="width: 220px; height: 220px; animation: floatAnim 4s ease-in-out infinite;" />
+          <div style="max-width: 320px; margin-top: -0.5rem;">
+            <h4 style="margin: 0 0 0.5rem; font-size: 1.25rem; color: var(--text-main); font-weight: 600;">Belum Ada Wishlist</h4>
+            <p class="text-muted text-xs" style="line-height: 1.5; font-size: 0.85rem;">Yuk, mulai buat target baru untuk tabungan impianmu hari ini!</p>
+          </div>
+          <button class="btn btn-primary" id="btn-create-goal-empty" style="margin-top: 0.5rem;"><i class="ph ph-plus"></i> Buat Target</button>
+        </div>
+      `}
     </div>
   `;
 
   // --- Listeners ---
-  
-  // --- Listeners ---
 
   // Create Goal
-  document.getElementById('btn-create-goal').addEventListener('click', () => {
-    import('../components/wishlist-modal.js').then(module => {
-      module.openAddWishlistModal(() => renderTabungan());
+  const btnCreate = document.getElementById('btn-create-goal');
+  if (btnCreate) {
+    btnCreate.addEventListener('click', () => {
+      import('../components/wishlist-modal.js').then(module => {
+        module.openAddWishlistModal(() => renderTabungan());
+      });
     });
-  });
+  }
+
+  const btnCreateEmpty = document.getElementById('btn-create-goal-empty');
+  if (btnCreateEmpty) {
+    btnCreateEmpty.addEventListener('click', () => {
+      import('../components/wishlist-modal.js').then(module => {
+        module.openAddWishlistModal(() => renderTabungan());
+      });
+    });
+  }
 
   // Tabung & Delete
   container.querySelectorAll('.btn-tabung').forEach(btn => {
@@ -101,11 +128,20 @@ export function renderTabungan() {
   const listContainer = document.getElementById('wishlist-container');
   if (window.Sortable && listContainer) {
     new Sortable(listContainer, {
-      animation: 250,
+      animation: 350,
+      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
       handle: '.drag-handle',
       ghostClass: 'dragging',
-      forceFallback: false,
+      dragClass: 'sortable-drag',
+      forceFallback: true,
+      fallbackClass: 'sortable-fallback',
+      onStart: function() {
+        listContainer.classList.add('is-dragging');
+        document.body.style.userSelect = 'none';
+      },
       onEnd: function() {
+        listContainer.classList.remove('is-dragging');
+        document.body.style.userSelect = '';
         const newOrderIds = [...listContainer.querySelectorAll('.wishlist-item')].map(el => Number(el.dataset.id));
         const newOrder = newOrderIds.map(id => store.savings.find(s => s.id === id));
         store.reorderSavingsRemote(newOrder).catch((err) => {

@@ -40,7 +40,7 @@ exports.createTransaction = async (req, res) => {
     });
     res.status(201).json(transaction);
   } catch (error) {
-    console.error('❌ Gagal Simpan Transaksi:', error.message);
+    console.error('Gagal Simpan Transaksi:', error.message);
     res.status(400).json({ error: error.message });
   }
 };
@@ -60,7 +60,7 @@ exports.deleteTransaction = async (req, res) => {
     await prisma.transaction.delete({ where: { id } });
     res.json({ ok: true });
   } catch (error) {
-    console.error('❌ Gagal Hapus Transaksi:', error.message);
+    console.error('Gagal Hapus Transaksi:', error.message);
     res.status(400).json({ error: error.message });
   }
 };
@@ -93,7 +93,7 @@ exports.updateTransaction = async (req, res) => {
 
     res.json(updated);
   } catch (error) {
-    console.error('❌ Gagal Update Transaksi:', error.message);
+    console.error('Gagal Update Transaksi:', error.message);
     res.status(400).json({ error: error.message });
   }
 };
