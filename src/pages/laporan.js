@@ -125,7 +125,19 @@ export function renderLaporan() {
           Analisis Pengeluaran
         </h4>
         <div style="height: 250px; position: relative;">
-          <canvas id="categoryChart"></canvas>
+          ${sortedCategories.length > 0 ? `
+            <canvas id="categoryChart"></canvas>
+          ` : `
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <style>
+                [data-theme="light"] .report-illustration-dark { display: none !important; }
+                [data-theme="dark"] .report-illustration-light { display: none !important; }
+              </style>
+              <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 120px; height: 120px;" />
+              <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 120px; height: 120px;" />
+              <p class="text-muted text-xs" style="margin-top: 0.5rem; font-size: 0.8rem;">Belum ada pengeluaran</p>
+            </div>
+          `}
         </div>
       </div>
       <div class="stat-card" style="padding: 1.5rem;">
@@ -134,7 +146,19 @@ export function renderLaporan() {
           Tren Arus Kas
         </h4>
         <div style="height: 250px; position: relative;">
-          <canvas id="cashflowChart"></canvas>
+          ${filteredTransactions.length > 0 ? `
+            <canvas id="cashflowChart"></canvas>
+          ` : `
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <style>
+                [data-theme="light"] .report-illustration-dark { display: none !important; }
+                [data-theme="dark"] .report-illustration-light { display: none !important; }
+              </style>
+              <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 120px; height: 120px;" />
+              <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 120px; height: 120px;" />
+              <p class="text-muted text-xs" style="margin-top: 0.5rem; font-size: 0.8rem;">Belum ada data transaksi</p>
+            </div>
+          `}
         </div>
       </div>
     </div>
