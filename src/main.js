@@ -4,6 +4,7 @@ import { store } from './store.js';
 import { auth, onAuthStateChanged } from './firebase-config.js';
 import { renderLogin } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
+import { openCalculator } from './components/calculator.js';
 import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
 import { hideLoading } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
@@ -107,6 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-fam-wishlist')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
     navigateTo('/tabungan');
+  });
+
+  document.getElementById('btn-fam-calculator')?.addEventListener('click', () => {
+    document.getElementById('fam-toggle').checked = false; // Close menu
+    openCalculator();
   });
 
   // 3. Click Outside to Close FAM & Intercept Sidebar Link Clicks (SPA Routing)
