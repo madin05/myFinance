@@ -47,14 +47,17 @@
 }
 
 .widget-primary {
+  background-color: transparent !important;
   background: linear-gradient(135deg, #E0F2FE 0%, #0369A1 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
   box-shadow: 0 12px 24px -10px rgba(3, 105, 161, 0.3) !important;
   color: var(--white);
 }
 
 [data-theme="dark"] .widget-primary {
+  background-color: transparent !important;
   background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%) !important;
+  border: none !important;
   box-shadow: 0 12px 24px -10px rgba(124, 58, 237, 0.3) !important;
 }
 
