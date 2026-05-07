@@ -1,94 +1,94 @@
-# 💎 MyFinance - Ultimate Personal Financial Dashboard
+# MyFinance
 
-MyFinance adalah platform pengelolaan keuangan personal *full-stack* yang menggabungkan estetika desain premium dengan fungsionalitas analisis yang mendalam. Dibangun menggunakan arsitektur modern untuk memberikan pengalaman pengguna yang sangat responsif, aman, dan intuitif.
-
----
-
-## ✨ Fitur Unggulan
-
-### 📊 Analisis & Visualisasi Canggih
-*   **Visual Charts**: Integrasi Chart.js untuk analisis pengeluaran (Doughnut Chart) dan tren arus kas (Line Chart) yang interaktif.
-*   **Laporan Professional**: Ekspor data ke format **PDF Premium** (lengkap dengan grafik visual) atau **Excel Detail** (3-Sheet breakdown).
-*   **Real-time Analytics**: Ringkasan saldo, pemasukan, dan pengeluaran yang diperbarui secara instan.
-
-### 🎯 Manajemen Keuangan Cerdas
-*   **Siklus Keuangan Kustom**: Atur tanggal gajian kamu sebagai awal periode laporan.
-*   **Multi-Currency Support**: Pilih mata uang default (IDR, USD, EUR, dsb.) dengan format angka otomatis yang cerdas.
-*   **Wishlist & Budgeting**: Kelola target tabungan dengan fitur *Drag & Drop reordering* dan pantau sisa jatah belanja tiap kategori.
-
-### 🛡️ Keamanan & Profil
-*   **Pusat Keamanan**: Dukungan **Autentikasi 2 Faktor (2FA)** dan manajemen password yang terenkripsi.
-*   **Sync Profile**: Integrasi Firebase Auth untuk sinkronisasi identitas dan preferensi user secara cloud.
-*   **Optimistic Avatar Upload**: Ganti foto profil dengan fitur kompresi otomatis dan update UI instan.
-
-### 🎨 Estetika & UX Premium
-*   **Glassmorphism UI**: Antarmuka modern dengan efek blur kaca dan saturasi tinggi.
-*   **Smart Notifications**: Toast notification dengan efek glassmorphism dan fitur **Swipe-to-Dismiss** (geser untuk tutup).
-*   **Responsive Engine**: Pengalaman yang mulus baik di desktop maupun perangkat mobile tanpa horizontal overflow.
-*   **Micro-interactions**: Skeleton loading, gold-coin loader, dan animasi transisi navigasi yang presisi.
+MyFinance adalah platform pengelolaan keuangan personal *full-stack* yang dirancang untuk mencatat transaksi, menganalisis pengeluaran, mengatur anggaran, serta melacak target tabungan (wishlist). Aplikasi ini dibangun dengan vanilla JavaScript di sisi frontend untuk performa yang optimal dan Node.js/Express di sisi backend.
 
 ---
 
-## 🛠️ Tech Stack
+## Fitur Utama
+
+### 📊 Laporan & Analisis Visual
+*   **Grafik Interaktif**: Visualisasi analisis pengeluaran (Doughnut Chart) dan tren arus kas (Line Chart) menggunakan Chart.js.
+*   **Ekspor Laporan**: Fitur unduh laporan keuangan dalam format **PDF** (dengan grafik) dan **Excel** (rinci per kategori).
+*   **Informasi Ringkas**: Pantau total saldo, pemasukan, dan pengeluaran secara real-time pada halaman utama.
+
+### 🎯 Manajemen Anggaran & Tabungan
+*   **Siklus Keuangan Kustom**: Konfigurasi tanggal awal pencatatan keuangan bulanan sesuai dengan tanggal gajian user.
+*   **Dukungan Multi-Currency**: Pilihan preferensi mata uang (IDR, USD, EUR, dll.) dengan format penulisan angka otomatis.
+*   **Wishlist & Anggaran**: Kelola target tabungan (dengan fitur *drag & drop reordering*) serta tetapkan batas pengeluaran per kategori.
+
+### 🛡️ Keamanan & Integrasi Akun
+*   **Autentikasi Akun**: Menggunakan Firebase Authentication untuk pendaftaran dan masuk akun secara aman.
+*   **Pusat Keamanan**: Fitur ganti kata sandi dan opsi Autentikasi Dua Faktor (2FA).
+*   **Manajemen Profil**: Unggah foto profil secara langsung dengan sistem kompresi gambar otomatis untuk efisiensi penyimpanan.
+
+### 🎨 Antarmuka & UX Responsif
+*   **Desain Dual-Theme**: Mendukung Mode Terang (Light Mode) dan Mode Gelap (Dark Mode) yang terintegrasi secara instan.
+*   **Notifikasi Kustom**: Toast notification dengan fungsi geser untuk menutup (*Swipe-to-Dismiss*).
+*   **Layout Responsif**: Dioptimalkan untuk perangkat mobile dan desktop.
+
+---
+
+## Tech Stack
 
 ### Frontend
 *   **Core**: Vanilla Javascript (ES6+)
-*   **Styling**: Pure CSS (Modern Variables, Flexbox/Grid, Backdrop-filters)
-*   **Visual**: Chart.js, Phosphor Icons
-*   **Utilities**: SortableJS (Drag & Drop), jsPDF (Report Engine), XLSX (Excel Engine)
+*   **Styling**: Vanilla CSS (Variables, Flexbox, Grid)
+*   **Libraries**: Chart.js, Phosphor Icons, SortableJS (Drag & Drop), jsPDF, SheetJS (XLSX)
 *   **Build Tool**: Vite.js
 
 ### Backend & Database
-*   **Engine**: Node.js & Express.js
-*   **Database**: PostgreSQL (via Neon.tech)
-*   **ORM**: Prisma (Type-safe database client)
+*   **Server**: Node.js & Express.js
+*   **Database**: PostgreSQL (neon.tech)
+*   **ORM**: Prisma
 *   **Authentication**: Firebase Admin SDK & Bcrypt
 
 ---
 
-## 🚀 Instalasi Lokal
+## Panduan Instalasi Lokal
 
-### 1. Prasyarat
-*   Node.js terinstal di sistem kamu.
-*   Database PostgreSQL (atau ganti koneksi string di `.env`).
-
-### 2. Setup Frontend
+### 1. Kloning Repositori
 ```bash
-# Masuk ke folder root
+git clone https://github.com/madin05/myFinance.git
+cd myFinance
+```
+
+### 2. Konfigurasi Environment Variables
+Buat file `.env` di direktori utama dan folder `backend/` untuk mendefinisikan variabel lingkungan yang diperlukan (koneksi database, konfigurasi Firebase SDK, dll.).
+
+### 3. Setup Frontend
+```bash
+# Install dependensi dan jalankan development server
 npm install
 npm run dev
 ```
 
-### 3. Setup Backend
+### 4. Setup Backend
 ```bash
-# Masuk ke folder backend
+# Pindah ke direktori backend
 cd backend
 npm install
 
-# Setup Database (Prisma)
+# Inisialisasi Database (Prisma)
 npx prisma db push
 npx prisma generate
 
-# Jalankan server
+# Jalankan server API
 npm run dev
 ```
 
 ---
 
-## 📁 Struktur Proyek
+## Struktur Direktori
+
 ```text
 myfinance/
-├── src/                # Frontend Source
-│   ├── components/     # UI Reusable Components (Toasts, Selects)
-│   ├── pages/          # Page Logic (Dashboard, Akun, Laporan)
-│   ├── services/       # External API & Export Services
-│   └── css/            # Modular CSS Components
-├── backend/            # Backend API (Node + Express)
-│   ├── prisma/         # Database Schema & Migrations
-│   └── src/controllers # API Logic
-└── index.html          # Main Entry
+├── src/                # File Frontend (Vanilla JS)
+│   ├── components/     # Komponen UI (Modal, Notifications)
+│   ├── pages/          # Logika Tampilan (Dashboard, Laporan, Akun)
+│   ├── services/       # Integrasi API & Ekspor Data
+│   └── css/            # Gaya Tampilan Modular (CSS)
+├── backend/            # Server Backend (Node.js & Express)
+│   ├── prisma/         # Skema Database Prisma
+│   └── src/controllers # Kontroler Logika API
+└── index.html          # Entry Point Utama Aplikasi
 ```
-
----
-
-*Dibuat dengan ❤️ oleh **Antigravity** untuk membantu kamu mengelola masa depan finansial yang lebih baik.*

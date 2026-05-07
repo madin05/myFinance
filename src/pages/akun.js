@@ -16,8 +16,7 @@ export function renderAkun() {
     <div class="account-settings">
       <div class="section-header">
         <div>
-          <h3>Pengaturan Profil & Keamanan</h3>
-          <p class="text-muted">Kelola identitas dan keamanan akun Anda di sini.</p>
+          <h3>Pengaturan Profil</h3>
         </div>
       </div>
 
