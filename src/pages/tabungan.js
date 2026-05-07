@@ -17,12 +17,14 @@ export function renderTabungan() {
           <div style="flex-grow: 1;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
               <h3 style="margin: 0; font-size: 1.1rem;">${g.name}</h3>
-              <span class="font-bold text-primary">${percent.toFixed(0)}%</span>
             </div>
             <p class="text-muted text-xs">Target: ${formatRupiah(g.target)}</p>
           </div>
         </div>
 
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.35rem; margin-top: -0.5rem;">
+          <span class="font-bold text-primary" style="font-size: 0.85rem; line-height: 1;">${percent.toFixed(0)}%</span>
+        </div>
         <div class="progress-bar-container" style="height: 10px; margin-bottom: 1.25rem; background-color: var(--border-light);">
           <div class="progress-bar ${g.color}" style="width: ${percent}%;"></div>
         </div>
