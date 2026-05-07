@@ -442,10 +442,15 @@ export const store = {
       return ((curr - prev) / prev) * 100;
     };
 
+    const rawBalance = totalIncome - totalExpense;
+    // balanceOffset: selisih yang di-set user via tombol pensil (tanpa bikin transaksi)
+    const offset = Number(this.user?.balanceOffset || 0);
+
     return {
       income: currentIncome,
       expense: currentExpense,
-      balance: totalIncome - totalExpense,
+      balance: rawBalance + offset,
+      rawBalance,
       incomeDiff: calcDiff(currentIncome, prevIncome),
       expenseDiff: calcDiff(currentExpense, prevExpense),
       totalIncome,
@@ -630,7 +635,8 @@ export function formatCurrency(number) {
   return new Intl.NumberFormat(locale, { 
     style: 'currency', 
     currency: currency, 
-    minimumFractionDigits: 0 
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(number || 0);
 }
 

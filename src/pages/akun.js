@@ -1,8 +1,9 @@
 import { store, formatDate } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert, showConfirm } from '../components/notifications.js';
-import { openEditUsernameModal } from '../components/modal.js';
+import { openEditUsernameModal, openDeleteAccountModal } from '../components/modal.js';
 import { initCustomSelect } from '../components/customSelect.js';
+import { auth, EmailAuthProvider, reauthenticateWithCredential } from '../firebase-config.js';
 
 export function renderAkun() {
   const container = document.getElementById('page-content');
@@ -16,11 +17,11 @@ export function renderAkun() {
       <div class="section-header">
         <div>
           <h3>Pengaturan Profil & Keamanan</h3>
-          <p class="text-muted">Kelola identitas dan keamanan akun kamu di sini bre.</p>
+          <p class="text-muted">Kelola identitas dan keamanan akun Anda di sini.</p>
         </div>
       </div>
 
-      <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; align-items: start;">
+      <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr)); gap: 1.5rem; margin-top: 1.5rem; align-items: start;">
         
         <!-- Section 1: Profile Preview & Identity -->
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
@@ -71,7 +72,7 @@ export function renderAkun() {
               </div>
 
               <div style="border-top: 1px dashed var(--border); pt-md: 1rem; margin-top: 0.5rem; padding-top: 1rem;">
-                <p class="text-xs text-muted mb-md">Laporan & Anggaran bakal ngikutin siklus dan mata uang ini.</p>
+                <p class="text-xs text-muted mb-md">Laporan & Anggaran akan mengikuti siklus dan mata uang ini.</p>
                 <button class="btn btn-primary btn-full" id="btn-save-financial-start" style="height: 38px; font-size: 0.8rem; border-radius: 8px;">Simpan Perubahan</button>
               </div>
             </div>
@@ -128,7 +129,7 @@ export function renderAkun() {
             ` : `
             <div style="margin-bottom: 2rem; padding: 1rem; border-radius: 12px; background: var(--bg-color); color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 10px; align-items: center; border: 1px solid var(--border);">
               <i class="ph ph-google-logo" style="font-size: 1.2rem; color: var(--primary);"></i>
-              <span>Kamu masuk via Google Auth. Pengaturan password dikelola langsung oleh Google bre.</span>
+              <span>Anda masuk via Google Auth. Pengaturan kata sandi dikelola langsung oleh Google.</span>
             </div>
             `}
 
@@ -151,7 +152,7 @@ export function renderAkun() {
               <i class="ph-fill ph-warning-octagon"></i>
               Zona Bahaya
             </h4>
-            <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Aksi ini tidak bisa dibatalkan bre. Semua data finansial kamu bakal dihapus permanen.</p>
+            <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Tindakan ini tidak dapat dibatalkan. Semua data finansial Anda akan dihapus permanen.</p>
             <button class="btn" style="background: var(--red); color: white; width: 100%; border-radius: 12px; height: 48px; font-weight: 600; gap: 10px;" id="btn-delete-account">
               <i class="ph-bold ph-trash"></i>
               Hapus Akun & Data
@@ -223,7 +224,7 @@ export function renderAkun() {
       try {
         await store.updateProfile({ name: newName });
         renderAkun(); // Re-render to reflect changes
-        showToast('Username diupdate bre!', 'success');
+        showToast('Nama pengguna berhasil diperbarui.', 'success');
       } catch (err) {
         showAlert('Gagal', err.message, 'error');
       } finally {
@@ -232,24 +233,48 @@ export function renderAkun() {
     });
   };
 
-  document.getElementById('btn-delete-account').onclick = async () => {
-    const confirmed = await showConfirm('Hapus Akun Permanen?', 'Yakin mau hapus akun bre? Semua data transaksi, wishlist, dan budget kamu bakal ILANG SELAMANYA loh. Gak bisa dibalikin!');
-    if (confirmed) {
+  document.getElementById('btn-delete-account').onclick = () => {
+    const userFirebase = auth.currentUser;
+    if (!userFirebase) {
+      showAlert('Sesi Habis', 'Silakan login ulang untuk melanjutkan.', 'error');
+      return;
+    }
+
+    const providerId = userFirebase.providerData[0]?.providerId || 'password';
+
+    openDeleteAccountModal(providerId, async (passwordOrNull) => {
       showLoading();
       try {
+        // 1. Re-auth jika pakai password lokal
+        if (providerId === 'password' && passwordOrNull) {
+          const credential = EmailAuthProvider.credential(userFirebase.email, passwordOrNull);
+          await reauthenticateWithCredential(userFirebase, credential);
+        }
+
+        // 2. Hapus data dari Postgres via backend
         await store.deleteAccountRemote();
+
+        // 3. Hapus user dari Firebase Auth
+        await userFirebase.delete();
+
         hideLoading();
-        showToast('Akun dan data berhasil dihapus bre. Sampai jumpa!', 'success');
-        
+        showToast('Akun telah dihapus secara permanen.', 'success');
+
         setTimeout(() => {
           window.location.hash = '#login';
           window.location.reload();
         }, 2000);
       } catch (err) {
         hideLoading();
-        showAlert('Gagal Hapus Akun', err.message, 'error');
+        if (err.code === 'auth/wrong-password') {
+          showAlert('Gagal', 'Password yang Anda masukkan salah.', 'error');
+        } else if (err.code === 'auth/requires-recent-login') {
+          showAlert('Sesi Kedaluwarsa', 'Silakan logout dan login kembali sebelum menghapus akun demi keamanan.', 'warning');
+        } else {
+          showAlert('Gagal Hapus Akun', err.message, 'error');
+        }
       }
-    }
+    });
   };
 
   const toggle2FA = document.getElementById('toggle-2fa');
@@ -265,14 +290,14 @@ export function renderAkun() {
         const success = await store.update2FAStatus(true);
         hideLoading();
         if (success) {
-          showToast('2FA Aktif! Akun kamu sekarang super aman bre.', 'success');
+          showToast('2FA Aktif! Akun Anda sekarang lebih aman.', 'success');
         } else {
           e.target.checked = false;
           showToast('Gagal update status 2FA.', 'error');
         }
       } else {
         e.target.checked = false;
-        if (code !== null) showToast('Kode OTP salah bre!', 'error');
+        if (code !== null) showToast('Kode OTP tidak valid.', 'error');
       }
     } else {
       // Deactivate 2FA
@@ -291,7 +316,7 @@ export function renderAkun() {
 
     // Validasi tipe file
     if (!file.type.startsWith('image/')) {
-      return showAlert('Error', 'File harus berupa gambar bre!', 'error');
+      return showAlert('Error', 'Berkas harus berupa gambar.', 'error');
     }
 
     try {
@@ -358,13 +383,13 @@ export function renderAkun() {
 
       // 1. Frontend Validation
       if (newPass.length < 6) {
-        return showAlert('Validasi Gagal', 'Password baru minimal 6 karakter bre!', 'warning');
+        return showAlert('Validasi Gagal', 'Kata sandi baru minimal 6 karakter.', 'warning');
       }
       if (newPass !== confirmPass) {
-        return showAlert('Validasi Gagal', 'Konfirmasi password baru tidak cocok bre!', 'warning');
+        return showAlert('Validasi Gagal', 'Konfirmasi kata sandi baru tidak sesuai.', 'warning');
       }
 
-      const confirmed = await showConfirm('Konfirmasi Ubah Password', 'Password kamu bakal diganti dan kamu bakal otomatis logout bre. Lanjut?');
+      const confirmed = await showConfirm('Konfirmasi Ubah Kata Sandi', 'Kata sandi Anda akan diganti dan Anda akan otomatis keluar. Lanjutkan?');
       if (!confirmed) return;
 
       showLoading();

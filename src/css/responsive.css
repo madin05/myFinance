@@ -67,6 +67,8 @@
     margin-left: 0 !important;
     padding: 1rem;
     width: 100% !important;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   
   .header {
@@ -179,106 +181,109 @@
     height: 44px !important;
   }
 
-  /* Table to Card List */
-  .transactions-table, 
-  .transactions-table thead, 
-  .transactions-table tbody, 
-  .transactions-table th, 
-  .transactions-table td, 
-  .transactions-table tr { 
-    display: block; 
-    width: 100%;
+  /* ======================================
+     Table → Card List (Mobile)
+     
+     ====================================== */
+
+  /* 1. Reset semua td/tr ke block */
+  .transactions-table,
+  .transactions-table tbody,
+  .transactions-table tr,
+  .transactions-table td {
+    display: block !important;
+    width: 100% !important;
   }
 
-  .transactions-table thead {
-    display: none;
-  }
+  .transactions-table thead { display: none !important; }
 
-  .transactions-table tr {
-    padding: 1.25rem 0;
-    border-bottom: 1.5px solid var(--border);
-    position: relative;
-    display: flex;
+  /* 2. Tbody: stack cards */
+  .transactions-table tbody {
+    display: flex !important;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
   }
 
-  .transactions-table tr:last-child {
-    border-bottom: none;
+  /* 3. Tiap row = card */
+  .transactions-table tr {
+    width: 100% !important;
+    padding: 0.9rem 1rem !important;
+    border-radius: 16px !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border) !important;
+    position: relative !important;
+    min-height: 82px;
   }
 
+  /* 4. Reset semua td */
   .transactions-table td {
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
     width: auto !important;
-    position: static !important; /* Reset position */
+    display: block !important;
   }
 
-  /* Harga (5th child) - Top Right */
+  /* 5. Tanggal (td:1) — hidden, tampil di baris meta bawah */
+  .transactions-table td:nth-child(1) {
+    display: none !important;
+  }
+
+  /* 6. Kategori badge (td:2) — baris pertama */
+  .transactions-table td:nth-child(2) {
+    margin-bottom: 5px;
+    padding-right: 40% !important; /* ruang untuk harga */
+  }
+
+  /* 7. Metode (td:3) — teks kecil di bawah */
+  .transactions-table td:nth-child(3) {
+    font-size: 0.72rem !important;
+    color: var(--text-light) !important;
+    margin-top: 6px;
+  }
+
+  /* 8. Keterangan (td:4) — nama transaksi, baris kedua */
+  .transactions-table td:nth-child(4) {
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    color: var(--text-main) !important;
+    line-height: 1.4;
+    padding-right: 40% !important; /* ruang untuk harga */
+  }
+
+  /* 9. Harga (td:5) — absolute top-right */
   .transactions-table td:nth-child(5) {
     position: absolute !important;
-    right: 0 !important;
-    top: 1rem !important;
-    font-size: 1rem !important;
+    top: 0.9rem !important;
+    right: 1rem !important;
+    width: auto !important;
+    text-align: right !important;
+    font-size: 0.88rem !important;
     font-weight: 700 !important;
   }
 
-  /* Actions (6th child) - Bottom Right */
+  /* 10. Aksi/Kebab (td:6) — absolute bottom-right */
   .transactions-table td:nth-child(6) {
     position: absolute !important;
-    right: 0 !important;
-    bottom: 0.75rem !important;
-    display: flex !important;
-    gap: 12px !important;
-  }
-
-  .transactions-table td:nth-child(6) .icon-btn {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 1rem !important;
-    background: var(--bg-color) !important;
-    border-radius: 8px !important;
-  }
-
-  .transactions-table td:nth-child(4) {
-    font-weight: 600 !important;
-    color: var(--text-main) !important;
-    font-size: 0.9rem !important;
-    padding-right: 110px !important;
-    order: 2 !important;
-  }
-
-  .transactions-table td:nth-child(2) {
-    order: 1 !important;
-    margin-bottom: 2px !important;
+    bottom: 0.7rem !important;
+    right: 0.75rem !important;
+    width: auto !important;
   }
 
   .transactions-table .badge-soft {
-    padding: 2px 8px !important;
-    font-size: 0.7rem !important;
-  }
-
-  .transactions-table td:nth-child(1),
-  .transactions-table td:nth-child(3) {
-    display: inline-flex !important;
-    align-items: center !important;
-    font-size: 0.75rem !important;
-    color: var(--text-light) !important;
-    order: 3 !important;
-  }
-
-  .transactions-table td:nth-child(1) {
-    margin-top: 2px !important;
-  }
-
-  .transactions-table td:nth-child(3)::before {
-    content: "•";
-    margin: 0 6px !important;
+    padding: 2px 9px !important;
+    font-size: 0.68rem !important;
+    border-radius: 8px !important;
   }
 
   .transactions-table {
     min-width: 0 !important;
+  }
+
+  .transactions-table .kebab-dropdown {
+    right: 0 !important;
+    left: auto !important;
+    min-width: 140px;
   }
 
   .filter-popover {

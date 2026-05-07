@@ -17,6 +17,7 @@ model User {
   avatar            String?
   currency          String        @default("IDR")
   financialStartDay Int           @default(1)
+  balanceOffset     Float         @default(0)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   transactions      Transaction[]

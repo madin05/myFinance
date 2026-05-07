@@ -20,8 +20,7 @@
 }
 
 .table-container {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible !important; /* Supaya kebab dropdown tidak terpotong/terpotong di bawah card */
   width: 100%;
 }
 
@@ -34,13 +33,13 @@
 .transactions-table th {
   text-align: left;
   padding: 0.75rem 1rem;
-  color: var(--text-light);
+  color: var(--text-muted); /* Lebih kontras daripada text-light */
   font-weight: 600;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border);
-  background-color: var(--bg-color);
+  background-color: var(--border-light); /* Background yang solid di light/dark mode */
   white-space: nowrap;
 }
 

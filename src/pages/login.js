@@ -84,7 +84,7 @@ export function renderLogin(mode = 'login') {
 
       window.location.hash = '#dashboard';
     } catch (error) {
-      showToast('Login Google gagal bre! ' + error.message, 'error');
+      showToast('Login Google gagal! ' + error.message, 'error');
     } finally {
       hideLoading();
     }
@@ -110,7 +110,7 @@ export function renderLogin(mode = 'login') {
           uid: user.uid,
           provider: 'password'
         }, { password: pass });
-        showToast('Akun berhasil dibuat bre!', 'success');
+        showToast('Akun berhasil dibuat!', 'success');
       } else {
         // Handle Login (with Demo Fallback)
         if (email === 'guest' && pass === 'guest123') {

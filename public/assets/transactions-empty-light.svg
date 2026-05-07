@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <defs>
+    <linearGradient id="docGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5F3FF" />
+      <stop offset="100%" stop-color="#EDE9FE" />
+    </linearGradient>
+    <linearGradient id="accentGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="80" cy="80" r="60" fill="#FAF5FF" stroke="#F3E8FF" stroke-width="1.5" />
+  
+  <!-- Empty Document Shape -->
+  <rect x="55" y="45" width="50" height="70" rx="8" fill="url(#docGradLight)" stroke="#D8B4FE" stroke-width="2" />
+  
+  <!-- Lines in document representing text -->
+  <line x1="67" y1="65" x2="93" y2="65" stroke="#C084FC" stroke-width="3" stroke-linecap="round" />
+  <line x1="67" y1="77" x2="85" y2="77" stroke="#A78BFA" stroke-width="3" stroke-linecap="round" />
+  <line x1="67" y1="89" x2="91" y2="89" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round" />
+  
+  <!-- Magnifying glass or receipt symbol -->
+  <circle cx="95" cy="95" r="14" fill="#FFFFFF" stroke="url(#accentGradLight)" stroke-width="3" />
+  <line x1="105" y1="105" x2="115" y2="115" stroke="url(#accentGradLight)" stroke-width="4" stroke-linecap="round" />
+</svg>

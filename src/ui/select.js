@@ -59,14 +59,21 @@ export function initCustomSelects(container = document) {
     select.parentNode.insertBefore(wrapper, select.nextSibling);
     
     // Trigger logic
-    trigger.onclick = (e) => {
-      e.stopPropagation();
-      // Close other open selects
-      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-        if (w !== wrapper) w.classList.remove('open');
-      });
-      wrapper.classList.toggle('open');
-    };
+    if (select.disabled) {
+      wrapper.classList.add('disabled');
+      wrapper.style.opacity = '0.6';
+      wrapper.style.cursor = 'not-allowed';
+      trigger.style.pointerEvents = 'none';
+    } else {
+      trigger.onclick = (e) => {
+        e.stopPropagation();
+        // Close other open selects
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+      };
+    }
   });
 }
 

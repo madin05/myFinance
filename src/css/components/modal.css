@@ -4,7 +4,9 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center;          /* Pusatkan secara vertikal di desktop bre */
+  overflow-y: auto;              /* scroll terjadi di overlay (halaman), bukan di dalam box */
+  padding: 2rem 1rem;            /* jarak atas-bawah biar modal gak nempel viewport */
   z-index: 2000;
 }
 
@@ -15,6 +17,7 @@
   width: 100%;
   max-width: 500px;
   box-shadow: var(--shadow-lg);
+  /* TIDAK ada overflow / max-height di sini — biar scroll tetap di level halaman */
 }
 
 .modal-header {
@@ -67,7 +70,7 @@
   appearance: none; /* Hide default arrow */
 }
 
-/* Hide number spinners bre */
+/* Hide number spinners */
 .form-control::-webkit-outer-spin-button,
 .form-control::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -141,4 +144,17 @@ select.form-control {
 [data-theme="dark"] .color-radio input:checked + span {
   border-color: #1E1E1E;
   box-shadow: 0 0 0 2px var(--white);
+}
+
+/* Validation Styling */
+.is-invalid {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Responsive Modals Override */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-start !important; /* Biar form panjang tetap gampang di-scroll di HP bre */
+  }
 }

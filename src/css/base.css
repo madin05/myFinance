@@ -6,11 +6,59 @@
 
 body {
   font-family: var(--font-main);
-  background-color: var(--bg-color);
+  background: var(--bg-color);
+  background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden; /* Prevent horizontal scroll bre */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* ================================
+   Custom Scrollbar — Premium Thin
+   ================================ */
+
+/* Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 99px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.45);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark Mode scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(161, 161, 170, 0.2);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(161, 161, 170, 0.4);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.25) transparent;
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: rgba(161, 161, 170, 0.2) transparent;
 }
 
 /* Utilities */
