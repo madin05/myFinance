@@ -48,7 +48,7 @@
 
 .widget-primary {
   background-color: transparent !important;
-  background: linear-gradient(135deg, #E0F2FE 0%, #0369A1 100%) !important;
+  background: linear-gradient(135deg, #82bfe8 0%, #0a6ca1 100%) !important;
   border: none !important;
   box-shadow: 0 12px 24px -10px rgba(3, 105, 161, 0.3) !important;
   color: var(--white);

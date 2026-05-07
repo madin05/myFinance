@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 
 backend/firebase-service-account.json
+
+# Security & Environment
+.env
+.env.*
+backend/.env
+backend/.env.*
+
+# Local Archive (Not pushed to GitHub)
+archive/
