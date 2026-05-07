@@ -59,10 +59,19 @@ export function handleRoute() {
   
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
+    const icon = item.querySelector('i');
     item.classList.remove('active');
+    if (icon) {
+      icon.classList.remove('ph-fill');
+      icon.classList.add('ph');
+    }
     const itemRoute = item.getAttribute('href');
     if (itemRoute === route) {
       item.classList.add('active');
+      if (icon) {
+        icon.classList.remove('ph');
+        icon.classList.add('ph-fill');
+      }
     }
   });
 
