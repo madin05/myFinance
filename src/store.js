@@ -6,6 +6,7 @@ export const store = {
   transactions: JSON.parse(localStorage.getItem('transactions')) || [],
   savings: JSON.parse(localStorage.getItem('savings')) || [],
   budgets: JSON.parse(localStorage.getItem('budgets')) || [],
+  isSyncing: false,
   
   _mapTransaction(tx) {
     if (!tx) return null;
@@ -23,6 +24,7 @@ export const store = {
 
   async sync(extraData = {}) {
     if (!this.user?.token) return;
+    this.isSyncing = true;
     
     try {
       // 1. Sync User info (Upsert) - Sequential because it's foundational
@@ -76,6 +78,7 @@ export const store = {
     } catch (err) {
       console.error('Sync Error:', err);
     } finally {
+      this.isSyncing = false;
       // Final save to trigger a single UI refresh with all data loaded
       this.save();
     }
@@ -194,6 +197,7 @@ export const store = {
   },
 
   setUser(userData, extraData = {}) {
+    this.isSyncing = true;
     this.user = userData;
     this.save();
     this.sync(extraData);

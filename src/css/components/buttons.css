@@ -553,19 +553,19 @@
   pointer-events: auto;
 }
 
-/* Item 1: Lurus ke Kiri (Ganti dari serong biar gak bentrok) */
+/* Item 1: Diagonal Kiri-Atas (Wishlist) */
 #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
-  transform: scale(1) rotate(0deg) translateX(-70px);
+  transform: scale(1) rotate(0deg) translateX(-53px) translateY(-53px);
 }
 
-/* Item 2: Lurus ke Atas */
+/* Item 2: Lurus ke Atas (Tambah Transaksi) */
 #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-  transform: scale(1) rotate(0deg) translateY(-70px);
+  transform: scale(1) rotate(0deg) translateY(-75px);
 }
 
-/* Item 3: Lurus ke Kiri + Spin */
+/* Item 3: Lurus ke Kiri (Kalkulator) */
 #fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
-  transform: scale(1) rotate(0deg) translateX(-65px);
+  transform: scale(1) rotate(0deg) translateX(-75px);
 }
 
 .fam-anchor {
@@ -673,11 +673,15 @@
   }
 
   #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
-    transform: scale(1) rotate(0deg) translateY(-60px);
+    transform: scale(1) rotate(0deg) translateX(-45px) translateY(-45px);
   }
 
   #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-    transform: scale(1) rotate(0deg) translateX(-50px) translateY(-50px);
+    transform: scale(1) rotate(0deg) translateY(-65px);
+  }
+
+  #fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
+    transform: scale(1) rotate(0deg) translateX(-65px);
   }
 
   .fam-anchor:hover {

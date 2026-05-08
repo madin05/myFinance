@@ -19,38 +19,37 @@
     top: 0;
     transform: translateX(-100%);
     z-index: 1100;
-    width: var(--sidebar-width);
+    width: var(--sidebar-width) !important;
     box-shadow: var(--shadow-lg);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .sidebar.mobile-active {
     transform: translateX(0);
-    width: var(--sidebar-width) !important;
   }
 
-  .sidebar.mobile-active .logo-container {
+  .sidebar .logo-container {
     justify-content: space-between !important;
-    padding: 0 0.3rem !important; /* ATUR JARAK MANUAL DI SINI (0 = nempel banget, makin besar makin ke tengah) */
+    padding: 0 0.3rem !important; 
     width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     margin-bottom: 2.5rem !important;
   }
 
-  .sidebar.mobile-active .logo-wrapper,
-  .sidebar.mobile-active .nav-item span,
-  .sidebar.mobile-active .sidebar-footer .btn span {
+  .sidebar .logo-wrapper,
+  .sidebar .nav-item span,
+  .sidebar .sidebar-footer .btn span {
     display: flex !important;
   }
 
-  .sidebar.mobile-active .nav-item,
-  .sidebar.mobile-active .sidebar-footer .btn {
+  .sidebar .nav-item,
+  .sidebar .sidebar-footer .btn {
     padding-right: 1.5rem !important;
     justify-content: flex-start !important;
   }
 
-  .sidebar.mobile-active #btn-tambah-global {
+  .sidebar #btn-tambah-global {
     width: 100% !important;
     height: 50px !important;
     padding: 0 1.5rem !important;
@@ -58,7 +57,7 @@
     border-radius: 12px !important;
   }
 
-  .sidebar.mobile-active #btn-tambah-global span {
+  .sidebar #btn-tambah-global span {
     display: inline !important;
   }
 
@@ -367,7 +366,7 @@
   }
 
   /* Sidebar Buttons Visibility */
-  .sidebar.mobile-active #btn-toggle-sidebar {
+  #btn-toggle-sidebar {
     display: none !important;
   }
 
