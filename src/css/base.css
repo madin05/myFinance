@@ -222,3 +222,49 @@ input::-webkit-calendar-picker-indicator {
 input::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* ==========================================================================
+   PERFORMANCE MODE & LAYOUT DENSITY (CUSTOMIZATION & ACCESSIBILITY)
+   ========================================================================== */
+
+/* Mode Hemat Kinerja (Disable Animations, Transitions, Backdrop Blurs & Glows) */
+body.disable-animations * {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.disable-animations .glow-layer-1,
+body.disable-animations .glow-layer-2,
+body.disable-animations .stat-watermark {
+  display: none !important;
+}
+
+/* Memaksa jarum sinar matahari (Sun rays) langsung mekar statis saat mode hemat aktif */
+body.disable-animations .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunRay {
+  transform: scale(1) !important;
+}
+
+/* Tata Letak Ringkas (Compact Layout Density Mode) */
+body.layout-compact {
+  --spacing-lg: 0.75rem;
+  --spacing-xl: 1rem;
+}
+
+body.layout-compact .main-content {
+  padding: 0.75rem 1rem !important;
+}
+
+body.layout-compact .stat-card {
+  padding: 1rem 1.25rem !important;
+}
+
+body.layout-compact .transactions-table th,
+body.layout-compact .transactions-table td {
+  padding: 0.5rem 0.75rem !important;
+}
+
+body.layout-compact .section-header {
+  margin-bottom: 1rem !important;
+}

@@ -21,14 +21,14 @@
 
 .login-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.45) !important; /* Translucent glass white in Light Mode */
-  border: 1.5px solid rgba(255, 255, 255, 0.45) !important; /* Specular highlight border */
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(255, 255, 255, 0.30) !important; /* Lebih transparan agar elemen glow di belakang membiaskan warna indah */
+  border: 1.5px solid rgba(255, 255, 255, 0.45) !important; /* Border highlight specular yang tajam */
+  backdrop-filter: blur(50px) saturate(220%);
+  -webkit-backdrop-filter: blur(50px) saturate(220%);
   padding: 2.5rem;
   border-radius: var(--radius-xl);
   box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.12),
-              inset 0 1px 0 rgba(255, 255, 255, 0.5) !important; /* Internal top edge highlight */
+              inset 0 1px 0 rgba(255, 255, 255, 0.5) !important; /* Refleksi cahaya di bibir atas kartu */
   width: 100%;
   max-width: 420px;
   text-align: center;
@@ -37,12 +37,12 @@
 }
 
 [data-theme="dark"] .login-card {
-  background: rgba(21, 18, 27, 0.45) !important; /* Translucent glass deep violet in Dark Mode */
-  border: 1.5px solid rgba(255, 255, 255, 0.08) !important; /* Highlighted fine edge */
+  background: rgba(21, 18, 27, 0.30) !important; /* Translucent glass deep violet yang sangat mewah */
+  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 20px 50px rgba(11, 7, 22, 0.65),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important; /* Bright top edge glow */
-  backdrop-filter: blur(25px) saturate(200%);
-  -webkit-backdrop-filter: blur(25px) saturate(200%);
+              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important; /* Glow neon tipis pada tepian atas */
+  backdrop-filter: blur(50px) saturate(240%);
+  -webkit-backdrop-filter: blur(50px) saturate(240%);
 }
 
 .login-card h2 {
@@ -62,29 +62,33 @@
 }
 
 .login-card .form-control {
-  background: rgba(255, 255, 255, 0.5) !important; /* Transparent glass inputs in Light Mode */
+  background: rgba(255, 255, 255, 0.35) !important; /* Input kaca super mulus */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(15, 23, 42, 0.08) !important;
-  color: #1e293b !important; /* Dark Slate text for high readability */
+  color: #1e293b !important; /* Dark Slate text untuk visibilitas sempurna */
   font-weight: 500 !important;
   font-size: 0.9rem !important;
   transition: all 0.2s ease-in-out !important;
 }
 
 .login-card .form-control::placeholder {
-  color: #64748b !important; /* Slate-500 placeholder for perfect light-mode readability */
+  color: #64748b !important;
   opacity: 0.8 !important;
 }
 
 .login-card .form-control:focus {
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.65) !important;
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 3px var(--primary-light) !important;
 }
 
 [data-theme="dark"] .login-card .form-control {
-  background: rgba(255, 255, 255, 0.04) !important; /* Deep translucent dark inputs in Dark Mode */
+  background: rgba(255, 255, 255, 0.02) !important; /* Kaca gelap transparan */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #f8fafc !important; /* Pure white typed text */
+  color: #f8fafc !important;
 }
 
 [data-theme="dark"] .login-card .form-control::placeholder {
@@ -312,30 +316,34 @@
     display: none !important;
   }
   .login-card {
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
     box-shadow: var(--shadow-md);
   }
 }
 
 #btn-google-login {
-  background: rgba(255, 255, 255, 0.5) !important; /* Transparent glass button in Light Mode */
+  background: rgba(255, 255, 255, 0.35) !important; /* Tombol google dengan efek kaca */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(15, 23, 42, 0.08) !important;
-  color: #1e293b !important; /* Dark Slate text for high readability */
+  color: #1e293b !important;
   font-weight: 600 !important;
   font-size: 0.9rem !important;
   transition: all 0.2s ease-in-out !important;
 }
 
 #btn-google-login:hover {
-  background: rgba(255, 255, 255, 0.75) !important; /* Higher opacity glass on hover */
+  background: rgba(255, 255, 255, 0.55) !important;
   border-color: rgba(15, 23, 42, 0.15) !important;
 }
 
 [data-theme="dark"] #btn-google-login {
-  background: rgba(255, 255, 255, 0.03) !important; /* Translucent glass button in Dark Mode */
-  border: 1.5px solid rgba(255, 255, 255, 0.08) !important; /* Crisp translucent border */
-  color: #f8fafc !important; /* Bright white text in Dark Mode */
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
 }
 
 [data-theme="dark"] #btn-google-login:hover {

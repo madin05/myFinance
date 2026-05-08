@@ -87,6 +87,14 @@ export function initNavigation() {
   if (localStorage.getItem('sidebar-collapsed') === 'true') {
     layout.classList.add('sidebar-collapsed');
   }
+
+  // Inisialisasi preferensi kustomisasi & kinerja pengguna
+  if (localStorage.getItem('disable-animations') === 'true') {
+    document.body.classList.add('disable-animations');
+  }
+  if (localStorage.getItem('layout-density') === 'compact') {
+    document.body.classList.add('layout-compact');
+  }
 }
 
 export function closeMobileSidebar() {

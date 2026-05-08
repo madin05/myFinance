@@ -27,44 +27,76 @@ export const store = {
     this.isSyncing = true;
     
     try {
-      // 1. Sync User info (Upsert) - Sequential because it's foundational
-      const userRes = await fetch(`${API_URL}/users/sync`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}` 
-        },
-        body: JSON.stringify(extraData),
-        credentials: 'include'
-      });
+      // Jika user sudah ada di local storage (bukan pendaftaran baru), lakukan seluruh fetch secara PARALEL!
+      // Ini akan memotong latency jaringan hingga 3x lipat dengan menghilangkan network waterfall.
+      const isFirstTime = !this.user?.id && this.transactions.length === 0;
       
-      if (userRes.ok) {
-        const dbUser = await userRes.json();
-        this.user = { ...this.user, ...dbUser };
-        // Save user info immediately to update avatar/name in sidebar
-        this.save();
+      if (isFirstTime) {
+        // Skenario User Baru: Harus sekuensial agar user terdaftar di Postgres terlebih dahulu
+        const userRes = await fetch(`${API_URL}/users/sync`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.user.token}` 
+          },
+          body: JSON.stringify(extraData),
+          credentials: 'include'
+        });
+        
+        if (userRes.ok) {
+          const dbUser = await userRes.json();
+          this.user = { ...this.user, ...dbUser };
+          this.save();
+        }
       }
 
-      // 2. Fetch everything else in PARALLEL to boost performance
-      const [txRes, budgetRes, savingRes] = await Promise.all([
+      // Siapkan antrean fetch data secara paralel
+      const fetchPromises = [
         fetch(`${API_URL}/transactions`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' }),
         fetch(`${API_URL}/budgets`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' }),
         fetch(`${API_URL}/savings`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' })
-      ]);
+      ];
+
+      // Jika bukan user baru, jalankan sync user secara paralel juga!
+      if (!isFirstTime) {
+        fetchPromises.push(
+          fetch(`${API_URL}/users/sync`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${this.user.token}` 
+            },
+            body: JSON.stringify(extraData),
+            credentials: 'include'
+          })
+        );
+      }
+
+      const results = await Promise.all(fetchPromises);
+      const txRes = results[0];
+      const budgetRes = results[1];
+      const savingRes = results[2];
+      const userRes = results[3]; // Hanya akan ada nilainya jika bukan isFirstTime
+
+      // Process User Sync jika dijalankan paralel
+      if (userRes && userRes.ok) {
+        const dbUser = await userRes.json();
+        this.user = { ...this.user, ...dbUser };
+      }
 
       // Process Transactions
-      if (txRes.ok) {
+      if (txRes && txRes.ok) {
         const dbTxs = await txRes.json();
         this.transactions = dbTxs.map(tx => this._mapTransaction(tx));
       }
 
       // Process Budgets
-      if (budgetRes.ok) {
+      if (budgetRes && budgetRes.ok) {
         this.budgets = await budgetRes.json();
       }
 
       // Process Savings
-      if (savingRes.ok) {
+      if (savingRes && savingRes.ok) {
         const dbSavings = await savingRes.json();
         this.savings = dbSavings.map(s => ({
           id: s.id,
@@ -80,7 +112,7 @@ export const store = {
       console.error('Sync Error:', err);
     } finally {
       this.isSyncing = false;
-      // Final save to trigger a single UI refresh with all data loaded
+      // Final save untuk memicu satu kali refresh UI instan dengan seluruh data terisi
       this.save();
     }
   },
@@ -159,10 +191,18 @@ export const store = {
       const nameElements = document.querySelectorAll('.user-name, #user-name-display, #nav-user-name');
       const emailElements = document.querySelectorAll('.user-email, #nav-user-email');
       
-      const avatarUrl = this.user.avatar || 'https://ui-avatars.com/api/?name=' + this.user.name;
+      const avatarUrl = this.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=7C3AED&color=fff&bold=true`;
       
       avatarElements.forEach(el => {
         if (el.tagName === 'IMG') {
+          // Fallback system jika gambar profil (dari Google dll) gagal dimuat
+          el.onerror = () => {
+            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=7C3AED&color=fff&bold=true`;
+            if (el.src !== fallbackUrl) {
+              el.src = fallbackUrl;
+            }
+          };
+
           // Hanya pasang src kalau beda (biar gak flicker)
           if (el.getAttribute('data-src-loaded') !== avatarUrl) {
             el.src = avatarUrl;
@@ -203,16 +243,16 @@ export const store = {
     this.save();
 
     if (userData?.token) {
-      try {
-        await fetch(`${API_URL}/auth/session`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken: userData.token }),
-          credentials: 'include'
-        });
-      } catch (err) {
+      // Jalankan pembuatan session cookie secara asynchronous di background (non-blocking)
+      // agar proses sinkronisasi data utama (sync) bisa langsung dieksekusi tanpa tertunda!
+      fetch(`${API_URL}/auth/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: userData.token }),
+        credentials: 'include'
+      }).catch(err => {
         console.error('Gagal membuat session cookie:', err);
-      }
+      });
     }
 
     this.sync(extraData);

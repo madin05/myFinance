@@ -285,15 +285,27 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
         <form id="form-adjust-balance">
           <div class="form-group">
             <label style="font-weight:700;">Saldo Riilmu Sekarang (Rp)</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              id="input-real-balance" 
-              placeholder="Contoh: 598.334,82" 
-              inputmode="decimal"
-              autocomplete="off"
-              required
-            >
+            <div style="position: relative; width: 100%;">
+              <input 
+                type="text" 
+                class="form-control" 
+                id="input-real-balance" 
+                placeholder="Contoh: 598.334,82" 
+                inputmode="decimal"
+                autocomplete="off"
+                required
+                style="padding-right: 40px;"
+              >
+              <button 
+                type="button" 
+                id="btn-clear-balance" 
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.25rem; padding: 0; transition: color 0.2s;"
+                onmouseenter="this.style.color='var(--red)'"
+                onmouseleave="this.style.color='var(--text-muted)'"
+              >
+                <i class="ph ph-x-circle"></i>
+              </button>
+            </div>
             <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;">Gunakan <strong>koma</strong> untuk desimal. Contoh: <code style="background:var(--bg-color);padding:1px 5px;border-radius:4px;">598.334,82</code></p>
           </div>
 
@@ -321,6 +333,17 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
   const input = document.getElementById('input-real-balance');
   const preview = document.getElementById('adjust-preview');
   const submitBtn = document.getElementById('btn-submit-adjust');
+  const clearBtn = document.getElementById('btn-clear-balance');
+
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      input.value = '';
+      clearBtn.style.display = 'none';
+      preview.style.display = 'none';
+      submitBtn.disabled = true;
+      input.focus();
+    };
+  }
 
   // Helper: parse "598.334,82" → 598334.82
   const parseIDR = (str) => {
@@ -339,6 +362,9 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
   // Real-time preview
   input.addEventListener('input', (e) => {
     const rawValue = e.target.value;
+    if (clearBtn) {
+      clearBtn.style.display = rawValue ? 'flex' : 'none';
+    }
     if (!rawValue.endsWith(',')) {
       e.target.value = formatIDRInput(rawValue);
     }
