@@ -401,10 +401,9 @@ export function renderAkun() {
         showToast('Password berhasil diubah, silakan login ulang', 'success');
         
         // 3. Auto Logout & Redirect
-        setTimeout(() => {
-          store.logout();
-          navigateTo('/login');
-          window.location.reload();
+        setTimeout(async () => {
+          await store.logout();
+          window.location.href = '/login';
         }, 2000);
         
       } catch (err) {

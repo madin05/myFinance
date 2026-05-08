@@ -9,7 +9,124 @@ export function renderLogin(mode = 'login') {
   const isReg = mode === 'register';
 
   container.innerHTML = `
-    <div class="login-container">
+    <div class="login-container" id="login-parallax-container">
+      
+      <!-- BACKGROUND GLOWS (layer-back) -->
+      <div class="parallax-layer layer-back glow-layer-1" data-depth="0.10" style="left: -10%; top: -10%; width: 600px; height: 600px; border-radius: 50%; filter: blur(50px);"></div>
+      <div class="parallax-layer layer-back glow-layer-2" data-depth="0.10" style="right: -10%; bottom: -10%; width: 600px; height: 600px; border-radius: 50%; filter: blur(50px);"></div>
+
+      <!-- DYNAMIC DRIFTING CLOUDS CONTAINER -->
+      <div id="login-cloud-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;"></div>
+
+      <!-- MIDGROUND DECORATIONS (layer-mid) -->
+      <!-- Floating Gold Coin (Left-Bottom) -->
+      <div class="parallax-layer layer-mid" data-depth="0.25" style="left: 22%; bottom: 15%;">
+        <div class="mascot-interactive floating-element" id="item-coin-small">
+          <div class="mascot-bubble" id="bubble-coin-small">Koin keberuntungan!</div>
+          <svg viewBox="0 0 100 100" width="70" height="70" style="filter: drop-shadow(0 8px 16px rgba(245, 158, 11, 0.25));">
+            <circle cx="50" cy="50" r="40" fill="url(#goldGrad)" />
+            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3" />
+            <path d="M50,30 L50,70 M40,40 L60,40 M40,60 L60,60" stroke="#fff" stroke-width="5" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Floating Wallet (Right-Top) -->
+      <div class="parallax-layer layer-mid" data-depth="0.30" style="right: 20%; top: 18%;">
+        <div class="mascot-interactive floating-element-reverse" id="item-wallet">
+          <div class="mascot-bubble" id="bubble-wallet">Simpan uangmu aman!</div>
+          <svg viewBox="0 0 100 100" width="80" height="80" style="filter: drop-shadow(0 8px 16px rgba(124, 58, 237, 0.25));">
+            <rect x="15" y="25" width="70" height="50" rx="12" fill="url(#purpleGrad)" />
+            <path d="M55,35 H85 V65 H55 Z" fill="#6d28d9" />
+            <circle cx="70" cy="50" r="6" fill="#fbbf24" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- FOREGROUND MASCOTS (layer-front) -->
+      <!-- Mascot 1: Cute Flying Piggy Bank (Left-Mid) -->
+      <div class="parallax-layer layer-front" data-depth="0.45" style="left: 10%; top: 22%;">
+        <div class="mascot-interactive floating-element" id="mascot-pig">
+          <div class="mascot-bubble" id="bubble-pig">Oink oink! Klik aku!</div>
+          <svg viewBox="0 0 160 160" width="145" height="145" style="filter: drop-shadow(0 12px 24px rgba(244, 63, 94, 0.35));">
+            <!-- Small Angel Wings (Flapping Anim) -->
+            <path class="wing-left-anim" d="M35,65 Q10,40 30,30 Q45,35 40,60" fill="#fff" opacity="0.9" style="transform-origin: 40px 60px;" />
+            <path class="wing-right-anim" d="M125,65 Q150,40 130,30 Q115,35 120,60" fill="#fff" opacity="0.9" style="transform-origin: 120px 60px;" />
+            
+            <!-- Chubby Piggy Body (Pink Gradient) -->
+            <ellipse cx="80" cy="85" rx="55" ry="45" fill="url(#pigGrad)" />
+            
+            <!-- Curly Tail -->
+            <path d="M25,85 Q10,75 15,65 Q22,65 18,75" fill="none" stroke="#f472b6" stroke-width="4" stroke-linecap="round" />
+            
+            <!-- Pointy Pig Ears -->
+            <polygon points="45,50 35,25 55,35" fill="#f472b6" />
+            <polygon points="43,48 37,28 51,36" fill="#f43f5e" />
+            <polygon points="115,50 125,25 105,35" fill="#f472b6" />
+            <polygon points="117,48 123,28 109,36" fill="#f43f5e" />
+            
+            <!-- Snout -->
+            <ellipse cx="80" cy="98" rx="16" ry="11" fill="#f472b6" stroke="#f43f5e" stroke-width="1.5" />
+            <!-- Nostrils -->
+            <circle cx="74" cy="98" r="3" fill="#be185d" />
+            <circle cx="86" cy="98" r="3" fill="#be185d" />
+            
+            <!-- Eyes (With Classes for Cursor Gaze Tracking) -->
+            <circle cx="58" cy="74" r="5" fill="#1e1b4b" class="pig-eye" />
+            <circle cx="102" cy="74" r="5" fill="#1e1b4b" class="pig-eye" />
+            <circle cx="56" cy="72" r="2" fill="#fff" class="pig-eye-pupil" />
+            <circle cx="100" cy="72" r="2" fill="#fff" class="pig-eye-pupil" />
+            
+            <!-- Blush Cheeks -->
+            <circle cx="48" cy="84" r="7" fill="#f43f5e" opacity="0.35" />
+            <circle cx="112" cy="84" r="7" fill="#f43f5e" opacity="0.35" />
+            
+            <!-- Coin Slot on top -->
+            <rect x="72" y="44" width="16" height="5" rx="2" fill="#be185d" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Mascot 2: Cute Purple Robot (Right-Bottom) -->
+      <div class="parallax-layer layer-front" data-depth="0.55" style="right: 10%; bottom: 15%;">
+        <div class="mascot-interactive floating-element-reverse" id="mascot-robot">
+          <div class="mascot-bubble" id="bubble-robot">Halo manusia cerdas!</div>
+          <svg viewBox="0 0 140 140" width="130" height="130" style="filter: drop-shadow(0 12px 24px rgba(124, 58, 237, 0.35));">
+            <rect x="25" y="25" width="90" height="90" rx="30" fill="url(#mascotRobot)" />
+            <rect x="35" y="40" width="70" height="45" rx="15" fill="#1e1b4b" />
+            <!-- Eyes (With Classes for Cursor Gaze Tracking) -->
+            <ellipse cx="53" cy="62" rx="4" ry="7" fill="#60a5fa" class="robot-eye" />
+            <ellipse cx="87" cy="62" rx="4" ry="7" fill="#60a5fa" class="robot-eye" />
+            <path d="M62,72 Q70,78 78,72" fill="none" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" />
+            <line x1="70" y1="25" x2="70" y2="12" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
+            <circle cx="70" cy="10" r="6" fill="#fbbf24" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- SVGs GRADIENTS FOR MASCOTS -->
+      <svg width="0" height="0" style="position: absolute;">
+        <defs>
+          <radialGradient id="pigGrad" cx="50%" cy="40%" r="50%">
+            <stop offset="0%" stop-color="#fbcfe8" />
+            <stop offset="100%" stop-color="#ec4899" />
+          </radialGradient>
+          <linearGradient id="mascotRobot" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a78bfa" />
+            <stop offset="100%" stop-color="#7c3aed" />
+          </linearGradient>
+          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fcd34d" />
+            <stop offset="100%" stop-color="#f59e0b" />
+          </linearGradient>
+          <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c084fc" />
+            <stop offset="100%" stop-color="#818cf8" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <!-- MAIN GLASSMORPHISM CARD -->
       <div class="login-card">
         <div class="logo-icon" style="margin: 0 auto 1.5rem; text-align: center; width: 140px;">
           <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
@@ -33,7 +150,7 @@ export function renderLogin(mode = 'login') {
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" id="password" class="form-control" required>
+            <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required>
           </div>
           <button type="submit" class="btn btn-primary btn-full mt-md">
             ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
@@ -69,6 +186,20 @@ export function renderLogin(mode = 'login') {
   // Google Login Logic
   document.getElementById('btn-google-login').onclick = async () => {
     showLoading();
+    
+    let handleFocusFallback;
+    
+    const setupFocusTracker = setTimeout(() => {
+      handleFocusFallback = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay && overlay.style.display === 'flex') {
+          hideLoading();
+          window.removeEventListener('focus', handleFocusFallback);
+        }
+      };
+      window.addEventListener('focus', handleFocusFallback);
+    }, 1200);
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
@@ -85,8 +216,20 @@ export function renderLogin(mode = 'login') {
 
       navigateTo('/dashboard');
     } catch (error) {
-      showToast('Login Google gagal! ' + error.message, 'error');
+      clearTimeout(setupFocusTracker);
+      if (handleFocusFallback) {
+        window.removeEventListener('focus', handleFocusFallback);
+      }
+      
+      // Jika dibatalkan oleh user, tidak perlu menampilkan notifikasi apa pun (langsung tutup loading saja)
+      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+        showToast('Login Google gagal! ' + (error.message || error), 'error');
+      }
     } finally {
+      clearTimeout(setupFocusTracker);
+      if (handleFocusFallback) {
+        window.removeEventListener('focus', handleFocusFallback);
+      }
       hideLoading();
     }
   };
@@ -140,4 +283,185 @@ export function renderLogin(mode = 'login') {
       hideLoading();
     }
   };
+
+  // List of cute finance quotes for click interactions
+  const quotes = [
+    "Yuk hemat bareng aku!",
+    "Sssst, kurangi jajan kopi ya!",
+    "Tabunganmu aman bersamaku!",
+    "Gajian sebentar lagi datang!",
+    "Ayo raih wishlist impianmu!",
+    "Kelola uang lebih cerdas!",
+    "Yuk catat pengeluaranmu!",
+    "Don't worry, be hemat!"
+  ];
+
+  // Quotes khusus si Babi Terbang
+  const pigQuotes = [
+    "Celengan babi terbang siap meluncur!",
+    "Oink oink! Tabung uangmu di sini!",
+    "Sayapku kepak-kepak demi masa depanmu!",
+    "Aku terbang karena beban tabunganmu ringan!",
+    "Oink! Siap terbang raih mimpimu!",
+    "Koin masuk, hatiku senang!"
+  ];
+
+  // Helper function to handle mascot click interactions
+  const initMascotInteraction = (mascotId, bubbleId, customQuotes = null) => {
+    const mascot = document.getElementById(mascotId);
+    const bubble = document.getElementById(bubbleId);
+    const quoteList = customQuotes || quotes;
+
+    if (mascot && bubble) {
+      mascot.onclick = (e) => {
+        e.stopPropagation(); // Prevent parallax reset
+
+        // Trigger Spin Animation
+        mascot.classList.add('mascot-spin');
+        setTimeout(() => {
+          mascot.classList.remove('mascot-spin');
+        }, 600);
+
+        // Pick a random quote
+        const randomQuote = quoteList[Math.floor(Math.random() * quoteList.length)];
+        bubble.textContent = randomQuote;
+        
+        // Show Bubble
+        bubble.classList.add('active');
+
+        // Hide Bubble after 3.5 seconds
+        if (mascot.bubbleTimeout) clearTimeout(mascot.bubbleTimeout);
+        mascot.bubbleTimeout = setTimeout(() => {
+          bubble.classList.remove('active');
+        }, 3500);
+      };
+    }
+  };
+
+  // Initialize click interactions for all 4 interactive elements
+  initMascotInteraction('mascot-pig', 'bubble-pig', pigQuotes);
+  initMascotInteraction('mascot-robot', 'bubble-robot');
+  initMascotInteraction('item-coin-small', 'bubble-coin-small');
+  initMascotInteraction('item-wallet', 'bubble-wallet');
+
+  // 3D Parallax & Mascot Gaze Tracking (Desktop Only) with Wide Gliding Range
+  const parallaxContainer = document.getElementById('login-parallax-container');
+  if (parallaxContainer && window.innerWidth > 991) {
+    parallaxContainer.onmousemove = (e) => {
+      const { width, height } = parallaxContainer.getBoundingClientRect();
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      const layers = parallaxContainer.querySelectorAll('.parallax-layer');
+      layers.forEach(layer => {
+        const depth = parseFloat(layer.getAttribute('data-depth'));
+        // Standard Parallax Movement
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const deltaX = mouseX - centerX;
+        const deltaY = mouseY - centerY;
+        const moveX = deltaX * depth * 0.45;
+        const moveY = deltaY * depth * 0.45;
+
+        // 3D Head-Turn Face Tilt Angles
+        const rotateY = (deltaX / width) * 25; // up to 25 deg
+        const rotateX = -(deltaY / height) * 25; // up to -25 deg
+
+        layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      });
+
+      // Mascot Eye Gaze Tracking
+      const trackEyes = (mascotId, eyeClass) => {
+        const mascot = document.getElementById(mascotId);
+        if (!mascot) return;
+        const rect = mascot.getBoundingClientRect();
+        const mascotCenterX = rect.left + rect.width / 2;
+        const mascotCenterY = rect.top + rect.height / 2;
+
+        const dx = mouseX - mascotCenterX;
+        const dy = mouseY - mascotCenterY;
+        const angle = Math.atan2(dy, dx);
+        
+        // Eyes smoothly slide up to 4px inside their sockets toward the cursor
+        const eyeX = Math.cos(angle) * 4;
+        const eyeY = Math.sin(angle) * 4;
+
+        const eyes = mascot.querySelectorAll(eyeClass);
+        eyes.forEach(eye => {
+          eye.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
+        });
+      };
+
+      trackEyes('mascot-pig', '.pig-eye, .pig-eye-pupil');
+      trackEyes('mascot-robot', '.robot-eye');
+    };
+
+    parallaxContainer.onmouseleave = () => {
+      const layers = parallaxContainer.querySelectorAll('.parallax-layer');
+      layers.forEach(layer => {
+        layer.style.transform = 'translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg)';
+      });
+
+      // Reset eyes
+      document.querySelectorAll('.pig-eye, .pig-eye-pupil, .robot-eye').forEach(eye => {
+        eye.style.transform = 'translate(0px, 0px)';
+      });
+    };
+  }
+
+  // Dynamic Cloud Generator (Desktop Only)
+  const cloudContainer = document.getElementById('login-cloud-container');
+  if (cloudContainer && window.innerWidth > 991) {
+    const cloudCount = 6;
+    let cloudHTML = '';
+
+    for (let i = 0; i < cloudCount; i++) {
+      // Determine random sizes: small, normal, large
+      const sizeIndex = Math.floor(Math.random() * 3); // 0, 1, 2
+      let width, height, opacity, speedMult;
+      
+      if (sizeIndex === 0) {
+        // Small
+        width = Math.floor(Math.random() * 30) + 45; // 45px - 75px
+        height = Math.floor(width * 0.6);
+        opacity = 0.25;
+        speedMult = 1.35; // Flows faster
+      } else if (sizeIndex === 1) {
+        // Normal
+        width = Math.floor(Math.random() * 40) + 80; // 80px - 120px
+        height = Math.floor(width * 0.6);
+        opacity = 0.35;
+        speedMult = 1.0;
+      } else {
+        // Large
+        width = Math.floor(Math.random() * 50) + 130; // 130px - 180px
+        height = Math.floor(width * 0.6);
+        opacity = 0.45;
+        speedMult = 0.72; // Flows slower
+      }
+
+      const top = Math.floor(Math.random() * 75) + 8; // Spread between 8% and 83% top
+      const duration = Math.floor((Math.random() * 35 + 45) / speedMult); // 45s - 80s adjusted by speed multiplier
+      const delay = -Math.floor(Math.random() * duration); // Negative delay for instant pre-spawn!
+
+      // Drifting direction starting from screen corners (left-to-right or right-to-left)
+      const directionClass = Math.random() > 0.5 ? 'cloud-drift-left-to-right' : 'cloud-drift-right-to-left';
+
+      cloudHTML += `
+        <div class="cloud-ornament" style="
+          top: ${top}%;
+          animation: ${directionClass} ${duration}s linear infinite;
+          animation-delay: ${delay}s;
+          opacity: ${opacity};
+          position: absolute;
+          pointer-events: none;
+        ">
+          <svg viewBox="0 0 100 60" width="${width}" height="${height}">
+            <path d="M20,45 A15,15 0 0,1 30,20 A20,20 0 0,1 70,20 A15,15 0 0,1 80,45 Z" fill="currentColor" />
+          </svg>
+        </div>
+      `;
+    }
+    cloudContainer.innerHTML = cloudHTML;
+  }
 }
