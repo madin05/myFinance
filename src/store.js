@@ -34,7 +34,8 @@ export const store = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.user.token}` 
         },
-        body: JSON.stringify(extraData)
+        body: JSON.stringify(extraData),
+        credentials: 'include'
       });
       
       if (userRes.ok) {
@@ -46,9 +47,9 @@ export const store = {
 
       // 2. Fetch everything else in PARALLEL to boost performance
       const [txRes, budgetRes, savingRes] = await Promise.all([
-        fetch(`${API_URL}/transactions`, { headers: { 'Authorization': `Bearer ${this.user.token}` } }),
-        fetch(`${API_URL}/budgets`, { headers: { 'Authorization': `Bearer ${this.user.token}` } }),
-        fetch(`${API_URL}/savings`, { headers: { 'Authorization': `Bearer ${this.user.token}` } })
+        fetch(`${API_URL}/transactions`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' }),
+        fetch(`${API_URL}/budgets`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' }),
+        fetch(`${API_URL}/savings`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' })
       ]);
 
       // Process Transactions
@@ -196,10 +197,24 @@ export const store = {
     }
   },
 
-  setUser(userData, extraData = {}) {
+  async setUser(userData, extraData = {}) {
     this.isSyncing = true;
     this.user = userData;
     this.save();
+
+    if (userData?.token) {
+      try {
+        await fetch(`${API_URL}/auth/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: userData.token }),
+          credentials: 'include'
+        });
+      } catch (err) {
+        console.error('Gagal membuat session cookie:', err);
+      }
+    }
+
     this.sync(extraData);
   },
 
@@ -308,7 +323,7 @@ export const store = {
     }
   },
 
-  logout() {
+  async logout() {
     this.user = null;
     this.transactions = [];
     this.savings = [];
@@ -318,6 +333,13 @@ export const store = {
     localStorage.removeItem('transactions');
     localStorage.removeItem('savings');
     localStorage.removeItem('budgets');
+
+    // Clear backend session cookie
+    try {
+      await fetch(`${API_URL}/auth/session`, { method: 'DELETE', credentials: 'include' });
+    } catch (err) {
+      console.error('Gagal menghapus session cookie:', err);
+    }
   },
 
   async addTransaction(tx) {

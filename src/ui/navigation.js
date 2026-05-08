@@ -69,13 +69,12 @@ export function initNavigation() {
       dropdown.classList.remove('active');
     }
 
-    // Logout
     if (e.target.closest('#btn-logout')) {
       const yakin = await showConfirm('Konfirmasi Logout', 'Yakin mau keluar?');
       if (yakin) {
-        auth.signOut().then(() => {
-          store.logout();
-          navigateTo('/login');
+        auth.signOut().then(async () => {
+          await store.logout();
+          window.location.href = '/login';
         });
       }
     }
