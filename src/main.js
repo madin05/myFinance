@@ -56,6 +56,16 @@ export async function checkAuth() {
     console.log('👤 Auth State Changed:', user ? 'Logged In' : 'Logged Out');
     
     if (user) {
+      // Periksa apakah email belum diverifikasi (hanya untuk email/password login)
+      const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
+      if (isEmailProvider && !user.emailVerified) {
+        console.log('⚠️ Email belum diverifikasi. Membatalkan akses...');
+        loginView.style.display = 'block';
+        appLayout.style.display = 'none';
+        renderLogin('verification-pending', user.email);
+        return;
+      }
+
       const token = await user.getIdToken();
       
       // FIX: Jangan asal timpa data store pake data Firebase
@@ -76,15 +86,22 @@ export async function checkAuth() {
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
           token: token
         };
-        store.setUser(userData); // Ini juga bakal panggil updateUI & lepas skeleton
+        store.setUser(userData);
       }
 
-      // Pastiin sekali lagi UI ke-update pake data terbaru (lokal/cloud)
+   
       store.updateUI();
 
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
-      handleRoute();
+      
+      const currentPath = window.location.pathname;
+      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun'];
+      if (!validRoutes.includes(currentPath)) {
+        navigateTo('/dashboard');
+      } else {
+        handleRoute();
+      }
     } else {
       loginView.style.display = 'block';
       appLayout.style.display = 'none';

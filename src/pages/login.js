@@ -1,12 +1,13 @@
 import { store } from '../store.js';
-import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebase-config.js';
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
 
-export function renderLogin(mode = 'login') {
+export function renderLogin(mode = 'login', pendingEmail = '') {
   const container = document.getElementById('login-view');
   const isReg = mode === 'register';
+  const isPending = mode === 'verification-pending';
 
   container.innerHTML = `
     <div class="login-container" id="login-parallax-container">
@@ -132,157 +133,326 @@ export function renderLogin(mode = 'login') {
           <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
           <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
         </div>
-        <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang'}</h2>
-        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">
-          ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas & aman.'}
-        </p>
         
-        <form id="auth-form">
-          ${isReg ? `
-            <div class="form-group">
-              <label>Nama Lengkap</label>
-              <input type="text" id="reg-name" class="form-control" placeholder="Arif Madani" required>
+        ${isPending ? `
+          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
+            <div style="background: var(--primary-light); color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 0.25rem; box-shadow: 0 8px 24px var(--primary-light);">
+              <i class="ph ph-envelope-open"></i>
             </div>
-          ` : ''}
-          <div class="form-group">
-            <label>Username / Email</label>
-            <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
+            <h2 style="margin-bottom: 0;">Verifikasi Email</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0; line-height: 1.6;">
+              Kami telah mengirimkan tautan verifikasi ke:<br>
+              <strong style="color: var(--text-main); font-weight: 700; word-break: break-all;">${pendingEmail}</strong>
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.6; background: var(--bg-color); padding: 12px; border-radius: var(--radius-md); border: 1.5px dashed var(--border); margin: 0;">
+              Silakan periksa kotak masuk atau folder <strong>Spam</strong> Anda, klik tautan tersebut, lalu tekan tombol periksa di bawah.
+            </p>
+            <button id="btn-check-verification" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
+              Saya Sudah Verifikasi
+            </button>
+            <button id="btn-resend-verification" class="btn btn-outline btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; margin-top: -0.5rem; font-weight: 600;">
+              Kirim Ulang Email Verifikasi
+            </button>
+            <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem; margin-top: 0.25rem;">
+              Keluar & Kembali ke Login
+            </a>
           </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required>
+        ` : `
+          <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang'}</h2>
+          <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">
+            ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas & aman.'}
+          </p>
+          
+          <form id="auth-form">
+            ${isReg ? `
+              <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="reg-name" class="form-control" placeholder="Arif Madani" required>
+              </div>
+            ` : ''}
+            <div class="form-group">
+              <label>Username / Email</label>
+              <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <div style="position: relative; width: 100%;">
+                <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right: 45px;">
+                <button type="button" id="btn-toggle-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
+                  <i class="ph ph-eye"></i>
+                </button>
+              </div>
+            </div>
+            ${isReg ? `
+              <div class="form-group">
+                <label>Konfirmasi Password</label>
+                <div style="position: relative; width: 100%;">
+                  <input type="password" id="confirm-password" class="form-control" placeholder="Ulangi kata sandi" required style="padding-right: 45px;">
+                  <button type="button" id="btn-toggle-confirm-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
+                    <i class="ph ph-eye"></i>
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+            <button type="submit" class="btn btn-primary btn-full mt-md">
+              ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
+            </button>
+          </form>
+
+          <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+            ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
+            <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
+              ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
+            </a>
+          </p>
+
+          <div style="margin: 2rem 0; display: flex; align-items: center; gap: 1rem;">
+            <div style="flex: 1; height: 1px; background: var(--border);"></div>
+            <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
+            <div style="flex: 1; height: 1px; background: var(--border);"></div>
           </div>
-          <button type="submit" class="btn btn-primary btn-full mt-md">
-            ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
+
+          <button id="btn-google-login" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+            <span>Masuk dengan Google</span>
           </button>
-        </form>
-
-        <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-          ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
-          <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
-            ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
-          </a>
-        </p>
-
-        <div style="margin: 2rem 0; display: flex; align-items: center; gap: 1rem;">
-          <div style="flex: 1; height: 1px; background: var(--border);"></div>
-          <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
-          <div style="flex: 1; height: 1px; background: var(--border);"></div>
-        </div>
-
-        <button id="btn-google-login" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px;">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-          <span>Masuk dengan Google</span>
-        </button>
+        `}
       </div>
     </div>
   `;
 
-  // Switch Auth Mode
-  document.getElementById('btn-switch-auth').onclick = () => {
-    renderLogin(isReg ? 'login' : 'register');
-  };
+  if (isPending) {
+    document.getElementById('btn-check-verification').onclick = async () => {
+      showLoading();
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          await user.reload(); // Ambil status terbaru dari server Firebase
+          if (user.emailVerified) {
+            showToast('Email berhasil diverifikasi! Selamat datang.', 'success');
+            
+            const token = await user.getIdToken();
+            const userData = {
+              uid: user.uid,
+              name: user.displayName || 'User MyFinance',
+              email: user.email,
+              avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+              token: token
+            };
+            store.setUser(userData);
+            store.updateUI();
+            
+            const loginView = document.getElementById('login-view');
+            const appLayout = document.getElementById('app-layout');
+            if (loginView && appLayout) {
+              loginView.style.display = 'none';
+              appLayout.style.display = 'flex';
+            }
+            navigateTo('/dashboard');
+          } else {
+            showToast('Email belum diverifikasi. Silakan klik tautan di email Anda terlebih dahulu.', 'warning');
+          }
+        } else {
+          showToast('Sesi habis. Silakan masuk kembali.', 'warning');
+          renderLogin('login');
+        }
+      } catch (err) {
+        showToast('Gagal memeriksa status: ' + err.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    };
 
-  // Google Login Logic
-  document.getElementById('btn-google-login').onclick = async () => {
-    showLoading();
-    
-    let handleFocusFallback;
-    
-    const setupFocusTracker = setTimeout(() => {
-      handleFocusFallback = () => {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay && overlay.style.display === 'flex') {
-          hideLoading();
-          window.removeEventListener('focus', handleFocusFallback);
+    document.getElementById('btn-resend-verification').onclick = async () => {
+      showLoading();
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          await sendEmailVerification(user);
+          showToast('Email verifikasi berhasil dikirim ulang!', 'success');
+        } else {
+          showToast('Silakan masuk kembali terlebih dahulu untuk mengirim ulang verifikasi.', 'warning');
+          renderLogin('login');
+        }
+      } catch (err) {
+        if (err.code === 'auth/too-many-requests') {
+          showToast('Terlalu banyak permintaan kirim ulang. Harap tunggu beberapa saat.', 'error');
+        } else {
+          showToast('Gagal mengirim ulang email: ' + err.message, 'error');
+        }
+      } finally {
+        hideLoading();
+      }
+    };
+
+    document.getElementById('btn-back-to-login').onclick = async () => {
+      showLoading();
+      try {
+        await auth.signOut();
+        renderLogin('login');
+      } catch (err) {
+        showToast('Gagal keluar: ' + err.message, 'error');
+      } finally {
+        hideLoading();
+      }
+    };
+  } else {
+    // Switch Auth Mode
+    document.getElementById('btn-switch-auth').onclick = () => {
+      renderLogin(isReg ? 'login' : 'register');
+    };
+
+    // Toggle Password Visibility
+    const toggleBtn = document.getElementById('btn-toggle-password');
+    const passwordInput = document.getElementById('password');
+    if (toggleBtn && passwordInput) {
+      toggleBtn.onclick = () => {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        
+        const icon = toggleBtn.querySelector('i');
+        if (icon) {
+          icon.className = isPassword ? 'ph ph-eye-slash' : 'ph ph-eye';
         }
       };
-      window.addEventListener('focus', handleFocusFallback);
-    }, 1200);
-
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      const token = await user.getIdToken();
-      
-      store.setUser({
-        name: user.displayName,
-        email: user.email,
-        avatar: user.photoURL,
-        token: token,
-        uid: user.uid,
-        provider: 'google'
-      });
-
-      navigateTo('/dashboard');
-    } catch (error) {
-      clearTimeout(setupFocusTracker);
-      if (handleFocusFallback) {
-        window.removeEventListener('focus', handleFocusFallback);
-      }
-      
-      // Jika dibatalkan oleh user, tidak perlu menampilkan notifikasi apa pun (langsung tutup loading saja)
-      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-        showToast('Login Google gagal! ' + (error.message || error), 'error');
-      }
-    } finally {
-      clearTimeout(setupFocusTracker);
-      if (handleFocusFallback) {
-        window.removeEventListener('focus', handleFocusFallback);
-      }
-      hideLoading();
     }
-  };
 
-  // Auth Form Submit
-  document.getElementById('auth-form').onsubmit = async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const pass = document.getElementById('password').value;
+    // Toggle Confirm Password Visibility (Register Only)
+    const toggleConfirmBtn = document.getElementById('btn-toggle-confirm-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    if (toggleConfirmBtn && confirmPasswordInput) {
+      toggleConfirmBtn.onclick = () => {
+        const isPassword = confirmPasswordInput.getAttribute('type') === 'password';
+        confirmPasswordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        
+        const icon = toggleConfirmBtn.querySelector('i');
+        if (icon) {
+          icon.className = isPassword ? 'ph ph-eye-slash' : 'ph ph-eye';
+        }
+      };
+    }
+  }
 
-    showLoading();
-    try {
-      if (isReg) {
-        // Handle Register
-        const name = document.getElementById('reg-name').value;
-        const result = await createUserWithEmailAndPassword(auth, email, pass);
+  // Google Login Logic
+  if (document.getElementById('btn-google-login')) {
+    document.getElementById('btn-google-login').onclick = async () => {
+      showLoading();
+      
+      let handleFocusFallback;
+      
+      const setupFocusTracker = setTimeout(() => {
+        handleFocusFallback = () => {
+          const overlay = document.getElementById('loading-overlay');
+          if (overlay && overlay.style.display === 'flex') {
+            hideLoading();
+            window.removeEventListener('focus', handleFocusFallback);
+          }
+        };
+        window.addEventListener('focus', handleFocusFallback);
+      }, 1200);
+
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
+        const token = await user.getIdToken();
         
         store.setUser({
-          name: name,
+          name: user.displayName,
           email: user.email,
+          avatar: user.photoURL,
+          token: token,
           uid: user.uid,
-          provider: 'password'
-        }, { password: pass });
-        showToast('Akun berhasil dibuat!', 'success');
-      } else {
-        // Handle Login (with Demo Fallback)
-        if (email === 'guest' && pass === 'guest123') {
-          store.setUser({ 
-            name: 'Guest User', 
-            email: 'guest@myfinance.com',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
-            role: 'guest',
-            provider: 'password'
-          });
-        } else {
-          const result = await signInWithEmailAndPassword(auth, email, pass);
-          const user = result.user;
-          store.setUser({
-            name: user.displayName || user.email.split('@')[0],
-            email: user.email,
-            uid: user.uid,
-            provider: 'password'
-          });
+          provider: 'google'
+        });
+
+        navigateTo('/dashboard');
+      } catch (error) {
+        clearTimeout(setupFocusTracker);
+        if (handleFocusFallback) {
+          window.removeEventListener('focus', handleFocusFallback);
         }
+        
+        // Jika dibatalkan oleh user, tidak perlu menampilkan notifikasi apa pun (langsung tutup loading saja)
+        if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+          showToast('Login Google gagal! ' + (error.message || error), 'error');
+        }
+      } finally {
+        clearTimeout(setupFocusTracker);
+        if (handleFocusFallback) {
+          window.removeEventListener('focus', handleFocusFallback);
+        }
+        hideLoading();
       }
-      navigateTo('/dashboard');
-    } catch (error) {
-      showAlert('Gagal', error.message, 'error');
-    } finally {
-      hideLoading();
-    }
-  };
+    };
+  }
+
+  // Auth Form Submit
+  if (document.getElementById('auth-form')) {
+    document.getElementById('auth-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+
+      showLoading();
+      try {
+        if (isReg) {
+          // Handle Register
+          const name = document.getElementById('reg-name').value;
+          const confirmPass = document.getElementById('confirm-password').value;
+
+          // Validasi kecocokan sandi
+          if (pass !== confirmPass) {
+            showToast('Password dan Konfirmasi Password tidak cocok!', 'warning');
+            hideLoading();
+            return;
+          }
+
+          const result = await createUserWithEmailAndPassword(auth, email, pass);
+          const user = result.user;
+          
+          // Kirim email verifikasi Firebase secara asinkron
+          await sendEmailVerification(user);
+          showToast('Registrasi berhasil! Email verifikasi telah dikirim.', 'success');
+          // Sesi dibiarkan hidup agar user bisa langsung cek verifikasi / kirim ulang secara instan
+        } else {
+          // Handle Login (with Demo Fallback)
+          if (email === 'guest' && pass === 'guest123') {
+            store.setUser({ 
+              name: 'Guest User', 
+              email: 'guest@myfinance.com',
+              avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
+              role: 'guest',
+              provider: 'password'
+            });
+            navigateTo('/dashboard');
+          } else {
+            await signInWithEmailAndPassword(auth, email, pass);
+            // onAuthStateChanged di main.js akan menangani pendeteksian emailVerified secara otomatis!
+          }
+        }
+      } catch (error) {
+        let msg = error.message;
+        if (error.code === 'auth/operation-not-allowed') {
+          msg = 'Metode masuk dengan Email & Password belum diaktifkan di Firebase Console Anda. Silakan aktifkan terlebih dahulu di menu: Authentication -> Sign-in method -> Email/Password.';
+        } else if (error.code === 'auth/email-already-in-use') {
+          msg = 'Alamat email ini sudah terdaftar. Silakan gunakan email lain atau langsung masuk ke akun Anda.';
+        } else if (error.code === 'auth/invalid-email') {
+          msg = 'Format alamat email tidak valid. Silakan periksa kembali.';
+        } else if (error.code === 'auth/weak-password') {
+          msg = 'Kata sandi terlalu lemah. Minimal harus terdiri dari 6 karakter.';
+        } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+          msg = 'Email atau kata sandi yang Anda masukkan salah. Silakan periksa kembali.';
+        } else if (error.code === 'auth/too-many-requests') {
+          msg = 'Terlalu banyak percobaan masuk yang gagal. Akses diblokir sementara, silakan coba beberapa saat lagi.';
+        } else if (error.code === 'auth/network-request-failed') {
+          msg = 'Koneksi jaringan gagal. Harap periksa koneksi internet Anda.';
+        }
+        showAlert('Gagal', msg, 'error');
+      } finally {
+        hideLoading();
+      }
+    };
+  }
 
   // List of cute finance quotes for click interactions
   const quotes = [
