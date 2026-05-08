@@ -1,3 +1,4 @@
+import { store } from './store.js';
 import {
   getDashboardSkeleton,
   getTableSkeleton,
@@ -80,6 +81,11 @@ export function handleRoute() {
 
   // Snappy routing
   setTimeout(() => {
+    if (store.isSyncing && store.transactions.length === 0) {
+      console.log('⏳ Initial sync in progress, keeping skeleton...');
+      return;
+    }
+
     if (route === '/dashboard') {
       import('./pages/dashboard.js').then(module => module.renderDashboard());
     } else if (route === '/transaksi') {
@@ -93,9 +99,7 @@ export function handleRoute() {
     } else if (route === '/akun') {
       import('./pages/akun.js').then(module => module.renderAkun());
     } else {
-      // Fallback Keamanan: rute tidak dikenal diarahkan kembali ke dashboard
-      window.history.replaceState(null, null, '/dashboard');
-      import('./pages/dashboard.js').then(module => module.renderDashboard());
+      import('./pages/error404.js').then(module => module.renderError404());
     }
   }, 50);
 }
@@ -111,6 +115,11 @@ export function navigateTo(path) {
 export function refreshCurrentPage() {
   const route = sanitizePath(window.location.pathname);
   
+  if (store.isSyncing && store.transactions.length === 0) {
+    console.log('⏳ Initial sync in progress, keeping skeleton on refresh...');
+    return;
+  }
+  
   if (route === '/dashboard') {
     import('./pages/dashboard.js').then(m => m.renderDashboard());
   } else if (route === '/transaksi') {
@@ -123,5 +132,7 @@ export function refreshCurrentPage() {
     import('./pages/laporan.js').then(m => m.renderLaporan());
   } else if (route === '/akun') {
     import('./pages/akun.js').then(m => m.renderAkun());
+  } else {
+    import('./pages/error404.js').then(m => m.renderError404());
   }
 }

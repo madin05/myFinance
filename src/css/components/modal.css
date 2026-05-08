@@ -6,6 +6,7 @@
   justify-content: center;
   align-items: center;          /* Pusatkan secara vertikal di desktop bre */
   overflow-y: auto;              /* scroll terjadi di overlay (halaman), bukan di dalam box */
+  overflow-x: hidden;            /* Mencegah scrollbar horizontal bre */
   padding: 2rem 1rem;            /* jarak atas-bawah biar modal gak nempel viewport */
   z-index: 2000;
 }
@@ -155,6 +156,6 @@ select.form-control {
 /* Responsive Modals Override */
 @media (max-width: 768px) {
   .modal-overlay {
-    align-items: flex-start !important; /* Biar form panjang tetap gampang di-scroll di HP bre */
+    align-items: center !important; /* Pusatkan secara vertikal agar lebih estetik dan mudah dijangkau di HP bre */
   }
 }

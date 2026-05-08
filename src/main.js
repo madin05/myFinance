@@ -21,6 +21,7 @@ import './css/components/widgets.css';
 import './css/components/modal.css';
 import './css/components/dialogs.css';
 import './css/pages/login.css';
+import './css/pages/error404.css';
 import './css/responsive.css';
 import './css/components/custom-select.css';
 import './style.css';
@@ -61,6 +62,9 @@ export async function checkAuth() {
       if (store.user && store.user.uid === user.uid) {
         console.log('🔄 User already exists, updating token...');
         store.user.token = token;
+        if (store.transactions.length === 0) {
+          store.isSyncing = true;
+        }
         store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
         store.sync();
       } else {
@@ -94,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
   hideLoading();
   initNavigation();
   initCustomSelects();
+  initNetworkStatus();
   checkAuth();
 
   // 2. Global FAM Buttons
@@ -142,7 +147,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 5. Scroll Lock Observer (Locks background scrolling/sliding when any modal is open)
+  const scrollLockObserver = new MutationObserver(() => {
+    const hasActiveModal = document.querySelector('.modal-overlay') || 
+                           document.querySelector('.modal-card') || 
+                           document.querySelector('.custom-alert-overlay');
+    const mainContent = document.querySelector('.main-content');
+    const appLayout = document.getElementById('app-layout');
+
+    if (hasActiveModal) {
+      document.body.style.setProperty('overflow', 'hidden', 'important');
+      document.body.style.setProperty('height', '100vh', 'important');
+      document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+      document.documentElement.style.setProperty('height', '100vh', 'important');
+      if (mainContent) {
+        mainContent.style.setProperty('overflow-x', 'hidden', 'important');
+        mainContent.style.setProperty('overflow-y', 'hidden', 'important');
+        mainContent.style.setProperty('max-height', '100vh', 'important');
+      }
+      if (appLayout) {
+        appLayout.style.setProperty('overflow-x', 'hidden', 'important');
+        appLayout.style.setProperty('overflow-y', 'hidden', 'important');
+        appLayout.style.setProperty('max-height', '100vh', 'important');
+      }
+    } else {
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('height');
+      document.documentElement.style.removeProperty('overflow');
+      document.documentElement.style.removeProperty('height');
+      if (mainContent) {
+        mainContent.style.removeProperty('overflow-x');
+        mainContent.style.removeProperty('overflow-y');
+        mainContent.style.removeProperty('max-height');
+      }
+      if (appLayout) {
+        appLayout.style.removeProperty('overflow-x');
+        appLayout.style.removeProperty('overflow-y');
+        appLayout.style.removeProperty('max-height');
+      }
+    }
+  });
+  scrollLockObserver.observe(document.body, { childList: true, subtree: true });
 
 });
+
+export function initNetworkStatus() {
+  const statusEl = document.getElementById('network-status');
+  if (!statusEl) return;
+
+  function updateStatus() {
+    statusEl.classList.remove('status-online', 'status-weak', 'status-offline');
+    
+    if (!navigator.onLine) {
+      statusEl.classList.add('status-offline');
+      statusEl.title = 'Terputus (Offline)';
+      return;
+    }
+
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      const slowTypes = ['slow-2g', '2g', '3g'];
+      const isSlowType = slowTypes.includes(conn.effectiveType);
+      const isSlowDownlink = conn.downlink && conn.downlink < 1.5;
+      const isHighLatency = conn.rtt && conn.rtt > 500;
+      
+      if (isSlowType || conn.saveData || isSlowDownlink || isHighLatency) {
+        statusEl.classList.add('status-weak');
+        statusEl.title = 'Sinyal Lemah / Lambat';
+        return;
+      }
+    }
+
+    statusEl.classList.add('status-online');
+    statusEl.title = 'Terkoneksi (Online)';
+  }
+
+  window.addEventListener('online', updateStatus);
+  window.addEventListener('offline', updateStatus);
+
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (conn) {
+    conn.addEventListener('change', updateStatus);
+  }
+
+  updateStatus();
+}
 
 window.addEventListener('popstate', handleRoute);

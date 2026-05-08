@@ -111,12 +111,10 @@ export function renderAnggaran() {
       </div>
     </div>
 
-    <!-- Modal Set Budget -->
-    <div id="budget-modal-container"></div>
   `;
 
   const openBudgetModal = (existingCategory = '', existingAmount = '') => {
-    const modalContainer = document.getElementById('budget-modal-container');
+    const modalContainer = document.getElementById('modal-container');
     const isEdit = existingCategory !== '';
 
     modalContainer.innerHTML = `
@@ -152,6 +150,12 @@ export function renderAnggaran() {
     };
 
     document.getElementById('close-budget-modal').onclick = () => modalContainer.innerHTML = '';
+    
+    document.getElementById('budget-modal-overlay').onclick = (e) => {
+      if (e.target.id === 'budget-modal-overlay') {
+        modalContainer.innerHTML = '';
+      }
+    };
     
     document.getElementById('form-set-budget').onsubmit = async (e) => {
       e.preventDefault();

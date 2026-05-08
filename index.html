@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Finance Dashboard [FIXED]</title>
-    <link rel="icon" type="image/svg+xml" href="/assets/logo-navbar-dark.svg" />
+    <title>My Finance</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
+    <link rel="manifest" href="/assets/site.webmanifest" />
     <script>
       // Apply saved theme ASAP to avoid flash / resetting on refresh.
       try {
@@ -50,8 +53,8 @@
           <button class="icon-btn" id="btn-toggle-sidebar"><i class="ph ph-list"></i></button>
             <a href="/dashboard" class="logo-wrapper" style="text-decoration: none;">
               <div class="logo-icon">
-                <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance">
-                <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance">
+                <img src="/assets/logo-navbar-light.png" class="logo-light" alt="MyFinance">
+                <img src="/assets/logo-navbar-dark.png" class="logo-dark" alt="MyFinance">
               </div>
             </a>
         </div>
@@ -126,8 +129,9 @@
             </label>
             <button class="icon-btn"><i class="ph-fill ph-bell"></i></button>
             <div class="user-profile" id="user-profile-trigger">
-              <div class="avatar-wrapper skeleton skeleton-circle" style="width: 44px; height: 44px;">
+              <div class="avatar-wrapper skeleton skeleton-circle" style="width: 44px; height: 44px; position: relative;">
                 <img id="user-avatar" src="" alt="User" style="opacity: 0; transition: opacity 0.3s; width: 100%; height: 100%; border-radius: 50%;" />
+                <div class="status-indicator" id="network-status" title="Menghubungkan..."></div>
               </div>
               <div class="profile-dropdown" id="profile-dropdown">
                 <div class="dropdown-header">
@@ -209,8 +213,9 @@
         <div class="fam-item" style="--i: 7" hidden></div>
       </aside>
 
-      <div id="modal-container"></div>
     </div> <!-- End of #app-layout -->
+
+    <div id="modal-container"></div>
 
     <!-- Global Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay" style="display: none;">

@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   font-family: var(--font-main);
   background: var(--bg-color);
   background-attachment: fixed;
@@ -107,6 +107,7 @@ body {
   padding: 1.25rem 1.5rem;
   width: calc(100% - var(--sidebar-width));
   transition: margin-left 0.3s ease, width 0.3s ease;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 .bottom-grid {
