@@ -377,6 +377,90 @@
     align-items: center;
     justify-content: center;
   }
+
+  /* High-density & Compact Mobile UI Overrides */
+  .section-header h3 {
+    font-size: 1.05rem !important;
+    letter-spacing: -0.015em;
+  }
+
+  .section-header p {
+    font-size: 0.75rem !important;
+  }
+
+  /* Compact buttons (+ Atur Anggaran, Export Buttons) */
+  #btn-set-budget,
+  .section-header .btn {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.75rem !important;
+    height: auto !important;
+    border-radius: 8px !important;
+    gap: 4px !important;
+  }
+
+  #btn-set-budget i,
+  .section-header .btn i {
+    font-size: 0.8rem !important;
+  }
+
+  /* Compact Month Selectors & Navigation */
+  #prev-month, #next-month,
+  #prev-report, #next-report {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #prev-month i, #next-month i,
+  #prev-report i, #next-report i {
+    font-size: 0.8rem !important;
+  }
+
+  /* Month name text size */
+  .section-header span.font-bold,
+  .section-header span.text-xs {
+    font-size: 0.75rem !important;
+    min-width: 90px !important;
+  }
+
+  /* Compact PDF/Excel Export Dropdown Group */
+  .download-group {
+    height: 30px !important;
+  }
+
+  .download-main {
+    padding: 0 0.6rem !important;
+    font-size: 0.72rem !important;
+    height: 100% !important;
+    border-radius: 8px 0 0 8px !important;
+  }
+
+  .download-toggle {
+    width: 26px !important;
+    height: 100% !important;
+    font-size: 0.72rem !important;
+    border-radius: 0 8px 8px 0 !important;
+  }
+
+  /* Laporan Page Filter Tab buttons */
+  .tab-btn {
+    padding: 5px 10px !important;
+    font-size: 0.68rem !important;
+    border-radius: 8px !important;
+  }
+
+  /* Hide searchbar on other pages in mobile view */
+  .search-bar.mobile-hidden {
+    display: none !important;
+  }
+
+  /* Curve header box on other pages in mobile view */
+  .header.curved-header {
+    border-radius: 100px !important;
+  }
 }
 
 /* Desktop-Only Collapsed Sidebar State */

@@ -51,7 +51,97 @@ export function renderDashboard() {
     `;
   }).join('');
 
+  const getDayPhase = () => {
+    const hrs = new Date().getHours();
+    if (hrs >= 5 && hrs < 11) return 'morning';
+    if (hrs >= 11 && hrs < 18) return 'afternoon';
+    if (hrs >= 18 && hrs < 22) return 'evening';
+    return 'night';
+  };
+
+  const getGreeting = () => {
+    const phase = getDayPhase();
+    if (phase === 'morning') return 'Selamat Pagi';
+    if (phase === 'afternoon') {
+      const hrs = new Date().getHours();
+      return hrs < 15 ? 'Selamat Siang' : 'Selamat Sore';
+    }
+    return 'Selamat Malam';
+  };
+
+  const getFormattedTimeParts = () => {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return {
+      time: `${hours}:${minutes}`,
+      ampm
+    };
+  };
+
+  const getFormattedDayText = () => {
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    const text = new Date().toLocaleDateString('en-US', options);
+    const day = new Date().getDate();
+    let suffix = 'th';
+    if (day === 1 || day === 21 || day === 31) suffix = 'st';
+    else if (day === 2 || day === 22) suffix = 'nd';
+    else if (day === 3 || day === 23) suffix = 'rd';
+    return `${text}${suffix}`;
+  };
+
+  const getWeatherIcon = () => {
+    const phase = getDayPhase();
+    if (phase === 'night') {
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="weather-moon-svg">
+          <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"></path>
+          <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"></path>
+        </svg>
+      `;
+    }
+    return `
+      <span class="weather-sun sunshine"></span>
+      <span class="weather-sun"></span>
+    `;
+  };
+
+  const timeParts = getFormattedTimeParts();
+
   container.innerHTML = `
+    <!-- Greeting Section -->
+    <div class="dashboard-greeting ${getDayPhase()}">
+      <div class="greeting-content">
+        <h1 class="greeting-title">${getGreeting()}, <span class="text-primary font-bold">${store.user?.name || 'Tamu'}</span>! 👋</h1>
+        <p class="greeting-subtitle text-muted">Selamat datang kembali. Pantau keuanganmu hari ini yuk!</p>
+      </div>
+      
+      <!-- Unified Weather & Time Block -->
+      <div class="greeting-widget-container">
+        <!-- Premium Time & Day Block -->
+        <div class="greeting-time-block">
+          <p class="greeting-time-text"><span>${timeParts.time}</span><span class="greeting-time-sub-text">${timeParts.ampm}</span></p>
+          <p class="greeting-day-text">${getFormattedDayText()}</p>
+        </div>
+        
+        <!-- Animated Sun & Moon Object -->
+        <div class="greeting-weather-object ${getDayPhase()}">
+          <div class="weather-cloud front">
+            <span class="weather-left-front"></span>
+            <span class="weather-right-front"></span>
+          </div>
+          ${getWeatherIcon()}
+          <div class="weather-cloud back">
+            <span class="weather-left-back"></span>
+            <span class="weather-right-back"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Top Cards -->
     <div class="stats-cards">
       <div class="stat-card">
@@ -107,7 +197,7 @@ export function renderDashboard() {
       <div class="transactions-section">
         <div class="section-header">
           <h3>Transaksi Terakhir</h3>
-          <a href="#transaksi" class="link">Lihat Semua</a>
+          <a href="/transaksi" class="link">Lihat Semua</a>
         </div>
         <div class="table-container">
           <table class="transactions-table">

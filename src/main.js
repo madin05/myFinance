@@ -22,6 +22,7 @@ import './css/components/modal.css';
 import './css/components/dialogs.css';
 import './css/pages/login.css';
 import './css/pages/error404.css';
+import './css/pages/faq.css';
 import './css/responsive.css';
 import './css/components/custom-select.css';
 import './style.css';
@@ -96,7 +97,7 @@ export async function checkAuth() {
       appLayout.style.display = 'flex';
       
       const currentPath = window.location.pathname;
-      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun'];
+      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq'];
       if (!validRoutes.includes(currentPath)) {
         navigateTo('/dashboard');
       } else {

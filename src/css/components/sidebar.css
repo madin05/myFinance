@@ -140,6 +140,10 @@
   margin-top: auto;
 }
 
+.nav-item-bottom {
+  margin-top: auto !important;
+}
+
 #btn-toggle-sidebar {
   margin-left: 0;
   color: var(--text-main);
