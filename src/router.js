@@ -42,6 +42,9 @@ export function showSkeleton(routePath) {
     case '/akun':
       container.innerHTML = getAkunSkeleton();
       break;
+    case '/faq':
+      container.innerHTML = getTableSkeleton();
+      break;
     default:
       container.innerHTML = getTableSkeleton();
       break;
@@ -55,8 +58,34 @@ export function handleRoute() {
   // Bersihkan modal yang mungkin masih terbuka
   if (modalContainer) modalContainer.innerHTML = '';
 
+  // Reset scroll ke atas halaman setiap kali pindah rute
+  window.scrollTo(0, 0);
+  if (container) container.scrollTop = 0;
+  const mainWrapper = document.querySelector('.main-content');
+  if (mainWrapper) mainWrapper.scrollTop = 0;
+
   // Keamanan URL: Dapatkan rute yang aman & bersih
   const route = sanitizePath(window.location.pathname);
+
+  // Sembunyikan/tampilkan searchbar di mobile berdasarkan rute aktif
+  const searchBar = document.querySelector('.search-bar');
+  if (searchBar) {
+    if (route === '/dashboard' || route === '/transaksi') {
+      searchBar.classList.remove('mobile-hidden');
+    } else {
+      searchBar.classList.add('mobile-hidden');
+    }
+  }
+
+  // Kelola border radius pada header berdasarkan rute aktif
+  const headerEl = document.querySelector('.header');
+  if (headerEl) {
+    if (route !== '/dashboard' && route !== '/transaksi') {
+      headerEl.classList.add('curved-header');
+    } else {
+      headerEl.classList.remove('curved-header');
+    }
+  }
   
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -98,6 +127,8 @@ export function handleRoute() {
       import('./pages/laporan.js').then(module => module.renderLaporan());
     } else if (route === '/akun') {
       import('./pages/akun.js').then(module => module.renderAkun());
+    } else if (route === '/faq') {
+      import('./pages/faq.js').then(module => module.renderFaq());
     } else {
       import('./pages/error404.js').then(module => module.renderError404());
     }
@@ -132,6 +163,8 @@ export function refreshCurrentPage() {
     import('./pages/laporan.js').then(m => m.renderLaporan());
   } else if (route === '/akun') {
     import('./pages/akun.js').then(m => m.renderAkun());
+  } else if (route === '/faq') {
+    import('./pages/faq.js').then(m => m.renderFaq());
   } else {
     import('./pages/error404.js').then(m => m.renderError404());
   }

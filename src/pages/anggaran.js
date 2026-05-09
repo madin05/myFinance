@@ -166,7 +166,7 @@ export function renderAnggaran() {
       await store.updateBudget(category, amount, periodKey);
       hideLoading();
       modalContainer.innerHTML = '';
-      showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'disetel'}!`, 'success');
+      showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, 'success');
       renderAnggaran();
     };
   };
