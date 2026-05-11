@@ -111,7 +111,7 @@ export function handleRoute() {
   // Snappy routing
   setTimeout(() => {
     if (store.isSyncing && store.transactions.length === 0) {
-      console.log('⏳ Initial sync in progress, keeping skeleton...');
+      console.log('Initial sync in progress, keeping skeleton...');
       return;
     }
 
@@ -129,6 +129,8 @@ export function handleRoute() {
       import('./pages/akun.js').then(module => module.renderAkun());
     } else if (route === '/faq') {
       import('./pages/faq.js').then(module => module.renderFaq());
+    } else if (route === '/notifikasi') {
+      import('./pages/notifikasi.js').then(module => module.renderNotifikasi());
     } else {
       import('./pages/error404.js').then(module => module.renderError404());
     }
@@ -147,7 +149,7 @@ export function refreshCurrentPage() {
   const route = sanitizePath(window.location.pathname);
   
   if (store.isSyncing && store.transactions.length === 0) {
-    console.log('⏳ Initial sync in progress, keeping skeleton on refresh...');
+    console.log('Initial sync in progress, keeping skeleton on refresh...');
     return;
   }
   
@@ -165,6 +167,8 @@ export function refreshCurrentPage() {
     import('./pages/akun.js').then(m => m.renderAkun());
   } else if (route === '/faq') {
     import('./pages/faq.js').then(m => m.renderFaq());
+  } else if (route === '/notifikasi') {
+    import('./pages/notifikasi.js').then(m => m.renderNotifikasi());
   } else {
     import('./pages/error404.js').then(m => m.renderError404());
   }

@@ -60,13 +60,27 @@ export function initNavigation() {
       applyTheme(newTheme);
     }
 
-    // Profile Dropdown
-    const profileTrigger = e.target.closest('#user-profile-trigger');
-    const dropdown = document.getElementById('profile-dropdown');
-    if (profileTrigger) {
-      dropdown.classList.toggle('active');
-    } else if (dropdown && !e.target.closest('#profile-dropdown')) {
-      dropdown.classList.remove('active');
+    // --- Header Dropdowns Multi-Logic (Profile & Notifications) ---
+    const pTrigger = e.target.closest('#user-profile-trigger');
+    const nTrigger = e.target.closest('#notif-trigger');
+    
+    const pDrop = document.getElementById('profile-dropdown');
+    const nDrop = document.getElementById('notif-dropdown');
+
+    if (pTrigger) {
+      pDrop?.classList.toggle('active');
+      nDrop?.classList.remove('active');
+    } else if (nTrigger) {
+      nDrop?.classList.toggle('active');
+      pDrop?.classList.remove('active');
+      
+      // Clear badge when explicitly viewed
+      const badge = nTrigger.querySelector('.header-badge');
+      if (badge) badge.style.display = 'none';
+    } else {
+      // Clicked completely outside all dropdowns & triggers? Close everything.
+      if (pDrop && !e.target.closest('#profile-dropdown')) pDrop.classList.remove('active');
+      if (nDrop && !e.target.closest('#notif-trigger') && !e.target.closest('#notif-dropdown')) nDrop.classList.remove('active');
     }
 
     if (e.target.closest('#btn-logout')) {
@@ -95,6 +109,22 @@ export function initNavigation() {
   if (localStorage.getItem('layout-density') === 'compact') {
     document.body.classList.add('layout-compact');
   }
+
+  // 4. Automatically update Notification Count badge from current list contents
+  const syncBadgeCount = () => {
+    const badge = document.querySelector('#notif-trigger .header-badge');
+    const items = document.querySelectorAll('#notif-dropdown .notif-item');
+    if (!badge) return;
+    
+    const count = items.length;
+    if (count === 0) {
+      badge.style.display = 'none';
+    } else {
+      badge.style.display = 'flex';
+      badge.textContent = count > 9 ? '9+' : count;
+    }
+  };
+  syncBadgeCount();
 }
 
 export function closeMobileSidebar() {
