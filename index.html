@@ -131,7 +131,45 @@
                 </g>
               </svg>
             </label>
-            <button class="icon-btn"><i class="ph-fill ph-bell"></i></button>
+            <!-- Notification Bell Dropdown (Integrated) -->
+            <div class="header-btn-wrapper" id="notif-trigger">
+              <button class="icon-btn" title="Notifikasi"><i class="ph-fill ph-bell"></i><span class="header-badge"></span></button>
+              <div class="header-dropdown" id="notif-dropdown">
+                <div class="dropdown-header" style="border-bottom:1px solid var(--border); padding: 1rem 1.25rem;">
+                  <h4 style="margin:0; font-size:0.95rem; font-weight: 700;">Notifikasi Terbaru</h4>
+                </div>
+                <div class="dropdown-list">
+                  <div class="notif-item">
+                    <div class="notif-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+                      <i class="ph-fill ph-shield-check"></i>
+                    </div>
+                    <div class="notif-content">
+                      <p><strong>Sistem</strong>: Akun Anda berhasil diverifikasi dengan aman hari ini.</p>
+                      <div class="notif-time">10 menit yang lalu</div>
+                    </div>
+                  </div>
+                  <div class="notif-item">
+                    <div class="notif-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">
+                      <i class="ph-fill ph-warning-circle"></i>
+                    </div>
+                    <div class="notif-content">
+                      <p>Anggaran makan sudah terpakai 85%. Waktunya berhemat, bre!</p>
+                      <div class="notif-time">2 jam yang lalu</div>
+                    </div>
+                  </div>
+                  <div class="notif-item">
+                    <div class="notif-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
+                      <i class="ph-fill ph-trend-up"></i>
+                    </div>
+                    <div class="notif-content">
+                      <p>Pemasukan baru Rp 5.000.000 tercatat otomatis dari sinkronisasi.</p>
+                      <div class="notif-time">Hari ini</div>
+                    </div>
+                  </div>
+                </div>
+                <a href="/notifikasi" class="view-all-btn" style="text-decoration: none;">Lihat Semua Notifikasi</a>
+              </div>
+            </div>
             <div class="user-profile" id="user-profile-trigger">
               <div class="avatar-wrapper skeleton skeleton-circle" style="width: 44px; height: 44px; position: relative;">
                 <img id="user-avatar" src="" alt="User" style="opacity: 0; transition: opacity 0.3s; width: 100%; height: 100%; border-radius: 50%;" />

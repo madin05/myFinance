@@ -258,7 +258,7 @@ export function renderLaporan() {
     };
   }
 
-  const handleExport = (format) => {
+  const handleExport = async (format) => {
     if (filteredTransactions.length === 0) {
       return showToast('Tidak ada data untuk diekspor.', 'warning');
     }
@@ -276,7 +276,7 @@ export function renderLaporan() {
       };
 
       if (format === 'pdf') {
-        exportService.exportToPDF(filteredTransactions, metadata);
+        await exportService.exportToPDF(filteredTransactions, metadata);
       } else {
         exportService.exportToExcel(filteredTransactions, metadata);
       }
@@ -297,7 +297,7 @@ export function renderLaporan() {
   if (mainDownloadBtn) {
     mainDownloadBtn.onclick = (e) => {
       e.preventDefault();
-      console.log('📥 Downloading as:', selectedFormat);
+      console.log('Downloading as:', selectedFormat);
       handleExport(selectedFormat);
     };
   }

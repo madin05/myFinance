@@ -23,11 +23,30 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
       <!-- Floating Gold Coin (Left-Bottom) -->
       <div class="parallax-layer layer-mid" data-depth="0.25" style="left: 22%; bottom: 15%;">
         <div class="mascot-interactive floating-element" id="item-coin-small">
-          <div class="mascot-bubble" id="bubble-coin-small">Koin keberuntungan!</div>
-          <svg viewBox="0 0 100 100" width="70" height="70" style="filter: drop-shadow(0 8px 16px rgba(245, 158, 11, 0.25));">
-            <circle cx="50" cy="50" r="40" fill="url(#goldGrad)" />
-            <circle cx="50" cy="50" r="30" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3" />
-            <path d="M50,30 L50,70 M40,40 L60,40 M40,60 L60,60" stroke="#fff" stroke-width="5" stroke-linecap="round" />
+          <div class="mascot-bubble" id="bubble-coin-small">Asetmu aman terjaga!</div>
+          <svg viewBox="0 0 100 100" width="85" height="85" style="filter: drop-shadow(0 12px 24px rgba(245, 158, 11, 0.3));">
+            <!-- Safe Outer Body -->
+            <rect x="15" y="15" width="70" height="70" rx="10" fill="#b45309" />
+            <!-- Safe Door Panel -->
+            <rect x="19" y="19" width="62" height="62" rx="8" fill="url(#goldGrad)" />
+            <rect x="24" y="24" width="52" height="52" rx="4" fill="none" stroke="#d97706" stroke-width="2" />
+            
+            <!-- Big Center Vault Handle Wheel -->
+            <circle cx="50" cy="50" r="18" fill="#fff" opacity="0.9" />
+            <!-- Cross spokes of the wheel -->
+            <line x1="50" y1="35" x2="50" y2="65" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
+            <line x1="35" y1="50" x2="65" y2="50" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
+            <!-- Hub of the wheel -->
+            <circle cx="50" cy="50" r="6" fill="#b45309" />
+            
+            <!-- Dial markings surrounding -->
+            <circle cx="50" cy="50" r="23" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.7" />
+            
+            <!-- Corner details -->
+            <circle cx="24" cy="24" r="2" fill="#fff" opacity="0.7" />
+            <circle cx="76" cy="24" r="2" fill="#fff" opacity="0.7" />
+            <circle cx="24" cy="76" r="2" fill="#fff" opacity="0.7" />
+            <circle cx="76" cy="76" r="2" fill="#fff" opacity="0.7" />
           </svg>
         </div>
       </div>

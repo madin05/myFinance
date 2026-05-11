@@ -5,21 +5,38 @@ import { formatRupiah } from "../store.js";
 
 export const exportService = {
   /**
-   * Export data ke PDF dengan template MyFinance
+   * Export data ke PDF dengan template myfinanceid
    */
-  exportToPDF(transactions, metadata) {
-    console.log('📄 Exporting to PDF...', metadata);
+  async exportToPDF(transactions, metadata) {
+    console.log('Exporting to PDF...', metadata);
     const doc = new jsPDF();
     const { periode, username, totalIncome, totalExpense, categories, chartImages } = metadata;
 
     // 1. Header
+    try {
+      const img = new Image();
+      img.src = '/assets/logo-navbar-light.png';
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+      if (img.complete && img.naturalWidth > 0) {
+        const ratio = img.naturalHeight / img.naturalWidth;
+        const imgW = 12;
+        const imgH = imgW * ratio;
+        doc.addImage(img, 'PNG', 14, 10, imgW, imgH);
+      }
+    } catch (e) {
+      console.warn('Gagal memuat logo ke PDF:', e);
+    }
+
     doc.setFontSize(22);
     doc.setTextColor(63, 54, 229); // Primary Color
-    doc.text("MyFinance", 14, 22);
+    doc.text("myfinanceid", 29, 22);
     
     doc.setFontSize(12);
     doc.setTextColor(100, 116, 139);
-    doc.text("Laporan Keuangan Personal", 14, 30);
+    doc.text("Laporan Keuangan Personal", 29, 30);
     
     doc.setDrawColor(226, 232, 240);
     doc.line(14, 35, 196, 35);
@@ -123,21 +140,21 @@ export const exportService = {
       }
     });
 
-    doc.save(`Laporan_MyFinance_${periode.replace(/ /g, '_')}.pdf`);
+    doc.save(`Laporan_myfinanceid_${periode.replace(/ /g, '_')}.pdf`);
   },
 
   /**
    * Export data ke XLSX dengan 3 Sheet
    */
   exportToExcel(transactions, metadata) {
-    console.log('📊 Exporting to Excel...', metadata);
+    console.log('Exporting to Excel...', metadata);
     const { periode, username, totalIncome, totalExpense, categories } = metadata;
 
     const wb = XLSX.utils.book_new();
 
     // Sheet 1: Summary
     const summaryData = [
-      ["MYFINANCE - LAPORAN KEUANGAN"],
+      ["myfinanceid - LAPORAN KEUANGAN"],
       ["Periode", periode],
       ["Username", username],
       [],
@@ -179,6 +196,6 @@ export const exportService = {
     const wsCat = XLSX.utils.aoa_to_sheet(catDetailData);
     XLSX.utils.book_append_sheet(wb, wsCat, "Per Kategori");
 
-    XLSX.writeFile(wb, `Laporan_MyFinance_${periode.replace(/ /g, '_')}.xlsx`);
+    XLSX.writeFile(wb, `Laporan_myfinanceid_${periode.replace(/ /g, '_')}.xlsx`);
   }
 };

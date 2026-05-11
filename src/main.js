@@ -1,5 +1,3 @@
-console.clear();
-console.log('%c🚀 MYFINANCE APP STARTED', 'background: #222; color: #bada55; font-size: 24px; padding: 10px;');
 import { store } from './store.js';
 import { auth, onAuthStateChanged } from './firebase-config.js';
 import { renderLogin } from './pages/login.js';
@@ -51,16 +49,16 @@ export async function checkAuth() {
   const loginView = document.getElementById('login-view');
   const appLayout = document.getElementById('app-layout');
 
-  console.log('🔍 Checking Auth State...');
+  console.log('Checking Auth State...');
 
   onAuthStateChanged(auth, async (user) => {
-    console.log('👤 Auth State Changed:', user ? 'Logged In' : 'Logged Out');
+    console.log('Auth State Changed:', user ? 'Logged In' : 'Logged Out');
     
     if (user) {
       // Periksa apakah email belum diverifikasi (hanya untuk email/password login)
       const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
       if (isEmailProvider && !user.emailVerified) {
-        console.log('⚠️ Email belum diverifikasi. Membatalkan akses...');
+        console.log('Email belum diverifikasi. Membatalkan akses...');
         loginView.style.display = 'block';
         appLayout.style.display = 'none';
         renderLogin('verification-pending', user.email);
@@ -71,7 +69,7 @@ export async function checkAuth() {
       
       // FIX: Jangan asal timpa data store pake data Firebase
       if (store.user && store.user.uid === user.uid) {
-        console.log('🔄 User already exists, updating token...');
+        console.log('User already exists, updating token...');
         store.user.token = token;
         if (store.transactions.length === 0) {
           store.isSyncing = true;
@@ -79,7 +77,7 @@ export async function checkAuth() {
         store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
         store.sync();
       } else {
-        console.log('🆕 First time login, setting user...');
+        console.log('First time login, setting user...');
         const userData = {
           uid: user.uid,
           name: user.displayName || 'User MyFinance',
@@ -97,7 +95,7 @@ export async function checkAuth() {
       appLayout.style.display = 'flex';
       
       const currentPath = window.location.pathname;
-      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq'];
+      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
       if (!validRoutes.includes(currentPath)) {
         navigateTo('/dashboard');
       } else {
