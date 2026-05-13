@@ -74,9 +74,14 @@ export function initNavigation() {
       nDrop?.classList.toggle('active');
       pDrop?.classList.remove('active');
       
-      // Clear badge when explicitly viewed
-      const badge = nTrigger.querySelector('.header-badge');
-      if (badge) badge.style.display = 'none';
+      // Render dynamical contents when opening
+      if (nDrop?.classList.contains('active')) {
+        renderNotificationDropdown();
+      }
+      
+      // Clear badge visually if preferred when clicked
+      // const badge = nTrigger.querySelector('.header-badge');
+      // if (badge) badge.style.display = 'none';
     } else {
       // Clicked completely outside all dropdowns & triggers? Close everything.
       if (pDrop && !e.target.closest('#profile-dropdown')) pDrop.classList.remove('active');
@@ -110,21 +115,73 @@ export function initNavigation() {
     document.body.classList.add('layout-compact');
   }
 
-  // 4. Automatically update Notification Count badge from current list contents
-  const syncBadgeCount = () => {
-    const badge = document.querySelector('#notif-trigger .header-badge');
-    const items = document.querySelectorAll('#notif-dropdown .notif-item');
-    if (!badge) return;
+  // 4. Manage and Sync Header Notifications System Dynamically
+  const renderNotificationDropdown = () => {
+    const dropList = document.querySelector('#notif-dropdown .dropdown-list');
+    if (!dropList) return;
     
-    const count = items.length;
-    if (count === 0) {
-      badge.style.display = 'none';
-    } else {
-      badge.style.display = 'flex';
-      badge.textContent = count > 9 ? '9+' : count;
+    const rawNotifs = store.notifications || [];
+    const latest = rawNotifs.slice(0, 4);
+    
+    if (latest.length === 0) {
+      dropList.innerHTML = `<div style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Belum ada notifikasi masuk.</div>`;
+      return;
     }
+
+    dropList.innerHTML = latest.map(n => {
+      let iconClass = 'ph-fill ph-bell';
+      let color = 'var(--primary)';
+      let bgColor = 'rgba(79, 70, 229, 0.1)';
+      
+      if (n.source === 'Anggaran') { 
+        iconClass = 'ph-fill ph-warning-circle'; 
+        color = '#ef4444'; 
+        bgColor = 'rgba(239, 68, 68, 0.1)'; 
+      } else if (n.source === 'Wishlist') { 
+        iconClass = 'ph-fill ph-sparkle'; 
+        color = '#ec4899'; 
+        bgColor = 'rgba(236, 72, 153, 0.1)'; 
+      }
+
+      return `
+        <div class="notif-item" data-id="${n.id}" data-route="${n.route || ''}" style="opacity: ${n.read ? '0.6' : '1'}">
+          <div class="notif-icon" style="background: ${bgColor}; color: ${color};">
+            <i class="${iconClass}"></i>
+          </div>
+          <div class="notif-content">
+            <p style="font-weight: ${n.read ? '500' : '700'}; color: var(--text-main);">${n.title}</p>
+            <div class="notif-time">${new Date(n.time).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Hook direct event delegation to items inside list for context redirection
+    dropList.querySelectorAll('.notif-item').forEach(item => {
+      item.onclick = (ev) => {
+        ev.stopPropagation(); // prevent refire parent
+        const id = parseInt(item.dataset.id);
+        const target = store.notifications.find(n => n.id === id);
+        if (target && !target.read) {
+          target.read = true;
+          store.save();
+        }
+        // Close dropdown
+        document.getElementById('notif-dropdown')?.classList.remove('active');
+        // Run Context Redirect
+        const route = item.dataset.route;
+        if (route && typeof navigateTo === 'function') {
+          navigateTo(route);
+        }
+      };
+    });
   };
-  syncBadgeCount();
+
+  // Sync count and initial content
+  store.syncHeaderBadge();
+  window.addEventListener('store-updated', () => {
+    store.syncHeaderBadge();
+  });
 }
 
 export function closeMobileSidebar() {

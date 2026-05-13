@@ -1,19 +1,28 @@
 import { store } from '../store.js';
-
-let demoNotifs = [
-  { id: 1, source: 'Sistem', title: 'Sistem Keamanan Akun', desc: 'Akun Anda telah berhasil diverifikasi dan dihubungkan dengan enkripsi cloud keamanan tinggi.', time: '10 Mei', read: false },
-  { id: 2, source: 'Anggaran', title: 'Batas Anggaran Tercapai', desc: 'Kategori pengeluaran "Makan & Minum" mencapai batas anggaran wajar (85%). Waktunya berhemat!', time: '10 Mei', read: false },
-  { id: 3, source: 'Transaksi', title: 'Pemasukan Baru Tercatat', desc: 'Berhasil merekam Pemasukan otomatis dari sinkronisasi cloud sebesar Rp 5.000.000.', time: '09 Mei', read: true },
-  { id: 4, source: 'Wishlist', title: 'Target Tabungan 50%', desc: 'Selamat! Target tabungan "Beli iPhone 16 Pro" sudah terkumpul separuh jalan.', time: '08 Mei', read: true }
-];
+import { navigateTo } from '../router.js';
 
 let selectedIds = []; 
+
+const formatTime = (isoString) => {
+  if (!isoString) return '-';
+  try {
+    const d = new Date(isoString);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) {
+      return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  } catch (e) {
+    return isoString;
+  }
+};
 
 export function renderNotifikasi() {
   const container = document.getElementById('page-content');
   if (!container) return;
 
   const renderList = () => {
+    const notifications = store.notifications || [];
     const selectionActive = selectedIds.length > 0;
     
     let html = `
@@ -38,7 +47,7 @@ export function renderNotifikasi() {
       <div class="inbox-container" style="background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
         <!-- Top Combined Bar (Checkbox + Text Label + Counter) -->
         <div style="background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
-          <input type="checkbox" id="select-all-notif" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);" ${demoNotifs.length > 0 && selectedIds.length === demoNotifs.length ? 'checked' : ''}>
+          <input type="checkbox" id="select-all-notif" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);" ${notifications.length > 0 && selectedIds.length === notifications.length ? 'checked' : ''}>
           <label for="select-all-notif" style="font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-muted); user-select: none;">
             Pilih Semua
           </label>
@@ -50,18 +59,18 @@ export function renderNotifikasi() {
         </div>
     `;
 
-    if (demoNotifs.length === 0) {
+    if (notifications.length === 0) {
       html += `
         <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
           <i class="ph ph-tray" style="font-size: 2.5rem; opacity: 0.3; margin-bottom: 1rem;"></i>
-          <p style="font-size: 0.9rem;">Kotak masuk bersih.</p>
+          <p style="font-size: 0.9rem;">Kotak masuk notifikasi kosong.</p>
         </div>
       `;
     } else {
-      demoNotifs.forEach((notif, index) => {
-        const isLast = index === demoNotifs.length - 1;
+      notifications.forEach((notif, index) => {
+        const isLast = index === notifications.length - 1;
         const isSelected = selectedIds.includes(notif.id);
-        const bgRead = isSelected ? 'rgba(79, 70, 229, 0.08)' : (notif.read ? 'transparent' : 'rgba(255, 255, 255, 0.03)');
+        const bgRead = isSelected ? 'rgba(79, 70, 229, 0.08)' : (notif.read ? 'transparent' : 'rgba(79, 70, 229, 0.03)');
         const fontWeight = notif.read ? '500' : '700';
         
         html += `
@@ -75,7 +84,7 @@ export function renderNotifikasi() {
               <input type="checkbox" class="notif-checkbox" data-id="${notif.id}" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);" ${isSelected ? 'checked' : ''}>
             </div>
 
-            <div style="width: 140px; font-size: 0.9rem; font-weight: ${fontWeight}; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; padding-right: 1rem;">
+            <div style="width: 120px; font-size: 0.85rem; font-weight: ${fontWeight}; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; padding-right: 1rem;">
               ${notif.source}
             </div>
 
@@ -84,9 +93,9 @@ export function renderNotifikasi() {
               <span style="color: var(--text-muted); opacity: 0.8;"> - ${notif.desc}</span>
             </div>
 
-            <div style="display: flex; align-items: center; justify-content: flex-end; width: 120px; flex-shrink: 0; position: relative;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; width: 90px; flex-shrink: 0; position: relative;">
               <div class="row-date" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); transition: opacity 0.2s;">
-                ${notif.time}
+                ${formatTime(notif.time)}
               </div>
               <div class="row-actions" style="position: absolute; top: 50%; right: 0; transform: translateY(-50%); display: flex; gap: 0.25rem; opacity: 0; visibility: hidden; transition: all 0.2s;">
                 <button class="icon-btn delete-single-btn" data-id="${notif.id}" title="Hapus" 
@@ -119,7 +128,6 @@ export function renderNotifikasi() {
           transform: translateY(-50%) translateX(0) !important;
         }
         
-        /* Flat modern aesthetic checkbox styling */
         .inbox-container input[type="checkbox"] {
           -webkit-appearance: none;
           appearance: none;
@@ -166,7 +174,7 @@ export function renderNotifikasi() {
     if (mainCb) {
       mainCb.onchange = (e) => {
         if (e.target.checked) {
-          selectedIds = demoNotifs.map(n => n.id);
+          selectedIds = store.notifications.map(n => n.id);
         } else {
           selectedIds = [];
         }
@@ -190,20 +198,20 @@ export function renderNotifikasi() {
       btn.onclick = (e) => {
         e.stopPropagation();
         const id = parseInt(btn.dataset.id);
-        demoNotifs = demoNotifs.filter(n => n.id !== id);
+        store.notifications = store.notifications.filter(n => n.id !== id);
+        store.save();
         selectedIds = selectedIds.filter(sid => sid !== id);
         renderList();
-        syncHeaderBadge();
       };
     });
 
     const delSelectedBtn = document.getElementById('btn-delete-selected');
     if (delSelectedBtn) {
       delSelectedBtn.onclick = () => {
-        demoNotifs = demoNotifs.filter(n => !selectedIds.includes(n.id));
+        store.notifications = store.notifications.filter(n => !selectedIds.includes(n.id));
+        store.save();
         selectedIds = [];
         renderList();
-        syncHeaderBadge();
         import('../components/notifications.js').then(m => m.showToast('Notifikasi terpilih berhasil dihapus.', 'success'));
       };
     }
@@ -211,11 +219,18 @@ export function renderNotifikasi() {
     document.querySelectorAll('.inbox-row').forEach(row => {
       row.onclick = () => {
         const id = parseInt(row.dataset.id);
-        const target = demoNotifs.find(n => n.id === id);
-        if (target && !target.read) {
-          target.read = true;
-          renderList();
-          syncHeaderBadge();
+        const target = store.notifications.find(n => n.id === id);
+        if (target) {
+          // Mark as read
+          if (!target.read) {
+            target.read = true;
+            store.save(); // This handles header badge sync
+            renderList();
+          }
+          // DEEPLINK REDIRECT: If the notification has an explicit context route, redirect there immediately.
+          if (target.route && typeof navigateTo === 'function') {
+            navigateTo(target.route);
+          }
         }
       };
     });
@@ -223,25 +238,12 @@ export function renderNotifikasi() {
     const btnAll = document.getElementById('btn-mark-all-read');
     if (btnAll) {
       btnAll.onclick = () => {
-        demoNotifs = demoNotifs.map(n => ({ ...n, read: true }));
+        store.notifications = store.notifications.map(n => ({ ...n, read: true }));
+        store.save();
         selectedIds = []; 
         renderList();
-        const badge = document.querySelector('#notif-trigger .header-badge');
-        if (badge) badge.style.display = 'none';
-        import('../components/notifications.js').then(m => m.showToast('Semua notifikasi dibaca.', 'success'));
+        import('../components/notifications.js').then(m => m.showToast('Semua notifikasi ditandai sebagai dibaca.', 'success'));
       };
-    }
-  };
-
-  const syncHeaderBadge = () => {
-    const badge = document.querySelector('#notif-trigger .header-badge');
-    if (!badge) return;
-    const unreadCount = demoNotifs.filter(n => !n.read).length;
-    if (unreadCount === 0) {
-      badge.style.display = 'none';
-    } else {
-      badge.style.display = 'flex';
-      badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
     }
   };
 

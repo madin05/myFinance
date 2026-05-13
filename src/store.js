@@ -6,6 +6,7 @@ export const store = {
   transactions: JSON.parse(localStorage.getItem('transactions')) || [],
   savings: JSON.parse(localStorage.getItem('savings')) || [],
   budgets: JSON.parse(localStorage.getItem('budgets')) || [],
+  notifications: JSON.parse(localStorage.getItem('notifications')) || [],
   isSyncing: false,
   
   _mapTransaction(tx) {
@@ -114,6 +115,7 @@ export const store = {
       this.isSyncing = false;
       // Final save untuk memicu satu kali refresh UI instan dengan seluruh data terisi
       this.save();
+      this.checkBudgetNotifications();
     }
   },
 
@@ -149,6 +151,7 @@ export const store = {
         if (index > -1) this.budgets[index] = newBudget;
         else this.budgets.push(newBudget);
         this.save();
+        this.checkBudgetNotifications();
       }
     } catch (err) {
       console.error('Update Budget Error:', err);
@@ -179,7 +182,9 @@ export const store = {
     localStorage.setItem('transactions', JSON.stringify(this.transactions));
     localStorage.setItem('savings', JSON.stringify(this.savings));
     localStorage.setItem('budgets', JSON.stringify(this.budgets));
+    localStorage.setItem('notifications', JSON.stringify(this.notifications));
     this.updateUI();
+    this.syncHeaderBadge();
     
     // Kirim sinyal ke seluruh aplikasi kalau data berubah
     window.dispatchEvent(new CustomEvent('store-updated'));
@@ -235,6 +240,65 @@ export const store = {
         el.classList.remove('skeleton', 'skeleton-text');
       });
     }
+  },
+
+  addNotification(source, title, desc, route = null) {
+    // Anti-spam harian sederhana
+    const todayStr = new Date().toDateString();
+    const exists = this.notifications.find(n => n.title === title && n.desc === desc && new Date(n.time).toDateString() === todayStr);
+    if (exists) return;
+
+    const newNotif = {
+      id: Date.now(),
+      source,
+      title,
+      desc,
+      route,
+      time: new Date().toISOString(),
+      read: false
+    };
+    this.notifications.unshift(newNotif);
+    this.save();
+  },
+
+  syncHeaderBadge() {
+    const badge = document.querySelector('#notif-trigger .header-badge');
+    if (!badge) return;
+    const unreadCount = this.notifications.filter(n => !n.read).length;
+    if (unreadCount === 0) {
+      badge.style.display = 'none';
+    } else {
+      badge.style.display = 'flex';
+      badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    }
+  },
+
+  checkBudgetNotifications() {
+    if (this.transactions.length === 0 || this.budgets.length === 0) return;
+    
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const spending = {};
+    this.transactions.forEach(t => {
+      const d = new Date(t.tanggal);
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear && t.type === 'expense') {
+        spending[t.kategori] = (spending[t.kategori] || 0) + Math.abs(Number(t.harga || t.amount || 0));
+      }
+    });
+
+    this.budgets.forEach(b => {
+      const spent = spending[b.category] || 0;
+      if (b.amount > 0) {
+        const pct = (spent / b.amount) * 100;
+        if (pct >= 100) {
+          this.addNotification('Anggaran', 'Anggaran Melebihi Batas', `Anggaran kategori "${b.category}" telah melebihi batas (Rp ${spent.toLocaleString('id-ID')}).`, '/anggaran');
+        } else if (pct >= 85) {
+          this.addNotification('Anggaran', 'Anggaran Hampir Habis', `Pengeluaran "${b.category}" sudah mencapai ${Math.round(pct)}% dari target anggaran.`, '/anggaran');
+        }
+      }
+    });
   },
 
   async setUser(userData, extraData = {}) {
@@ -387,6 +451,7 @@ export const store = {
     const newTx = { ...tx, id: tempId };
     this.transactions.unshift(newTx);
     this.save();
+    this.checkBudgetNotifications();
 
     if (this.user?.token) {
       try {
@@ -445,6 +510,7 @@ export const store = {
     const prev = [...this.transactions];
     this.transactions = this.transactions.map(t => t.id === id ? { ...t, ...data } : t);
     this.save();
+    this.checkBudgetNotifications();
 
     if (!this.user?.token) return;
 
@@ -464,6 +530,7 @@ export const store = {
       const updatedTx = await res.json();
       this.transactions = this.transactions.map(t => t.id === id ? this._mapTransaction(updatedTx) : t);
       this.save();
+      this.checkBudgetNotifications();
     } catch (e) {
       this.transactions = prev;
       this.save();
@@ -585,6 +652,11 @@ export const store = {
     if (!goal) return;
 
     const next = goal.current + Number(amount);
+
+    // Pemicu notifikasi saat tabungan terkumpul 100%
+    if (next >= goal.target && goal.current < goal.target) {
+      this.addNotification('Wishlist', 'Target Tabungan Tercapai!', `Selamat! Target dana untuk "${goal.name}" sudah terkumpul sepenuhnya.`, '/wishlist');
+    }
 
     if (!this.user?.token) {
       goal.current = next;
