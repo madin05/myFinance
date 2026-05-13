@@ -332,8 +332,13 @@
 /* Responsive Header Fixes */
 @media (max-width: 520px) {
   .header-dropdown {
+    position: fixed;
+    top: 80px; /* Posisi menggantung pas di bawah navbar header */
+    left: 0;
+    right: 0;
+    margin: 0 auto; /* Magic centering tanpa bentrok transform animation */
     width: calc(100vw - 32px);
-    max-width: 300px;
-    right: -8px;
+    max-width: 340px;
+    transform-origin: top center;
   }
 }
