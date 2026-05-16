@@ -55,7 +55,7 @@ export function renderDashboard() {
     const hrs = new Date().getHours();
     if (hrs >= 5 && hrs < 11) return 'morning';
     if (hrs >= 11 && hrs < 18) return 'afternoon';
-    if (hrs >= 18 && hrs < 22) return 'evening';
+    if (hrs >= 18 && hrs < 21) return 'evening';
     return 'night';
   };
 

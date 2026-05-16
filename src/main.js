@@ -1,5 +1,5 @@
 import { store } from './store.js';
-import { auth, onAuthStateChanged } from './firebase-config.js';
+import { auth, onAuthStateChanged, getRedirectResult } from './firebase-config.js';
 import { renderLogin } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
 import { openCalculator } from './components/calculator.js';
@@ -51,6 +51,29 @@ export async function checkAuth() {
 
   console.log('Checking Auth State...');
 
+  // ─── STEP 1: Selesaikan pending redirect result DULU (mobile Google login) ───
+  // Harus di-await SEBELUM onAuthStateChanged di-register.
+  // Kalau tidak, onAuthStateChanged bisa fire dengan user=null sebelum Firebase
+  // selesai memproses redirect credential → login page flash → kesan "harus login 2x".
+  try {
+    const redirectResult = await getRedirectResult(auth);
+    if (redirectResult?.user) {
+      console.log('Google redirect selesai diproses untuk:', redirectResult.user.email);
+      // Firebase sudah update auth state internal → onAuthStateChanged di bawah
+      // akan fire dengan user yang benar. Tidak perlu lakukan apa-apa di sini.
+    }
+  } catch (redirectError) {
+    console.warn('getRedirectResult error:', redirectError.code);
+    hideLoading();
+    if (redirectError.code && redirectError.code !== 'auth/cancelled-popup-request') {
+      const { showToast } = await import('./components/notifications.js');
+      showToast('Login Google gagal. Silakan coba lagi.', 'error');
+    }
+  }
+
+  // ─── STEP 2: Baru register onAuthStateChanged ───
+  // Pada titik ini, Firebase sudah settle auth state (termasuk dari redirect).
+  // onAuthStateChanged PERTAMA akan langsung fire dengan user yang benar.
   onAuthStateChanged(auth, async (user) => {
     console.log('Auth State Changed:', user ? 'Logged In' : 'Logged Out');
     
@@ -67,15 +90,36 @@ export async function checkAuth() {
 
       const token = await user.getIdToken();
       
-      // FIX: Jangan asal timpa data store pake data Firebase
+      // FIX: Sync data profil (Nama & Foto) dari Firebase agar selalu up-to-date
       if (store.user && store.user.uid === user.uid) {
-        console.log('User already exists, updating token...');
+        console.log('User already exists, checking for profile updates...');
         store.user.token = token;
-        if (store.transactions.length === 0) {
-          store.isSyncing = true;
+        
+        let profileChanged = false;
+        const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+
+        // Jika user Google, paksa sinkron nama & foto dari Google (PP Auto Sync)
+        if (isGoogle) {
+          if (user.displayName && store.user.name !== user.displayName) {
+            store.user.name = user.displayName;
+            profileChanged = true;
+          }
+          if (user.photoURL && store.user.avatar !== user.photoURL) {
+            store.user.avatar = user.photoURL;
+            profileChanged = true;
+          }
         }
-        store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
-        store.sync();
+
+        if (profileChanged) {
+          store.save(); // Update local storage & UI
+          store.sync({ name: store.user.name, avatar: store.user.avatar }); // Sync ke backend
+        } else {
+          if (store.transactions.length === 0) {
+            store.isSyncing = true;
+          }
+          store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
+          store.sync();
+        }
       } else {
         console.log('First time login, setting user...');
         const userData = {
@@ -83,13 +127,20 @@ export async function checkAuth() {
           name: user.displayName || 'User MyFinance',
           email: user.email,
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-          token: token
+          token: token,
+          provider: user.providerData[0]?.providerId || 'unknown'
         };
-        store.setUser(userData);
+        // Kirim data profil ke backend agar langsung tersimpan saat pendaftaran pertama
+        store.setUser(userData, { name: userData.name, avatar: userData.avatar });
       }
 
-   
-      store.updateUI();
+      // Pastikan route diproses dulu (rendering halaman) baru sinkronkan UI/Avatar
+      handleRoute();
+      
+      // Delay sedikit agar elemen halaman baru (misal: #profile-preview) sudah dirender
+      setTimeout(() => {
+        store.updateUI();
+      }, 300);
 
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
@@ -98,10 +149,9 @@ export async function checkAuth() {
       const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
       if (!validRoutes.includes(currentPath)) {
         navigateTo('/dashboard');
-      } else {
-        handleRoute();
       }
     } else {
+      // Tidak ada user (dan tidak ada pending redirect — sudah dicek di Step 1)
       loginView.style.display = 'block';
       appLayout.style.display = 'none';
       renderLogin();
@@ -110,6 +160,7 @@ export async function checkAuth() {
 }
 
 // --- INITIALIZATION ---
+
 document.addEventListener('DOMContentLoaded', () => {
   hideLoading();
   initNavigation();

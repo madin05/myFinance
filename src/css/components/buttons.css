@@ -226,15 +226,70 @@
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
-/* Animated Theme Toggle (Uiverse.io) */
-.themeToggle {
-  color: var(--text-muted);
-  width: 40px;
-  height: 40px;
+/* ────────────────────────────────────────────────────
+   Theme Toggle (Original)
+   ──────────────────────────────────────────────────── */
+
+/* Pill wrapper: both buttons side-by-side in a bordered circle */
+.theme-toggle-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .theme-toggle-group {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Auto / System theme button */
+.theme-auto-btn {
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.theme-auto-btn:hover {
+  background: var(--bg-color);
+  color: var(--text-main);
+}
+
+.theme-auto-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+[data-theme="dark"] .theme-auto-btn.active {
+  background: rgba(157, 78, 221, 0.18);
+  color: var(--primary);
+}
+
+
+.themeToggle {
+  color: var(--text-muted);
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   transition: all 0.2s ease;
 }
 

@@ -1,18 +1,24 @@
 /* Toast Styles */
 .toast-container {
   position: fixed;
-  top: 20px;
+  /* Respect mobile safe area (notch, browser chrome, dynamic island) */
+  top: calc(20px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* Pastikan tidak melewati tepi layar */
+  width: calc(100% - 32px);
+  max-width: 420px;
 }
 
 .toast {
   padding: 12px 16px;
   border-radius: 14px;
+  /* Solid fallback dulu, baru glassmorphism di atasnya */
+  background: var(--card-bg);
   background: var(--glass-bg);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -21,14 +27,17 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  min-width: 300px;
-  max-width: 400px;
+  /* Width 100% mengikuti container, bukan min/max-width hardcoded */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid var(--glass-border);
   animation: toastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition: transform 0.2s ease, opacity 0.2s ease;
   cursor: grab;
   user-select: none;
   touch-action: none;
+  box-sizing: border-box;
 }
 
 body.disable-animations .toast {
@@ -118,6 +127,39 @@ body.disable-animations .toast {
 @keyframes toastOut {
   from { transform: translateY(0); opacity: 1; }
   to { transform: translateY(-100%); opacity: 0; }
+}
+
+/* ===== MOBILE FIXES ===== */
+@media (max-width: 768px) {
+  .toast-container {
+    /* Extra jarak di mobile untuk address bar browser */
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: 100%;
+    transform: none;
+  }
+
+  .toast {
+    /* Perkuat background di mobile — glassmorphism sering pudar di Android Chrome */
+    background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+    backdrop-filter: blur(20px) saturate(200%);
+    -webkit-backdrop-filter: blur(20px) saturate(200%);
+    border-color: color-mix(in srgb, var(--glass-border) 80%, transparent);
+    /* Tambah shadow lebih kuat biar lebih pop */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.12);
+    /* Pastikan teks tetap terbaca */
+    color: var(--text-main);
+  }
+
+  .toast-title {
+    font-size: 0.9rem;
+  }
+
+  .toast-message {
+    font-size: 0.78rem;
+  }
 }
 
 /* Custom Modal Alert Styles */

@@ -2,6 +2,7 @@ import { store, formatRupiah } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
+import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 
 let currentViewDate = new Date();
 
@@ -88,12 +89,12 @@ export function renderAnggaran() {
                   <button class="kebab-trigger" data-id="${b.id}" title="Opsi lainnya">
                     <i class="ph-bold ph-dots-three"></i>
                   </button>
-                  <div class="kebab-dropdown" data-kebab-for="budget-${b.id}">
-                    <button class="kebab-item kebab-edit-budget" data-category="${b.category}" data-amount="${b.amount}">
+                  <div class="kebab-dropdown" data-kebab-for="${b.id}">
+                    <button class="kebab-item kebab-edit" data-id="${b.id}">
                       <i class="ph ph-pencil-simple"></i> Edit
                     </button>
                     <div class="kebab-divider"></div>
-                    <button class="kebab-item danger kebab-delete-budget" data-id="${b.id}" data-category="${b.category}">
+                    <button class="kebab-item danger kebab-delete" data-id="${b.id}">
                       <i class="ph ph-trash"></i> Hapus
                     </button>
                   </div>
@@ -190,58 +191,21 @@ export function renderAnggaran() {
     renderAnggaran();
   };
 
-  // --- Kebab Menu Logic for Budget Cards ---
-  const closeAllBudgetKebabs = () => {
-    document.querySelectorAll('.kebab-dropdown.open').forEach(d => d.classList.remove('open'));
-    document.querySelectorAll('.kebab-trigger.active').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.budget-row').forEach(row => row.style.zIndex = '');
-  };
-
-  document.querySelectorAll('.kebab-trigger').forEach(trigger => {
-    trigger.onclick = (e) => {
-      e.stopPropagation();
-      const dropdown = trigger.nextElementSibling;
-      const row = trigger.closest('tr');
-
-      // Close others
-      document.querySelectorAll('.kebab-dropdown.open').forEach(d => {
-        if (d !== dropdown) {
-          d.classList.remove('open');
-          const otherRow = d.closest('tr');
-          if (otherRow) otherRow.style.zIndex = '';
-        }
-      });
-      document.querySelectorAll('.kebab-trigger.active').forEach(t => {
-        if (t !== trigger) t.classList.remove('active');
-      });
-
-      const isOpen = dropdown.classList.toggle('open');
-      trigger.classList.toggle('active');
-
-      // Lift row above others so dropdown isn't clipped
-      if (row) row.style.zIndex = isOpen ? '10' : '';
-    };
-  });
-
-  document.addEventListener('click', closeAllBudgetKebabs);
-
-  document.querySelectorAll('.kebab-edit-budget').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      closeAllBudgetKebabs();
-      const { category, amount } = btn.dataset;
-      openBudgetModal(category, amount);
-    };
-  });
-
-  document.querySelectorAll('.kebab-delete-budget').forEach(btn => {
-    btn.onclick = async (e) => {
-      e.stopPropagation();
-      closeAllBudgetKebabs();
-      const { id, category } = btn.dataset;
+  // --- Kebab Menu Logic (via shared utility) ---
+  cleanupKebabs();
+  initKebabs(
+    container,
+    // onEdit
+    (id) => {
+      const budget = budgetList.find(b => String(b.id) === id);
+      if (budget) openBudgetModal(budget.category, budget.amount);
+    },
+    // onDelete
+    async (id) => {
+      const budget = budgetList.find(b => String(b.id) === id);
+      const category = budget?.category || '';
       const { showConfirm } = await import('../components/notifications.js');
       const confirmed = await showConfirm('Hapus Anggaran?', `Apakah Anda yakin ingin menghapus anggaran untuk kategori "${category}" ini?`);
-      
       if (confirmed) {
         showLoading();
         const success = await store.deleteBudget(Number(id));
@@ -253,6 +217,6 @@ export function renderAnggaran() {
           showToast('Gagal menghapus anggaran.', 'error');
         }
       }
-    };
-  });
+    }
+  );
 }

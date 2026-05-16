@@ -4,8 +4,10 @@
 
 .kebab-wrapper {
   position: relative;
+  display: inline-flex;
 }
 
+/* ── Trigger Button ─────────────────────────────────────── */
 .kebab-trigger {
   display: flex;
   align-items: center;
@@ -18,7 +20,7 @@
   color: var(--text-muted);
   cursor: pointer;
   font-size: 1.15rem;
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .kebab-trigger:hover {
@@ -31,6 +33,7 @@
   color: var(--primary);
 }
 
+/* ── Dropdown ────────────────────────────────────────────── */
 .kebab-dropdown {
   position: absolute;
   right: 0;
@@ -41,12 +44,12 @@
   border-radius: 12px;
   padding: 6px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  z-index: 100;
+  z-index: 500;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px) scale(0.96);
   transform-origin: top right;
-  transition: all 0.18s ease;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
 }
 
 .kebab-dropdown.open {
@@ -55,6 +58,21 @@
   transform: translateY(0) scale(1);
 }
 
+/* Caret / segitiga di atas dropdown */
+.kebab-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid var(--card-bg);
+  filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.08));
+}
+
+/* ── Items ──────────────────────────────────────────────── */
 .kebab-dropdown .kebab-item {
   display: flex;
   align-items: center;
@@ -64,12 +82,12 @@
   border: none;
   background: transparent;
   color: var(--text-main);
-  font-size: 0.82rem;
+  font-size: 0.83rem;
   font-weight: 500;
   font-family: inherit;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.12s ease;
   white-space: nowrap;
   text-align: left;
 }
