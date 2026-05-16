@@ -1,5 +1,6 @@
 import { store, formatRupiah, formatDate } from '../store.js';
 import { initCustomSelects } from '../ui/select.js';
+import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 
 let filterState = {
   type: 'all',
@@ -183,6 +184,9 @@ export function renderTransaksi() {
     filterState.searchQuery = globalSearch.value.toLowerCase();
   }
 
+  // Bersihkan state kebab sebelumnya
+  cleanupKebabs();
+
   renderTableBody(container);
 
   document.getElementById('btn-tambah-page').addEventListener('click', () => {
@@ -325,45 +329,20 @@ function renderTableBody(container) {
 
   tbody.innerHTML = txHtml || emptyMsg;
 
-  // --- Kebab Menu Logic (sama untuk mobile & desktop) ---
-  const closeAllKebabs = () => {
-    tbody.querySelectorAll('.kebab-dropdown.open').forEach(d => d.classList.remove('open'));
-    tbody.querySelectorAll('.kebab-trigger.active').forEach(t => t.classList.remove('active'));
-  };
-
-  tbody.querySelectorAll('.kebab-trigger').forEach(trigger => {
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = trigger.dataset.id;
-      const dropdown = tbody.querySelector(`.kebab-dropdown[data-kebab-for="${id}"]`);
-      tbody.querySelectorAll('.kebab-dropdown.open').forEach(d => { if (d !== dropdown) d.classList.remove('open'); });
-      tbody.querySelectorAll('.kebab-trigger.active').forEach(t => { if (t !== trigger) t.classList.remove('active'); });
-      dropdown.classList.toggle('open');
-      trigger.classList.toggle('active');
-    });
-  });
-
-  document.addEventListener('click', closeAllKebabs);
-
-  tbody.querySelectorAll('.kebab-edit').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeAllKebabs();
-      const id = btn.dataset.id;
+  // --- Kebab Menu Logic (via shared utility) ---
+  initKebabs(
+    tbody,
+    // onEdit
+    (id) => {
       const txToEdit = store.getTransactionById(Number(id));
       if (txToEdit) {
         import('../components/modal.js').then(module => {
           module.openAddTransactionModal(() => renderTransaksi(), txToEdit);
         });
       }
-    });
-  });
-
-  tbody.querySelectorAll('.kebab-delete').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeAllKebabs();
-      const id = btn.dataset.id;
+    },
+    // onDelete
+    (id) => {
       import('../components/modal.js').then(module => {
         module.openConfirmModal(
           'Hapus Transaksi?',
@@ -376,6 +355,6 @@ function renderTableBody(container) {
           }
         );
       });
-    });
-  });
+    }
+  );
 }

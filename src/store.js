@@ -1,5 +1,10 @@
 // src/store.js
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// src/store.js
+// Auto-detect API URL: Gunakan localhost jika sedang development, gunakan env VITE_API_URL jika di production
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocalhost 
+  ? 'http://localhost:5000/api' 
+  : (import.meta.env.VITE_API_URL || 'https://api.myfinanceid.com/api'); // Ganti URL ini dengan URL API deployment lo yang bener
 
 export const store = {
   user: JSON.parse(localStorage.getItem('user')) || null,
@@ -46,7 +51,13 @@ export const store = {
         
         if (userRes.ok) {
           const dbUser = await userRes.json();
-          this.user = { ...this.user, ...dbUser };
+          // Merge data dari DB tanpa menghapus data lokal yang sudah ada (seperti avatar Google)
+          this.user = { 
+            ...this.user, 
+            ...dbUser,
+            name: dbUser.name || this.user.name,
+            avatar: dbUser.avatar || this.user.avatar
+          };
           this.save();
         }
       }
@@ -82,7 +93,12 @@ export const store = {
       // Process User Sync jika dijalankan paralel
       if (userRes && userRes.ok) {
         const dbUser = await userRes.json();
-        this.user = { ...this.user, ...dbUser };
+        this.user = { 
+          ...this.user, 
+          ...dbUser,
+          name: dbUser.name || this.user.name,
+          avatar: dbUser.avatar || this.user.avatar
+        };
       }
 
       // Process Transactions
@@ -200,11 +216,21 @@ export const store = {
       
       avatarElements.forEach(el => {
         if (el.tagName === 'IMG') {
+          // Tambahkan referrerpolicy untuk Google Images agar tidak diblokir oleh kebijakan CORS/Referrer
+          el.setAttribute('referrerpolicy', 'no-referrer');
+
           // Fallback system jika gambar profil (dari Google dll) gagal dimuat
           el.onerror = () => {
-            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=7C3AED&color=fff&bold=true`;
+            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name || 'User')}&background=7C3AED&color=fff&bold=true`;
             if (el.src !== fallbackUrl) {
               el.src = fallbackUrl;
+            }
+            // Lepas skeleton jika error agar tidak stuck lingkaran hitam
+            const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+            if (wrapper) {
+              wrapper.classList.remove('skeleton', 'skeleton-circle');
+              // Jika ini di halaman akun, pastikan opacity img 1
+              el.style.opacity = '1';
             }
           };
 
@@ -215,18 +241,20 @@ export const store = {
               el.style.opacity = '1';
               el.setAttribute('data-src-loaded', avatarUrl);
               
-              // Kasih delay biar shimmer skeleton-nya kelihatan di belakang pas lagi fade-in
-              setTimeout(() => {
-                const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
-                if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
-              }, 300);
+              const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+              if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
             };
           } else {
-            // Kalau udah pernah loaded, pastiin tetep kelihatan
+            // Jika sudah terload sebelumnya, pastikan skeleton tetap hilang
             el.style.opacity = '1';
             const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
             if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
           }
+        } else {
+          // Kalau bukan img tag (misal div dengan background image)
+          el.style.opacity = '1';
+          const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+          if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
         }
       });
       

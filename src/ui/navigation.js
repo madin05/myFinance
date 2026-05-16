@@ -8,7 +8,7 @@ export function initNavigation() {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebar-overlay');
 
-  // 1. Theme Helper
+  // 1. Theme Helpers
   const applyTheme = (theme) => {
     const safeTheme = theme === 'dark' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', safeTheme);
@@ -19,7 +19,25 @@ export function initNavigation() {
     if (toggleInput) {
       toggleInput.checked = safeTheme === 'dark';
     }
+    // Deactivate auto button when a manual choice is made
+    document.getElementById('btn-theme-auto')?.classList.remove('active');
   };
+
+  // System/Auto: follows device OS preference
+  const applySystemTheme = () => {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const effective = isDark ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', effective);
+    localStorage.setItem('theme', 'system');
+    const toggleInput = document.getElementById('themeToggle');
+    if (toggleInput) toggleInput.checked = isDark;
+    document.getElementById('btn-theme-auto')?.classList.add('active');
+  };
+
+  // React to OS preference changes when in system mode
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (localStorage.getItem('theme') === 'system') applySystemTheme();
+  });
 
   // 2. Global Click Handler (Event Delegation)
   document.addEventListener('click', async (e) => {
@@ -57,7 +75,12 @@ export function initNavigation() {
     const themeInput = e.target.closest('#themeToggle');
     if (themeInput) {
       const newTheme = themeInput.checked ? 'dark' : 'light';
-      applyTheme(newTheme);
+      applyTheme(newTheme); // applyTheme already removes auto-active
+    }
+
+    // Auto / System theme button
+    if (e.target.closest('#btn-theme-auto')) {
+      applySystemTheme();
     }
 
     // --- Header Dropdowns Multi-Logic (Profile & Notifications) ---
@@ -101,7 +124,11 @@ export function initNavigation() {
 
   // 3. Initialize States on Load
   const savedTheme = localStorage.getItem('theme') || 'light';
-  applyTheme(savedTheme);
+  if (savedTheme === 'system') {
+    applySystemTheme();
+  } else {
+    applyTheme(savedTheme);
+  }
 
   if (localStorage.getItem('sidebar-collapsed') === 'true') {
     layout.classList.add('sidebar-collapsed');

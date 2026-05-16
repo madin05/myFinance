@@ -113,24 +113,30 @@
           </div>
 
           <div class="header-actions">
-            <label for="themeToggle" class="themeToggle st-sunMoonThemeToggleBtn" title="Ganti Tema">
-              <input type="checkbox" id="themeToggle" class="themeToggleInput" />
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" stroke="none">
-                <mask id="moon-mask">
-                  <rect x="0" y="0" width="20" height="20" fill="white"></rect>
-                  <circle cx="11" cy="3" r="8" fill="black"></circle>
-                </mask>
-                <circle class="sunMoon" cx="10" cy="10" r="8" mask="url(#moon-mask)"></circle>
-                <g>
-                  <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
-                  <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
-                  <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
-                  <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
-                  <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
-                  <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
-                </g>
-              </svg>
-            </label>
+            <!-- Theme Toggle Group: [Auto] + [Sun/Moon] wrapped in pill border -->
+            <div class="theme-toggle-group">
+              <button class="theme-auto-btn" id="btn-theme-auto" title="Tema Otomatis (Ikut Perangkat)">
+                <i class="ph ph-desktop-tower"></i>
+              </button>
+              <label for="themeToggle" class="themeToggle st-sunMoonThemeToggleBtn" title="Ganti Tema">
+                <input type="checkbox" id="themeToggle" class="themeToggleInput" />
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" stroke="none">
+                  <mask id="moon-mask">
+                    <rect x="0" y="0" width="20" height="20" fill="white"></rect>
+                    <circle cx="11" cy="3" r="8" fill="black"></circle>
+                  </mask>
+                  <circle class="sunMoon" cx="10" cy="10" r="8" mask="url(#moon-mask)"></circle>
+                  <g>
+                    <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
+                    <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
+                    <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
+                    <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
+                    <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
+                    <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
+                  </g>
+                </svg>
+              </label>
+            </div>
             <!-- Notification Bell Dropdown (Integrated) -->
             <div class="header-btn-wrapper" id="notif-trigger">
               <button class="icon-btn" title="Notifikasi"><i class="ph-fill ph-bell"></i><span class="header-badge"></span></button>
@@ -146,7 +152,7 @@
             </div>
             <div class="user-profile" id="user-profile-trigger">
               <div class="avatar-wrapper skeleton skeleton-circle" style="width: 44px; height: 44px; position: relative;">
-                <img id="user-avatar" src="" alt="User" style="opacity: 0; transition: opacity 0.3s; width: 100%; height: 100%; border-radius: 50%;" />
+                <img id="user-avatar" src="" alt="User" referrerpolicy="no-referrer" style="opacity: 0; transition: opacity 0.3s; width: 100%; height: 100%; border-radius: 50%;" />
                 <div class="status-indicator" id="network-status" title="Menghubungkan..."></div>
               </div>
               <div class="profile-dropdown" id="profile-dropdown">
