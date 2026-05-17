@@ -355,71 +355,51 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
   // Google Login Logic
   if (document.getElementById('btn-google-login')) {
     document.getElementById('btn-google-login').onclick = async () => {
-      // Deteksi mobile browser — popup sering diblokir di Android/iOS Chrome
-      const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      showLoading();
 
-      if (isMobile) {
-        // Redirect flow: lebih reliable di mobile, tidak perlu double-tap
-        // Hasil redirect ditangani oleh getRedirectResult() di main.js saat app load
-        showLoading();
-        try {
-          await signInWithRedirect(auth, googleProvider);
-          // Browser akan redirect ke Google, lalu kembali ke app
-          // getRedirectResult() di main.js akan menangkap hasilnya
-        } catch (error) {
-          hideLoading();
-          if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-            showToast('Login Google gagal! ' + (error.message || error), 'error');
-          }
-        }
-      } else {
-        // Desktop: tetap pakai popup (UX lebih baik, tidak perlu redirect)
-        showLoading();
+      let handleFocusFallback;
 
-        let handleFocusFallback;
-
-        const setupFocusTracker = setTimeout(() => {
-          handleFocusFallback = () => {
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay && overlay.style.display === 'flex') {
-              hideLoading();
-              window.removeEventListener('focus', handleFocusFallback);
-            }
-          };
-          window.addEventListener('focus', handleFocusFallback);
-        }, 1200);
-
-        try {
-          const result = await signInWithPopup(auth, googleProvider);
-          const user = result.user;
-          const token = await user.getIdToken();
-
-          store.setUser({
-            name: user.displayName,
-            email: user.email,
-            avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-            token: token,
-            uid: user.uid,
-            provider: 'google'
-          });
-
-          navigateTo('/dashboard');
-        } catch (error) {
-          clearTimeout(setupFocusTracker);
-          if (handleFocusFallback) {
+      const setupFocusTracker = setTimeout(() => {
+        handleFocusFallback = () => {
+          const overlay = document.getElementById('loading-overlay');
+          if (overlay && overlay.style.display === 'flex') {
+            hideLoading();
             window.removeEventListener('focus', handleFocusFallback);
           }
+        };
+        window.addEventListener('focus', handleFocusFallback);
+      }, 1200);
 
-          if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
-            showToast('Login Google gagal! ' + (error.message || error), 'error');
-          }
-        } finally {
-          clearTimeout(setupFocusTracker);
-          if (handleFocusFallback) {
-            window.removeEventListener('focus', handleFocusFallback);
-          }
-          hideLoading();
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        const token = await user.getIdToken();
+
+        store.setUser({
+          name: user.displayName,
+          email: user.email,
+          avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+          token: token,
+          uid: user.uid,
+          provider: 'google'
+        });
+
+        navigateTo('/dashboard');
+      } catch (error) {
+        clearTimeout(setupFocusTracker);
+        if (handleFocusFallback) {
+          window.removeEventListener('focus', handleFocusFallback);
         }
+
+        if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+          showToast('Login Google gagal! ' + (error.message || error), 'error');
+        }
+      } finally {
+        clearTimeout(setupFocusTracker);
+        if (handleFocusFallback) {
+          window.removeEventListener('focus', handleFocusFallback);
+        }
+        hideLoading();
       }
     };
   }
