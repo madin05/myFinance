@@ -262,17 +262,12 @@ function renderTableBody(container) {
 
     if (isMobile) {
       // === MOBILE: render sebagai card <div>, bukan <tr> ===
+      // Catatan: visual card (border, bg, radius, padding) di-handle oleh
+      // .transactions-table tr di responsive.css supaya tidak double border.
       return `
         <tr class="tx-mobile-card" data-id="${tx.id}">
           <td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;">
-            <div style="
-              background: var(--card-bg);
-              border: 1px solid var(--border);
-              border-radius: 16px;
-              padding: 0.9rem 1rem;
-              position: relative;
-              min-height: 78px;
-            ">
+            <div style="position:relative;">
               <!-- Baris 1: Badge + Harga -->
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                 <span class="badge-soft ${badgeClass}" style="font-size:0.68rem; padding:2px 9px;">${tx.kategori}</span>
@@ -287,7 +282,7 @@ function renderTableBody(container) {
                 ${formatDate(tx.tanggal)} &bull; ${tx.metode}
               </div>
               <!-- Kebab absolute bottom-right -->
-              <div style="position:absolute; bottom:0.65rem; right:0.6rem;">
+              <div style="position:absolute; bottom:-0.25rem; right:-0.35rem;">
                 ${kebabHtml(tx.id)}
               </div>
             </div>

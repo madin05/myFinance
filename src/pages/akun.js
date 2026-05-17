@@ -422,7 +422,7 @@ export function renderAkun() {
           // 2. BACKGROUND SYNC: Kirim ke server diem-diem
           try {
             await store.updateProfile({ avatar: compressedBase64 });
-            showToast('Foto profil disinkron!', 'success');
+            showToast('Foto profil diperbaharui!', 'success');
           } catch (err) {
             showToast('Gagal sinkron, tapi profil lokal aman.', 'warning');
           }

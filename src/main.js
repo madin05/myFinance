@@ -90,36 +90,19 @@ export async function checkAuth() {
 
       const token = await user.getIdToken();
       
-      // FIX: Sync data profil (Nama & Foto) dari Firebase agar selalu up-to-date
+      // FIX: Sync data profil dari Firebase
       if (store.user && store.user.uid === user.uid) {
         console.log('User already exists, checking for profile updates...');
         store.user.token = token;
+
+        // Kami hapus auto-sync PP dan nama dari Google agar PP yang sudah diubah di web 
+        // tidak tertimpa/balik lagi ke foto profil Google saat login ulang.
         
-        let profileChanged = false;
-        const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
-
-        // Jika user Google, paksa sinkron nama & foto dari Google (PP Auto Sync)
-        if (isGoogle) {
-          if (user.displayName && store.user.name !== user.displayName) {
-            store.user.name = user.displayName;
-            profileChanged = true;
-          }
-          if (user.photoURL && store.user.avatar !== user.photoURL) {
-            store.user.avatar = user.photoURL;
-            profileChanged = true;
-          }
+        if (store.transactions.length === 0) {
+          store.isSyncing = true;
         }
-
-        if (profileChanged) {
-          store.save(); // Update local storage & UI
-          store.sync({ name: store.user.name, avatar: store.user.avatar }); // Sync ke backend
-        } else {
-          if (store.transactions.length === 0) {
-            store.isSyncing = true;
-          }
-          store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
-          store.sync();
-        }
+        store.save(); // Ini bakal trigger updateUI & ngelepas skeleton secara instan
+        store.sync();
       } else {
         console.log('First time login, setting user...');
         const userData = {
@@ -130,8 +113,9 @@ export async function checkAuth() {
           token: token,
           provider: user.providerData[0]?.providerId || 'unknown'
         };
-        // Kirim data profil ke backend agar langsung tersimpan saat pendaftaran pertama
-        store.setUser(userData, { name: userData.name, avatar: userData.avatar });
+        // Hindari mengirim data profil awal sebagai parameter update (extraData)
+        // agar tidak menimpa data (PP/Nama) yang mungkin sudah ada di database saat user login di device baru.
+        store.setUser(userData);
       }
 
       // Pastikan route diproses dulu (rendering halaman) baru sinkronkan UI/Avatar

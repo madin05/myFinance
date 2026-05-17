@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.6.13",
     "@prisma/client": "^6.19.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

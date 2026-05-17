@@ -5,6 +5,7 @@
   align-items: center;
   min-height: 100vh;
   width: 100%;
+  padding: 1.5rem 1.25rem;
   /* Soft, elegant light-indigo morning glow in Light Mode */
   --login-glow: rgba(99, 102, 241, 0.12);
   background: radial-gradient(circle at 50% 120%, var(--login-glow) 0%, rgba(255, 255, 255, 0) 65%), var(--bg-color);
@@ -319,6 +320,16 @@
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     box-shadow: var(--shadow-md);
+  }
+}
+
+/* Mobile adjustments — reduce card padding so it feels more proportional */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1rem;
+  }
+  .login-card {
+    padding: 2rem 1.5rem;
   }
 }
 

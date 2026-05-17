@@ -210,8 +210,17 @@
     border-radius: 16px !important;
     background: var(--card-bg) !important;
     border: 1px solid var(--border) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     position: relative !important;
     min-height: 82px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  /* Dark mode: bikin card lebih kontras dari bg gradient */
+  [data-theme="dark"] .transactions-table tr {
+    background: #1C1626 !important;
+    border-color: #3D3548 !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
 
   /* 4. Reset semua td */
