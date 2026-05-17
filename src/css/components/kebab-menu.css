@@ -34,17 +34,26 @@
 }
 
 /* ── Dropdown ────────────────────────────────────────────── */
+/*
+ * Position dihitung oleh Floating UI (lihat src/ui/kebab.js).
+ * - strategy: 'fixed' agar tidak ter-clip oleh parent overflow/stacking context
+ * - top & left di-set lewat JS (computePosition)
+ * - data-placement (bottom-end | bottom-start | top-end | top-start) di-set
+ *   oleh Floating UI dan dipakai untuk transform-origin animasi.
+ */
 .kebab-dropdown {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  min-width: 160px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  min-width: 168px;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  z-index: 500;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.10);
+  z-index: 1600;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px) scale(0.96);
@@ -58,19 +67,11 @@
   transform: translateY(0) scale(1);
 }
 
-/* Caret / segitiga di atas dropdown */
-.kebab-dropdown::before {
-  content: '';
-  position: absolute;
-  top: -7px;
-  right: 10px;
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 7px solid var(--card-bg);
-  filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.08));
-}
+/* Transform-origin menyesuaikan placement Floating UI */
+.kebab-dropdown[data-placement="bottom-end"]   { transform-origin: top right; }
+.kebab-dropdown[data-placement="bottom-start"] { transform-origin: top left; }
+.kebab-dropdown[data-placement="top-end"]      { transform-origin: bottom right; }
+.kebab-dropdown[data-placement="top-start"]    { transform-origin: bottom left; }
 
 /* ── Items ──────────────────────────────────────────────── */
 .kebab-dropdown .kebab-item {
@@ -78,16 +79,16 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 12px;
   border: none;
   background: transparent;
   color: var(--text-main);
-  font-size: 0.83rem;
+  font-size: 0.85rem;
   font-weight: 500;
   font-family: inherit;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition: background 0.12s ease, color 0.12s ease;
   white-space: nowrap;
   text-align: left;
 }
@@ -101,14 +102,22 @@
   width: 18px;
   text-align: center;
   flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color 0.12s ease;
 }
 
+.kebab-dropdown .kebab-item:hover i {
+  color: var(--text-main);
+}
+
+/* Variant 'danger' tetap pakai class yang sama tapi warna disamakan
+   dengan item biasa — sesuai permintaan */
 .kebab-dropdown .kebab-item.danger {
-  color: var(--red);
+  color: var(--text-main);
 }
 
 .kebab-dropdown .kebab-item.danger:hover {
-  background: rgba(239, 68, 68, 0.08);
+  background: var(--bg-color);
 }
 
 .kebab-dropdown .kebab-divider {
