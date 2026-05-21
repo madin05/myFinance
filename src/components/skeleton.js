@@ -131,6 +131,26 @@ export function getTabunganSkeleton(viewMode = 'grid') {
   `;
 }
 
+export function getSaldoSkeleton() {
+  return `
+    <div class="saldo-section">
+      <div class="section-header">
+        <div>
+          <div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div>
+          <div class="skeleton" style="width: 240px; height: 18px; border-radius: 8px;"></div>
+        </div>
+        <div class="skeleton" style="width: 160px; height: 44px; border-radius: 12px;"></div>
+      </div>
+
+      <div class="saldo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+        ${Array(4).fill(`
+          <div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 export function getLaporanSkeleton() {
   return `
     <div class="section-header">

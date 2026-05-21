@@ -15,8 +15,15 @@ export function initCustomSelects(container = document) {
     const trigger = document.createElement('div');
     trigger.className = 'custom-select-trigger';
     
-    const selectedText = select.options[select.selectedIndex]?.text || 'Pilih...';
-    trigger.innerHTML = `<span>${selectedText}</span><i class="ph ph-caret-down"></i>`;
+    const selectedOpt = select.options[select.selectedIndex];
+    const selectedText = selectedOpt?.text || 'Pilih...';
+    const selectedLogo = selectedOpt?.getAttribute('data-logo');
+    
+    let initialTriggerContent = `<span>${selectedText}</span>`;
+    if (selectedLogo) {
+      initialTriggerContent = `<div style="display: flex; align-items: center; gap: 8px;"><img src="${selectedLogo}" style="width: 20px; height: 20px; border-radius: 4px; object-fit: contain;" onerror="this.style.display='none'"><span>${selectedText}</span></div>`;
+    }
+    trigger.innerHTML = `${initialTriggerContent}<i class="ph ph-caret-down"></i>`;
     
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'custom-options';
@@ -25,7 +32,16 @@ export function initCustomSelects(container = document) {
     Array.from(select.options).forEach(opt => {
       const customOpt = document.createElement('div');
       customOpt.className = `custom-option ${opt.selected ? 'selected' : ''}`;
-      customOpt.textContent = opt.text;
+      
+      const logoUrl = opt.getAttribute('data-logo');
+      if (logoUrl) {
+        customOpt.innerHTML = `<img src="${logoUrl}" style="width: 20px; height: 20px; border-radius: 4px; margin-right: 8px; object-fit: contain; vertical-align: middle;" onerror="this.style.display='none'"><span>${opt.text}</span>`;
+        customOpt.style.display = 'flex';
+        customOpt.style.alignItems = 'center';
+      } else {
+        customOpt.textContent = opt.text;
+      }
+      
       customOpt.setAttribute('data-value', opt.value);
       
       customOpt.onclick = (e) => {
@@ -44,7 +60,13 @@ export function initCustomSelects(container = document) {
         // Update UI
         wrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
         customOpt.classList.add('selected');
-        trigger.querySelector('span').textContent = opt.text;
+        
+        let triggerContent = `<span>${opt.text}</span>`;
+        if (logoUrl) {
+          triggerContent = `<div style="display: flex; align-items: center; gap: 8px;"><img src="${logoUrl}" style="width: 20px; height: 20px; border-radius: 4px; object-fit: contain;" onerror="this.style.display='none'"><span>${opt.text}</span></div>`;
+        }
+        trigger.innerHTML = `${triggerContent}<i class="ph ph-caret-down"></i>`;
+        
         wrapper.classList.remove('open');
       };
       

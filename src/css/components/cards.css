@@ -256,31 +256,31 @@
 
 /* Dynamic Atmosphere Gradients for Greeting Box */
 .dashboard-greeting.morning {
-  background: linear-gradient(135deg, rgba(255, 249, 196, 0.15) 0%, rgba(255, 183, 77, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(255, 249, 196, 0.15) 0%, rgba(255, 183, 77, 0.12) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.morning {
-  background: linear-gradient(135deg, rgba(255, 249, 196, 0.03) 0%, rgba(255, 183, 77, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(255, 249, 196, 0.03) 0%, rgba(255, 183, 77, 0.05) 100%), var(--card-bg);
 }
 
 .dashboard-greeting.afternoon {
-  background: linear-gradient(135deg, rgba(224, 247, 250, 0.2) 0%, rgba(2, 136, 209, 0.08) 100%);
+  background: linear-gradient(135deg, rgba(224, 247, 250, 0.2) 0%, rgba(2, 136, 209, 0.08) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.afternoon {
-  background: linear-gradient(135deg, rgba(224, 247, 250, 0.03) 0%, rgba(2, 136, 209, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(224, 247, 250, 0.03) 0%, rgba(2, 136, 209, 0.05) 100%), var(--card-bg);
 }
 
 .dashboard-greeting.evening {
-  background: linear-gradient(135deg, rgba(248, 187, 208, 0.2) 0%, rgba(255, 112, 67, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(248, 187, 208, 0.2) 0%, rgba(255, 112, 67, 0.12) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.evening {
-  background: linear-gradient(135deg, rgba(248, 187, 208, 0.03) 0%, rgba(255, 112, 67, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(248, 187, 208, 0.03) 0%, rgba(255, 112, 67, 0.05) 100%), var(--card-bg);
 }
 
 .dashboard-greeting.night {
-  background: linear-gradient(135deg, rgba(241, 245, 249, 0.2) 0%, rgba(203, 213, 225, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.2) 0%, rgba(203, 213, 225, 0.2) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.night {
-  background: linear-gradient(135deg, rgba(13, 27, 42, 0.4) 0%, rgba(27, 38, 59, 0.4) 100%);
+  background: linear-gradient(135deg, rgba(13, 27, 42, 0.4) 0%, rgba(27, 38, 59, 0.4) 100%), var(--card-bg);
 }
 
 .greeting-content {

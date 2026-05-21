@@ -11,7 +11,7 @@ html, body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: clip; /* clip prevents horizontal scroll without breaking position: sticky */
 }
 
 /* ================================
@@ -107,7 +107,12 @@ html, body {
   padding: 1.25rem 1.5rem;
   width: calc(100% - var(--sidebar-width));
   transition: margin-left 0.3s ease, width 0.3s ease;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  position: relative;
+  /* NOTE: overflow-x intentionally NOT set here.
+     Setting overflow-x: hidden on a positioned ancestor
+     creates a new stacking context that breaks position: sticky
+     on child elements (e.g., the mobile header).
+     Horizontal overflow is already controlled by body { overflow-x: hidden }. */
 }
 
 .bottom-grid {
@@ -267,4 +272,81 @@ body.layout-compact .transactions-table td {
 
 body.layout-compact .section-header {
   margin-bottom: 1rem !important;
+}
+
+/* ==========================================================================
+   DASHBOARD HERO BACKGROUND
+   ========================================================================== */
+.dashboard-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 280px;
+  background: linear-gradient(135deg, #38BDF8 0%, #3B82F6 100%); /* Biru langit (Sky blue gradient) */
+  z-index: 0;
+  border-bottom-left-radius: 2.5rem;
+  border-bottom-right-radius: 2.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+body.page-dashboard .dashboard-hero-bg {
+  opacity: 1;
+  visibility: visible;
+}
+
+[data-theme="dark"] .dashboard-hero-bg {
+  background: linear-gradient(135deg, #4C1D95 0%, #2E1065 100%); /* Dark purple / violet */
+}
+
+/* Make sure header and content sit above the background */
+body.page-dashboard .header:not(.scrolled) {
+  position: relative;
+  z-index: 10;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+body.page-dashboard .page-content {
+  position: relative;
+  z-index: 10;
+}
+
+/* Override header elements to be readable on the blue background ONLY when NOT scrolled */
+body.page-dashboard .header:not(.scrolled) .search-bar {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+}
+body.page-dashboard .header:not(.scrolled) .search-bar input {
+  color: #FFFFFF;
+}
+body.page-dashboard .header:not(.scrolled) .search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+body.page-dashboard .header:not(.scrolled) .search-bar .search-icon {
+  color: #FFFFFF;
+}
+body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn,
+body.page-dashboard .header:not(.scrolled) .header-actions .theme-auto-btn,
+body.page-dashboard .header:not(.scrolled) .header-actions .themeToggle {
+  color: #FFFFFF;
+}
+body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn:hover,
+body.page-dashboard .header:not(.scrolled) .header-actions .theme-auto-btn:hover,
+body.page-dashboard .header:not(.scrolled) .header-actions .themeToggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+}
+body.page-dashboard .header:not(.scrolled) .user-profile img {
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: transparent;
+}
+body.page-dashboard .header:not(.scrolled) .user-profile img:hover {
+  border-color: #FFFFFF;
+}
+body.page-dashboard .header:not(.scrolled) .hamburger .line {
+  stroke: #FFFFFF;
 }
