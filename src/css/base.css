@@ -305,7 +305,7 @@ body.page-dashboard .dashboard-hero-bg {
 /* Make sure header and content sit above the background */
 body.page-dashboard .header:not(.scrolled) {
   position: relative;
-  z-index: 10;
+  z-index: 20;
   background-color: transparent !important;
   box-shadow: none !important;
 }
