@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`
-🚀 Server is running on: http://localhost:${PORT}
-📁 Environment: ${process.env.NODE_ENV || 'development'}
+Server is running on: http://localhost:${PORT}
+Environment: ${process.env.NODE_ENV || 'development'}
   `);
 });

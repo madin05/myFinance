@@ -1,6 +1,7 @@
 import { store, formatRupiah, formatDate } from '../store.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
+import { initStickyHeader } from '../utils.js';
 
 let filterState = {
   type: 'all',
@@ -196,6 +197,9 @@ export function renderTransaksi() {
   });
 
   initCustomSelects(container.querySelector('#filter-popover'));
+
+  // Aktifkan sticky header di mobile
+  initStickyHeader();
 }
 
 function renderTableBody(container) {

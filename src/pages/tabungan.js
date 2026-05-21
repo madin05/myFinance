@@ -1,4 +1,5 @@
 import { store, formatRupiah } from '../store.js';
+import { initKebabs, cleanupKebabs, closeAllKebabs } from '../ui/kebab.js';
 
 export function renderTabungan() {
   const container = document.getElementById('page-content');
@@ -34,12 +35,21 @@ export function renderTabungan() {
             <p class="text-muted text-xs mb-xs">Terkumpul</p>
             <h3 style="margin: 0; font-size: 1.15rem;">${formatRupiah(g.current)}</h3>
           </div>
-          <div class="wishlist-actions">
-            <div role="button" class="btn-action-sm primary btn-tabung" data-id="${g.id}" data-name="${g.name}">
-              <i class="ph ph-plus"></i>
-            </div>
-            <div role="button" class="btn-action-sm danger btn-delete-goal" data-id="${g.id}">
-              <i class="ph ph-trash"></i>
+          <div class="kebab-wrapper" style="margin-top: -8px;">
+            <button class="kebab-trigger" data-id="${g.id}" title="Opsi lainnya" style="background: transparent; border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted);">
+              <i class="ph-bold ph-dots-three"></i>
+            </button>
+            <div class="kebab-dropdown" data-kebab-for="${g.id}">
+              <button class="kebab-item kebab-topup" data-id="${g.id}" data-name="${g.name}">
+                <i class="ph ph-plus"></i> Tabung
+              </button>
+              <button class="kebab-item kebab-edit" data-id="${g.id}">
+                <i class="ph ph-pencil-simple"></i> Edit
+              </button>
+              <div class="kebab-divider"></div>
+              <button class="kebab-item danger kebab-delete" data-id="${g.id}">
+                <i class="ph ph-trash"></i> Hapus
+              </button>
             </div>
           </div>
         </div>
@@ -101,27 +111,43 @@ export function renderTabungan() {
     });
   }
 
-  // Tabung & Delete
-  container.querySelectorAll('.btn-tabung').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = Number(e.currentTarget.getAttribute('data-id'));
-      const name = e.currentTarget.getAttribute('data-name');
-      import('../components/wishlist-modal.js').then(module => {
-        module.openAddFundsModal(id, name, () => renderTabungan());
-      });
-    });
-  });
+  // Bersihkan state kebab sebelumnya
+  cleanupKebabs();
 
-  container.querySelectorAll('.btn-delete-goal').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const id = Number(e.currentTarget.getAttribute('data-id'));
+  // Kebab init for Edit & Delete
+  initKebabs(
+    container,
+    // onEdit
+    (id) => {
+      const goalToEdit = store.savings.find(s => s.id === Number(id));
+      if (goalToEdit) {
+        import('../components/wishlist-modal.js').then(module => {
+          module.openAddWishlistModal(() => renderTabungan(), goalToEdit);
+        });
+      }
+    },
+    // onDelete
+    (id) => {
       import('../components/modal.js').then(module => {
         module.openConfirmModal('Hapus Wishlist?', 'Yakin mau hapus target ini?', () => {
-          store.removeSaving(id).then(renderTabungan).catch((err) => {
+          store.removeSaving(Number(id)).then(renderTabungan).catch((err) => {
             alert('Gagal hapus wishlist: ' + (err?.message || err));
             renderTabungan();
           });
         });
+      });
+    }
+  );
+
+  // Tabung (Top-up) action (custom kebab item)
+  container.querySelectorAll('.kebab-topup').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAllKebabs();
+      const id = Number(e.currentTarget.getAttribute('data-id'));
+      const name = e.currentTarget.getAttribute('data-name');
+      import('../components/wishlist-modal.js').then(module => {
+        module.openAddFundsModal(id, name, () => renderTabungan());
       });
     });
   });

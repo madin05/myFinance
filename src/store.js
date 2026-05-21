@@ -1,62 +1,74 @@
 // src/store.js
 // src/store.js
 // Auto-detect API URL: Gunakan localhost jika sedang development, gunakan env VITE_API_URL jika di production
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = isLocalhost 
-  ? 'http://localhost:5000/api' 
-  : (import.meta.env.VITE_API_URL || 'https://api.myfinanceid.com/api'); // Ganti URL ini dengan URL API deployment lo yang bener
+const isLocalhost =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const API_URL = isLocalhost
+  ? "http://localhost:5000/api"
+  : import.meta.env.VITE_API_URL || "https://api.myfinanceid.com/api"; // Ganti URL ini dengan URL API deployment lo yang bener
 
 export const store = {
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  transactions: JSON.parse(localStorage.getItem('transactions')) || [],
-  savings: JSON.parse(localStorage.getItem('savings')) || [],
-  budgets: JSON.parse(localStorage.getItem('budgets')) || [],
-  notifications: JSON.parse(localStorage.getItem('notifications')) || [],
+  user: JSON.parse(localStorage.getItem("user")) || null,
+  transactions: JSON.parse(localStorage.getItem("transactions")) || [],
+  savings: JSON.parse(localStorage.getItem("savings")) || [],
+  budgets: JSON.parse(localStorage.getItem("budgets")) || [],
+  saldos: (() => {
+    const local = JSON.parse(localStorage.getItem("saldos"));
+    if (local && local.length > 0) return local;
+    return [
+      { id: Date.now(), name: 'BCA', type: 'Bank', balance: 12500000, logo: 'https://www.google.com/s2/favicons?domain=bca.co.id&sz=64' },
+      { id: Date.now() + 1, name: 'Gopay', type: 'E-Wallet', balance: 3400000, logo: 'https://www.google.com/s2/favicons?domain=gojek.com&sz=64' },
+      { id: Date.now() + 2, name: 'Dompet', type: 'Cash', balance: 850000, logo: '' }
+    ];
+  })(),
+  notifications: JSON.parse(localStorage.getItem("notifications")) || [],
   isSyncing: false,
-  
+
   _mapTransaction(tx) {
     if (!tx) return null;
     return {
       ...tx,
       id: tx.id,
       tanggal: tx.date || tx.tanggal || new Date().toISOString(),
-      harga: tx.amount !== undefined ? tx.amount : (tx.harga || 0),
-      keterangan: tx.description !== undefined ? tx.description : (tx.keterangan || ''),
-      kategori: tx.category || tx.kategori || 'Umum',
-      metode: tx.method || tx.metode || 'Cash',
-      type: tx.type || 'expense'
+      harga: tx.amount !== undefined ? tx.amount : tx.harga || 0,
+      keterangan:
+        tx.description !== undefined ? tx.description : tx.keterangan || "",
+      kategori: tx.category || tx.kategori || "Umum",
+      metode: tx.method || tx.metode || "Cash",
+      type: tx.type || "expense",
     };
   },
 
   async sync(extraData = {}) {
     if (!this.user?.token) return;
     this.isSyncing = true;
-    
+
     try {
       // Jika user sudah ada di local storage (bukan pendaftaran baru), lakukan seluruh fetch secara PARALEL!
       // Ini akan memotong latency jaringan hingga 3x lipat dengan menghilangkan network waterfall.
       const isFirstTime = !this.user?.id && this.transactions.length === 0;
-      
+
       if (isFirstTime) {
         // Skenario User Baru: Harus sekuensial agar user terdaftar di Postgres terlebih dahulu
         const userRes = await fetch(`${API_URL}/users/sync`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.user.token}` 
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.user.token}`,
           },
           body: JSON.stringify(extraData),
-          credentials: 'include'
+          credentials: "include",
         });
-        
+
         if (userRes.ok) {
           const dbUser = await userRes.json();
           // Merge data dari DB tanpa menghapus data lokal yang sudah ada (seperti avatar Google)
-          this.user = { 
-            ...this.user, 
+          this.user = {
+            ...this.user,
             ...dbUser,
             name: dbUser.name || this.user.name,
-            avatar: dbUser.avatar || this.user.avatar
+            avatar: dbUser.avatar || this.user.avatar,
           };
           this.save();
         }
@@ -64,23 +76,32 @@ export const store = {
 
       // Siapkan antrean fetch data secara paralel
       const fetchPromises = [
-        fetch(`${API_URL}/transactions`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' }),
-        fetch(`${API_URL}/budgets`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' }),
-        fetch(`${API_URL}/savings`, { headers: { 'Authorization': `Bearer ${this.user.token}` }, credentials: 'include' })
+        fetch(`${API_URL}/transactions`, {
+          headers: { Authorization: `Bearer ${this.user.token}` },
+          credentials: "include",
+        }),
+        fetch(`${API_URL}/budgets`, {
+          headers: { Authorization: `Bearer ${this.user.token}` },
+          credentials: "include",
+        }),
+        fetch(`${API_URL}/savings`, {
+          headers: { Authorization: `Bearer ${this.user.token}` },
+          credentials: "include",
+        }),
       ];
 
       // Jika bukan user baru, jalankan sync user secara paralel juga!
       if (!isFirstTime) {
         fetchPromises.push(
           fetch(`${API_URL}/users/sync`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${this.user.token}` 
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.user.token}`,
             },
             body: JSON.stringify(extraData),
-            credentials: 'include'
-          })
+            credentials: "include",
+          }),
         );
       }
 
@@ -93,18 +114,18 @@ export const store = {
       // Process User Sync jika dijalankan paralel
       if (userRes && userRes.ok) {
         const dbUser = await userRes.json();
-        this.user = { 
-          ...this.user, 
+        this.user = {
+          ...this.user,
           ...dbUser,
           name: dbUser.name || this.user.name,
-          avatar: dbUser.avatar || this.user.avatar
+          avatar: dbUser.avatar || this.user.avatar,
         };
       }
 
       // Process Transactions
       if (txRes && txRes.ok) {
         const dbTxs = await txRes.json();
-        this.transactions = dbTxs.map(tx => this._mapTransaction(tx));
+        this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
       }
 
       // Process Budgets
@@ -115,18 +136,18 @@ export const store = {
       // Process Savings
       if (savingRes && savingRes.ok) {
         const dbSavings = await savingRes.json();
-        this.savings = dbSavings.map(s => ({
+        this.savings = dbSavings.map((s) => ({
           id: s.id,
           name: s.name,
           target: s.targetAmount,
           current: s.currentAmount,
           icon: s.icon,
           color: s.color,
-          orderIndex: s.orderIndex
+          orderIndex: s.orderIndex,
         }));
       }
     } catch (err) {
-      console.error('Sync Error:', err);
+      console.error("Sync Error:", err);
     } finally {
       this.isSyncing = false;
       // Final save untuk memicu satu kali refresh UI instan dengan seluruh data terisi
@@ -138,15 +159,19 @@ export const store = {
   async fetchBudgets(period) {
     if (!this.user?.token) return;
     try {
-      const url = period ? `${API_URL}/budgets?period=${period}` : `${API_URL}/budgets`;
-      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${this.user.token}` } });
+      const url = period
+        ? `${API_URL}/budgets?period=${period}`
+        : `${API_URL}/budgets`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${this.user.token}` },
+      });
       if (res.ok) {
         this.budgets = await res.json();
         this.save();
         return this.budgets;
       }
     } catch (err) {
-      console.error('Fetch Budgets Error:', err);
+      console.error("Fetch Budgets Error:", err);
     }
   },
 
@@ -154,23 +179,23 @@ export const store = {
     if (!this.user?.token) return;
     try {
       const res = await fetch(`${API_URL}/budgets`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify({ category, amount, period })
+        body: JSON.stringify({ category, amount, period }),
       });
       if (res.ok) {
         const newBudget = await res.json();
-        const index = this.budgets.findIndex(b => b.category === category);
+        const index = this.budgets.findIndex((b) => b.category === category);
         if (index > -1) this.budgets[index] = newBudget;
         else this.budgets.push(newBudget);
         this.save();
         this.checkBudgetNotifications();
       }
     } catch (err) {
-      console.error('Update Budget Error:', err);
+      console.error("Update Budget Error:", err);
     }
   },
 
@@ -178,94 +203,105 @@ export const store = {
     if (!this.user?.token) return;
     try {
       const res = await fetch(`${API_URL}/budgets/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${this.user.token}` },
       });
       if (res.ok) {
-        this.budgets = this.budgets.filter(b => b.id !== id);
+        this.budgets = this.budgets.filter((b) => b.id !== id);
         this.save();
         return true;
       }
       return false;
     } catch (err) {
-      console.error('Delete Budget Error:', err);
+      console.error("Delete Budget Error:", err);
       return false;
     }
   },
 
   save() {
-    localStorage.setItem('user', JSON.stringify(this.user));
-    localStorage.setItem('transactions', JSON.stringify(this.transactions));
-    localStorage.setItem('savings', JSON.stringify(this.savings));
-    localStorage.setItem('budgets', JSON.stringify(this.budgets));
-    localStorage.setItem('notifications', JSON.stringify(this.notifications));
+    localStorage.setItem("user", JSON.stringify(this.user));
+    localStorage.setItem("transactions", JSON.stringify(this.transactions));
+    localStorage.setItem("savings", JSON.stringify(this.savings));
+    localStorage.setItem("budgets", JSON.stringify(this.budgets));
+    localStorage.setItem("saldos", JSON.stringify(this.saldos));
+    localStorage.setItem("notifications", JSON.stringify(this.notifications));
     this.updateUI();
     this.syncHeaderBadge();
-    
+
     // Kirim sinyal ke seluruh aplikasi kalau data berubah
-    window.dispatchEvent(new CustomEvent('store-updated'));
+    window.dispatchEvent(new CustomEvent("store-updated"));
   },
 
   updateUI() {
     if (this.user) {
-      const avatarElements = document.querySelectorAll('.user-avatar-img, #user-avatar, #profile-preview, #full-pp-preview');
-      const nameElements = document.querySelectorAll('.user-name, #user-name-display, #nav-user-name');
-      const emailElements = document.querySelectorAll('.user-email, #nav-user-email');
-      
-      const avatarUrl = this.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=7C3AED&color=fff&bold=true`;
-      
-      avatarElements.forEach(el => {
-        if (el.tagName === 'IMG') {
+      const avatarElements = document.querySelectorAll(
+        ".user-avatar-img, #user-avatar, #profile-preview, #full-pp-preview",
+      );
+      const nameElements = document.querySelectorAll(
+        ".user-name, #user-name-display, #nav-user-name",
+      );
+      const emailElements = document.querySelectorAll(
+        ".user-email, #nav-user-email",
+      );
+
+      const avatarUrl =
+        this.user.avatar ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=7C3AED&color=fff&bold=true`;
+
+      avatarElements.forEach((el) => {
+        if (el.tagName === "IMG") {
           // Tambahkan referrerpolicy untuk Google Images agar tidak diblokir oleh kebijakan CORS/Referrer
-          el.setAttribute('referrerpolicy', 'no-referrer');
+          el.setAttribute("referrerpolicy", "no-referrer");
 
           // Fallback system jika gambar profil (dari Google dll) gagal dimuat
           el.onerror = () => {
-            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name || 'User')}&background=7C3AED&color=fff&bold=true`;
+            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name || "User")}&background=7C3AED&color=fff&bold=true`;
             if (el.src !== fallbackUrl) {
               el.src = fallbackUrl;
             }
             // Lepas skeleton jika error agar tidak stuck lingkaran hitam
-            const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
+            const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
             if (wrapper) {
-              wrapper.classList.remove('skeleton', 'skeleton-circle');
+              wrapper.classList.remove("skeleton", "skeleton-circle");
               // Jika ini di halaman akun, pastikan opacity img 1
-              el.style.opacity = '1';
+              el.style.opacity = "1";
             }
           };
 
           // Hanya pasang src kalau beda (biar gak flicker)
-          if (el.getAttribute('data-src-loaded') !== avatarUrl) {
+          if (el.getAttribute("data-src-loaded") !== avatarUrl) {
             el.src = avatarUrl;
             el.onload = () => {
-              el.style.opacity = '1';
-              el.setAttribute('data-src-loaded', avatarUrl);
-              
-              const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
-              if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+              el.style.opacity = "1";
+              el.setAttribute("data-src-loaded", avatarUrl);
+
+              const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
+              if (wrapper)
+                wrapper.classList.remove("skeleton", "skeleton-circle");
             };
           } else {
             // Jika sudah terload sebelumnya, pastikan skeleton tetap hilang
-            el.style.opacity = '1';
-            const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
-            if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+            el.style.opacity = "1";
+            const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
+            if (wrapper)
+              wrapper.classList.remove("skeleton", "skeleton-circle");
           }
         } else {
           // Kalau bukan img tag (misal div dengan background image)
-          el.style.opacity = '1';
-          const wrapper = el.closest('.avatar-wrapper') || el.parentElement;
-          if (wrapper) wrapper.classList.remove('skeleton', 'skeleton-circle');
+          el.style.opacity = "1";
+          const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
+          if (wrapper) wrapper.classList.remove("skeleton", "skeleton-circle");
         }
       });
-      
-      nameElements.forEach(el => {
+
+      nameElements.forEach((el) => {
         el.textContent = this.user.name;
-        el.classList.remove('skeleton', 'skeleton-text');
+        el.classList.remove("skeleton", "skeleton-text");
       });
 
-      emailElements.forEach(el => {
+      emailElements.forEach((el) => {
         el.textContent = this.user.email;
-        el.classList.remove('skeleton', 'skeleton-text');
+        el.classList.remove("skeleton", "skeleton-text");
       });
     }
   },
@@ -273,7 +309,12 @@ export const store = {
   addNotification(source, title, desc, route = null) {
     // Anti-spam harian sederhana
     const todayStr = new Date().toDateString();
-    const exists = this.notifications.find(n => n.title === title && n.desc === desc && new Date(n.time).toDateString() === todayStr);
+    const exists = this.notifications.find(
+      (n) =>
+        n.title === title &&
+        n.desc === desc &&
+        new Date(n.time).toDateString() === todayStr,
+    );
     if (exists) return;
 
     const newNotif = {
@@ -283,47 +324,63 @@ export const store = {
       desc,
       route,
       time: new Date().toISOString(),
-      read: false
+      read: false,
     };
     this.notifications.unshift(newNotif);
     this.save();
   },
 
   syncHeaderBadge() {
-    const badge = document.querySelector('#notif-trigger .header-badge');
+    const badge = document.querySelector("#notif-trigger .header-badge");
     if (!badge) return;
-    const unreadCount = this.notifications.filter(n => !n.read).length;
+    const unreadCount = this.notifications.filter((n) => !n.read).length;
     if (unreadCount === 0) {
-      badge.style.display = 'none';
+      badge.style.display = "none";
     } else {
-      badge.style.display = 'flex';
-      badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      badge.style.display = "flex";
+      badge.textContent = unreadCount > 9 ? "9+" : unreadCount;
     }
   },
 
   checkBudgetNotifications() {
     if (this.transactions.length === 0 || this.budgets.length === 0) return;
-    
+
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    
+
     const spending = {};
-    this.transactions.forEach(t => {
+    this.transactions.forEach((t) => {
       const d = new Date(t.tanggal);
-      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear && t.type === 'expense') {
-        spending[t.kategori] = (spending[t.kategori] || 0) + Math.abs(Number(t.harga || t.amount || 0));
+      if (
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear &&
+        t.type === "expense"
+      ) {
+        spending[t.kategori] =
+          (spending[t.kategori] || 0) +
+          Math.abs(Number(t.harga || t.amount || 0));
       }
     });
 
-    this.budgets.forEach(b => {
+    this.budgets.forEach((b) => {
       const spent = spending[b.category] || 0;
       if (b.amount > 0) {
         const pct = (spent / b.amount) * 100;
         if (pct >= 100) {
-          this.addNotification('Anggaran', 'Anggaran Melebihi Batas', `Anggaran kategori "${b.category}" telah melebihi batas (Rp ${spent.toLocaleString('id-ID')}).`, '/anggaran');
+          this.addNotification(
+            "Anggaran",
+            "Anggaran Melebihi Batas",
+            `Anggaran kategori "${b.category}" telah melebihi batas (Rp ${spent.toLocaleString("id-ID")}).`,
+            "/anggaran",
+          );
         } else if (pct >= 85) {
-          this.addNotification('Anggaran', 'Anggaran Hampir Habis', `Pengeluaran "${b.category}" sudah mencapai ${Math.round(pct)}% dari target anggaran.`, '/anggaran');
+          this.addNotification(
+            "Anggaran",
+            "Anggaran Hampir Habis",
+            `Pengeluaran "${b.category}" sudah mencapai ${Math.round(pct)}% dari target anggaran.`,
+            "/anggaran",
+          );
         }
       }
     });
@@ -338,12 +395,12 @@ export const store = {
       // Jalankan pembuatan session cookie secara asynchronous di background (non-blocking)
       // agar proses sinkronisasi data utama (sync) bisa langsung dieksekusi tanpa tertunda!
       fetch(`${API_URL}/auth/session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken: userData.token }),
-        credentials: 'include'
-      }).catch(err => {
-        console.error('Gagal membuat session cookie:', err);
+        credentials: "include",
+      }).catch((err) => {
+        console.error("Gagal membuat session cookie:", err);
       });
     }
 
@@ -357,15 +414,15 @@ export const store = {
 
     try {
       const res = await fetch(`${API_URL}/users/sync`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}` 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify(profileData)
+        body: JSON.stringify(profileData),
       });
       if (!res.ok) {
-        let detail = '';
+        let detail = "";
         try {
           const data = await res.json();
           detail = data?.message || data?.error || JSON.stringify(data);
@@ -373,7 +430,7 @@ export const store = {
           try {
             detail = await res.text();
           } catch {
-            detail = '';
+            detail = "";
           }
         }
         throw new Error(detail || `Gagal update profil (HTTP ${res.status})`);
@@ -384,7 +441,7 @@ export const store = {
       this.save();
       return this.user;
     } catch (err) {
-      console.error('Update Profile Error:', err);
+      console.error("Update Profile Error:", err);
       // UX IMPROVEMENT: We no longer rollback to prevUser.
       // The change stays in localStorage, and we just inform the user that sync failed.
       throw err;
@@ -395,12 +452,12 @@ export const store = {
     if (!this.user?.token) return;
     try {
       const res = await fetch(`${API_URL}/users/sync`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}` 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify({ is2FAEnabled: enabled })
+        body: JSON.stringify({ is2FAEnabled: enabled }),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -410,7 +467,7 @@ export const store = {
       }
       return false;
     } catch (err) {
-      console.error('2FA Update Error:', err);
+      console.error("2FA Update Error:", err);
       return false;
     }
   },
@@ -419,19 +476,19 @@ export const store = {
     if (!this.user?.token) return;
     try {
       const res = await fetch(`${API_URL}/users/update-password`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify({ oldPassword, newPassword })
+        body: JSON.stringify({ oldPassword, newPassword }),
       });
-      
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal ubah password');
+      if (!res.ok) throw new Error(data.error || "Gagal ubah password");
       return data;
     } catch (err) {
-      console.error('Change Password Error:', err);
+      console.error("Change Password Error:", err);
       throw err;
     }
   },
@@ -440,17 +497,17 @@ export const store = {
     if (!this.user?.token) return;
     try {
       const res = await fetch(`${API_URL}/users`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${this.user.token}` },
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Gagal hapus akun');
+        throw new Error(data.error || "Gagal hapus akun");
       }
       this.logout();
       return true;
     } catch (err) {
-      console.error('Delete Account Error:', err);
+      console.error("Delete Account Error:", err);
       throw err;
     }
   },
@@ -460,83 +517,150 @@ export const store = {
     this.transactions = [];
     this.savings = [];
     this.budgets = [];
+    this.saldos = [];
     // Don't clear UI preferences like theme / sidebar state.
-    localStorage.removeItem('user');
-    localStorage.removeItem('transactions');
-    localStorage.removeItem('savings');
-    localStorage.removeItem('budgets');
+    localStorage.removeItem("user");
+    localStorage.removeItem("transactions");
+    localStorage.removeItem("savings");
+    localStorage.removeItem("budgets");
+    localStorage.removeItem("saldos");
 
     // Clear backend session cookie
     try {
-      await fetch(`${API_URL}/auth/session`, { method: 'DELETE', credentials: 'include' });
+      await fetch(`${API_URL}/auth/session`, {
+        method: "DELETE",
+        credentials: "include",
+      });
     } catch (err) {
-      console.error('Gagal menghapus session cookie:', err);
+      console.error("Gagal menghapus session cookie:", err);
     }
+  },
+
+  _applyTransactionToSaldo(tx, reverse = false) {
+    if (!this.saldos) this.saldos = [];
+    
+    let targetSaldo = null;
+    let targetType = "Cash";
+    if (tx.metode === "E-Wallet") targetType = "E-Wallet";
+    else if (tx.metode === "Bank Transfer" || tx.metode === "Kartu Kredit") targetType = "Bank";
+    
+    // Prioritaskan mencari nama akun secara spesifik (Gopay, BCA, dll)
+    if (tx.akun) {
+      targetSaldo = this.saldos.find(s => s.name === tx.akun);
+      
+      // Auto-create akun jika belum ada
+      if (!targetSaldo && !reverse) {
+        targetSaldo = {
+          id: Date.now() + Math.random(),
+          name: tx.akun,
+          type: targetType,
+          balance: 0,
+          logo: '' // Logo bisa diabaikan dulu, di UI saldo.js ada logoMap fallback
+        };
+        this.saldos.push(targetSaldo);
+      }
+    }
+    
+    // Fallback logic ke tipe umum kalau akun belum di-set / tidak ketemu (hanya saat delete/reverse)
+    if (!targetSaldo) {
+      targetSaldo = this.saldos.find(s => s.type === targetType);
+    }
+    
+    // Fallback terakhir ke akun pertama
+    if (!targetSaldo) targetSaldo = this.saldos[0]; 
+    if (!targetSaldo) return; // Jika benar-benar kosong
+    
+    let amount = Number(tx.harga || tx.amount || 0);
+    // Jika expense, nilai aslinya negatif. Jika income, positif.
+    if (reverse) amount = -amount;
+
+    targetSaldo.balance = Number(targetSaldo.balance) + amount;
   },
 
   async addTransaction(tx) {
     const tempId = Date.now();
     const newTx = { ...tx, id: tempId };
     this.transactions.unshift(newTx);
+    this._applyTransactionToSaldo(newTx); // Otomatis update saldo
     this.save();
     this.checkBudgetNotifications();
 
     if (this.user?.token) {
       try {
         const res = await fetch(`${API_URL}/transactions`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.user.token}`
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.user.token}`,
           },
-          body: JSON.stringify(tx)
+          body: JSON.stringify(tx),
         });
         if (res.ok) {
           const savedTx = await res.json();
-          this.transactions = this.transactions.map(t => t.id === tempId ? this._mapTransaction(savedTx) : t);
+          this.transactions = this.transactions.map((t) =>
+            t.id === tempId ? this._mapTransaction(savedTx) : t,
+          );
           this.save();
         }
       } catch (err) {
-        console.error('Post Error:', err);
+        console.error("Post Error:", err);
       }
     }
   },
 
   deleteTransaction(id) {
-    this.transactions = this.transactions.filter(t => t.id !== id);
+    const tx = this.transactions.find((t) => t.id === id);
+    if (tx) this._applyTransactionToSaldo(tx, true);
+    this.transactions = this.transactions.filter((t) => t.id !== id);
     this.save();
   },
 
   async deleteTransactionRemote(id) {
-    const prev = this.transactions;
-    this.transactions = this.transactions.filter(t => t.id !== id);
+    const prev = [...this.transactions];
+    const tx = this.transactions.find((t) => t.id === id);
+    const prevSaldos = JSON.parse(JSON.stringify(this.saldos));
+
+    if (tx) this._applyTransactionToSaldo(tx, true);
+    this.transactions = this.transactions.filter((t) => t.id !== id);
     this.save();
 
     if (!this.user?.token) return;
 
     try {
       const res = await fetch(`${API_URL}/transactions/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${this.user.token}` },
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
+        const text = await res.text().catch(() => "");
         throw new Error(text || `Gagal hapus transaksi (HTTP ${res.status})`);
       }
     } catch (e) {
       this.transactions = prev;
+      this.saldos = prevSaldos;
       this.save();
       throw e;
     }
   },
 
   getTransactionById(id) {
-    return this.transactions.find(t => t.id === id);
+    return this.transactions.find((t) => t.id === id);
   },
 
   async updateTransaction(id, data) {
     const prev = [...this.transactions];
-    this.transactions = this.transactions.map(t => t.id === id ? { ...t, ...data } : t);
+    const prevSaldos = JSON.parse(JSON.stringify(this.saldos));
+    const oldTx = this.transactions.find((t) => t.id === id);
+    
+    if (oldTx) {
+      this._applyTransactionToSaldo(oldTx, true); // kembalikan saldo lama
+      const newTx = { ...oldTx, ...data };
+      this._applyTransactionToSaldo(newTx); // terapkan saldo baru
+    }
+
+    this.transactions = this.transactions.map((t) =>
+      t.id === id ? { ...t, ...data } : t,
+    );
     this.save();
     this.checkBudgetNotifications();
 
@@ -544,19 +668,21 @@ export const store = {
 
     try {
       const res = await fetch(`${API_URL}/transactions/${id}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}`
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
+        const text = await res.text().catch(() => "");
         throw new Error(text || `Gagal update transaksi (HTTP ${res.status})`);
       }
       const updatedTx = await res.json();
-      this.transactions = this.transactions.map(t => t.id === id ? this._mapTransaction(updatedTx) : t);
+      this.transactions = this.transactions.map((t) =>
+        t.id === id ? this._mapTransaction(updatedTx) : t,
+      );
       this.save();
       this.checkBudgetNotifications();
     } catch (e) {
@@ -568,8 +694,8 @@ export const store = {
 
   getStats() {
     const now = new Date();
-    const fourWeeksAgo = new Date(now.getTime() - (28 * 24 * 60 * 60 * 1000));
-    const eightWeeksAgo = new Date(now.getTime() - (56 * 24 * 60 * 60 * 1000));
+    const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
+    const eightWeeksAgo = new Date(now.getTime() - 56 * 24 * 60 * 60 * 1000);
 
     let currentIncome = 0;
     let currentExpense = 0;
@@ -578,22 +704,22 @@ export const store = {
     let totalIncome = 0;
     let totalExpense = 0;
 
-    this.transactions.forEach(t => {
+    this.transactions.forEach((t) => {
       const amount = Number(t.amount || t.harga || 0);
       const txDate = new Date(t.tanggal);
-      
+
       // Lifetime totals for Balance
-      if (t.type === 'income') totalIncome += amount;
+      if (t.type === "income") totalIncome += amount;
       else totalExpense += Math.abs(amount);
 
       // Current Period (Last 28 days)
       if (txDate >= fourWeeksAgo && txDate <= now) {
-        if (t.type === 'income') currentIncome += amount;
+        if (t.type === "income") currentIncome += amount;
         else currentExpense += Math.abs(amount);
       }
       // Previous Period (28-56 days ago)
       else if (txDate >= eightWeeksAgo && txDate < fourWeeksAgo) {
-        if (t.type === 'income') prevIncome += amount;
+        if (t.type === "income") prevIncome += amount;
         else prevExpense += Math.abs(amount);
       }
     });
@@ -607,16 +733,44 @@ export const store = {
     // balanceOffset: selisih yang di-set user via tombol pensil (tanpa bikin transaksi)
     const offset = Number(this.user?.balanceOffset || 0);
 
+    // Hitung total saldo dari semua akun (Bank, E-Wallet, Cash) di halaman Saldo
+    const accountBalance = (this.saldos || []).reduce((sum, s) => sum + Number(s.balance || 0), 0);
+    const hasAccounts = (this.saldos || []).length > 0;
+
     return {
       income: currentIncome,
       expense: currentExpense,
-      balance: rawBalance + offset,
+      // Jika user sudah punya akun saldo, tampilkan total dari semua akun
+      // Jika belum, fallback ke perhitungan lama (income - expense + offset)
+      balance: hasAccounts ? accountBalance : rawBalance + offset,
       rawBalance,
+      accountBalance,
+      hasAccounts,
       incomeDiff: calcDiff(currentIncome, prevIncome),
       expenseDiff: calcDiff(currentExpense, prevExpense),
       totalIncome,
-      totalExpense
+      totalExpense,
     };
+  },
+
+  addSaldo(saldo) {
+    saldo.id = Date.now();
+    this.saldos.push(saldo);
+    this.save();
+    return saldo;
+  },
+
+  updateSaldo(id, amount) {
+    const s = this.saldos.find((x) => x.id === id);
+    if (s) {
+      s.balance = Number(amount);
+      this.save();
+    }
+  },
+
+  deleteSaldo(id) {
+    this.saldos = this.saldos.filter((s) => s.id !== id);
+    this.save();
   },
 
   addSaving(goal) {
@@ -633,22 +787,22 @@ export const store = {
     }
 
     const res = await fetch(`${API_URL}/savings`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.user.token}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.user.token}`,
       },
       body: JSON.stringify({
         name: goal.name,
         targetAmount: goal.target,
         currentAmount: goal.current || 0,
         icon: goal.icon,
-        color: goal.color
-      })
+        color: goal.color,
+      }),
     });
 
     if (!res.ok) {
-      const text = await res.text().catch(() => '');
+      const text = await res.text().catch(() => "");
       throw new Error(text || `Gagal simpan wishlist (HTTP ${res.status})`);
     }
 
@@ -660,15 +814,52 @@ export const store = {
       current: saved.currentAmount,
       icon: saved.icon,
       color: saved.color,
-      orderIndex: saved.orderIndex
+      orderIndex: saved.orderIndex,
     };
     this.savings.push(mapped);
     this.save();
     return mapped;
   },
 
+  async editSaving(id, data) {
+    const goal = this.savings.find((s) => s.id === id);
+    if (!goal) return;
+    
+    const prev = { ...goal };
+    Object.assign(goal, data);
+    this.save();
+
+    if (!this.user?.token) return goal;
+
+    try {
+      const res = await fetch(`${API_URL}/savings/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
+        },
+        body: JSON.stringify({
+          name: goal.name,
+          targetAmount: goal.target,
+          currentAmount: goal.current,
+          icon: goal.icon,
+          color: goal.color,
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Gagal update wishlist (HTTP ${res.status})`);
+      }
+      return goal;
+    } catch (e) {
+      Object.assign(goal, prev);
+      this.save();
+      throw e;
+    }
+  },
+
   updateSaving(id, amount) {
-    const goal = this.savings.find(s => s.id === id);
+    const goal = this.savings.find((s) => s.id === id);
     if (goal) {
       goal.current += Number(amount);
       this.save();
@@ -676,14 +867,19 @@ export const store = {
   },
 
   async addSavingFunds(id, amount) {
-    const goal = this.savings.find(s => s.id === id);
+    const goal = this.savings.find((s) => s.id === id);
     if (!goal) return;
 
     const next = goal.current + Number(amount);
 
     // Pemicu notifikasi saat tabungan terkumpul 100%
     if (next >= goal.target && goal.current < goal.target) {
-      this.addNotification('Wishlist', 'Target Tabungan Tercapai!', `Selamat! Target dana untuk "${goal.name}" sudah terkumpul sepenuhnya.`, '/wishlist');
+      this.addNotification(
+        "Wishlist",
+        "Target Tabungan Tercapai!",
+        `Selamat! Target dana untuk "${goal.name}" sudah terkumpul sepenuhnya.`,
+        "/wishlist",
+      );
     }
 
     if (!this.user?.token) {
@@ -698,15 +894,15 @@ export const store = {
 
     try {
       const res = await fetch(`${API_URL}/savings/${id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify({ currentAmount: next })
+        body: JSON.stringify({ currentAmount: next }),
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
+        const text = await res.text().catch(() => "");
         throw new Error(text || `Gagal update tabungan (HTTP ${res.status})`);
       }
       const updated = await res.json();
@@ -721,24 +917,24 @@ export const store = {
   },
 
   deleteSaving(id) {
-    this.savings = this.savings.filter(s => s.id !== id);
+    this.savings = this.savings.filter((s) => s.id !== id);
     this.save();
   },
 
   async removeSaving(id) {
     const prev = this.savings;
-    this.savings = this.savings.filter(s => s.id !== id);
+    this.savings = this.savings.filter((s) => s.id !== id);
     this.save();
 
     if (!this.user?.token) return;
 
     try {
       const res = await fetch(`${API_URL}/savings/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${this.user.token}` }
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${this.user.token}` },
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
+        const text = await res.text().catch(() => "");
         throw new Error(text || `Gagal hapus wishlist (HTTP ${res.status})`);
       }
     } catch (e) {
@@ -751,11 +947,9 @@ export const store = {
   reorderSavings(newOrder) {
     this.savings = newOrder;
     this.save();
-  }
-  ,
-
+  },
   async reorderSavingsRemote(newOrder) {
-    const orderedIds = newOrder.map(s => s.id);
+    const orderedIds = newOrder.map((s) => s.id);
     const prev = this.savings;
     this.savings = newOrder;
     this.save();
@@ -764,26 +958,28 @@ export const store = {
 
     try {
       const res = await fetch(`${API_URL}/savings/reorder`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.user.token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
         },
-        body: JSON.stringify({ orderedIds })
+        body: JSON.stringify({ orderedIds }),
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(text || `Gagal simpan urutan wishlist (HTTP ${res.status})`);
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          text || `Gagal simpan urutan wishlist (HTTP ${res.status})`,
+        );
       }
       const saved = await res.json();
-      this.savings = saved.map(s => ({
+      this.savings = saved.map((s) => ({
         id: s.id,
         name: s.name,
         target: s.targetAmount,
         current: s.currentAmount,
         icon: s.icon,
         color: s.color,
-        orderIndex: s.orderIndex
+        orderIndex: s.orderIndex,
       }));
       this.save();
     } catch (e) {
@@ -791,18 +987,18 @@ export const store = {
       this.save();
       throw e;
     }
-  }
+  },
 };
 
 export function formatCurrency(number) {
-  const currency = store.user?.currency || 'IDR';
-  const locale = currency === 'IDR' ? 'id-ID' : 'en-US';
-  
-  return new Intl.NumberFormat(locale, { 
-    style: 'currency', 
-    currency: currency, 
+  const currency = store.user?.currency || "IDR";
+  const locale = currency === "IDR" ? "id-ID" : "en-US";
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency,
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   }).format(number || 0);
 }
 
@@ -811,7 +1007,7 @@ export function formatRupiah(number) {
 }
 
 export function formatDate(dateString) {
-  if (!dateString) return '-';
-  const options = { day: 'numeric', month: 'short', year: 'numeric' };
-  return new Date(dateString).toLocaleDateString('id-ID', options);
+  if (!dateString) return "-";
+  const options = { day: "numeric", month: "short", year: "numeric" };
+  return new Date(dateString).toLocaleDateString("id-ID", options);
 }

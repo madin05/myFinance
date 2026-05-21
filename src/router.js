@@ -5,6 +5,7 @@ import {
   getTransaksiSkeleton,
   getAnggaranSkeleton,
   getTabunganSkeleton,
+  getSaldoSkeleton,
   getLaporanSkeleton,
   getAkunSkeleton
 } from './components/skeleton.js';
@@ -35,6 +36,9 @@ export function showSkeleton(routePath) {
       break;
     case '/tabungan':
       container.innerHTML = getTabunganSkeleton(localStorage.getItem('wishlist-view') || 'grid');
+      break;
+    case '/saldo':
+      container.innerHTML = getSaldoSkeleton();
       break;
     case '/laporan':
       container.innerHTML = getLaporanSkeleton();
@@ -86,6 +90,13 @@ export function handleRoute() {
       headerEl.classList.remove('curved-header');
     }
   }
+
+  // Toggle kelas page-dashboard untuk styling background hero
+  if (route === '/dashboard') {
+    document.body.classList.add('page-dashboard');
+  } else {
+    document.body.classList.remove('page-dashboard');
+  }
   
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -123,6 +134,8 @@ export function handleRoute() {
       import('./pages/anggaran.js').then(module => module.renderAnggaran());
     } else if (route === '/tabungan') {
       import('./pages/tabungan.js').then(module => module.renderTabungan());
+    } else if (route === '/saldo') {
+      import('./pages/saldo.js').then(module => module.renderSaldo());
     } else if (route === '/laporan') {
       import('./pages/laporan.js').then(module => module.renderLaporan());
     } else if (route === '/akun') {
@@ -161,6 +174,8 @@ export function refreshCurrentPage() {
     import('./pages/anggaran.js').then(m => m.renderAnggaran());
   } else if (route === '/tabungan') {
     import('./pages/tabungan.js').then(m => m.renderTabungan());
+  } else if (route === '/saldo') {
+    import('./pages/saldo.js').then(m => m.renderSaldo());
   } else if (route === '/laporan') {
     import('./pages/laporan.js').then(m => m.renderLaporan());
   } else if (route === '/akun') {

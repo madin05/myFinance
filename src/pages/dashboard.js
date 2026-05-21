@@ -1,6 +1,7 @@
 import { store, formatRupiah, formatDate } from '../store.js';
 import { openAdjustBalanceModal } from '../components/modal.js';
 import { navigateTo } from '../router.js';
+import { initStickyHeader } from '../utils.js';
 
 let currentSavingIndex = 0;
 let savingInterval = null;
@@ -177,12 +178,18 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="icon-box bg-blue-light text-blue"><i class="ph-fill ph-bank"></i></div>
+          ${stats.hasAccounts ? `
+          <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="background:transparent;border:1px solid var(--border);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)';this.style.borderColor='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">
+            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
+          </a>
+          ` : `
           <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:1px solid var(--border);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)';this.style.borderColor='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">
             <i class="ph ph-pencil-simple" style="font-size:1rem;"></i>
           </button>
+          `}
         </div>
         <div class="stat-body">
-          <p class="stat-label">Saldo Saat Ini</p>
+          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : 'Saldo Saat Ini'}</p>
           <h2 class="stat-value">${formatRupiah(stats.balance)}</h2>
         </div>
         <div class="stat-footer">
@@ -266,9 +273,25 @@ export function renderDashboard() {
     navigateTo('/tabungan');
   });
 
-  document.getElementById('btn-adjust-balance').addEventListener('click', () => {
-    openAdjustBalanceModal(stats.balance, () => renderDashboard());
-  });
+  // Tombol pensil hanya muncul jika belum ada akun saldo
+  const btnAdjust = document.getElementById('btn-adjust-balance');
+  if (btnAdjust) {
+    btnAdjust.addEventListener('click', () => {
+      openAdjustBalanceModal(stats.balance, () => renderDashboard());
+    });
+  }
+
+  // Link ke halaman saldo (SPA navigation)
+  const btnGotoSaldo = document.getElementById('btn-goto-saldo');
+  if (btnGotoSaldo) {
+    btnGotoSaldo.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateTo('/saldo');
+    });
+  }
+
+  // Aktifkan sticky header di mobile
+  initStickyHeader();
 }
 
 function renderBudgetWidget() {

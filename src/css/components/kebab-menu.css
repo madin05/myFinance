@@ -116,8 +116,17 @@
   color: var(--text-main);
 }
 
+.kebab-dropdown .kebab-item.danger i {
+  color: var(--text-muted);
+}
+
 .kebab-dropdown .kebab-item.danger:hover {
-  background: var(--bg-color);
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.kebab-dropdown .kebab-item.danger:hover i {
+  color: var(--red);
 }
 
 .kebab-dropdown .kebab-divider {

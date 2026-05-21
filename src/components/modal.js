@@ -7,6 +7,20 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
   const container = document.getElementById('modal-container');
   const isEdit = !!txToEdit;
   
+    const getMetodeOptions = () => {
+    if (!store.saldos || store.saldos.length === 0) {
+      return `
+        <option value="Cash" ${isEdit && txToEdit.metode === 'Cash' ? 'selected' : ''}>Cash</option>
+        <option value="E-Wallet" ${isEdit && txToEdit.metode === 'E-Wallet' ? 'selected' : ''}>E-Wallet</option>
+        <option value="Bank Transfer" ${isEdit && txToEdit.metode === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
+        <option value="Kartu Kredit" ${isEdit && txToEdit.metode === 'Kartu Kredit' ? 'selected' : ''}>Kartu Kredit</option>
+      `;
+    }
+    return store.saldos.map(s => 
+      `<option value="${s.name}" ${isEdit && txToEdit.metode === s.name ? 'selected' : ''}>${s.name} (${s.type})</option>`
+    ).join('');
+  };
+
   container.innerHTML = `
     <div class="modal-overlay" id="modal-overlay">
       <div class="modal-content">
@@ -52,6 +66,13 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
                 <option value="Kartu Kredit" ${isEdit && txToEdit.metode === 'Kartu Kredit' ? 'selected' : ''}>Kartu Kredit</option>
               </select>
             </div>
+          </div>
+          
+          <div class="form-group" id="group-tx-akun" style="display: none;">
+            <label>Pilih Akun / Dompet</label>
+            <select class="form-control" id="tx-akun">
+              <option value="" disabled selected>Pilih Akun</option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -108,6 +129,75 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
       document.getElementById('tx-date').valueAsDate = new Date();
     }
 
+    // Handle Akun dropdown logic
+    const metodeEl = document.getElementById('tx-metode');
+    const akunGroup = document.getElementById('group-tx-akun');
+    const akunEl = document.getElementById('tx-akun');
+
+    const presetNames = {
+      'E-Wallet': [
+        { name: 'Gopay', logo: 'https://www.google.com/s2/favicons?domain=gojek.com&sz=64' },
+        { name: 'OVO', logo: 'https://www.google.com/s2/favicons?domain=ovo.id&sz=64' },
+        { name: 'DANA', logo: 'https://www.google.com/s2/favicons?domain=dana.id&sz=64' },
+        { name: 'ShopeePay', logo: 'https://www.google.com/s2/favicons?domain=shopee.co.id&sz=64' },
+        { name: 'LinkAja', logo: 'https://www.google.com/s2/favicons?domain=linkaja.id&sz=64' },
+        { name: 'Lainnya (Ketik Manual)', logo: '' }
+      ],
+      'Bank': [
+        { name: 'BCA', logo: 'https://www.google.com/s2/favicons?domain=bca.co.id&sz=64' },
+        { name: 'Bank Mandiri', logo: 'https://www.google.com/s2/favicons?domain=bankmandiri.co.id&sz=64' },
+        { name: 'BNI', logo: 'https://www.google.com/s2/favicons?domain=bni.co.id&sz=64' },
+        { name: 'BRI', logo: 'https://www.google.com/s2/favicons?domain=bri.co.id&sz=64' },
+        { name: 'BSI', logo: 'https://www.google.com/s2/favicons?domain=bankbsi.co.id&sz=64' },
+        { name: 'Bank Jago', logo: 'https://www.google.com/s2/favicons?domain=jago.com&sz=64' },
+        { name: 'SeaBank', logo: 'https://www.google.com/s2/favicons?domain=seabank.co.id&sz=64' },
+        { name: 'Lainnya (Ketik Manual)', logo: '' }
+      ],
+      'Cash': [
+        { name: 'Dompet', logo: '' },
+        { name: 'Brankas', logo: '' },
+        { name: 'Uang Tunai', logo: '' },
+        { name: 'Lainnya (Ketik Manual)', logo: '' }
+      ]
+    };
+
+    const updateAkunOptions = () => {
+      const type = metodeEl.value;
+      
+      const oldWrapper = akunEl.nextElementSibling;
+      if (oldWrapper && oldWrapper.classList.contains('custom-select-wrapper')) {
+        oldWrapper.remove();
+        akunEl.classList.remove('custom-select-hidden');
+      }
+
+      if (!type) {
+        akunGroup.style.display = 'none';
+        akunEl.required = false;
+        return;
+      }
+      
+      let targetType = 'Cash';
+      if (type === 'E-Wallet') targetType = 'E-Wallet';
+      else if (type === 'Bank Transfer' || type === 'Kartu Kredit') targetType = 'Bank';
+      
+      const presetList = presetNames[targetType] || [];
+      if (presetList.length > 0) {
+        akunEl.innerHTML = '<option value="" disabled selected>Pilih Akun</option>' + 
+          presetList.map(s => `<option value="${s.name}" data-logo="${s.logo}" ${isEdit && txToEdit.akun === s.name ? 'selected' : ''}>${s.name}</option>`).join('');
+        akunGroup.style.display = 'block';
+        akunEl.required = true;
+      } else {
+        akunGroup.style.display = 'none';
+        akunEl.required = false;
+        akunEl.innerHTML = '<option value="" disabled selected>Pilih Akun</option>';
+      }
+      
+      initCustomSelects(akunGroup);
+    };
+
+    metodeEl.addEventListener('change', updateAkunOptions);
+    if (isEdit) updateAkunOptions();
+
     // Close handlers
     const closeModal = () => {
       container.innerHTML = '';
@@ -139,10 +229,15 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
         isValid = false;
       }
 
-      const metodeEl = document.getElementById('tx-metode');
       const metodeTrigger = metodeEl.nextElementSibling?.querySelector('.custom-select-trigger');
       if (!metodeEl.value) {
         metodeTrigger?.classList.add('is-invalid');
+        isValid = false;
+      }
+
+      const akunTrigger = akunEl.nextElementSibling?.querySelector('.custom-select-trigger');
+      if (akunEl.required && !akunEl.value) {
+        akunTrigger?.classList.add('is-invalid');
         isValid = false;
       }
 
@@ -152,10 +247,9 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
         isValid = false;
       }
 
-      const hargaEl = document.getElementById('tx-harga');
-      const hargaVal = parseIDRInput(hargaEl.value);
-      if (!hargaEl.value || hargaVal <= 0) {
-        hargaEl.classList.add('is-invalid');
+      const hargaVal = parseIDRInput(hargaInput.value);
+      if (!hargaInput.value || hargaVal <= 0) {
+        hargaInput.classList.add('is-invalid');
         isValid = false;
       }
 
@@ -168,6 +262,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
       const date = dateEl.value;
       const kategori = kategoriEl.value;
       const metode = metodeEl.value;
+      const akun = akunEl.value || '';
       const keterangan = keteranganEl.value;
       let harga = hargaVal;
       
@@ -181,6 +276,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
         tanggal: date,
         kategori,
         metode,
+        akun,
         keterangan,
         harga,
         type
