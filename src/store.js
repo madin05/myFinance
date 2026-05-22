@@ -6,7 +6,7 @@ const isLocalhost =
   window.location.hostname === "127.0.0.1";
 const API_URL = isLocalhost
   ? "http://localhost:5000/api"
-  : import.meta.env.VITE_API_URL || "https://api.myfinanceid.com/api"; // Ganti URL ini dengan URL API deployment lo yang bener
+  : "https://myfinance-production-a073.up.railway.app/api";
 
 export const store = {
   user: JSON.parse(localStorage.getItem("user")) || null,
