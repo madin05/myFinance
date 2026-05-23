@@ -818,10 +818,13 @@ export const store = {
     return saldo;
   },
 
-  async updateSaldo(id, amount) {
+  async updateSaldo(id, data) {
     const s = this.saldos.find((x) => x.id === id);
     if (s) {
-      s.balance = Number(amount);
+      if (data.balance !== undefined) s.balance = Number(data.balance);
+      if (data.name !== undefined) s.name = data.name;
+      if (data.type !== undefined) s.type = data.type;
+      if (data.logo !== undefined) s.logo = data.logo;
       this.save();
 
       // Sync ke DB
@@ -833,7 +836,7 @@ export const store = {
               "Content-Type": "application/json",
               Authorization: `Bearer ${this.user.token}`,
             },
-            body: JSON.stringify({ balance: Number(amount) }),
+            body: JSON.stringify(data),
             credentials: "include",
           });
         } catch (err) {

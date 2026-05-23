@@ -29,18 +29,19 @@ export function renderSaldo() {
   };
 
   const logoMap = {
-    'Gopay': 'https://www.google.com/s2/favicons?domain=gojek.com&sz=64',
-    'OVO': 'https://www.google.com/s2/favicons?domain=ovo.id&sz=64',
-    'DANA': 'https://www.google.com/s2/favicons?domain=dana.id&sz=64',
-    'ShopeePay': 'https://www.google.com/s2/favicons?domain=shopee.co.id&sz=64',
-    'LinkAja': 'https://www.google.com/s2/favicons?domain=linkaja.id&sz=64',
-    'BCA': 'https://www.google.com/s2/favicons?domain=bca.co.id&sz=64',
-    'Bank Mandiri': 'https://www.google.com/s2/favicons?domain=bankmandiri.co.id&sz=64',
-    'BNI': 'https://www.google.com/s2/favicons?domain=bni.co.id&sz=64',
-    'BRI': 'https://www.google.com/s2/favicons?domain=bri.co.id&sz=64',
-    'BSI': 'https://www.google.com/s2/favicons?domain=bankbsi.co.id&sz=64',
-    'Bank Jago': 'https://www.google.com/s2/favicons?domain=jago.com&sz=64',
-    'SeaBank': 'https://www.google.com/s2/favicons?domain=seabank.co.id&sz=64',
+    'Gopay': '/assets/banks/gopay.svg',
+    'OVO': '/assets/banks/ovo.png',
+    'DANA': '/assets/banks/dana.png',
+    'ShopeePay': '/assets/banks/shopeepay.png',
+    'LinkAja': '/assets/banks/linkaja.svg',
+    'BCA': '/assets/banks/bca.png',
+    'Bank Mandiri': '/assets/banks/mandiri.png',
+    'BNI': '/assets/banks/bni.png',
+    'BRI': '/assets/banks/bri.png',
+    'BSI': '/assets/banks/bsi.png',
+    'Bank Jago': '/assets/banks/jago.png',
+    'SeaBank': '/assets/banks/seabank.svg',
+    'BluBCA': '/assets/banks/blubca.svg',
   };
 
   const getLogo = (s) => s.logo || logoMap[s.name] || '';
@@ -112,21 +113,22 @@ export function renderSaldo() {
     const types = ['E-Wallet', 'Bank', 'Cash'];
     const presetNames = {
       'E-Wallet': [
-        { name: 'Gopay', logo: 'https://www.google.com/s2/favicons?domain=gojek.com&sz=64' },
-        { name: 'OVO', logo: 'https://www.google.com/s2/favicons?domain=ovo.id&sz=64' },
-        { name: 'DANA', logo: 'https://www.google.com/s2/favicons?domain=dana.id&sz=64' },
-        { name: 'ShopeePay', logo: 'https://www.google.com/s2/favicons?domain=shopee.co.id&sz=64' },
-        { name: 'LinkAja', logo: 'https://www.google.com/s2/favicons?domain=linkaja.id&sz=64' },
+        { name: 'Gopay', logo: '/assets/banks/gopay.svg' },
+        { name: 'OVO', logo: '/assets/banks/ovo.png' },
+        { name: 'DANA', logo: '/assets/banks/dana.png' },
+        { name: 'ShopeePay', logo: '/assets/banks/shopeepay.png' },
+        { name: 'LinkAja', logo: '/assets/banks/linkaja.svg' },
         { name: 'Lainnya (Ketik Manual)', logo: '' }
       ],
       'Bank': [
-        { name: 'BCA', logo: 'https://www.google.com/s2/favicons?domain=bca.co.id&sz=64' },
-        { name: 'Bank Mandiri', logo: 'https://www.google.com/s2/favicons?domain=bankmandiri.co.id&sz=64' },
-        { name: 'BNI', logo: 'https://www.google.com/s2/favicons?domain=bni.co.id&sz=64' },
-        { name: 'BRI', logo: 'https://www.google.com/s2/favicons?domain=bri.co.id&sz=64' },
-        { name: 'BSI', logo: 'https://www.google.com/s2/favicons?domain=bankbsi.co.id&sz=64' },
-        { name: 'Bank Jago', logo: 'https://www.google.com/s2/favicons?domain=jago.com&sz=64' },
-        { name: 'SeaBank', logo: 'https://www.google.com/s2/favicons?domain=seabank.co.id&sz=64' },
+        { name: 'BCA', logo: '/assets/banks/bca.png' },
+        { name: 'Bank Mandiri', logo: '/assets/banks/mandiri.png' },
+        { name: 'BNI', logo: '/assets/banks/bni.png' },
+        { name: 'BRI', logo: '/assets/banks/bri.png' },
+        { name: 'BSI', logo: '/assets/banks/bsi.png' },
+        { name: 'Bank Jago', logo: '/assets/banks/jago.png' },
+        { name: 'SeaBank', logo: '/assets/banks/seabank.svg' },
+        { name: 'BluBCA', logo: '/assets/banks/blubca.svg' },
         { name: 'Lainnya (Ketik Manual)', logo: '' }
       ],
       'Cash': [
@@ -147,14 +149,14 @@ export function renderSaldo() {
           <form id="form-saldo" style="padding-top: 1rem;">
             <div class="form-group" style="margin-bottom: 1.5rem;" id="type-group">
               <label>Jenis Akun</label>
-              <select class="form-control" id="saldo-type" ${isEdit ? 'disabled' : ''} required>
+              <select class="form-control" id="saldo-type" required>
                 ${types.map(t => `<option value="${t}" ${t === existingData.type ? 'selected' : ''}>${t}</option>`).join('')}
               </select>
             </div>
             <div class="form-group" style="margin-bottom: 1.5rem;" id="name-group">
               <label>Nama Akun</label>
-              <select class="form-control" id="saldo-name-select" ${isEdit ? 'disabled' : ''} required></select>
-              <input type="text" class="form-control" id="saldo-name-manual" placeholder="Ketik nama manual..." style="display: none; margin-top: 0.75rem;" ${isEdit ? 'disabled' : ''}>
+              <select class="form-control" id="saldo-name-select" required></select>
+              <input type="text" class="form-control" id="saldo-name-manual" placeholder="Ketik nama manual..." style="display: none; margin-top: 0.75rem;">
             </div>
             <div class="form-group" style="margin-bottom: 1.5rem;">
               <label>Nominal Saldo (Rp)</label>
@@ -264,7 +266,7 @@ export function renderSaldo() {
       
       showLoading();
       if (isEdit) {
-        store.updateSaldo(Number(existingId), amount);
+        store.updateSaldo(Number(existingId), { balance: amount, name, type, logo });
         showToast('Saldo berhasil diperbarui!', 'success');
       } else {
         store.addSaldo({ name, type, balance: amount, logo });
