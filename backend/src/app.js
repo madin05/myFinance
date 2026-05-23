@@ -3,27 +3,41 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const compression = require('compression');
 
 dotenv.config();
 
 const app = express();
 
-// Middlewares
+// ─── Middlewares ────────────────────────────────────────────────────────────
+
+// Gzip semua response JSON - hemat bandwidth hingga 70%
+app.use(compression());
+
+// CORS
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
-app.use(cookieParser());
-app.use(express.json({ limit: '2mb' })); // Turunin ke 2MB biar gak kegedean
-app.use(express.urlencoded({ limit: '2mb', extended: true }));
-app.use(morgan('dev'));
 
-// Basic Route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to MyFinance API (PostgreSQL Edition)' });
+app.use(cookieParser());
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
+
+// Ganti 'dev' ke 'tiny' di production biar log lebih ringkas & hemat CPU
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'tiny' : 'dev'));
+
+// ─── Health Check (buat UptimeRobot ping biar Railway gak tidur) ────────────
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', ts: Date.now() });
 });
 
-// Import and use routes
+// ─── Basic Route ────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({ message: 'MyFinance API is running 🚀' });
+});
+
+// ─── Routes ─────────────────────────────────────────────────────────────────
 const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const userRoutes = require('./routes/userRoutes');

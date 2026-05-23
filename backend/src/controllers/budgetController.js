@@ -1,16 +1,24 @@
 const prisma = require('../services/db');
 
+async function getDbUserId(uid) {
+  const user = await prisma.user.findUnique({
+    where: { firebaseUid: uid },
+    select: { id: true }
+  });
+  return user?.id || null;
+}
+
 exports.getBudgets = async (req, res) => {
   try {
     const { uid } = req.user;
-    const { period } = req.query; // Format: 2024-04
+    const { period } = req.query;
 
-    const user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-    if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
+    const userId = await getDbUserId(uid);
+    if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
 
     const budgets = await prisma.budget.findMany({
       where: {
-        userId: user.id,
+        userId,
         period: period || new Date().toISOString().slice(0, 7)
       }
     });
@@ -25,20 +33,20 @@ exports.upsertBudget = async (req, res) => {
     const { uid } = req.user;
     const { category, amount, period } = req.body;
 
-    const user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-    if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
+    const userId = await getDbUserId(uid);
+    if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
 
     const budget = await prisma.budget.upsert({
       where: {
         userId_category_period: {
-          userId: user.id,
+          userId,
           category,
           period: period || new Date().toISOString().slice(0, 7)
         }
       },
       update: { amount: parseFloat(amount) },
       create: {
-        userId: user.id,
+        userId,
         category,
         amount: parseFloat(amount),
         period: period || new Date().toISOString().slice(0, 7)

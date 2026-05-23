@@ -13,15 +13,7 @@ export const store = {
   transactions: JSON.parse(localStorage.getItem("transactions")) || [],
   savings: JSON.parse(localStorage.getItem("savings")) || [],
   budgets: JSON.parse(localStorage.getItem("budgets")) || [],
-  saldos: (() => {
-    const local = JSON.parse(localStorage.getItem("saldos"));
-    if (local && local.length > 0) return local;
-    return [
-      { id: Date.now(), name: 'BCA', type: 'Bank', balance: 12500000, logo: 'https://www.google.com/s2/favicons?domain=bca.co.id&sz=64' },
-      { id: Date.now() + 1, name: 'Gopay', type: 'E-Wallet', balance: 3400000, logo: 'https://www.google.com/s2/favicons?domain=gojek.com&sz=64' },
-      { id: Date.now() + 2, name: 'Dompet', type: 'Cash', balance: 850000, logo: '' }
-    ];
-  })(),
+  saldos: JSON.parse(localStorage.getItem("saldos")) || [],
   notifications: JSON.parse(localStorage.getItem("notifications")) || [],
   isSyncing: false,
 
