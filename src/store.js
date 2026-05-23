@@ -88,6 +88,10 @@ export const store = {
           headers: { Authorization: `Bearer ${this.user.token}` },
           credentials: "include",
         }),
+        fetch(`${API_URL}/accounts`, {
+          headers: { Authorization: `Bearer ${this.user.token}` },
+          credentials: "include",
+        }),
       ];
 
       // Jika bukan user baru, jalankan sync user secara paralel juga!
@@ -109,7 +113,8 @@ export const store = {
       const txRes = results[0];
       const budgetRes = results[1];
       const savingRes = results[2];
-      const userRes = results[3]; // Hanya akan ada nilainya jika bukan isFirstTime
+      const accountRes = results[3];
+      const userRes = results[4]; // Hanya akan ada nilainya jika bukan isFirstTime
 
       // Process User Sync jika dijalankan paralel
       if (userRes && userRes.ok) {
@@ -146,6 +151,25 @@ export const store = {
           orderIndex: s.orderIndex,
         }));
       }
+
+      // Process Accounts (Saldo)
+      if (accountRes && accountRes.ok) {
+        const dbAccounts = await accountRes.json();
+        if (dbAccounts.length > 0) {
+          // DB punya data -> pakai data DB, override localStorage
+          this.saldos = dbAccounts.map((a) => ({
+            id: a.id,
+            name: a.name,
+            type: a.type,
+            balance: a.balance,
+            logo: a.logo,
+            orderIndex: a.orderIndex,
+          }));
+        } else if (this.saldos.length > 0) {
+          // DB kosong tapi localStorage ada -> sync localStorage ke DB (user baru pertama kali)
+          this.syncSaldosToDB();
+        }
+      }
     } catch (err) {
       console.error("Sync Error:", err);
     } finally {
@@ -153,6 +177,23 @@ export const store = {
       // Final save untuk memicu satu kali refresh UI instan dengan seluruh data terisi
       this.save();
       this.checkBudgetNotifications();
+    }
+  },
+
+  async syncSaldosToDB() {
+    if (!this.user?.token || this.saldos.length === 0) return;
+    try {
+      await fetch(`${API_URL}/accounts/sync`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.user.token}`,
+        },
+        body: JSON.stringify({ accounts: this.saldos }),
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Sync Saldo ke DB Error:", err);
     }
   },
 
@@ -753,24 +794,79 @@ export const store = {
     };
   },
 
-  addSaldo(saldo) {
+  async addSaldo(saldo) {
+    // Optimistic UI: tambah ke lokal dulu
     saldo.id = Date.now();
     this.saldos.push(saldo);
     this.save();
+
+    // Sync ke DB
+    if (this.user?.token) {
+      try {
+        const res = await fetch(`${API_URL}/accounts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.user.token}`,
+          },
+          body: JSON.stringify(saldo),
+          credentials: "include",
+        });
+        if (res.ok) {
+          const saved = await res.json();
+          // Update id lokal dengan id DB yang asli
+          const idx = this.saldos.findIndex(s => s.id === saldo.id);
+          if (idx !== -1) this.saldos[idx].id = saved.id;
+          this.save();
+        }
+      } catch (err) {
+        console.error("Add Saldo DB Error:", err);
+      }
+    }
     return saldo;
   },
 
-  updateSaldo(id, amount) {
+  async updateSaldo(id, amount) {
     const s = this.saldos.find((x) => x.id === id);
     if (s) {
       s.balance = Number(amount);
       this.save();
+
+      // Sync ke DB
+      if (this.user?.token) {
+        try {
+          await fetch(`${API_URL}/accounts/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.user.token}`,
+            },
+            body: JSON.stringify({ balance: Number(amount) }),
+            credentials: "include",
+          });
+        } catch (err) {
+          console.error("Update Saldo DB Error:", err);
+        }
+      }
     }
   },
 
-  deleteSaldo(id) {
+  async deleteSaldo(id) {
     this.saldos = this.saldos.filter((s) => s.id !== id);
     this.save();
+
+    // Sync ke DB
+    if (this.user?.token) {
+      try {
+        await fetch(`${API_URL}/accounts/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${this.user.token}` },
+          credentials: "include",
+        });
+      } catch (err) {
+        console.error("Delete Saldo DB Error:", err);
+      }
+    }
   },
 
   addSaving(goal) {
