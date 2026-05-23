@@ -70,6 +70,11 @@
     max-width: 100vw;
   }
   
+  .dashboard-hero-bg {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+  
   .header {
     display: flex;
     flex-wrap: wrap;

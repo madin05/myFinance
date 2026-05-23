@@ -53,7 +53,6 @@ async function positionDropdown(trigger, dropdown) {
   dropdown.dataset.placement = placement;
 }
 
-/** Close the currently open kebab dropdown */
 export function closeAllKebabs() {
   if (_autoUpdateCleanup) {
     _autoUpdateCleanup();
@@ -65,6 +64,9 @@ export function closeAllKebabs() {
   }
   if (_activeTrigger) {
     _activeTrigger.classList.remove('active');
+    // Remove z-index boost from the parent card
+    const card = _activeTrigger.closest('.stat-card') || _activeTrigger.closest('tr') || _activeTrigger.closest('.wishlist-item');
+    if (card) card.style.zIndex = '';
     _activeTrigger = null;
   }
 }
@@ -114,6 +116,10 @@ export function initKebabs(container, onEdit, onDelete) {
         trigger.classList.add('active');
         _activeDropdown = dropdown;
         _activeTrigger = trigger;
+
+        // Boost z-index of the parent card so it sits above all other cards
+        const card = trigger.closest('.stat-card') || trigger.closest('tr') || trigger.closest('.wishlist-item');
+        if (card) card.style.zIndex = '9999';
 
         // autoUpdate: re-position saat scroll / resize / layout shift
         _autoUpdateCleanup = autoUpdate(trigger, dropdown, () => {
