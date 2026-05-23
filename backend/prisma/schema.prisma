@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -23,6 +23,7 @@ model User {
   transactions      Transaction[]
   savings           Saving[]
   budgets           Budget[]
+  accounts          Account[]
 }
 
 model Transaction {
@@ -57,10 +58,22 @@ model Budget {
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   category  String
-  amount    Float    // Target jatah bulanan
+  amount    Float
   period    String   // Format "2024-04"
   createdAt DateTime @default(now())
-  
+
   @@unique([userId, category, period])
 }
 
+model Account {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  type       String   // "Bank" | "E-Wallet" | "Cash"
+  balance    Float    @default(0)
+  logo       String   @default("")
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

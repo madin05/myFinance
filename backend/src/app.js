@@ -29,11 +29,13 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const userRoutes = require('./routes/userRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const savingRoutes = require('./routes/savingRoutes');
+const accountRoutes = require('./routes/accountRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/savings', savingRoutes);
+app.use('/api/accounts', accountRoutes);
 
 module.exports = app;
