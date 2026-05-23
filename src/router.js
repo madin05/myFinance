@@ -46,6 +46,9 @@ export function showSkeleton(routePath) {
     case '/akun':
       container.innerHTML = getAkunSkeleton();
       break;
+    case '/settings':
+      container.innerHTML = getTableSkeleton();
+      break;
     case '/faq':
       container.innerHTML = getTableSkeleton();
       break;
@@ -140,6 +143,8 @@ export function handleRoute() {
       import('./pages/laporan.js').then(module => module.renderLaporan());
     } else if (route === '/akun') {
       import('./pages/akun.js').then(module => module.renderAkun());
+    } else if (route === '/settings') {
+      import('./pages/settings.js').then(module => module.renderSettings());
     } else if (route === '/faq') {
       import('./pages/faq.js').then(module => module.renderFaq());
     } else if (route === '/notifikasi') {
@@ -180,6 +185,8 @@ export function refreshCurrentPage() {
     import('./pages/laporan.js').then(m => m.renderLaporan());
   } else if (route === '/akun') {
     import('./pages/akun.js').then(m => m.renderAkun());
+  } else if (route === '/settings') {
+    import('./pages/settings.js').then(m => m.renderSettings());
   } else if (route === '/faq') {
     import('./pages/faq.js').then(m => m.renderFaq());
   } else if (route === '/notifikasi') {

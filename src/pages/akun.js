@@ -45,68 +45,6 @@ export function renderAkun() {
             </div>
           </div>
 
-          <div class="stat-card" style="padding: 1.5rem;">
-            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-gear" style="color: var(--primary);"></i>
-              Preferensi Keuangan
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="text-xs text-muted mb-xs block" style="display: block; margin-bottom: 4px;">Tanggal Mulai Periode (Gajian)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                  <input type="number" id="financial-start-day" class="form-control" min="1" max="31" value="${user.financialStartDay || 1}" style="width: 80px; height: 38px;">
-                  <span class="text-xs text-muted">Tiap bulan</span>
-                </div>
-              </div>
-
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="text-xs text-muted mb-xs block" style="display: block; margin-bottom: 4px;">Mata Uang Default</label>
-                <select id="user-currency" class="form-control" style="height: 38px; font-size: 0.85rem; padding: 0 10px;">
-                  <option value="IDR" ${user.currency === 'IDR' || !user.currency ? 'selected' : ''}>IDR - Rupiah</option>
-                  <option value="USD" ${user.currency === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
-                  <option value="EUR" ${user.currency === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
-                  <option value="SGD" ${user.currency === 'SGD' ? 'selected' : ''}>SGD - Singapore Dollar</option>
-                  <option value="MYR" ${user.currency === 'MYR' ? 'selected' : ''}>MYR - Malaysian Ringgit</option>
-                  <option value="JPY" ${user.currency === 'JPY' ? 'selected' : ''}>JPY - Japanese Yen</option>
-                </select>
-              </div>
-
-              <div style="border-top: 1px dashed var(--border); pt-md: 1rem; margin-top: 0.5rem; padding-top: 1rem;">
-                <p class="text-xs text-muted mb-md">Laporan & Anggaran akan mengikuti siklus dan mata uang ini.</p>
-                <button class="btn btn-primary btn-full" id="btn-save-financial-start" style="height: 38px; font-size: 0.8rem; border-radius: 8px;">Simpan Perubahan</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card" style="padding: 1.5rem;">
-            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-monitor" style="color: var(--primary);"></i>
-              Tampilan & Kinerja
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <p class="font-bold text-sm" style="margin: 0;">Mode Hemat Kinerja</p>
-                  <p class="text-muted text-xs">Matikan semua animasi & efek blur kaca.</p>
-                </div>
-                <label class="switch">
-                  <input type="checkbox" id="toggle-performance-mode" ${localStorage.getItem('disable-animations') === 'true' ? 'checked' : ''}>
-                  <span class="slider round"></span>
-                </label>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border); padding-top: 1rem;">
-                <div>
-                  <p class="font-bold text-sm" style="margin: 0;">Tata Letak Ringkas</p>
-                  <p class="text-muted text-xs">Kurangi tinggi baris tabel & padding kartu.</p>
-                </div>
-                <label class="switch">
-                  <input type="checkbox" id="toggle-compact-mode" ${localStorage.getItem('layout-density') === 'compact' ? 'checked' : ''}>
-                  <span class="slider round"></span>
-                </label>
-              </div>
-            </div>
-          </div>
 
           <div class="stat-card" style="padding: 1.5rem;">
             <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
@@ -338,38 +276,6 @@ export function renderAkun() {
     }
   };
 
-  // --- Handlers for Customization & Performance ---
-  const togglePerformance = document.getElementById('toggle-performance-mode');
-  if (togglePerformance) {
-    togglePerformance.onchange = (e) => {
-      const isChecked = e.target.checked;
-      if (isChecked) {
-        document.body.classList.add('disable-animations');
-        localStorage.setItem('disable-animations', 'true');
-        showToast('Mode Hemat Kinerja diaktifkan.', 'info');
-      } else {
-        document.body.classList.remove('disable-animations');
-        localStorage.setItem('disable-animations', 'false');
-        showToast('Animasi & efek visual diaktifkan.', 'success');
-      }
-    };
-  }
-
-  const toggleCompact = document.getElementById('toggle-compact-mode');
-  if (toggleCompact) {
-    toggleCompact.onchange = (e) => {
-      const isChecked = e.target.checked;
-      if (isChecked) {
-        document.body.classList.add('layout-compact');
-        localStorage.setItem('layout-density', 'compact');
-        showToast('Tata letak ringkas diaktifkan.', 'info');
-      } else {
-        document.body.classList.remove('layout-compact');
-        localStorage.setItem('layout-density', 'cozy');
-        showToast('Tata letak nyaman diaktifkan.', 'success');
-      }
-    };
-  }
 
   // Avatar handling logic with compression & optimistic UI
   const avatarUpload = document.getElementById('avatar-upload');
