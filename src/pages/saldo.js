@@ -46,6 +46,8 @@ export function renderSaldo() {
 
   const getLogo = (s) => s.logo || logoMap[s.name] || '';
 
+  const viewMode = localStorage.getItem('saldo-view-mode') || 'grid';
+
   container.innerHTML = `
     <div class="saldo-section">
       <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
@@ -53,14 +55,20 @@ export function renderSaldo() {
           <h3>Saldo Akun</h3>
           <p class="text-muted" style="margin-top: 4px; font-size: 0.9rem;">Total: <strong style="color: var(--text);">${formatCurrency(totalSaldo)}</strong></p>
         </div>
-        <button class="btn btn-primary" id="btn-add-saldo">
-          <i class="ph ph-plus"></i> Tambah Saldo
-        </button>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <div class="view-toggle" style="display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px;">
+            <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'grid' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'grid' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-fill ph-squares-four" style="font-size: 1.2rem;"></i></button>
+            <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'list' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'list' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-bold ph-list" style="font-size: 1.2rem;"></i></button>
+          </div>
+          <button class="btn btn-primary" id="btn-add-saldo">
+            <i class="ph ph-plus"></i> Tambah Saldo
+          </button>
+        </div>
       </div>
 
-      <div class="saldo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-        ${saldos.length > 0 ? saldos.map(s => `
-          <div class="stat-card" style="padding: 1.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+      <div class="saldo-grid ${viewMode === 'list' ? 'list-mode' : ''}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+        ${saldos.length > 0 ? saldos.map((s, index) => `
+          <div class="stat-card" style="padding: 1.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: visible;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
               <div style="display: flex; align-items: center; gap: 1rem;">
                 <div style="width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, ${getTypeColor(s.type)} 15%, transparent); display: flex; align-items: center; justify-content: center; color: ${getTypeColor(s.type)}; font-size: 1.5rem;">
@@ -99,6 +107,51 @@ export function renderSaldo() {
         `}
       </div>
     </div>
+    <style>
+      .saldo-grid.list-mode {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+      .saldo-grid.list-mode .stat-card {
+        flex-direction: row !important;
+        align-items: center;
+        padding: 1rem 1.5rem !important;
+        border-radius: 16px !important;
+      }
+      .saldo-grid.list-mode .stat-card > div:first-child {
+        flex: 1;
+        margin-bottom: 0 !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+      }
+      .saldo-grid.list-mode .kebab-wrapper {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .saldo-grid.list-mode .stat-card > div:last-child {
+        text-align: right;
+        margin-right: 3rem;
+      }
+      .saldo-grid.list-mode .stat-card > div:last-child p {
+        display: none;
+      }
+      .saldo-grid.list-mode .stat-card > div:last-child h3 {
+        font-size: 1.1rem !important;
+      }
+      @media (max-width: 500px) {
+        .saldo-grid.list-mode .stat-card > div:last-child h3 {
+          font-size: 1rem !important;
+        }
+        .saldo-grid.list-mode .stat-card {
+          padding: 1rem !important;
+        }
+        .saldo-grid.list-mode .kebab-wrapper {
+          right: 0.75rem;
+        }
+      }
+    </style>
   `;
 
   const openSaldoModal = (existingId = null) => {
@@ -217,9 +270,7 @@ export function renderSaldo() {
       }
     });
 
-    if (!isEdit) {
-      initCustomSelects(document.getElementById('type-group'));
-    }
+    initCustomSelects(document.getElementById('type-group'));
 
     const amountInput = document.getElementById('saldo-amount');
     
@@ -279,6 +330,28 @@ export function renderSaldo() {
   };
 
   document.getElementById('btn-add-saldo').onclick = () => openSaldoModal();
+
+  const gridBtn = document.getElementById('btn-view-grid');
+  const listBtn = document.getElementById('btn-view-list');
+  const gridContainer = document.querySelector('.saldo-grid');
+
+  gridBtn.onclick = () => {
+    localStorage.setItem('saldo-view-mode', 'grid');
+    gridContainer.classList.remove('list-mode');
+    gridBtn.style.background = 'var(--primary-light)';
+    gridBtn.style.color = 'var(--primary)';
+    listBtn.style.background = 'transparent';
+    listBtn.style.color = 'var(--text-muted)';
+  };
+
+  listBtn.onclick = () => {
+    localStorage.setItem('saldo-view-mode', 'list');
+    gridContainer.classList.add('list-mode');
+    listBtn.style.background = 'var(--primary-light)';
+    listBtn.style.color = 'var(--primary)';
+    gridBtn.style.background = 'transparent';
+    gridBtn.style.color = 'var(--text-muted)';
+  };
 
   cleanupKebabs();
   initKebabs(

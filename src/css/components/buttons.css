@@ -560,7 +560,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1500;
+  z-index: 99999;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   overflow: visible !important; /* PENTING: Biar gak kepotong pas mekar */
@@ -576,7 +576,7 @@
   justify-content: center;
   border-radius: 50%;
   font-size: 1.25rem;
-  z-index: 1502;
+  z-index: 100001;
   position: absolute;
   transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   cursor: pointer;
@@ -599,7 +599,7 @@
   transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Kurva ultra smooth */
   transition-delay: calc(0.08s * var(--i)); /* Efek staggered yang lebih berasa */
   transform: scale(0) rotate(-90deg); /* Putaran lebih kalem */
-  z-index: 1501;
+  z-index: 100000;
   pointer-events: none;
 }
 
