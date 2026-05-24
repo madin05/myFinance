@@ -9,8 +9,8 @@ export function renderTabungan() {
   const goalsHtml = goals.map(g => {
     const percent = Math.min((g.current / g.target) * 100, 100);
     return `
-      <div class="stat-card wishlist-item" style="padding: 1.5rem; position: relative;" data-id="${g.id}">
-        <div class="drag-handle"><i class="ph-bold ph-dots-six-vertical"></i></div>
+      <div class="stat-card wishlist-item" style="padding: 1.5rem; position: relative; ${g.isDone ? 'opacity: 0.6; filter: grayscale(0.5);' : ''}" data-id="${g.id}">
+        ${g.isDone ? '<div style="position: absolute; top: 0; right: 0; padding: 6px 12px; background: var(--green); color: white; font-size: 0.75rem; font-weight: bold; border-radius: 0 var(--radius-xl) 0 var(--radius-xl);"><i class="ph-bold ph-check"></i> Selesai</div>' : '<div class="drag-handle"><i class="ph-bold ph-dots-six-vertical"></i></div>'}
         
         <div style="display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1.5rem;">
           <div class="icon-box ${g.color} text-white" style="width: 54px; height: 54px; font-size: 1.5rem; border-radius: 14px;">
@@ -18,7 +18,7 @@ export function renderTabungan() {
           </div>
           <div style="flex-grow: 1;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <h3 style="margin: 0; font-size: 1.1rem;">${g.name}</h3>
+              <h3 style="margin: 0; font-size: 1.1rem; ${g.isDone ? 'text-decoration: line-through;' : ''}">${g.name}</h3>
             </div>
             <p class="text-muted text-xs">Target: ${formatRupiah(g.target)}</p>
           </div>
@@ -46,6 +46,8 @@ export function renderTabungan() {
               </button>
               <button class="kebab-item kebab-edit" data-id="${g.id}">
                 <i class="ph ph-pencil-simple"></i> Edit
+              <button class="kebab-item kebab-done" data-id="${g.id}">
+                <i class="ph ${g.isDone ? 'ph-x' : 'ph-check'}"></i> ${g.isDone ? 'Batal Selesai' : 'Tandai Selesai'}
               </button>
               <div class="kebab-divider"></div>
               <button class="kebab-item danger kebab-delete" data-id="${g.id}">
@@ -158,17 +160,37 @@ export function renderTabungan() {
     });
   });
 
+  // Done/Undone action
+  container.querySelectorAll('.kebab-done').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      closeAllKebabs();
+      const id = Number(e.currentTarget.getAttribute('data-id'));
+      const goal = store.savings.find(s => s.id === id);
+      if (goal) {
+        try {
+          await store.editSaving(id, { isDone: !goal.isDone });
+          showToast(!goal.isDone ? 'Target ditandai belum selesai' : 'Target berhasil diselesaikan!', 'success');
+          renderTabungan();
+        } catch (err) {
+          showToast('Gagal update status target: ' + (err?.message || err), 'error');
+        }
+      }
+    });
+  });
+
   // --- SortableJS Logic ---
   const listContainer = document.getElementById('wishlist-container');
   if (window.Sortable && listContainer) {
     new Sortable(listContainer, {
-      animation: 350,
-      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      animation: 400, // Ultra-smooth luxurious duration
+      easing: "cubic-bezier(0.25, 1, 0.5, 1)", // Perfect deceleration curve (Ease Out Quart)
       handle: '.drag-handle',
-      ghostClass: 'dragging',
+      ghostClass: 'dragging', // The empty dashed placeholder
       dragClass: 'sortable-drag',
-      forceFallback: true,
-      fallbackClass: 'sortable-fallback',
+      // Removed forceFallback to enable Native HTML5 Drag & Drop (144Hz GPU Accelerated)
+      swapThreshold: 0.65,
+      invertSwap: true, // Eliminates nervous jumping in grid layouts
       onStart: function() {
         listContainer.classList.add('is-dragging');
         document.body.style.userSelect = 'none';

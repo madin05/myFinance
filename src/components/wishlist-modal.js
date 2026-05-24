@@ -6,6 +6,7 @@ import { showToast } from './notifications.js';
 export function openAddWishlistModal(onSuccess, editData = null) {
   const container = document.getElementById('modal-container');
   const isEdit = !!editData;
+  const currentColor = isEdit ? (editData.color === 'bg-blue' ? 'bg-primary' : editData.color) : 'bg-primary';
   
   container.innerHTML = `
     <div class="modal-overlay" id="wishlist-overlay">
@@ -39,11 +40,11 @@ export function openAddWishlistModal(onSuccess, editData = null) {
           <div class="form-group">
             <label>Warna Aksen</label>
             <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-primary" ${!isEdit || editData.color === 'bg-primary' ? 'checked' : ''}><span style="background-color: #6366F1;"></span></label>
-              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-green" ${isEdit && editData.color === 'bg-green' ? 'checked' : ''}><span style="background-color: #10B981;"></span></label>
-              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-orange" ${isEdit && editData.color === 'bg-orange' ? 'checked' : ''}><span style="background-color: #F59E0B;"></span></label>
-              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-red" ${isEdit && editData.color === 'bg-red' ? 'checked' : ''}><span style="background-color: #EF4444;"></span></label>
-              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-purple" ${isEdit && editData.color === 'bg-purple' ? 'checked' : ''}><span style="background-color: #8B5CF6;"></span></label>
+              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-primary" ${!isEdit || currentColor === 'bg-primary' ? 'checked' : ''}><span style="background-color: #6366F1;"></span></label>
+              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-green" ${isEdit && currentColor === 'bg-green' ? 'checked' : ''}><span style="background-color: #10B981;"></span></label>
+              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-orange" ${isEdit && currentColor === 'bg-orange' ? 'checked' : ''}><span style="background-color: #F59E0B;"></span></label>
+              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-red" ${isEdit && currentColor === 'bg-red' ? 'checked' : ''}><span style="background-color: #EF4444;"></span></label>
+              <label class="color-radio"><input type="radio" name="wishlist-color" value="bg-purple" ${isEdit && currentColor === 'bg-purple' ? 'checked' : ''}><span style="background-color: #8B5CF6;"></span></label>
             </div>
           </div>
           <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Simpan Perubahan' : 'Buat Target'}</button>
@@ -72,7 +73,8 @@ export function openAddWishlistModal(onSuccess, editData = null) {
     const name = document.getElementById('wishlist-name').value;
     const target = Number(document.getElementById('wishlist-target').value.replace(/\./g, ''));
     const icon = document.getElementById('wishlist-icon').value;
-    const color = document.querySelector('input[name="wishlist-color"]:checked').value;
+    const colorRadio = document.querySelector('input[name="wishlist-color"]:checked');
+    const color = colorRadio ? colorRadio.value : 'bg-primary';
 
     showLoading();
     try {

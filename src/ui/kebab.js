@@ -104,26 +104,30 @@ export function initKebabs(container, onEdit, onDelete) {
       const dropdown = container.querySelector(
         `.kebab-dropdown[data-kebab-for="${id}"]`
       );
-      if (!dropdown) return;
+      // Jika dropdown sudah dipindah ke body sebelumnya, cari di body
+      const actualDropdown = dropdown || document.querySelector(`.kebab-dropdown[data-kebab-for="${id}"]`);
+      if (!actualDropdown) return;
 
-      const isOpen = dropdown.classList.contains('open');
+      const isOpen = actualDropdown.classList.contains('open');
 
       // Tutup dropdown lain dulu
       closeAllKebabs();
 
       if (!isOpen) {
-        dropdown.classList.add('open');
+        // Pindahkan dropdown ke body agar tidak terkena overflow: hidden dari parent (seperti stat-card)
+        if (actualDropdown.parentElement !== document.body) {
+          // Simpan referensi parent aslinya untuk cleanup jika diperlukan (meski tidak wajib karena id unik)
+          document.body.appendChild(actualDropdown);
+        }
+
+        actualDropdown.classList.add('open');
         trigger.classList.add('active');
-        _activeDropdown = dropdown;
+        _activeDropdown = actualDropdown;
         _activeTrigger = trigger;
 
-        // Boost z-index of the parent card so it sits above all other cards
-        const card = trigger.closest('.stat-card') || trigger.closest('tr') || trigger.closest('.wishlist-item');
-        if (card) card.style.zIndex = '9999';
-
         // autoUpdate: re-position saat scroll / resize / layout shift
-        _autoUpdateCleanup = autoUpdate(trigger, dropdown, () => {
-          positionDropdown(trigger, dropdown);
+        _autoUpdateCleanup = autoUpdate(trigger, actualDropdown, () => {
+          positionDropdown(trigger, actualDropdown);
         });
       }
     });
@@ -148,14 +152,14 @@ export function initKebabs(container, onEdit, onDelete) {
   });
 }
 
-/**
- * Cleanup: tutup semua kebab yang terbuka dan reset listener.
- * Panggil ini sebelum re-render halaman.
- */
 export function cleanupKebabs() {
   closeAllKebabs();
   if (_docClickHandler) {
     document.removeEventListener('click', _docClickHandler);
     _docClickHandler = null;
   }
+  // Remove any orphaned dropdowns that were moved to body
+  document.querySelectorAll('body > .kebab-dropdown').forEach(dropdown => {
+    dropdown.remove();
+  });
 }

@@ -158,57 +158,74 @@ export function renderAkun() {
 
   // --- Handlers ---
   
-  document.getElementById('btn-preview-pp').onclick = () => {
-    document.getElementById('pp-preview-modal').style.display = 'flex';
-  };
-  document.getElementById('pp-modal-close').onclick = () => {
-    document.getElementById('pp-preview-modal').style.display = 'none';
-  };
-  
-  document.getElementById('btn-save-financial-start').onclick = async () => {
-    const newDay = document.getElementById('financial-start-day').value;
-    const newCurrency = document.getElementById('user-currency').value;
-    
-    showLoading();
-    try {
-      await store.updateProfile({ 
-        financialStartDay: parseInt(newDay),
-        currency: newCurrency
-      });
-      showToast('Berhasil diperbaharui!', 'success');
-      
-      // Refresh UI to update currency symbols
-      renderAkun();
-    } catch (err) {
-      showAlert('Gagal', err.message, 'error');
-    } finally {
-      hideLoading();
-    }
-  };
+  const btnPreviewPp = document.getElementById('btn-preview-pp');
+  if (btnPreviewPp) {
+    btnPreviewPp.onclick = () => {
+      const modal = document.getElementById('pp-preview-modal');
+      if (modal) modal.style.display = 'flex';
+    };
+  }
 
-  document.getElementById('btn-edit-username').onclick = () => {
-    openEditUsernameModal(user.name, async (newName) => {
+  const ppModalClose = document.getElementById('pp-modal-close');
+  if (ppModalClose) {
+    ppModalClose.onclick = () => {
+      const modal = document.getElementById('pp-preview-modal');
+      if (modal) modal.style.display = 'none';
+    };
+  }
+  
+  const btnSaveFin = document.getElementById('btn-save-financial-start');
+  if (btnSaveFin) {
+    btnSaveFin.onclick = async () => {
+      const newDay = document.getElementById('financial-start-day').value;
+      const newCurrency = document.getElementById('user-currency').value;
+      
       showLoading();
       try {
-        await store.updateProfile({ name: newName });
-        renderAkun(); // Re-render to reflect changes
-        showToast('Nama pengguna berhasil diperbarui.', 'success');
+        await store.updateProfile({ 
+          financialStartDay: parseInt(newDay),
+          currency: newCurrency
+        });
+        showToast('Berhasil diperbaharui!', 'success');
+        
+        // Refresh UI to update currency symbols
+        renderAkun();
       } catch (err) {
         showAlert('Gagal', err.message, 'error');
       } finally {
         hideLoading();
       }
-    });
-  };
+    };
+  }
 
-  document.getElementById('btn-delete-account').onclick = () => {
-    const userFirebase = auth.currentUser;
-    if (!userFirebase) {
-      showAlert('Sesi Habis', 'Silakan login ulang untuk melanjutkan.', 'error');
-      return;
-    }
+  const btnEditUsername = document.getElementById('btn-edit-username');
+  if (btnEditUsername) {
+    btnEditUsername.onclick = () => {
+      openEditUsernameModal(user.name, async (newName) => {
+        showLoading();
+        try {
+          await store.updateProfile({ name: newName });
+          renderAkun(); // Re-render to reflect changes
+          showToast('Nama pengguna berhasil diperbarui.', 'success');
+        } catch (err) {
+          showAlert('Gagal', err.message, 'error');
+        } finally {
+          hideLoading();
+        }
+      });
+    };
+  }
 
-    const providerId = userFirebase.providerData[0]?.providerId || 'password';
+  const btnDeleteAccount = document.getElementById('btn-delete-account');
+  if (btnDeleteAccount) {
+    btnDeleteAccount.onclick = () => {
+      const userFirebase = auth.currentUser;
+      if (!userFirebase) {
+        showAlert('Sesi Habis', 'Silakan login ulang untuk melanjutkan.', 'error');
+        return;
+      }
+
+      const providerId = userFirebase.providerData[0]?.providerId || 'password';
 
     openDeleteAccountModal(providerId, async (passwordOrNull) => {
       showLoading();
@@ -244,102 +261,107 @@ export function renderAkun() {
       }
     });
   };
+}
 
-  const toggle2FA = document.getElementById('toggle-2fa');
-  toggle2FA.onchange = async (e) => {
-    const isChecked = e.target.checked;
-    
-    if (isChecked) {
-      // Logic Setup 2FA
-      const code = prompt('Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)');
+const toggle2FA = document.getElementById('toggle-2fa');
+  if (toggle2FA) {
+    toggle2FA.onchange = async (e) => {
+      const isChecked = e.target.checked;
       
-      if (code === '123456') {
-        showLoading();
-        const success = await store.update2FAStatus(true);
-        hideLoading();
-        if (success) {
-          showToast('2FA Aktif! Akun Anda sekarang lebih aman.', 'success');
+      if (isChecked) {
+        // Logic Setup 2FA
+        const code = prompt('Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)');
+        
+        if (code === '123456') {
+          showLoading();
+          const success = await store.update2FAStatus(true);
+          hideLoading();
+          if (success) {
+            showToast('2FA Aktif! Akun Anda sekarang lebih aman.', 'success');
+          } else {
+            e.target.checked = false;
+            showToast('Gagal update status 2FA.', 'error');
+          }
         } else {
           e.target.checked = false;
-          showToast('Gagal update status 2FA.', 'error');
+          if (code !== null) showToast('Kode OTP tidak valid.', 'error');
         }
       } else {
-        e.target.checked = false;
-        if (code !== null) showToast('Kode OTP tidak valid.', 'error');
+        // Deactivate 2FA
+        showLoading();
+        await store.update2FAStatus(false);
+        hideLoading();
+        showToast('2FA dinonaktifkan.', 'info');
       }
-    } else {
-      // Deactivate 2FA
-      showLoading();
-      await store.update2FAStatus(false);
-      hideLoading();
-      showToast('2FA dinonaktifkan.', 'info');
-    }
-  };
+    };
+  }
 
 
   // Avatar handling logic with compression & optimistic UI
   const avatarUpload = document.getElementById('avatar-upload');
-  avatarUpload.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  if (avatarUpload) {
+    avatarUpload.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    // Validasi tipe file
-    if (!file.type.startsWith('image/')) {
-      return showAlert('Error', 'Berkas harus berupa gambar.', 'error');
-    }
+      // Validasi tipe file
+      if (!file.type.startsWith('image/')) {
+        return showAlert('Error', 'Berkas harus berupa gambar.', 'error');
+      }
 
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const img = new Image();
-        img.onload = async () => {
-          // Kompresi Gambar (Cepat)
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 600;
-          const MAX_HEIGHT = 600;
-          let width = img.width;
-          let height = img.height;
+      try {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const img = new Image();
+          img.onload = async () => {
+            // Kompresi Gambar (Cepat)
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 600;
+            const MAX_HEIGHT = 600;
+            let width = img.width;
+            let height = img.height;
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
             }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+            // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
+            store.user.avatar = compressedBase64;
+            store.updateUI();
+            
+            const modal = document.getElementById('pp-preview-modal');
+            if (modal) modal.style.display = 'none';
+
+            // 2. BACKGROUND SYNC: Kirim ke server diem-diem
+            try {
+              await store.updateProfile({ avatar: compressedBase64 });
+              showToast('Foto profil diperbaharui!', 'success');
+            } catch (err) {
+              showToast('Gagal sinkron, tapi profil lokal aman.', 'warning');
             }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-          // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
-          store.user.avatar = compressedBase64;
-          store.updateUI();
-          
-          const modal = document.getElementById('pp-preview-modal');
-          if (modal) modal.style.display = 'none';
-
-          // 2. BACKGROUND SYNC: Kirim ke server diem-diem
-          try {
-            await store.updateProfile({ avatar: compressedBase64 });
-            showToast('Foto profil diperbaharui!', 'success');
-          } catch (err) {
-            showToast('Gagal sinkron, tapi profil lokal aman.', 'warning');
-          }
+          };
+          img.src = event.target.result;
         };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
-    }
-  };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
+      }
+    };
+  }
 
   // Change Password Handler
   const changePassForm = document.getElementById('form-change-password');
