@@ -2,6 +2,7 @@ import { store, formatRupiah, formatDate } from '../store.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 import { initStickyHeader } from '../utils.js';
+import { showToast } from '../components/notifications.js';
 
 let filterState = {
   type: 'all',
@@ -347,10 +348,15 @@ function renderTableBody(container) {
           'Hapus Transaksi?',
           'Data yang dihapus tidak dapat dikembalikan.',
           () => {
-            store.deleteTransactionRemote(Number(id)).then(renderTransaksi).catch((err) => {
-              alert('Gagal hapus transaksi: ' + (err?.message || err));
-              renderTransaksi();
-            });
+            store.deleteTransactionRemote(Number(id))
+              .then(() => {
+                showToast('Transaksi berhasil dihapus!', 'info');
+                renderTransaksi();
+              })
+              .catch((err) => {
+                showToast('Gagal hapus transaksi: ' + (err?.message || err), 'error');
+                renderTransaksi();
+              });
           }
         );
       });

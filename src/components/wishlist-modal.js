@@ -1,6 +1,7 @@
 import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
+import { showToast } from './notifications.js';
 
 export function openAddWishlistModal(onSuccess, editData = null) {
   const container = document.getElementById('modal-container');
@@ -77,13 +78,16 @@ export function openAddWishlistModal(onSuccess, editData = null) {
     try {
       if (isEdit) {
         await store.editSaving(editData.id, { name, target, icon, color });
+        close();
+        showToast(`Target "${name}" berhasil diperbarui!`, 'success');
       } else {
         await store.createSaving({ name, target, current: 0, icon, color });
+        close();
+        showToast(`Target "${name}" berhasil dibuat!`, 'success');
       }
-      close();
       if (onSuccess) onSuccess();
     } catch (err) {
-      alert('Gagal: ' + (err?.message || err));
+      showToast('Gagal menyimpan: ' + (err?.message || err), 'error');
     } finally {
       hideLoading();
     }
@@ -120,13 +124,19 @@ export function openAddFundsModal(id, currentName, onSuccess) {
   
   document.getElementById('btn-save-fund').addEventListener('click', async () => {
     const amount = Number(amountInput.value.replace(/\./g, ''));
-    if (!amount) return alert('Harap masukkan nominal terlebih dahulu.');
+    if (!amount) {
+      showToast('Harap masukkan nominal terlebih dahulu.', 'error');
+      return;
+    }
 
     showLoading();
     try {
       await store.addSavingFunds(id, amount);
       close();
+      showToast(`Berhasil menabung untuk ${currentName}!`, 'success');
       if (onSuccess) onSuccess();
+    } catch (err) {
+      showToast('Gagal menambah tabungan: ' + (err?.message || err), 'error');
     } finally {
       hideLoading();
     }

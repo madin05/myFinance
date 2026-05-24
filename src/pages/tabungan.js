@@ -1,5 +1,6 @@
 import { store, formatRupiah } from '../store.js';
 import { initKebabs, cleanupKebabs, closeAllKebabs } from '../ui/kebab.js';
+import { showToast } from '../components/notifications.js';
 
 export function renderTabungan() {
   const container = document.getElementById('page-content');
@@ -130,10 +131,15 @@ export function renderTabungan() {
     (id) => {
       import('../components/modal.js').then(module => {
         module.openConfirmModal('Hapus Wishlist?', 'Yakin mau hapus target ini?', () => {
-          store.removeSaving(Number(id)).then(renderTabungan).catch((err) => {
-            alert('Gagal hapus wishlist: ' + (err?.message || err));
-            renderTabungan();
-          });
+          store.removeSaving(Number(id))
+            .then(() => {
+              showToast('Target wishlist berhasil dihapus!', 'info');
+              renderTabungan();
+            })
+            .catch((err) => {
+              showToast('Gagal hapus wishlist: ' + (err?.message || err), 'error');
+              renderTabungan();
+            });
         });
       });
     }
@@ -173,7 +179,7 @@ export function renderTabungan() {
         const newOrderIds = [...listContainer.querySelectorAll('.wishlist-item')].map(el => Number(el.dataset.id));
         const newOrder = newOrderIds.map(id => store.savings.find(s => s.id === id));
         store.reorderSavingsRemote(newOrder).catch((err) => {
-          alert('Gagal simpan urutan wishlist: ' + (err?.message || err));
+          showToast('Gagal simpan urutan wishlist: ' + (err?.message || err), 'error');
           store.reorderSavings(store.savings);
         });
       }
