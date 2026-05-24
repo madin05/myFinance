@@ -610,6 +610,47 @@ export const store = {
     targetSaldo.balance = Number(targetSaldo.balance) + amount;
   },
 
+  /**
+   * Kirim base64 image struk ke backend, return data hasil ekstraksi Gemini.
+   * Throw error dengan pesan yang user-friendly kalau gagal.
+   */
+  async scanReceipt(base64, mimeType = 'image/jpeg') {
+    if (!this.user?.token) {
+      throw new Error('Kamu harus login dulu untuk pakai fitur scan struk.');
+    }
+
+    let res;
+    try {
+      res = await fetch(`${API_URL}/receipts/scan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.user.token}`,
+        },
+        body: JSON.stringify({ image: base64, mimeType }),
+      });
+    } catch (networkErr) {
+      throw new Error('Gagal terhubung ke server. Cek koneksi internet kamu.');
+    }
+
+    let json;
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error('Server merespons tidak valid.');
+    }
+
+    if (!res.ok) {
+      throw new Error(json?.error || `Server error (${res.status})`);
+    }
+
+    if (!json?.success || !json?.data) {
+      throw new Error('Hasil scan tidak lengkap.');
+    }
+
+    return json.data;
+  },
+
   async addTransaction(tx) {
     const tempId = Date.now();
     const newTx = { ...tx, id: tempId };

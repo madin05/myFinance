@@ -21,6 +21,11 @@ app.use(cors({
 }));
 
 app.use(cookieParser());
+
+// Body parser khusus untuk /api/receipts (upload base64 image, butuh limit lebih besar)
+// HARUS dipasang SEBELUM global JSON parser supaya gak ke-reject duluan oleh limit kecil
+app.use('/api/receipts', express.json({ limit: '6mb' }));
+
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
@@ -44,6 +49,7 @@ const userRoutes = require('./routes/userRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const savingRoutes = require('./routes/savingRoutes');
 const accountRoutes = require('./routes/accountRoutes');
+const receiptRoutes = require('./routes/receiptRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
@@ -51,5 +57,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/savings', savingRoutes);
 app.use('/api/accounts', accountRoutes);
+app.use('/api/receipts', receiptRoutes);
 
 module.exports = app;

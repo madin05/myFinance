@@ -34,7 +34,6 @@
   user-select: none;
   touch-action: none;
   box-sizing: border-box;
-  /* Paksa stacking context baru agar backdrop-filter bekerja di semua env */
   isolation: isolate;
   will-change: transform;
   /* Vendor prefix wajib — autoprefixer akan keep ini */
