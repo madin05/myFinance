@@ -371,8 +371,28 @@ export function renderLaporan() {
       const incomeData = labels.map(l => dailyData[l].income);
       const expenseData = labels.map(l => dailyData[l].expense);
 
-      new Chart(cashflowCtx, {
+      // Plugin custom: garis vertikal crosshair saat hover (kayak AI Studio)
+      const crosshairPlugin = {
+        id: 'cashflowCrosshair',
+        afterDraw(chart) {
+          if (!chart._crosshairX) return;
+          const { ctx, chartArea } = chart;
+          const x = chart._crosshairX;
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(x, chartArea.top);
+          ctx.lineTo(x, chartArea.bottom);
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)';
+          ctx.setLineDash([4, 4]);
+          ctx.stroke();
+          ctx.restore();
+        }
+      };
+
+      const cashflowChart = new Chart(cashflowCtx, {
         type: 'line',
+        plugins: [crosshairPlugin],
         data: {
           labels: labels,
           datasets: [
@@ -380,52 +400,112 @@ export function renderLaporan() {
               label: 'Pemasukan',
               data: incomeData,
               borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
               fill: true,
               tension: 0.4,
               pointRadius: 0,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: '#10b981',
+              pointHoverBorderColor: '#fff',
+              pointHoverBorderWidth: 2,
+              borderWidth: 2,
             },
             {
               label: 'Pengeluaran',
               data: expenseData,
               borderColor: '#ef4444',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
               fill: true,
               tension: 0.4,
               pointRadius: 0,
-              pointHoverRadius: 6
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: '#ef4444',
+              pointHoverBorderColor: '#fff',
+              pointHoverBorderWidth: 2,
+              borderWidth: 2,
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          // Hover mode: aktif saat mouse bergerak, tidak perlu klik
           interaction: {
             mode: 'index',
             intersect: false,
           },
+          hover: {
+            mode: 'index',
+            intersect: false,
+          },
+          onHover: (event, elements, chart) => {
+            if (elements && elements.length > 0) {
+              // Simpan posisi X crosshair
+              chart._crosshairX = elements[0].element.x;
+            } else {
+              chart._crosshairX = null;
+            }
+            chart.draw();
+          },
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'top',
+              align: 'end',
+              labels: {
+                color: textColor,
+                font: { family: 'Poppins', size: 10 },
+                usePointStyle: true,
+                pointStyleWidth: 8,
+                padding: 16,
+              }
+            },
             tooltip: {
-              backgroundColor: isDark ? 'rgba(24, 24, 27, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              titleColor: isDark ? '#fff' : '#111',
+              enabled: true,
+              mode: 'index',
+              intersect: false,
+              // Styling premium glassmorphism
+              backgroundColor: isDark ? 'rgba(20, 18, 30, 0.92)' : 'rgba(255, 255, 255, 0.96)',
+              titleColor: isDark ? '#f4f4f5' : '#111827',
               bodyColor: isDark ? '#a1a1aa' : '#4b5563',
-              borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+              borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
               borderWidth: 1,
-              padding: 12,
+              padding: { x: 14, y: 12 },
               boxPadding: 6,
+              cornerRadius: 12,
               usePointStyle: true,
+              caretSize: 0,
+              caretPadding: 12,
+              displayColors: true,
+              titleFont: { family: 'Poppins', size: 11, weight: '700' },
+              bodyFont: { family: 'Poppins', size: 12, weight: '600' },
               callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
-                  }
-                  if (context.parsed.y !== null) {
-                    label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(context.parsed.y);
-                  }
-                  return label;
+                title(contexts) {
+                  return contexts[0]?.label || '';
+                },
+                label(context) {
+                  const val = context.parsed.y;
+                  const formatted = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(val);
+                  return `  ${context.dataset.label}: ${formatted}`;
+                },
+                afterBody(contexts) {
+                  // Hitung selisih net di bawah tooltip
+                  const income = contexts.find(c => c.dataset.label === 'Pemasukan')?.parsed.y || 0;
+                  const expense = contexts.find(c => c.dataset.label === 'Pengeluaran')?.parsed.y || 0;
+                  const net = income - expense;
+                  const sign = net >= 0 ? '+' : '';
+                  const formatted = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  }).format(net);
+                  return [``, `  Net: ${sign}${formatted}`];
                 }
               }
             }
@@ -433,21 +513,26 @@ export function renderLaporan() {
           scales: {
             x: {
               grid: { display: false },
-              ticks: { color: textColor, font: { size: 10 } }
+              ticks: { color: textColor, font: { family: 'Poppins', size: 10 } }
             },
             y: {
               beginAtZero: true,
               grid: { color: gridColor },
-              ticks: { 
-                color: textColor, 
-                font: { size: 10 },
+              ticks: {
+                color: textColor,
+                font: { family: 'Poppins', size: 10 },
                 callback: (val) => val >= 1000000 ? (val/1000000).toFixed(1) + 'M' : val >= 1000 ? (val/1000) + 'k' : val
               }
             }
           }
         }
       });
-    }
+
+      // Hapus crosshair saat mouse keluar dari canvas
+      cashflowCtx.addEventListener('mouseleave', () => {
+        cashflowChart._crosshairX = null;
+        cashflowChart.draw();
+      });
   };
 
   initCharts();
