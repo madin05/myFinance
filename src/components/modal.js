@@ -159,7 +159,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
         { name: 'BSI', logo: '/assets/banks/bsi.png' },
         { name: 'Bank Jago', logo: '/assets/banks/jago.png' },
         { name: 'SeaBank', logo: '/assets/banks/seabank.svg' },
-        { name: 'BluBCA', logo: '/assets/banks/blubca.svg' },
+        { name: 'Bank Blu', logo: '/assets/banks/blubca.svg' },
         { name: 'Lainnya (Ketik Manual)', logo: '' }
       ],
       'Cash': [
