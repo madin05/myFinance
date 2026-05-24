@@ -623,6 +623,7 @@ export const store = {
     try {
       res = await fetch(`${API_URL}/receipts/scan`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${this.user.token}`,
