@@ -111,13 +111,14 @@ export function openScanReceiptModal() {
         </div>
 
         <div id="scan-step-loading" style="display: none; text-align: center; padding: 1.5rem 0.5rem;">
-          <i class="ph-bold ph-circle-notch" style="font-size: 2.5rem; color: var(--primary); animation: scan-spin 1s linear infinite; display: inline-block;"></i>
-          <style>
-            @keyframes scan-spin {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-          </style>
+          <video
+            src="/assets/coin.webm"
+            autoplay
+            loop
+            muted
+            playsinline
+            style="width: 100px; height: 100px; object-fit: contain; display: block; margin: 0 auto;"
+          ></video>
           <p style="font-weight: 600; margin: 1rem 0 0.25rem;">Lagi baca strukmu...</p>
           <p class="text-muted text-xs">Biasanya selesai dalam 5-10 detik.</p>
         </div>
