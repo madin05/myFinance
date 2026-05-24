@@ -134,7 +134,11 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
 
     // Set default date to today if not editing dan tidak ada prefill date
     if (!isEdit && !prefill?.tanggal) {
-      document.getElementById('tx-date').valueAsDate = new Date();
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      document.getElementById('tx-date').value = `${yyyy}-${mm}-${dd}`;
     }
 
     // Handle Akun dropdown logic
@@ -349,13 +353,30 @@ export function openConfirmModal(title, message, onConfirm) {
   // Handle Enter to confirm
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      document.getElementById('btn-do-confirm').click();
+      const confirmBtn = document.getElementById('btn-do-confirm');
+      if (confirmBtn) confirmBtn.click();
       window.removeEventListener('keydown', handleKeyDown);
     } else if (e.key === 'Escape') {
       close();
       window.removeEventListener('keydown', handleKeyDown);
     }
   };
+  
+  // Wrap close function to also remove listener
+  const originalClose = close;
+  const safeClose = () => {
+    window.removeEventListener('keydown', handleKeyDown);
+    originalClose();
+  };
+  
+  // Update event listeners to use safeClose
+  document.getElementById('btn-cancel-confirm').removeEventListener('click', close);
+  document.getElementById('btn-cancel-confirm').addEventListener('click', safeClose);
+  
+  document.getElementById('confirm-overlay').removeEventListener('click', close);
+  document.getElementById('confirm-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'confirm-overlay') safeClose();
+  });
   window.addEventListener('keydown', handleKeyDown);
 }
 
