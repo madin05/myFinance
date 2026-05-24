@@ -31,18 +31,27 @@ export default defineConfig({
       }
     },
 
-    // Aktifkan minifikasi CSS — pakai esbuild (bukan lightningcss default)
-    // agar vendor prefix seperti -webkit-backdrop-filter TIDAK di-strip
-    cssMinify: 'esbuild',
+    // Aktifkan minifikasi CSS — pakai lightningcss (default Vite 8)
+    cssMinify: true,
 
     // Aktifkan source map hanya di dev (default sudah false di production)
     sourcemap: false,
   },
 
   css: {
-    // Target browser untuk CSS transform, pastikan include mobile Safari & iOS
-    // agar -webkit-backdrop-filter tetap di-generate
+    // Pastikan PostCSS (autoprefixer) jalan untuk tambah vendor prefix
     transformer: 'postcss',
+    // Config lightningcss: target browser yang butuh -webkit- prefix
+    // agar -webkit-backdrop-filter tidak di-strip saat minify
+    lightningcss: {
+      targets: {
+        safari: (13 << 16),      // Safari 13+
+        ios_saf: (13 << 16),     // iOS Safari 13+
+        chrome: (80 << 16),      // Chrome 80+
+        edge: (80 << 16),        // Edge 80+
+        firefox: (72 << 16),     // Firefox 72+
+      }
+    }
   },
 
   // Optimasi gambar: transformasi aset gambar
