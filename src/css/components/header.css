@@ -354,22 +354,34 @@
   }
 }
 
-/* ==========================================
-   MOBILE STICKY HEADER — SCROLLED STATE
-   Applied via JS scroll listener on pages
-   that support sticky header (dashboard, tx)
-   ========================================== */
 @media (max-width: 768px) {
   .header.scrolled {
-    background-color: var(--glass-bg) !important;
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    /* Fallback solid kalau backdrop-filter tidak support */
+    background-color: rgba(255, 255, 255, 0.88) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10), 0 1px 0 var(--border) !important;
     border-bottom: 1px solid var(--border);
+    /* Paksa stacking context baru */
+    isolation: isolate;
+    will-change: transform;
+    /* Vendor prefix wajib */
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  /* Glassmorphism override kalau browser support */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .header.scrolled {
+      background-color: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    [data-theme="dark"] .header.scrolled {
+      background-color: rgba(21, 18, 27, 0.70) !important;
+    }
   }
 
   [data-theme="dark"] .header.scrolled {
-    background-color: var(--glass-bg) !important;
+    /* Dark mode fallback */
+    background-color: rgba(21, 18, 27, 0.92) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 1px 0 var(--border) !important;
   }
 

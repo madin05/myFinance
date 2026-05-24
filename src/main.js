@@ -3,8 +3,9 @@ import { auth, onAuthStateChanged, getRedirectResult } from './firebase-config.j
 import { renderLogin } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
 import { openCalculator } from './components/calculator.js';
+import { openScanReceiptModal } from './components/scanReceipt.js';
 import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
-import { hideLoading } from './utils.js';
+import { hideLoading, initStickyHeader } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
 import { showConfirm } from './components/notifications.js';
@@ -42,6 +43,10 @@ window.addEventListener('store-updated', () => {
     if (navName) navName.textContent = userData.name;
     if (navEmail) navEmail.textContent = userData.email;
   }
+
+  // Re-init sticky header setiap kali halaman berganti
+  // agar semua halaman dapat efek blur navbar saat scroll
+  initStickyHeader();
 });
 
 // --- AUTH LOGIC ---
@@ -152,6 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initNetworkStatus();
   checkAuth();
 
+  // Init sticky header global untuk semua halaman
+  initStickyHeader();
+
   // 2. Global FAM Buttons
   document.getElementById('btn-fam-add-tx')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
@@ -169,6 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-fam-calculator')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
     openCalculator();
+  });
+
+  document.getElementById('btn-fam-scan-receipt')?.addEventListener('click', () => {
+    document.getElementById('fam-toggle').checked = false; // Close menu
+    openScanReceiptModal();
   });
 
   // 3. Click Outside to Close FAM & Intercept Sidebar Link Clicks (SPA Routing)
