@@ -287,8 +287,10 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
       setTimeout(() => {
         if (isEdit) {
           store.updateTransaction(txToEdit.id, payload);
+          showToast('Transaksi berhasil diperbarui!', 'success');
         } else {
           store.addTransaction(payload);
+          showToast('Transaksi baru berhasil disimpan!', 'success');
         }
 
         hideLoading();
@@ -514,6 +516,7 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
       store.user.balanceOffset = newOffset;
       store.save();
       await store.updateProfile({ balanceOffset: newOffset });
+      showToast('Saldo berhasil disesuaikan!', 'success');
     } finally {
       hideLoading();
       if (onSuccess) onSuccess();

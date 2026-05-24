@@ -31,11 +31,18 @@ export default defineConfig({
       }
     },
 
-    // Aktifkan minifikasi CSS
-    cssMinify: true,
+    // Aktifkan minifikasi CSS — pakai esbuild (bukan lightningcss default)
+    // agar vendor prefix seperti -webkit-backdrop-filter TIDAK di-strip
+    cssMinify: 'esbuild',
 
     // Aktifkan source map hanya di dev (default sudah false di production)
     sourcemap: false,
+  },
+
+  css: {
+    // Target browser untuk CSS transform, pastikan include mobile Safari & iOS
+    // agar -webkit-backdrop-filter tetap di-generate
+    transformer: 'postcss',
   },
 
   // Optimasi gambar: transformasi aset gambar
