@@ -580,7 +580,7 @@ export const store = {
     
     // Prioritaskan mencari nama akun secara spesifik (Gopay, BCA, dll)
     if (tx.akun) {
-      targetSaldo = this.saldos.find(s => s.name === tx.akun);
+      targetSaldo = this.saldos.find(s => s.name?.toLowerCase() === tx.akun?.toLowerCase());
       
       // Auto-create akun jika belum ada
       if (!targetSaldo && !reverse) {
@@ -677,6 +677,7 @@ export const store = {
             t.id === tempId ? this._mapTransaction(savedTx) : t,
           );
           this.save();
+          this.syncSaldosToDB();
         }
       } catch (err) {
         console.error("Post Error:", err);
@@ -711,6 +712,7 @@ export const store = {
         const text = await res.text().catch(() => "");
         throw new Error(text || `Gagal hapus transaksi (HTTP ${res.status})`);
       }
+      this.syncSaldosToDB();
     } catch (e) {
       this.transactions = prev;
       this.saldos = prevSaldos;
@@ -761,6 +763,7 @@ export const store = {
       );
       this.save();
       this.checkBudgetNotifications();
+      this.syncSaldosToDB();
     } catch (e) {
       this.transactions = prev;
       this.save();

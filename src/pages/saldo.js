@@ -41,7 +41,8 @@ export function renderSaldo() {
     'BSI': '/assets/banks/bsi.png',
     'Bank Jago': '/assets/banks/jago.png',
     'SeaBank': '/assets/banks/seabank.svg',
-    'BluBCA': '/assets/banks/blubca.svg',
+    'Bank Blu': '/assets/banks/blubca.svg',
+    'BluBCA': '/assets/banks/blubca.svg', // keep for backwards compatibility if user had it
   };
 
   const getLogo = (s) => s.logo || logoMap[s.name] || '';
@@ -181,7 +182,7 @@ export function renderSaldo() {
         { name: 'BSI', logo: '/assets/banks/bsi.png' },
         { name: 'Bank Jago', logo: '/assets/banks/jago.png' },
         { name: 'SeaBank', logo: '/assets/banks/seabank.svg' },
-        { name: 'BluBCA', logo: '/assets/banks/blubca.svg' },
+        { name: 'Bank Blu', logo: '/assets/banks/blubca.svg' },
         { name: 'Lainnya (Ketik Manual)', logo: '' }
       ],
       'Cash': [
