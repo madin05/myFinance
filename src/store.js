@@ -580,7 +580,17 @@ export const store = {
     
     // Prioritaskan mencari nama akun secara spesifik (Gopay, BCA, dll)
     if (tx.akun) {
-      targetSaldo = this.saldos.find(s => s.name?.toLowerCase() === tx.akun?.toLowerCase());
+      let searchAkun = tx.akun?.toLowerCase() || '';
+      targetSaldo = this.saldos.find(s => {
+        let sName = s.name?.toLowerCase() || '';
+        if (sName === searchAkun) return true;
+        // Tangani alias nama bank untuk backward compatibility
+        if ((searchAkun === 'bank blu' && sName === 'blubca') || 
+            (searchAkun === 'blubca' && sName === 'bank blu')) {
+          return true;
+        }
+        return false;
+      });
       
       // Auto-create akun jika belum ada
       if (!targetSaldo && !reverse) {

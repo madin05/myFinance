@@ -188,7 +188,9 @@ export function renderTabungan() {
       handle: '.drag-handle',
       ghostClass: 'dragging', // The empty dashed placeholder
       dragClass: 'sortable-drag',
-      // Removed forceFallback to enable Native HTML5 Drag & Drop (144Hz GPU Accelerated)
+      forceFallback: true, // REQUIRED for CSS Grid to prevent native HTML5 dragging bugs (cannot drag first item)
+      fallbackTolerance: 3, // Allow a 3px grace distance for clicks
+      fallbackOnBody: true, // Ensure the cloned element doesn't get trapped by overflow rules
       swapThreshold: 0.65,
       invertSwap: true, // Eliminates nervous jumping in grid layouts
       onStart: function() {
