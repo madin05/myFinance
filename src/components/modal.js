@@ -144,21 +144,22 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
 
     const presetNames = {
       'E-Wallet': [
-        { name: 'Gopay', logo: 'https://www.google.com/s2/favicons?domain=gojek.com&sz=64' },
-        { name: 'OVO', logo: 'https://www.google.com/s2/favicons?domain=ovo.id&sz=64' },
-        { name: 'DANA', logo: 'https://www.google.com/s2/favicons?domain=dana.id&sz=64' },
-        { name: 'ShopeePay', logo: 'https://www.google.com/s2/favicons?domain=shopee.co.id&sz=64' },
-        { name: 'LinkAja', logo: 'https://www.google.com/s2/favicons?domain=linkaja.id&sz=64' },
+        { name: 'Gopay', logo: '/assets/banks/gopay.svg' },
+        { name: 'OVO', logo: '/assets/banks/ovo.png' },
+        { name: 'DANA', logo: '/assets/banks/dana.png' },
+        { name: 'ShopeePay', logo: '/assets/banks/shopeepay.png' },
+        { name: 'LinkAja', logo: '/assets/banks/linkaja.svg' },
         { name: 'Lainnya (Ketik Manual)', logo: '' }
       ],
       'Bank': [
-        { name: 'BCA', logo: 'https://www.google.com/s2/favicons?domain=bca.co.id&sz=64' },
-        { name: 'Bank Mandiri', logo: 'https://www.google.com/s2/favicons?domain=bankmandiri.co.id&sz=64' },
-        { name: 'BNI', logo: 'https://www.google.com/s2/favicons?domain=bni.co.id&sz=64' },
-        { name: 'BRI', logo: 'https://www.google.com/s2/favicons?domain=bri.co.id&sz=64' },
-        { name: 'BSI', logo: 'https://www.google.com/s2/favicons?domain=bankbsi.co.id&sz=64' },
-        { name: 'Bank Jago', logo: 'https://www.google.com/s2/favicons?domain=jago.com&sz=64' },
-        { name: 'SeaBank', logo: 'https://www.google.com/s2/favicons?domain=seabank.co.id&sz=64' },
+        { name: 'BCA', logo: '/assets/banks/bca.png' },
+        { name: 'Bank Mandiri', logo: '/assets/banks/mandiri.png' },
+        { name: 'BNI', logo: '/assets/banks/bni.png' },
+        { name: 'BRI', logo: '/assets/banks/bri.png' },
+        { name: 'BSI', logo: '/assets/banks/bsi.png' },
+        { name: 'Bank Jago', logo: '/assets/banks/jago.png' },
+        { name: 'SeaBank', logo: '/assets/banks/seabank.svg' },
+        { name: 'BluBCA', logo: '/assets/banks/blubca.svg' },
         { name: 'Lainnya (Ketik Manual)', logo: '' }
       ],
       'Cash': [

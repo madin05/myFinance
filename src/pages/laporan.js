@@ -454,9 +454,12 @@ export function renderLaporan() {
               align: 'end',
               labels: {
                 color: textColor,
-                font: { family: 'Poppins', size: 10 },
-                usePointStyle: true,
-                pointStyleWidth: 8,
+                font: { family: 'Poppins', size: 11, weight: '500' },
+                usePointStyle: false,
+                boxWidth: 12,
+                boxHeight: 12,
+                useBorderRadius: true,
+                borderRadius: 6,
                 padding: 16,
               }
             },
