@@ -61,11 +61,11 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
             <div class="form-group">
               <label>Metode</label>
               <select class="form-control" id="tx-metode" required>
-                <option value="" disabled ${!isEdit ? 'selected' : ''}>Pilih Metode</option>
-                <option value="Cash" ${isEdit && txToEdit.metode === 'Cash' ? 'selected' : ''}>Cash</option>
-                <option value="E-Wallet" ${isEdit && txToEdit.metode === 'E-Wallet' ? 'selected' : ''}>E-Wallet</option>
-                <option value="Bank Transfer" ${isEdit && txToEdit.metode === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
-                <option value="Kartu Kredit" ${isEdit && txToEdit.metode === 'Kartu Kredit' ? 'selected' : ''}>Kartu Kredit</option>
+                <option value="" disabled ${!isEdit && !prefill?.metode ? 'selected' : ''}>Pilih Metode</option>
+                <option value="Cash" ${(isEdit && txToEdit.metode === 'Cash') || (prefill && prefill.metode === 'Cash') ? 'selected' : ''}>Cash</option>
+                <option value="E-Wallet" ${(isEdit && txToEdit.metode === 'E-Wallet') || (prefill && prefill.metode === 'E-Wallet') ? 'selected' : ''}>E-Wallet</option>
+                <option value="Bank Transfer" ${(isEdit && txToEdit.metode === 'Bank Transfer') || (prefill && prefill.metode === 'Bank Transfer') ? 'selected' : ''}>Bank Transfer</option>
+                <option value="Kartu Kredit" ${(isEdit && txToEdit.metode === 'Kartu Kredit') || (prefill && prefill.metode === 'Kartu Kredit') ? 'selected' : ''}>Kartu Kredit</option>
               </select>
             </div>
           </div>
@@ -204,7 +204,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
     };
 
     metodeEl.addEventListener('change', updateAkunOptions);
-    if (isEdit) updateAkunOptions();
+    if (isEdit || prefill?.metode) updateAkunOptions();
 
     // Close handlers
     const closeModal = () => {
