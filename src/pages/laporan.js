@@ -533,6 +533,7 @@ export function renderLaporan() {
         cashflowChart._crosshairX = null;
         cashflowChart.draw();
       });
+    }
   };
 
   initCharts();
