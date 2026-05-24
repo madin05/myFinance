@@ -141,6 +141,7 @@ export const store = {
           icon: s.icon,
           color: s.color,
           orderIndex: s.orderIndex,
+          isDone: s.isDone,
         }));
       }
 
@@ -948,6 +949,7 @@ export const store = {
       icon: saved.icon,
       color: saved.color,
       orderIndex: saved.orderIndex,
+      isDone: saved.isDone,
     };
     this.savings.push(mapped);
     this.save();
@@ -966,7 +968,7 @@ export const store = {
 
     try {
       const res = await fetch(`${API_URL}/savings/${id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.user.token}`,
@@ -977,6 +979,7 @@ export const store = {
           currentAmount: goal.current,
           icon: goal.icon,
           color: goal.color,
+          isDone: goal.isDone,
         }),
       });
       if (!res.ok) {

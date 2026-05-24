@@ -88,6 +88,10 @@ exports.updateSaving = async (req, res) => {
       data.currentAmount = cur;
     }
 
+    if (req.body.isDone !== undefined) {
+      data.isDone = Boolean(req.body.isDone);
+    }
+
     const saving = await prisma.saving.update({
       where: { id },
       data
