@@ -191,6 +191,7 @@ export function openScanReceiptModal() {
         {
           tanggal: data.tanggal,
           kategori: data.kategori_saran,
+          metode: data.metode_pembayaran,
           keterangan: data.merchant
             ? `${data.merchant}${data.ringkasan_item ? ' - ' + data.ringkasan_item : ''}`
             : data.ringkasan_item,
