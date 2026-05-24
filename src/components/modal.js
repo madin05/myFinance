@@ -3,9 +3,11 @@ import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast } from './notifications.js';
 
-export function openAddTransactionModal(onSuccess, txToEdit = null) {
+export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData = null) {
   const container = document.getElementById('modal-container');
   const isEdit = !!txToEdit;
+  // Apply prefill (dari hasil scan struk) HANYA jika bukan edit mode
+  const prefill = !isEdit && prefillData ? prefillData : null;
   
     const getMetodeOptions = () => {
     if (!store.saldos || store.saldos.length === 0) {
@@ -32,28 +34,28 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
           <div class="form-group">
             <label>Tipe Transaksi</label>
             <select class="form-control" id="tx-type" required>
-              <option value="expense" ${isEdit && txToEdit.type === 'expense' ? 'selected' : ''}>Pengeluaran</option>
-              <option value="income" ${isEdit && txToEdit.type === 'income' ? 'selected' : ''}>Pemasukan</option>
+              <option value="expense" ${(isEdit && txToEdit.type === 'expense') || (prefill && prefill.type === 'expense') || (!isEdit && !prefill) ? 'selected' : ''}>Pengeluaran</option>
+              <option value="income" ${(isEdit && txToEdit.type === 'income') || (prefill && prefill.type === 'income') ? 'selected' : ''}>Pemasukan</option>
             </select>
           </div>
           
           <div class="form-group">
             <label>Tanggal</label>
-            <input type="date" class="form-control" id="tx-date" required value="${isEdit ? txToEdit.tanggal : ''}">
+            <input type="date" class="form-control" id="tx-date" required value="${isEdit ? txToEdit.tanggal : (prefill?.tanggal || '')}">
           </div>
 
           <div class="form-row">
             <div class="form-group">
               <label>Kategori</label>
               <select class="form-control" id="tx-kategori" required>
-                <option value="" disabled ${!isEdit ? 'selected' : ''}>Pilih Kategori</option>
-                <option value="Makanan & Minuman" ${isEdit && txToEdit.kategori === 'Makanan & Minuman' ? 'selected' : ''}>Makanan & Minuman</option>
-                <option value="Transportasi" ${isEdit && txToEdit.kategori === 'Transportasi' ? 'selected' : ''}>Transportasi</option>
-                <option value="Belanja" ${isEdit && txToEdit.kategori === 'Belanja' ? 'selected' : ''}>Belanja</option>
-                <option value="Gaji" ${isEdit && txToEdit.kategori === 'Gaji' ? 'selected' : ''}>Gaji</option>
-                <option value="Investasi" ${isEdit && txToEdit.kategori === 'Investasi' ? 'selected' : ''}>Investasi</option>
-                <option value="Tagihan" ${isEdit && txToEdit.kategori === 'Tagihan' ? 'selected' : ''}>Tagihan</option>
-                <option value="Lainnya" ${isEdit && txToEdit.kategori === 'Lainnya' ? 'selected' : ''}>Lainnya</option>
+                <option value="" disabled ${!isEdit && !prefill ? 'selected' : ''}>Pilih Kategori</option>
+                <option value="Makanan & Minuman" ${(isEdit && txToEdit.kategori === 'Makanan & Minuman') || (prefill && prefill.kategori === 'Makanan & Minuman') ? 'selected' : ''}>Makanan & Minuman</option>
+                <option value="Transportasi" ${(isEdit && txToEdit.kategori === 'Transportasi') || (prefill && prefill.kategori === 'Transportasi') ? 'selected' : ''}>Transportasi</option>
+                <option value="Belanja" ${(isEdit && txToEdit.kategori === 'Belanja') || (prefill && prefill.kategori === 'Belanja') ? 'selected' : ''}>Belanja</option>
+                <option value="Gaji" ${(isEdit && txToEdit.kategori === 'Gaji') || (prefill && prefill.kategori === 'Gaji') ? 'selected' : ''}>Gaji</option>
+                <option value="Investasi" ${(isEdit && txToEdit.kategori === 'Investasi') || (prefill && prefill.kategori === 'Investasi') ? 'selected' : ''}>Investasi</option>
+                <option value="Tagihan" ${(isEdit && txToEdit.kategori === 'Tagihan') || (prefill && prefill.kategori === 'Tagihan') ? 'selected' : ''}>Tagihan</option>
+                <option value="Lainnya" ${(isEdit && txToEdit.kategori === 'Lainnya') || (prefill && prefill.kategori === 'Lainnya') ? 'selected' : ''}>Lainnya</option>
               </select>
             </div>
             <div class="form-group">
@@ -77,7 +79,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
 
           <div class="form-group">
             <label>Keterangan</label>
-            <input type="text" class="form-control" id="tx-keterangan" placeholder="Keterangan transaksi..." required value="${isEdit ? txToEdit.keterangan : ''}">
+            <input type="text" class="form-control" id="tx-keterangan" placeholder="Keterangan transaksi..." required value="${isEdit ? txToEdit.keterangan : (prefill?.keterangan || '')}">
           </div>
 
           <div class="form-group">
@@ -122,10 +124,16 @@ export function openAddTransactionModal(onSuccess, txToEdit = null) {
     if (isEdit) {
       const absHarga = Math.abs(txToEdit.harga);
       hargaInput.value = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(absHarga);
+    } else if (prefill && prefill.harga) {
+      // Prefill dari hasil scan struk
+      const absHarga = Math.abs(Number(prefill.harga) || 0);
+      if (absHarga > 0) {
+        hargaInput.value = new Intl.NumberFormat('id-ID').format(absHarga);
+      }
     }
 
-    // Set default date to today if not editing
-    if (!isEdit) {
+    // Set default date to today if not editing dan tidak ada prefill date
+    if (!isEdit && !prefill?.tanggal) {
       document.getElementById('tx-date').valueAsDate = new Date();
     }
 

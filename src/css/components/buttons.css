@@ -608,19 +608,28 @@
   pointer-events: auto;
 }
 
-/* Item 1: Diagonal Kiri-Atas (Wishlist) */
+/* === FAM 4-Button Layout: equal 30° spacing pada radius 95px ===
+   Slot 1 (90°): Add Tx · Slot 0 (120°): Wishlist · Slot 3 (150°): Scan · Slot 2 (180°): Kalkulator
+   Distance antar tombol: ~49px (gap ~5px karena tombol 44px) */
+
+/* Item 1: Atas (Tambah Transaksi - --i: 0 / Wishlist) - 120° */
 #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
-  transform: scale(1) rotate(0deg) translateX(-53px) translateY(-53px);
+  transform: scale(1) rotate(0deg) translateX(-48px) translateY(-82px);
 }
 
-/* Item 2: Lurus ke Atas (Tambah Transaksi) */
+/* Item 2: Lurus ke Atas (Tambah Transaksi) - 90° */
 #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-  transform: scale(1) rotate(0deg) translateY(-75px);
+  transform: scale(1) rotate(0deg) translateY(-95px);
 }
 
-/* Item 3: Lurus ke Kiri (Kalkulator) */
+/* Item 3: Lurus ke Kiri (Kalkulator) - 180° */
 #fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
-  transform: scale(1) rotate(0deg) translateX(-75px);
+  transform: scale(1) rotate(0deg) translateX(-95px);
+}
+
+/* Item 4: Diagonal Kiri (Scan Struk) - 150° */
+#fam-toggle:checked ~ .fam-item[style*="--i: 3"] {
+  transform: scale(1) rotate(0deg) translateX(-82px) translateY(-48px);
 }
 
 .fam-anchor {
@@ -669,12 +678,19 @@
   transition: all 0.2s ease;
   pointer-events: none;
   border: 1px solid var(--border);
+  z-index: 100003; /* Di atas semua fam-item */
 }
 
 .fam-anchor:hover::after {
   opacity: 1;
   visibility: visible;
   transform: translateY(-50%) translateX(0);
+}
+
+/* Pastikan fam-item yang sedang di-hover paint di atas siblings,
+   biar tooltip-nya gak ke-cover sama tombol lain yang lebih dekat */
+.fam-item:hover {
+  z-index: 100002 !important;
 }
 
 /* Tooltip Top for FAM */
@@ -698,6 +714,7 @@
   transition: all 0.2s ease;
   pointer-events: none;
   border: 1px solid var(--border);
+  z-index: 100003;
 }
 
 .fam-anchor:hover[data-tooltip-top]::after {
@@ -731,12 +748,20 @@
     transform: scale(1) rotate(0deg) translateX(-45px) translateY(-45px);
   }
 
+  #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
+    transform: scale(1) rotate(0deg) translateX(-43px) translateY(-74px);
+  }
+
   #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-    transform: scale(1) rotate(0deg) translateY(-65px);
+    transform: scale(1) rotate(0deg) translateY(-85px);
   }
 
   #fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
-    transform: scale(1) rotate(0deg) translateX(-65px);
+    transform: scale(1) rotate(0deg) translateX(-85px);
+  }
+
+  #fam-toggle:checked ~ .fam-item[style*="--i: 3"] {
+    transform: scale(1) rotate(0deg) translateX(-74px) translateY(-43px);
   }
 
   .fam-anchor:hover {
