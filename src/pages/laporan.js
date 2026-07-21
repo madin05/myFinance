@@ -461,6 +461,33 @@ export function renderLaporan() {
                 useBorderRadius: true,
                 borderRadius: 6,
                 padding: 16,
+                // Override generateLabels:
+                // - hapus line-through bawaan Chart.js
+                // - toggle: icon filled saat dataset aktif, outline saat dataset disembunyikan
+                generateLabels(chart) {
+                  const defaults = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                  defaults.forEach(label => {
+                    const dataset = chart.data.datasets[label.datasetIndex];
+                    const isHidden = chart.getDatasetMeta(label.datasetIndex).hidden;
+                    
+                    label.fontStyle = 'normal';
+                    label.textDecoration = 'none';
+                    label.hidden = false; // jangan sembunyikan label di legend-nya sendiri
+
+                    if (isHidden) {
+                      // Dataset disembunyikan → icon outline (transparan)
+                      label.fillStyle = 'transparent';
+                      label.strokeStyle = dataset.borderColor;
+                      label.lineWidth = 2;
+                    } else {
+                      // Dataset aktif/visible → icon solid fill
+                      label.fillStyle = dataset.borderColor;
+                      label.strokeStyle = dataset.borderColor;
+                      label.lineWidth = 0;
+                    }
+                  });
+                  return defaults;
+                },
               }
             },
             tooltip: {
@@ -485,6 +512,14 @@ export function renderLaporan() {
               callbacks: {
                 title(contexts) {
                   return contexts[0]?.label || '';
+                },
+                labelColor(context) {
+                  return {
+                    borderColor: context.dataset.borderColor,
+                    backgroundColor: context.dataset.borderColor,
+                    borderWidth: 0,
+                    borderRadius: 6
+                  };
                 },
                 label(context) {
                   const val = context.parsed.y;

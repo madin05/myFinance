@@ -28,6 +28,7 @@ export const store = {
         tx.description !== undefined ? tx.description : tx.keterangan || "",
       kategori: tx.category || tx.kategori || "Umum",
       metode: tx.method || tx.metode || "Cash",
+      akun: tx.account || tx.akun || "",
       type: tx.type || "expense",
     };
   },

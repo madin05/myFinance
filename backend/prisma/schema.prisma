@@ -33,6 +33,7 @@ model Transaction {
   date        DateTime @default(now())
   category    String
   method      String
+  account     String?  // Nama akun spesifik: "DANA", "Gopay", "BCA", dll
   description String
   amount      Float
   type        String   // "income" | "expense"
