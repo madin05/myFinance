@@ -183,16 +183,23 @@ export function renderTabungan() {
   const listContainer = document.getElementById('wishlist-container');
   if (window.Sortable && listContainer) {
     new Sortable(listContainer, {
-      animation: 400, // Ultra-smooth luxurious duration
-      easing: "cubic-bezier(0.25, 1, 0.5, 1)", // Perfect deceleration curve (Ease Out Quart)
+      // FLIP animation duration. SortableJS uses translate3d under the hood
+      // for hardware-accelerated reordering — keep it snappy but smooth.
+      animation: 250,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)", // ease-out-quint for buttery deceleration
       handle: '.drag-handle',
-      ghostClass: 'dragging', // The empty dashed placeholder
+      ghostClass: 'dragging', // The original-slot ghost (dimmed source card)
       dragClass: 'sortable-drag',
       forceFallback: true, // REQUIRED for CSS Grid to prevent native HTML5 dragging bugs (cannot drag first item)
       fallbackTolerance: 3, // Allow a 3px grace distance for clicks
       fallbackOnBody: true, // Ensure the cloned element doesn't get trapped by overflow rules
-      swapThreshold: 0.65,
-      invertSwap: true, // Eliminates nervous jumping in grid layouts
+      delay: 0,
+      delayOnTouchOnly: false,
+      // Swap sensitivity — `swapThreshold: 1` = swap zone covers the WHOLE
+      // target card, so reordering triggers as soon as the dragged card
+      // touches any part of another card (not just the center).
+      swapThreshold: 1,
+      // invertSwap kept off — simpler intent: "enter target → swap".
       onStart: function() {
         listContainer.classList.add('is-dragging');
         document.body.style.userSelect = 'none';

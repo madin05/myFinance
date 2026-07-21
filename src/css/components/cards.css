@@ -140,10 +140,23 @@
   border: 1px solid var(--border);
   position: relative;
   overflow: visible !important; /* Prevents kebab dropdown from being clipped */
+  /* Hardware-accelerated layer so SortableJS FLIP animations are buttery smooth */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
+/* While dragging:
+   - Disable our hover lift (would fight with SortableJS's translate3d FLIP)
+   - Disable our box-shadow/transform transition on the .wishlist-item rule
+     so SortableJS's inline transition (set via JS) wins for the FLIP animation. */
 .wishlist-container.is-dragging .wishlist-item {
-  transition: none !important;
+  transition: none;
+}
+.wishlist-container.is-dragging .wishlist-item:hover {
+  transform: translate3d(0, 0, 0);
+  box-shadow: none;
 }
 
 .wishlist-actions {
@@ -188,7 +201,7 @@
 
 
 .wishlist-item:hover {
-  transform: translateY(-5px);
+  transform: translate3d(0, -5px, 0);
   box-shadow: var(--shadow-md);
 }
 
@@ -212,32 +225,70 @@
   opacity: 1;
 }
 
-/* Ghost Placeholder - GitHub Pinned Repos style (completely empty slot with dashed border) */
+/* Ghost Placeholder — GitHub Pinned Repos style.
+   The card frame (background + border) stays fully visible, only the
+   CONTENT inside (text, icons, progress bar, etc.) is dimmed.
+   This makes the source slot look like a clearly defined empty card. */
 .wishlist-item.dragging {
   opacity: 1 !important;
-  background-color: var(--bg-color) !important;
-  border: 1px dashed var(--border) !important;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
   box-shadow: none !important;
   transform: none !important;
+  transition: border-color 0.2s ease !important;
+}
+.wishlist-item.dragging > * {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
 }
 
-/* Hide all content inside the placeholder card to make it look like a clean empty slot */
-.wishlist-item.dragging * {
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* Actively Dragged Element (Fallback) - Premium lifting shadow and perfect scale */
+/* Actively Dragged Element (Fallback) - clean lift, follows the cursor.
+   IMPORTANT: do NOT set `transform` here — SortableJS sets it inline via JS
+   (translate3d) every frame to make the card follow the pointer. Overriding
+   with !important would freeze the card in place. */
 .sortable-fallback {
-  opacity: 0.98 !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06) !important;
+  opacity: 1 !important;
+  box-shadow:
+    0 16px 32px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(15, 23, 42, 0.10) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-xl) !important;
   cursor: grabbing !important;
-  transform: scale(1.02) !important;
   z-index: 99999 !important;
   pointer-events: none;
   background-color: var(--card-bg) !important;
+  will-change: transform;
+}
+
+/* ===========================================
+   Dark Mode — GitHub-style ghost + premium lift
+   =========================================== */
+
+/* Source slot frame: keep border crisp & visible in dark theme */
+[data-theme="dark"] .wishlist-item.dragging {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+}
+[data-theme="dark"] .wishlist-item.dragging > * {
+  opacity: 0.25;
+}
+
+/* Active dragged card in dark mode: deeper shadow with purple accent */
+[data-theme="dark"] .sortable-fallback {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(199, 125, 255, 0.30) !important;
+  box-shadow:
+    0 0 0 1px rgba(199, 125, 255, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.65),
+    0 8px 18px rgba(157, 78, 221, 0.22) !important;
+}
+
+/* Smooth grab cursor while a card is being held.
+   NOTE: Do NOT add `transition: transform` to non-dragged items here —
+   SortableJS sets its own inline `style.transition` via JS for the FLIP
+   animation, and CSS !important would override it and break smooth reordering. */
+.wishlist-container.is-dragging {
+  cursor: grabbing;
 }
 
 @media (max-width: 768px) {

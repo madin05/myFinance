@@ -6,7 +6,7 @@ const isLocalhost =
   window.location.hostname === "127.0.0.1";
 const API_URL = isLocalhost
   ? "http://localhost:5000/api"
-  : "https://myfinance-production-a073.up.railway.app/api";
+  : "/api";
 
 export const store = {
   user: JSON.parse(localStorage.getItem("user")) || null,
