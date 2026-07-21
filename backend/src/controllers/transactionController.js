@@ -24,6 +24,7 @@ exports.getAllTransactions = async (req, res) => {
         date: true,
         category: true,
         method: true,
+        account: true,
         description: true,
         amount: true,
         type: true,
@@ -37,7 +38,7 @@ exports.getAllTransactions = async (req, res) => {
 
 exports.createTransaction = async (req, res) => {
   try {
-    const { amount, harga, category, kategori, method, metode, description, keterangan, type, tanggal, date } = req.body;
+    const { amount, harga, category, kategori, method, metode, account, akun, description, keterangan, type, tanggal, date } = req.body;
     const { uid } = req.user;
 
     const userId = await getDbUserId(uid);
@@ -51,6 +52,7 @@ exports.createTransaction = async (req, res) => {
         amount: finalAmount,
         category: category || kategori || 'Umum',
         method: method || metode || 'Cash',
+        account: account || akun || null,
         description: description || keterangan || '',
         type: type || 'expense',
         date: tanggal ? new Date(tanggal) : (date ? new Date(date) : new Date())
@@ -89,7 +91,7 @@ exports.updateTransaction = async (req, res) => {
   try {
     const { uid } = req.user;
     const id = Number(req.params.id);
-    const { amount, harga, category, kategori, method, metode, description, keterangan, type, tanggal, date } = req.body;
+    const { amount, harga, category, kategori, method, metode, account, akun, description, keterangan, type, tanggal, date } = req.body;
 
     const userId = await getDbUserId(uid);
     if (!userId) return res.status(404).json({ error: 'User belum terdaftar' });
@@ -101,6 +103,7 @@ exports.updateTransaction = async (req, res) => {
         ...(amount || harga ? { amount: parseFloat(amount || harga) } : {}),
         ...(category || kategori ? { category: category || kategori } : {}),
         ...(method || metode ? { method: method || metode } : {}),
+        ...((account !== undefined || akun !== undefined) ? { account: account || akun || null } : {}),
         ...(description || keterangan ? { description: description || keterangan } : {}),
         ...(type ? { type } : {}),
         ...(tanggal || date ? { date: new Date(tanggal || date) } : {}),
