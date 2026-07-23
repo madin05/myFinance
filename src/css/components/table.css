@@ -2,8 +2,8 @@
   background-color: var(--white);
   border-radius: var(--radius-xl);
   padding: 1rem;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   overflow: visible !important; /* Biar popover gak kepotong bre */
 }
 

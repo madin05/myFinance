@@ -1,5 +1,6 @@
 const prisma = require('../services/db');
 const bcrypt = require('bcrypt');
+const { sendVerificationEmail } = require('../services/emailService');
 
 exports.syncUser = async (req, res) => {
   try {
@@ -94,5 +95,29 @@ exports.deleteAccount = async (req, res) => {
   } catch (error) {
     console.error('Delete Account Error:', error);
     res.status(500).json({ error: 'Gagal hapus akun bre! ' + error.message });
+  }
+};
+
+/**
+ * Kirim email verifikasi via backend (nodemailer + Gmail).
+ * Solusi untuk Firebase Client SDK yang ter-rate-limit.
+ */
+exports.sendVerification = async (req, res) => {
+  try {
+    const email = req.user?.email;
+    if (!email) {
+      return res.status(400).json({ error: 'Email tidak ditemukan di token.' });
+    }
+
+    // ⚡ Kirim respon HTTP 200 INSTAN ke UI (tanpa nunggu SMTP latency)
+    res.json({ success: true, message: 'Email verifikasi berhasil dikirim!' });
+
+    // 🚀 Kirim email via Nodemailer di background secara non-blocking
+    sendVerificationEmail(email).catch(err => {
+      console.error('Background Send Verification Error:', err.message);
+    });
+  } catch (error) {
+    console.error('Send Verification Error:', error.message);
+    res.status(500).json({ error: error.message || 'Gagal kirim email verifikasi.' });
   }
 };

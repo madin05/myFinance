@@ -1,13 +1,15 @@
 import { store } from '../store.js';
-import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from '../firebase-config.js';
+import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast, showAlert } from '../components/notifications.js';
+import { showToast, showAlert, showConfirm } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
 
 export function renderLogin(mode = 'login', pendingEmail = '') {
   const container = document.getElementById('login-view');
   const isReg = mode === 'register';
-  const isPending = mode === 'verification-pending';
+  const isForgot = mode === 'forgot-password';
+  const isVerified = mode === 'email-verified';
+  const isVerifiedError = mode === 'email-verified-error';
 
   container.innerHTML = `
     <div class="login-container" id="login-parallax-container">
@@ -153,29 +155,81 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
           <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
         </div>
         
-        ${isPending ? `
-          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
-            <div style="background: var(--primary-light); color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 0.25rem; box-shadow: 0 8px 24px var(--primary-light);">
-              <i class="ph ph-envelope-open"></i>
+        ${isVerified ? `
+          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 0.5rem 0;">
+            <!-- Success Icon Animated -->
+            <div class="email-verified-icon-wrapper">
+              <div class="email-verified-icon-ring"></div>
+              <div class="email-verified-icon-ring email-verified-icon-ring-2"></div>
+              <div class="email-verified-checkmark">
+                <svg viewBox="0 0 52 52" width="40" height="40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="14 27 22 35 38 19"/>
+                </svg>
+              </div>
             </div>
-            <h2 style="margin-bottom: 0;">Verifikasi Email</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0; line-height: 1.6;">
-              Kami telah mengirimkan tautan verifikasi ke:<br>
-              <strong style="color: var(--text-main); font-weight: 700; word-break: break-all;">${pendingEmail}</strong>
-            </p>
-            <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.6; background: var(--bg-color); padding: 12px; border-radius: var(--radius-md); border: 1.5px dashed var(--border); margin: 0;">
-              Silakan periksa kotak masuk atau folder <strong>Spam</strong> Anda, klik tautan tersebut, lalu tekan tombol periksa di bawah.
-            </p>
-            <button id="btn-check-verification" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-              Saya Sudah Verifikasi
+            
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <h2 style="margin: 0; font-size: 1.4rem;">Email Terverifikasi! 🎉</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0;">
+                Akunmu sudah aktif dan siap digunakan.<br>
+                <strong style="color: var(--text-main);">Selamat bergabung di MyFinance!</strong>
+              </p>
+            </div>
+
+            <div style="background: var(--bg-color); border: 1.5px dashed var(--border); border-radius: var(--radius-md); padding: 14px 18px; width: 100%; text-align: left; display: flex; align-items: flex-start; gap: 10px;">
+              <i class="ph ph-sparkle" style="color: var(--primary); font-size: 1.2rem; margin-top: 1px; flex-shrink: 0;"></i>
+              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.7;">
+                Sekarang kamu bisa <strong style="color: var(--text-main);">login</strong> dan mulai mencatat keuangan, membuat anggaran, serta mengelola tabunganmu.
+              </p>
+            </div>
+
+            <button id="btn-go-to-login" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="ph ph-sign-in"></i>
+              Masuk Sekarang
             </button>
-            <button id="btn-resend-verification" class="btn btn-outline btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; margin-top: -0.5rem; font-weight: 600;">
-              Kirim Ulang Email Verifikasi
+          </div>
+        ` : isVerifiedError ? `
+          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 0.5rem 0;">
+            <!-- Error Icon -->
+            <div style="background: rgba(239, 68, 68, 0.12); color: #ef4444; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
+              <i class="ph ph-warning-circle"></i>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <h2 style="margin: 0; font-size: 1.3rem;">Tautan Tidak Valid</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0;">
+                Tautan verifikasi sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.
+              </p>
+            </div>
+
+            <button id="btn-request-new-link" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
+              Minta Tautan Baru
             </button>
-            <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem; margin-top: 0.25rem;">
-              Keluar & Kembali ke Login
+            <a href="javascript:void(0)" id="btn-back-to-login-from-error" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem;">
+              Kembali ke Login
             </a>
           </div>
+        ` : isForgot ? `
+          <h2 style="text-align: center; margin-bottom: 0.5rem;">Reset Kata Sandi</h2>
+          <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.85rem; line-height: 1.5;">
+            Masukkan email Anda di bawah untuk menerima tautan reset kata sandi.
+          </p>
+          
+          <form id="forgot-form">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label>Email</label>
+              <input type="email" id="forgot-email" class="form-control" placeholder="Masukkan email terdaftar" required style="height: 48px; border-radius: 12px;">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full mt-md" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
+              Kirim Tautan Reset
+            </button>
+          </form>
+
+          <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+            <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--primary); font-weight: 700; text-decoration: none;">
+              Kembali ke Login
+            </a>
+          </p>
         ` : `
           <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang'}</h2>
           <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">
@@ -186,7 +240,7 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
             ${isReg ? `
               <div class="form-group">
                 <label>Nama Lengkap</label>
-                <input type="text" id="reg-name" class="form-control" placeholder="Arif Madani" required>
+                <input type="text" id="reg-name" class="form-control" placeholder="Masukkan nama lengkap" required>
               </div>
             ` : ''}
             <div class="form-group">
@@ -194,7 +248,10 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
               <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
             </div>
             <div class="form-group">
-              <label>Password</label>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label>Password</label>
+                ${!isReg ? `<a href="javascript:void(0)" id="btn-forgot-password" style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-bottom: 0.25rem;">Lupa Password?</a>` : ''}
+              </div>
               <div style="position: relative; width: 100%;">
                 <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right: 45px;">
                 <button type="button" id="btn-toggle-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
@@ -240,81 +297,71 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
     </div>
   `;
 
-  if (isPending) {
-    document.getElementById('btn-check-verification').onclick = async () => {
-      showLoading();
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          await user.reload(); // Ambil status terbaru dari server Firebase
-          if (user.emailVerified) {
-            showToast('Email berhasil diverifikasi! Selamat datang.', 'success');
-            
-            const token = await user.getIdToken();
-            const userData = {
-              uid: user.uid,
-              name: user.displayName || 'User MyFinance',
-              email: user.email,
-              avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-              token: token
-            };
-            store.setUser(userData);
-            store.updateUI();
-            
-            const loginView = document.getElementById('login-view');
-            const appLayout = document.getElementById('app-layout');
-            if (loginView && appLayout) {
-              loginView.style.display = 'none';
-              appLayout.style.display = 'flex';
-            }
-            navigateTo('/dashboard');
-          } else {
-            showToast('Email belum diverifikasi. Silakan klik tautan di email Anda terlebih dahulu.', 'warning');
-          }
-        } else {
-          showToast('Sesi habis. Silakan masuk kembali.', 'warning');
-          renderLogin('login');
-        }
-      } catch (err) {
-        showToast('Gagal memeriksa status: ' + err.message, 'error');
-      } finally {
-        hideLoading();
-      }
-    };
-
-    document.getElementById('btn-resend-verification').onclick = async () => {
-      showLoading();
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          await sendEmailVerification(user);
-          showToast('Email verifikasi berhasil dikirim ulang!', 'success');
-        } else {
-          showToast('Silakan masuk kembali terlebih dahulu untuk mengirim ulang verifikasi.', 'warning');
-          renderLogin('login');
-        }
-      } catch (err) {
-        if (err.code === 'auth/too-many-requests') {
-          showToast('Terlalu banyak permintaan kirim ulang. Harap tunggu beberapa saat.', 'error');
-        } else {
-          showToast('Gagal mengirim ulang email: ' + err.message, 'error');
-        }
-      } finally {
-        hideLoading();
-      }
-    };
-
-    document.getElementById('btn-back-to-login').onclick = async () => {
-      showLoading();
-      try {
-        await auth.signOut();
+  if (isVerified) {
+    const goToLoginBtn = document.getElementById('btn-go-to-login');
+    if (goToLoginBtn) {
+      goToLoginBtn.onclick = () => {
+        // Bersihkan query params dari URL agar tidak terpicu ulang pada reload
+        window.history.replaceState(null, '', '/');
         renderLogin('login');
-      } catch (err) {
-        showToast('Gagal keluar: ' + err.message, 'error');
-      } finally {
-        hideLoading();
-      }
-    };
+      };
+    }
+  } else if (isVerifiedError) {
+    const requestNewBtn = document.getElementById('btn-request-new-link');
+    if (requestNewBtn) {
+      requestNewBtn.onclick = () => {
+        window.history.replaceState(null, '', '/');
+        renderLogin('login');
+      };
+    }
+    const backBtn = document.getElementById('btn-back-to-login-from-error');
+    if (backBtn) {
+      backBtn.onclick = () => {
+        window.history.replaceState(null, '', '/');
+        renderLogin('login');
+      };
+    }
+  } else if (isForgot) {
+    const forgotForm = document.getElementById('forgot-form');
+    if (forgotForm) {
+      forgotForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('forgot-email').value.trim();
+        if (!emailInput) {
+          showToast('Masukkan email atau username terlebih dahulu.', 'warning');
+          return;
+        }
+
+        showLoading();
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+          const res = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput })
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
+
+          hideLoading();
+          showAlert('Tautan Terkirim! 📧', data.message || `Link reset password dikirim ke ${emailInput}. Periksa Inbox/Spam!`, 'success');
+          renderLogin('login');
+        } catch (err) {
+          hideLoading();
+          showAlert('Gagal Reset Password', err.message || 'Terjadi kesalahan saat mengirim link reset.', 'error');
+        }
+      };
+    }
+
+    const backToLoginBtn = document.getElementById('btn-back-to-login');
+    if (backToLoginBtn) {
+      backToLoginBtn.onclick = () => {
+        renderLogin('login');
+      };
+    }
   } else {
     // Switch Auth Mode
     document.getElementById('btn-switch-auth').onclick = () => {
@@ -348,6 +395,15 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
         if (icon) {
           icon.className = isPassword ? 'ph ph-eye-slash' : 'ph ph-eye';
         }
+      };
+    }
+
+    // Forgot Password Logic
+    const btnForgotPassword = document.getElementById('btn-forgot-password');
+    if (btnForgotPassword) {
+      btnForgotPassword.onclick = (e) => {
+        e.preventDefault();
+        renderLogin('forgot-password');
       };
     }
   }
@@ -427,11 +483,30 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
 
           const result = await createUserWithEmailAndPassword(auth, email, pass);
           const user = result.user;
-          
-          // Kirim email verifikasi Firebase secara asinkron
-          await sendEmailVerification(user);
-          showToast('Registrasi berhasil! Email verifikasi telah dikirim.', 'success');
-          // Sesi dibiarkan hidup agar user bisa langsung cek verifikasi / kirim ulang secara instan
+
+          // Set displayName di Firebase Auth agar onAuthStateChanged baca nama yang benar
+          await updateProfile(user, { displayName: name });
+
+          // Kirim email verifikasi di background (fire-and-forget) — tidak memblokir user masuk
+          sendEmailVerification(user).catch(err => {
+            console.warn("Gagal kirim email verifikasi (background):", err.code);
+          });
+
+          // Langsung set user dan masuk ke app — Soft/Lazy Verification
+          const token = await user.getIdToken(true); // force refresh agar token sudah include displayName
+          await store.setUser({
+            uid: user.uid,
+            name: name,
+            email: user.email,
+            avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+            token: token,
+            emailVerified: false,
+            provider: 'password'
+          }, { name }); // pass name ke backend sync
+
+          hideLoading();
+          navigateTo('/dashboard');
+          showToast('Selamat datang! Cek emailmu untuk verifikasi akun.', 'success');
         } else {
           // Handle Login (with Demo Fallback)
           if (email === 'guest' && pass === 'guest123') {
@@ -449,6 +524,7 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
           }
         }
       } catch (error) {
+        console.error("Auth Error:", error);
         let msg = error.message;
         if (error.code === 'auth/operation-not-allowed') {
           msg = 'Metode masuk dengan Email & Password belum diaktifkan di Firebase Console Anda. Silakan aktifkan terlebih dahulu di menu: Authentication -> Sign-in method -> Email/Password.';
@@ -653,3 +729,75 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
     cloudContainer.innerHTML = cloudHTML;
   }
 }
+
+/**
+ * Menampilkan banner verifikasi email di dalam app.
+ * Dipanggil dari main.js saat user login/register dengan email yang belum diverifikasi.
+ * @param {import('firebase/auth').User} firebaseUser - Firebase Auth user object
+ */
+export function renderEmailVerificationBanner(firebaseUser) {
+  const banner = document.getElementById('email-verify-banner');
+  if (!banner) return;
+
+  // Tampilkan banner dengan animasi slide-down
+  banner.style.display = 'flex';
+  banner.innerHTML = `
+    <div class="evb-icon"><i class="ph ph-envelope-simple-warning"></i></div>
+    <div class="evb-text">
+      <strong>Verifikasi emailmu</strong>
+      <span>Cek inbox atau spam untuk link verifikasi ke <em>${firebaseUser?.email || ''}</em></span>
+    </div>
+    <div class="evb-actions">
+      <button id="evb-btn-resend" class="evb-btn-resend">Kirim Ulang</button>
+      <button id="evb-btn-close" class="evb-btn-close" aria-label="Tutup"><i class="ph ph-x"></i></button>
+    </div>
+  `;
+
+  // Handler kirim ulang — pakai backend API (nodemailer + Gmail), bukan Firebase Client SDK
+  document.getElementById('evb-btn-resend').onclick = async () => {
+    const btn = document.getElementById('evb-btn-resend');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.textContent = 'Mengirim...';
+
+    try {
+      const token = store.user?.token;
+      if (!token) throw new Error('Token tidak ditemukan, silakan login ulang.');
+
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+      const res = await fetch(`${API_URL}/users/send-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal kirim email.');
+
+      btn.textContent = 'Terkirim! ✓';
+      // Reset tombol setelah 45 detik
+      setTimeout(() => {
+        if (document.getElementById('evb-btn-resend')) {
+          btn.disabled = false;
+          btn.textContent = 'Kirim Ulang';
+        }
+      }, 45000);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Coba Lagi';
+      console.warn('Resend verification error:', err.message);
+    }
+  };
+
+  // Handler dismiss banner
+  document.getElementById('evb-btn-close').onclick = () => {
+    banner.style.animation = 'evb-slide-up 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards';
+    setTimeout(() => { banner.style.display = 'none'; banner.style.animation = ''; }, 380);
+  };
+}
+

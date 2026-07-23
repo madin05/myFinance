@@ -1,17 +1,30 @@
-import { store, formatDate } from '../store.js';
-import { showLoading, hideLoading } from '../utils.js';
-import { navigateTo } from '../router.js';
-import { showToast, showAlert, showConfirm } from '../components/notifications.js';
-import { openEditUsernameModal, openDeleteAccountModal } from '../components/modal.js';
-import { initCustomSelect } from '../components/customSelect.js';
-import { auth, EmailAuthProvider, reauthenticateWithCredential } from '../firebase-config.js';
+import { store, formatDate } from "../store.js";
+import { showLoading, hideLoading } from "../utils.js";
+import { navigateTo } from "../router.js";
+import {
+  showToast,
+  showAlert,
+  showConfirm,
+} from "../components/notifications.js";
+import {
+  openEditUsernameModal,
+  openDeleteAccountModal,
+} from "../components/modal.js";
+import { initCustomSelect } from "../components/customSelect.js";
+import {
+  auth,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "../firebase-config.js";
 
 export function renderAkun() {
-  const container = document.getElementById('page-content');
+  const container = document.getElementById("page-content");
   const user = store.user;
-  
+
   // Format join date dari data riil
-  const joinDate = user.createdAt ? formatDate(user.createdAt) : '12 Maret 2024';
+  const joinDate = user.createdAt
+    ? formatDate(user.createdAt)
+    : "12 Maret 2024";
 
   container.innerHTML = `
     <div class="account-settings">
@@ -27,39 +40,34 @@ export function renderAkun() {
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
           <div class="stat-card profile-card" style="padding: 2.5rem 1.5rem; text-align: center;">
             <div class="avatar-wrapper" style="position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; cursor: pointer;" id="btn-preview-pp">
-               <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&background=7C3AED&color=fff&bold=true'}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); border: 4px solid var(--white);">
+               <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); border: 4px solid var(--white);">
               <label for="avatar-upload" class="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--white);" onclick="event.stopPropagation()">
                 <i class="ph ph-camera"></i>
               </label>
               <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
             </div>
             <h3 style="margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              @${user.name || 'user'}
+              @${user.name || "user"}
               <button class="icon-btn" id="btn-edit-username" style="width: 28px; height: 28px; font-size: 0.8rem; background: var(--bg-color); border-radius: 50%;" title="Ubah Username">
                 <i class="ph ph-pencil-simple"></i>
               </button>
             </h3>
             <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">${user.email}</p>
-            <div class="account-badge" style="background: var(--primary-light); color: var(--primary); padding: 6px 16px; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">
-              VERIFIED USER
-            </div>
-          </div>
-
-
-          <div class="stat-card" style="padding: 1.5rem;">
-            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-info" style="color: var(--primary);"></i>
-              Informasi Akun
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <div style="display: flex; justify-content: space-between;">
+            
+            <!-- Metadata Informasi Akun -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.25rem 0.5rem; margin-bottom: 1.5rem; text-align: left;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="text-muted text-sm">Join Date</span>
-                <span class="font-bold text-sm">${joinDate}</span>
+                <span class="font-bold text-sm" style="color: var(--text-main);">${joinDate}</span>
               </div>
-              <div style="display: flex; justify-content: space-between;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="text-muted text-sm">Status Akun</span>
                 <span class="text-green text-sm font-bold">Aktif</span>
               </div>
+            </div>
+
+            <div class="account-badge" style="background: var(--primary-light); color: var(--primary); padding: 6px 16px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: inline-block;">
+              VERIFIED USER
             </div>
           </div>
         </div>
@@ -69,37 +77,18 @@ export function renderAkun() {
           <div class="stat-card" style="padding: 2rem;">
             <h4 style="margin-bottom: 1.5rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
               <i class="ph-fill ph-shield-check" style="color: var(--primary);"></i>
-              Pusat Keamanan
+              Akses
             </h4>
             
-            ${user.provider === 'password' ? `
-            <!-- Change Password Dropdown -->
-            <details class="password-details" style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-              <summary style="list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.875rem; color: var(--text-main); padding: 0.5rem 0;">
+            <!-- Change Password Link -->
+            <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+              <a href="#" id="btn-change-password" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.875rem; color: var(--text-main); padding: 0.5rem 0; text-decoration: none;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <i class="ph-fill ph-key" style="color: var(--primary); font-size: 1.1rem;"></i>
-                  Ubah Password
+                  Ganti Password
                 </div>
-                <i class="ph ph-caret-down caret-icon" style="transition: transform 0.3s; font-size: 1rem;"></i>
-              </summary>
-              
-              <form id="form-change-password" style="margin-top: 1.5rem;">
-                <div class="form-group" style="margin-bottom: 1rem;">
-                  <input type="password" id="old-password" placeholder="Password Lama" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;" required>
-                  <input type="password" id="new-password" placeholder="Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;" required>
-                  <input type="password" id="confirm-password" placeholder="Konfirmasi Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 1rem;" required>
-                  <button type="submit" class="btn btn-primary btn-full" style="height: 48px; font-size: 0.9rem; border-radius: 12px;">
-                    Update Password
-                  </button>
-                </div>
-              </form>
-            </details>
-            ` : `
-            <div style="margin-bottom: 2rem; padding: 1rem; border-radius: 12px; background: var(--bg-color); color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 10px; align-items: center; border: 1px solid var(--border);">
-              <i class="ph ph-google-logo" style="font-size: 1.2rem; color: var(--primary);"></i>
-              <span>Anda masuk via Google Auth. Pengaturan kata sandi dikelola langsung oleh Google.</span>
+                <i class="ph ph-arrow-square-out" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+              </a>
             </div>
-            `}
 
             <!-- 2FA Toggle -->
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -108,7 +97,7 @@ export function renderAkun() {
                 <p class="text-muted text-xs">Amankan akun dengan kode OTP.</p>
               </div>
               <label class="switch">
-                <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? 'checked' : ''}>
+                <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? "checked" : ""}>
                 <span class="slider round"></span>
               </label>
             </div>
@@ -117,8 +106,7 @@ export function renderAkun() {
           <!-- Danger Zone -->
           <div class="stat-card" style="padding: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.02);">
             <h4 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-warning-octagon"></i>
-              Zona Bahaya
+            Hapus Akun
             </h4>
             <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Tindakan ini tidak dapat dibatalkan. Semua data finansial Anda akan dihapus permanen.</p>
             <button class="btn" style="background: var(--red); color: white; width: 100%; border-radius: 12px; height: 48px; font-weight: 600; gap: 10px;" id="btn-delete-account">
@@ -134,7 +122,7 @@ export function renderAkun() {
     <!-- Lightbox Modal -->
     <div id="pp-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center;">
       <div style="position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);" id="pp-modal-close"></div>
-      <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + user.name}" id="full-pp-preview" style="position: relative; width: min(400px, 85vw); height: min(400px, 85vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
+      <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + user.name}" id="full-pp-preview" style="position: relative; width: min(400px, 85vw); height: min(400px, 85vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
     </div>
 
     <style>
@@ -151,54 +139,54 @@ export function renderAkun() {
   `;
 
   // --- Initialize Custom UI Elements ---
-  const currencySelect = document.getElementById('user-currency');
+  const currencySelect = document.getElementById("user-currency");
   if (currencySelect) {
     initCustomSelect(currencySelect);
   }
 
   // --- Handlers ---
-  
-  const btnPreviewPp = document.getElementById('btn-preview-pp');
+
+  const btnPreviewPp = document.getElementById("btn-preview-pp");
   if (btnPreviewPp) {
     btnPreviewPp.onclick = () => {
-      const modal = document.getElementById('pp-preview-modal');
-      if (modal) modal.style.display = 'flex';
+      const modal = document.getElementById("pp-preview-modal");
+      if (modal) modal.style.display = "flex";
     };
   }
 
-  const ppModalClose = document.getElementById('pp-modal-close');
+  const ppModalClose = document.getElementById("pp-modal-close");
   if (ppModalClose) {
     ppModalClose.onclick = () => {
-      const modal = document.getElementById('pp-preview-modal');
-      if (modal) modal.style.display = 'none';
+      const modal = document.getElementById("pp-preview-modal");
+      if (modal) modal.style.display = "none";
     };
   }
-  
-  const btnSaveFin = document.getElementById('btn-save-financial-start');
+
+  const btnSaveFin = document.getElementById("btn-save-financial-start");
   if (btnSaveFin) {
     btnSaveFin.onclick = async () => {
-      const newDay = document.getElementById('financial-start-day').value;
-      const newCurrency = document.getElementById('user-currency').value;
-      
+      const newDay = document.getElementById("financial-start-day").value;
+      const newCurrency = document.getElementById("user-currency").value;
+
       showLoading();
       try {
-        await store.updateProfile({ 
+        await store.updateProfile({
           financialStartDay: parseInt(newDay),
-          currency: newCurrency
+          currency: newCurrency,
         });
-        showToast('Berhasil diperbaharui!', 'success');
-        
+        showToast("Berhasil diperbaharui!", "success");
+
         // Refresh UI to update currency symbols
         renderAkun();
       } catch (err) {
-        showAlert('Gagal', err.message, 'error');
+        showAlert("Gagal", err.message, "error");
       } finally {
         hideLoading();
       }
     };
   }
 
-  const btnEditUsername = document.getElementById('btn-edit-username');
+  const btnEditUsername = document.getElementById("btn-edit-username");
   if (btnEditUsername) {
     btnEditUsername.onclick = () => {
       openEditUsernameModal(user.name, async (newName) => {
@@ -206,9 +194,9 @@ export function renderAkun() {
         try {
           await store.updateProfile({ name: newName });
           renderAkun(); // Re-render to reflect changes
-          showToast('Nama pengguna berhasil diperbarui.', 'success');
+          showToast("Nama pengguna berhasil diperbarui.", "success");
         } catch (err) {
-          showAlert('Gagal', err.message, 'error');
+          showAlert("Gagal", err.message, "error");
         } finally {
           hideLoading();
         }
@@ -216,97 +204,109 @@ export function renderAkun() {
     };
   }
 
-  const btnDeleteAccount = document.getElementById('btn-delete-account');
+  const btnDeleteAccount = document.getElementById("btn-delete-account");
   if (btnDeleteAccount) {
     btnDeleteAccount.onclick = () => {
       const userFirebase = auth.currentUser;
       if (!userFirebase) {
-        showAlert('Sesi Habis', 'Silakan login ulang untuk melanjutkan.', 'error');
+        showAlert(
+          "Sesi Habis",
+          "Silakan login ulang untuk melanjutkan.",
+          "error",
+        );
         return;
       }
 
-      const providerId = userFirebase.providerData[0]?.providerId || 'password';
+      const providerId = userFirebase.providerData[0]?.providerId || "password";
 
-    openDeleteAccountModal(providerId, async (passwordOrNull) => {
-      showLoading();
-      try {
-        // 1. Re-auth jika pakai password lokal
-        if (providerId === 'password' && passwordOrNull) {
-          const credential = EmailAuthProvider.credential(userFirebase.email, passwordOrNull);
-          await reauthenticateWithCredential(userFirebase, credential);
+      openDeleteAccountModal(providerId, async (passwordOrNull) => {
+        showLoading();
+        try {
+          // 1. Re-auth jika pakai password lokal
+          if (providerId === "password" && passwordOrNull) {
+            const credential = EmailAuthProvider.credential(
+              userFirebase.email,
+              passwordOrNull,
+            );
+            await reauthenticateWithCredential(userFirebase, credential);
+          }
+
+          // 2. Hapus data dari Postgres via backend
+          await store.deleteAccountRemote();
+
+          // 3. Hapus user dari Firebase Auth
+          await userFirebase.delete();
+
+          hideLoading();
+          showToast("Akun telah dihapus secara permanen.", "success");
+
+          setTimeout(() => {
+            navigateTo("/login");
+            window.location.reload();
+          }, 2000);
+        } catch (err) {
+          hideLoading();
+          if (err.code === "auth/wrong-password") {
+            showAlert("Gagal", "Password yang Anda masukkan salah.", "error");
+          } else if (err.code === "auth/requires-recent-login") {
+            showAlert(
+              "Sesi Kedaluwarsa",
+              "Silakan logout dan login kembali sebelum menghapus akun demi keamanan.",
+              "warning",
+            );
+          } else {
+            showAlert("Gagal Hapus Akun", err.message, "error");
+          }
         }
+      });
+    };
+  }
 
-        // 2. Hapus data dari Postgres via backend
-        await store.deleteAccountRemote();
-
-        // 3. Hapus user dari Firebase Auth
-        await userFirebase.delete();
-
-        hideLoading();
-        showToast('Akun telah dihapus secara permanen.', 'success');
-
-        setTimeout(() => {
-          navigateTo('/login');
-          window.location.reload();
-        }, 2000);
-      } catch (err) {
-        hideLoading();
-        if (err.code === 'auth/wrong-password') {
-          showAlert('Gagal', 'Password yang Anda masukkan salah.', 'error');
-        } else if (err.code === 'auth/requires-recent-login') {
-          showAlert('Sesi Kedaluwarsa', 'Silakan logout dan login kembali sebelum menghapus akun demi keamanan.', 'warning');
-        } else {
-          showAlert('Gagal Hapus Akun', err.message, 'error');
-        }
-      }
-    });
-  };
-}
-
-const toggle2FA = document.getElementById('toggle-2fa');
+  const toggle2FA = document.getElementById("toggle-2fa");
   if (toggle2FA) {
     toggle2FA.onchange = async (e) => {
       const isChecked = e.target.checked;
-      
+
       if (isChecked) {
         // Logic Setup 2FA
-        const code = prompt('Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)');
-        
-        if (code === '123456') {
+        const code = prompt(
+          "Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)",
+        );
+
+        if (code === "123456") {
           showLoading();
           const success = await store.update2FAStatus(true);
           hideLoading();
           if (success) {
-            showToast('2FA Aktif! Akun Anda sekarang lebih aman.', 'success');
+            showToast("2FA Aktif! Akun Anda sekarang lebih aman.", "success");
           } else {
             e.target.checked = false;
-            showToast('Gagal update status 2FA.', 'error');
+            showToast("Gagal update status 2FA.", "error");
           }
         } else {
           e.target.checked = false;
-          if (code !== null) showToast('Kode OTP tidak valid.', 'error');
+          if (code !== null) showToast("Kode OTP tidak valid.", "error");
         }
       } else {
         // Deactivate 2FA
         showLoading();
         await store.update2FAStatus(false);
         hideLoading();
-        showToast('2FA dinonaktifkan.', 'info');
+        showToast("2FA dinonaktifkan.", "info");
       }
     };
   }
 
-
   // Avatar handling logic with compression & optimistic UI
-  const avatarUpload = document.getElementById('avatar-upload');
+  const avatarUpload = document.getElementById("avatar-upload");
   if (avatarUpload) {
     avatarUpload.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       // Validasi tipe file
-      if (!file.type.startsWith('image/')) {
-        return showAlert('Error', 'Berkas harus berupa gambar.', 'error');
+      if (!file.type.startsWith("image/")) {
+        return showAlert("Error", "Berkas harus berupa gambar.", "error");
       }
 
       try {
@@ -315,7 +315,7 @@ const toggle2FA = document.getElementById('toggle-2fa');
           const img = new Image();
           img.onload = async () => {
             // Kompresi Gambar (Cepat)
-            const canvas = document.createElement('canvas');
+            const canvas = document.createElement("canvas");
             const MAX_WIDTH = 600;
             const MAX_HEIGHT = 600;
             let width = img.width;
@@ -335,71 +335,98 @@ const toggle2FA = document.getElementById('toggle-2fa');
 
             canvas.width = width;
             canvas.height = height;
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, width, height);
-            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
             // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
             store.user.avatar = compressedBase64;
             store.updateUI();
-            
-            const modal = document.getElementById('pp-preview-modal');
-            if (modal) modal.style.display = 'none';
+
+            const modal = document.getElementById("pp-preview-modal");
+            if (modal) modal.style.display = "none";
 
             // 2. BACKGROUND SYNC: Kirim ke server diem-diem
             try {
               await store.updateProfile({ avatar: compressedBase64 });
-              showToast('Foto profil diperbaharui!', 'success');
+              showToast("Foto profil diperbaharui!", "success");
             } catch (err) {
-              showToast('Gagal sinkron, tapi profil lokal aman.', 'warning');
+              showToast("Gagal sinkron, tapi profil lokal aman.", "warning");
             }
           };
           img.src = event.target.result;
         };
         reader.readAsDataURL(file);
       } catch (err) {
-        showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
+        showAlert("Gagal", "Ada masalah pas baca file gambar.", "error");
       }
     };
   }
 
   // Change Password Handler
-  const changePassForm = document.getElementById('form-change-password');
-  if (changePassForm) {
-    changePassForm.onsubmit = async (e) => {
+  const btnChangePassword = document.getElementById("btn-change-password");
+  if (btnChangePassword) {
+    btnChangePassword.onclick = async (e) => {
       e.preventDefault();
-      const oldPass = document.getElementById('old-password').value;
-      const newPass = document.getElementById('new-password').value;
-      const confirmPass = document.getElementById('confirm-password').value;
 
-      // 1. Frontend Validation
-      if (newPass.length < 6) {
-        return showAlert('Validasi Gagal', 'Kata sandi baru minimal 6 karakter.', 'warning');
-      }
-      if (newPass !== confirmPass) {
-        return showAlert('Validasi Gagal', 'Konfirmasi kata sandi baru tidak sesuai.', 'warning');
-      }
+      const isGoogle = user.provider && user.provider.includes("google");
 
-      const confirmed = await showConfirm('Konfirmasi Ubah Kata Sandi', 'Kata sandi Anda akan diganti dan Anda akan otomatis keluar. Lanjutkan?');
-      if (!confirmed) return;
+      if (isGoogle) {
+        // Open Google Accounts password page in new tab
+        window.open(
+          "https://myaccount.google.com/signinoptions/password",
+          "_blank",
+        );
+      } else {
+        // Trigger password reset email via Firebase Auth for email/password users
+        const confirmed = await showConfirm(
+          "Ubah Kata Sandi",
+          "Tautan untuk menyetel ulang kata sandi akan dikirim ke email Anda (" +
+            user.email +
+            "). Lanjutkan?",
+        );
+        if (!confirmed) return;
 
-      showLoading();
-      try {
-        // 2. Call Store (Backend verification happens here)
-        await store.changePassword(oldPass, newPass);
-        
-        hideLoading();
-        showToast('Password berhasil diubah, silakan login ulang', 'success');
-        
-        // 3. Auto Logout & Redirect
-        setTimeout(async () => {
-          await store.logout();
-          window.location.href = '/login';
-        }, 2000);
-        
-      } catch (err) {
-        hideLoading();
-        showAlert('Gagal Ubah Password', err.message, 'error');
+        showLoading();
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+          const res = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email })
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
+
+          hideLoading();
+
+          showToast(
+            `Tautan reset password telah dikirim ke ${user.email}!`,
+            "success",
+          );
+
+          // Identify email provider for quick access
+          const emailDomain = user.email.split("@")[1] || "";
+          let mailUrl = "https://mail.google.com/";
+          if (emailDomain.includes("yahoo")) {
+            mailUrl = "https://mail.yahoo.com/";
+          } else if (
+            emailDomain.includes("outlook") ||
+            emailDomain.includes("hotmail") ||
+            emailDomain.includes("live")
+          ) {
+            mailUrl = "https://outlook.live.com/";
+          }
+
+          // Open mail client in new tab
+          window.open(mailUrl, "_blank");
+        } catch (err) {
+          hideLoading();
+          showAlert("Gagal", err.message, "error");
+        }
       }
     };
   }

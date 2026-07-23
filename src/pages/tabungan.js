@@ -3,22 +3,27 @@ import { initKebabs, cleanupKebabs, closeAllKebabs } from '../ui/kebab.js';
 import { showToast } from '../components/notifications.js';
 
 export function renderTabungan() {
-  const container = document.getElementById('page-content');
-  const goals = store.savings;
+  const existingPanel = document.getElementById('history-panel');
+  const isHistoryOpen = existingPanel ? existingPanel.classList.contains('open') : false;
 
-  const goalsHtml = goals.map(g => {
+  const container = document.getElementById('page-content');
+  const allGoals = store.savings;
+  const activeGoals = allGoals.filter(g => !g.isDone);
+  const historyGoals = allGoals.filter(g => g.isDone);
+
+  const goalsHtml = activeGoals.map(g => {
     const percent = Math.min((g.current / g.target) * 100, 100);
     return `
-      <div class="stat-card wishlist-item" style="padding: 1.5rem; position: relative; ${g.isDone ? 'opacity: 0.6; filter: grayscale(0.5);' : ''}" data-id="${g.id}">
-        ${g.isDone ? '<div style="position: absolute; top: 0; right: 0; padding: 6px 12px; background: var(--green); color: white; font-size: 0.75rem; font-weight: bold; border-radius: 0 var(--radius-xl) 0 var(--radius-xl);"><i class="ph-bold ph-check"></i> Selesai</div>' : '<div class="drag-handle"><i class="ph-bold ph-dots-six-vertical"></i></div>'}
+      <div class="stat-card wishlist-item" style="padding: 1.5rem; position: relative;" data-id="${g.id}">
+        <div class="drag-handle"><i class="ph-bold ph-dots-six-vertical"></i></div>
         
         <div style="display: flex; gap: 1.25rem; align-items: center; margin-bottom: 1.5rem;">
-          <div class="icon-box ${g.color} text-white" style="width: 54px; height: 54px; font-size: 1.5rem; border-radius: 14px;">
+          <div class="icon-box ${g.color} text-white" style="width: 54px; height: 54px; font-size: 1.5rem; border-radius: 50%;">
             <i class="ph ${g.icon}"></i>
           </div>
           <div style="flex-grow: 1;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-              <h3 style="margin: 0; font-size: 1.1rem; ${g.isDone ? 'text-decoration: line-through;' : ''}">${g.name}</h3>
+              <h3 style="margin: 0; font-size: 1.1rem;">${g.name}</h3>
             </div>
             <p class="text-muted text-xs">Target: ${formatRupiah(g.target)}</p>
           </div>
@@ -37,7 +42,7 @@ export function renderTabungan() {
             <h3 style="margin: 0; font-size: 1.15rem;">${formatRupiah(g.current)}</h3>
           </div>
           <div class="kebab-wrapper" style="margin-top: -8px;">
-            <button class="kebab-trigger" data-id="${g.id}" title="Opsi lainnya" style="background: transparent; border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted);">
+            <button class="kebab-trigger" data-id="${g.id}" title="Opsi lainnya" style="background: transparent; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted);">
               <i class="ph-bold ph-dots-three"></i>
             </button>
             <div class="kebab-dropdown" data-kebab-for="${g.id}">
@@ -47,7 +52,7 @@ export function renderTabungan() {
               <button class="kebab-item kebab-edit" data-id="${g.id}">
                 <i class="ph ph-pencil-simple"></i> Edit
               <button class="kebab-item kebab-done" data-id="${g.id}">
-                <i class="ph ${g.isDone ? 'ph-x' : 'ph-check'}"></i> ${g.isDone ? 'Batal Selesai' : 'Tandai Selesai'}
+                <i class="ph ph-check"></i> Tandai Selesai
               </button>
               <div class="kebab-divider"></div>
               <button class="kebab-item danger kebab-delete" data-id="${g.id}">
@@ -60,13 +65,39 @@ export function renderTabungan() {
     `;
   }).join('');
 
+  const historyHtml = historyGoals.length > 0 ? historyGoals.map(g => {
+    const percent = Math.min((g.current / g.target) * 100, 100);
+    return `
+      <div class="history-item" data-id="${g.id}">
+        <div class="history-item-info">
+          <div class="icon-box ${g.color} text-white" style="width: 36px; height: 36px; font-size: 1rem; border-radius: 10px; flex-shrink: 0;">
+            <i class="ph ${g.icon}"></i>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <p class="history-item-name">${g.name}</p>
+            <p class="history-item-meta">${formatRupiah(g.current)} / ${formatRupiah(g.target)} · ${percent.toFixed(0)}%</p>
+          </div>
+        </div>
+        <div class="history-item-actions">
+          <button class="btn-history-restore" data-id="${g.id}" title="Pulihkan">
+            <i class="ph ph-arrow-counter-clockwise"></i> <span>Pulihkan</span>
+          </button>
+          <button class="btn-history-delete" data-id="${g.id}" title="Hapus Permanen">
+            <i class="ph ph-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('') : '<p class="text-muted" style="text-align:center; padding: 2rem 0; font-size: 0.85rem;">Belum ada wishlist yang diselesaikan.</p>';
+
   container.innerHTML = `
     <div class="section-header">
       <div>
         <h3>My Wishlist & Savings</h3>
       </div>
-      <div style="display: flex; gap: 1rem; align-items: center;">
-        ${goals.length > 0 ? '<button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i> Buat Target Baru</button>' : ''}
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        ${historyGoals.length > 0 ? `<button class="btn btn-outline" id="btn-toggle-history" style="font-size: 0.8rem; padding: 8px 14px;"><i class="ph ph-clock-counter-clockwise"></i> Histori</button>` : ''}
+        ${allGoals.length > 0 ? '<button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i> Buat Target Baru</button>' : ''}
       </div>
     </div>
 
@@ -91,9 +122,100 @@ export function renderTabungan() {
         </div>
       `}
     </div>
+
+    <!-- History Panel -->
+    <div class="history-panel" id="history-panel">
+      <div class="history-panel-header">
+        <h4><i class="ph ph-clock-counter-clockwise"></i> Wishlist Selesai</h4>
+        <button class="history-panel-close" id="btn-close-history"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="history-panel-list">
+        ${historyHtml}
+      </div>
+    </div>
+
+    <style>
+      .history-panel { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, opacity 0.3s ease, margin 0.3s ease; opacity: 0; margin-top: 0; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-xl); }
+      .history-panel.open { max-height: 600px; opacity: 1; margin-top: 1.5rem; overflow-y: auto; }
+      .history-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card-bg); z-index: 1; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+      .history-panel-header h4 { margin: 0; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+      .history-panel-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px; border-radius: 6px; transition: all 0.2s; }
+      .history-panel-close:hover { background: var(--bg-color); color: var(--red); }
+      .history-panel-list { padding: 0.5rem 0; }
+      .history-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; gap: 1rem; transition: background 0.15s; }
+      .history-item:hover { background: var(--bg-color); }
+      .history-item + .history-item { border-top: 1px solid var(--border-light, var(--border)); }
+      .history-item-info { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
+      .history-item-name { margin: 0; font-size: 0.88rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .history-item-meta { margin: 2px 0 0; font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .history-item-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+      .btn-history-restore { display: flex; align-items: center; gap: 4px; padding: 5px 10px; border: none; background: transparent; color: var(--primary); font-size: 0.72rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+      .btn-history-restore:hover { color: var(--primary); opacity: 0.8; }
+      .btn-history-delete { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; background: transparent; color: var(--text-muted); font-size: 1.1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+      .btn-history-delete:hover { color: var(--red); }
+      @media (max-width: 500px) {
+        .history-item { flex-wrap: wrap; gap: 0.5rem; }
+        .history-item-actions { width: 100%; justify-content: flex-end; }
+        .btn-history-restore span { display: none; }
+      }
+    </style>
   `;
 
   // --- Listeners ---
+
+  // History panel toggle
+  const btnToggleHistory = document.getElementById('btn-toggle-history');
+  const historyPanel = document.getElementById('history-panel');
+  const btnCloseHistory = document.getElementById('btn-close-history');
+  
+  // Preserve open state if it was open before re-render
+  if (isHistoryOpen && historyPanel && historyGoals.length > 0) {
+    historyPanel.classList.add('open');
+  }
+
+  if (btnToggleHistory && historyPanel) {
+    btnToggleHistory.addEventListener('click', () => {
+      historyPanel.classList.toggle('open');
+    });
+  }
+  if (btnCloseHistory && historyPanel) {
+    btnCloseHistory.addEventListener('click', () => {
+      historyPanel.classList.remove('open');
+    });
+  }
+
+  // History: Pulihkan (restore isDone → false)
+  container.querySelectorAll('.btn-history-restore').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      try {
+        await store.editSaving(id, { isDone: false });
+        showToast('Wishlist berhasil dipulihkan!', 'success');
+        renderTabungan();
+      } catch (err) {
+        showToast('Gagal memulihkan: ' + (err?.message || err), 'error');
+      }
+    });
+  });
+
+  // History: Hapus Permanen
+  container.querySelectorAll('.btn-history-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.id);
+      const goal = store.savings.find(s => s.id === id);
+      const { showConfirm } = await import('../components/notifications.js');
+      const confirmed = await showConfirm('Hapus Permanen?', `Wishlist "${goal?.name}" akan dihapus selamanya dan tidak bisa dikembalikan.`);
+      if (confirmed) {
+        try {
+          await store.removeSaving(id);
+          showToast('Wishlist dihapus permanen!', 'info');
+          renderTabungan();
+        } catch (err) {
+          showToast('Gagal menghapus: ' + (err?.message || err), 'error');
+        }
+      }
+    });
+  });
 
   // Create Goal
   const btnCreate = document.getElementById('btn-create-goal');

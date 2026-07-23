@@ -36,9 +36,14 @@ export function openCalculator() {
       </div>
 
       <!-- Display Screen -->
-      <div style="background: var(--bg-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border-light); text-align: right; min-height: 80px; display: flex; flex-direction: column; justify-content: space-between; word-break: break-all; flex-shrink: 0;">
-        <div id="calc-history" style="font-size: 0.8rem; color: var(--text-muted); min-height: 1.2rem; letter-spacing: 0.05em;"></div>
-        <div id="calc-display" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.1;">0</div>
+      <div style="background: var(--bg-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border-light); text-align: right; min-height: 85px; display: flex; flex-direction: column; justify-content: space-between; word-break: break-all; flex-shrink: 0; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+          <div id="calc-history" style="font-size: 0.8rem; color: var(--text-muted); min-height: 1.2rem; letter-spacing: 0.05em; text-align: left; flex: 1;"></div>
+          <button id="btn-copy-calc" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; border-radius: 6px;" title="Copy (Ctrl+C)" onmouseover="this.style.color='var(--primary)'; this.style.background='var(--border-light)';" onmouseout="this.style.color='var(--text-muted)'; this.style.background='none';">
+            <i class="ph ph-copy" style="font-size: 1.1rem;"></i>
+          </button>
+        </div>
+        <div id="calc-display" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.1; margin-top: 4px;">0</div>
       </div>
 
       <!-- Keypad Grid -->
@@ -142,8 +147,26 @@ export function openCalculator() {
     makeResizable(calcCard, resizeHandle);
   }
 
-  // Keyboard support
+  // Copy button listener
+  const btnCopy = document.getElementById('btn-copy-calc');
+  if (btnCopy) {
+    btnCopy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(currentInput);
+        btnCopy.innerHTML = '<i class="ph-fill ph-check" style="color: var(--green); font-size: 1.1rem;"></i>';
+        setTimeout(() => {
+          btnCopy.innerHTML = '<i class="ph ph-copy" style="font-size: 1.1rem;"></i>';
+        }, 1500);
+      } catch (err) {
+        console.error('Copy failed', err);
+      }
+    };
+  }
+
+  // Keyboard and Clipboard support
   window.addEventListener('keydown', handleKeyboard);
+  window.addEventListener('paste', handlePaste);
+  window.addEventListener('copy', handleCopy);
 }
 
 export function closeCalculator() {
@@ -151,6 +174,8 @@ export function closeCalculator() {
   const calcCard = document.getElementById('calc-card');
   if (calcCard) calcCard.remove();
   window.removeEventListener('keydown', handleKeyboard);
+  window.removeEventListener('paste', handlePaste);
+  window.removeEventListener('copy', handleCopy);
 }
 
 function makeDraggable(el, handle) {
@@ -414,6 +439,12 @@ function handleKeyboard(e) {
   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable)) {
     return;
   }
+  
+  // Allow Ctrl+C and Ctrl+V to pass through to handleCopy / handlePaste
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'v' || e.key === 'C' || e.key === 'V')) {
+    return;
+  }
+
   let key = e.key;
   if (key === 'Enter') key = '=';
   if (key === 'Escape') {
@@ -421,6 +452,7 @@ function handleKeyboard(e) {
     return;
   }
   if (key === 'Backspace') key = 'back';
+  if (key === 'Delete') key = 'C';
   if (key === 'c' || key === 'C') key = 'C';
   if (key === ',') key = '.';
 
@@ -429,4 +461,41 @@ function handleKeyboard(e) {
     e.preventDefault();
     handleButton(key);
   }
+}
+
+function handlePaste(e) {
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable)) {
+    return;
+  }
+  const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+  if (!pasteData) return;
+  
+  let cleaned = pasteData.replace(/[^0-9.,-]/g, '');
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+  if (lastComma > lastDot) {
+    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+  } else {
+    cleaned = cleaned.replace(/,/g, '');
+  }
+  
+  const num = parseFloat(cleaned);
+  if (!isNaN(num)) {
+    e.preventDefault();
+    currentInput = num.toString();
+    isResultShown = true;
+    updateDisplay();
+  }
+}
+
+function handleCopy(e) {
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable)) {
+    return;
+  }
+  const selection = window.getSelection().toString();
+  if (selection) return; // Allow normal copying if text is selected
+  
+  e.preventDefault();
+  const copyValue = currentInput.includes('.') ? currentInput.replace('.', ',') : currentInput;
+  e.clipboardData.setData('text/plain', copyValue);
 }

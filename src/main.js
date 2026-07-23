@@ -1,6 +1,6 @@
 import { store } from './store.js';
-import { auth, onAuthStateChanged, getRedirectResult } from './firebase-config.js';
-import { renderLogin } from './pages/login.js';
+import { auth, onAuthStateChanged, getRedirectResult, applyActionCode } from './firebase-config.js';
+import { renderLogin, renderEmailVerificationBanner } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
 import { openCalculator } from './components/calculator.js';
 import { openScanReceiptModal } from './components/scanReceipt.js';
@@ -56,6 +56,31 @@ export async function checkAuth() {
 
   console.log('Checking Auth State...');
 
+  // ─── STEP 0: Intercept Firebase Email Action Link (verifyEmail, etc.) ───
+  // Firebase mengirim link dengan format: /?mode=verifyEmail&oobCode=xxx&...
+  // Kita harus handle ini SEBELUM onAuthStateChanged agar tidak redirect ke dashboard.
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get('mode');
+  const oobCode = urlParams.get('oobCode');
+
+  if (mode === 'verifyEmail' && oobCode) {
+    // Tampilkan login view segera agar tidak ada flash
+    loginView.style.display = 'block';
+    appLayout.style.display = 'none';
+
+    try {
+      await applyActionCode(auth, oobCode);
+      // Sukses: tampilkan UI konfirmasi sukses
+      renderLogin('email-verified');
+    } catch (actionErr) {
+      console.warn('applyActionCode gagal:', actionErr.code);
+      // Error: tautan kedaluwarsa / sudah dipakai
+      renderLogin('email-verified-error');
+    }
+    // Hentikan eksekusi lebih lanjut — tidak perlu cek auth state normal
+    return;
+  }
+
   // ─── STEP 1: Selesaikan pending redirect result DULU (mobile Google login) ───
   // Harus di-await SEBELUM onAuthStateChanged di-register.
   // Kalau tidak, onAuthStateChanged bisa fire dengan user=null sebelum Firebase
@@ -83,15 +108,9 @@ export async function checkAuth() {
     console.log('Auth State Changed:', user ? 'Logged In' : 'Logged Out');
     
     if (user) {
-      // Periksa apakah email belum diverifikasi (hanya untuk email/password login)
+      // Periksa apakah provider email/password dan belum diverifikasi
       const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
-      if (isEmailProvider && !user.emailVerified) {
-        console.log('Email belum diverifikasi. Membatalkan akses...');
-        loginView.style.display = 'block';
-        appLayout.style.display = 'none';
-        renderLogin('verification-pending', user.email);
-        return;
-      }
+      const needsVerification = isEmailProvider && !user.emailVerified;
 
       const token = await user.getIdToken();
       
@@ -99,6 +118,7 @@ export async function checkAuth() {
       if (store.user && store.user.uid === user.uid) {
         console.log('User already exists, checking for profile updates...');
         store.user.token = token;
+        store.user.emailVerified = user.emailVerified;
 
         // Kami hapus auto-sync PP dan nama dari Google agar PP yang sudah diubah di web 
         // tidak tertimpa/balik lagi ke foto profil Google saat login ulang.
@@ -116,6 +136,7 @@ export async function checkAuth() {
           email: user.email,
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
           token: token,
+          emailVerified: user.emailVerified,
           provider: user.providerData[0]?.providerId || 'unknown'
         };
         // Hindari mengirim data profil awal sebagai parameter update (extraData)
@@ -129,6 +150,14 @@ export async function checkAuth() {
       // Delay sedikit agar elemen halaman baru (misal: #profile-preview) sudah dirender
       setTimeout(() => {
         store.updateUI();
+        // Tampilkan banner verifikasi jika email belum diverifikasi
+        if (needsVerification) {
+          renderEmailVerificationBanner(user);
+        } else {
+          // Pastikan banner disembunyikan jika sudah verified
+          const banner = document.getElementById('email-verify-banner');
+          if (banner) banner.style.display = 'none';
+        }
       }, 300);
 
       loginView.style.display = 'none';
