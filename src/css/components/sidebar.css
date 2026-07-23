@@ -108,9 +108,13 @@
 }
 
 .nav-item.active {
-  background-color: var(--primary-light);
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.08) 45%, rgba(14, 165, 233, 0) 85%);
   color: var(--primary);
   position: relative;
+}
+
+[data-theme="dark"] .nav-item.active {
+  background: linear-gradient(90deg, rgba(157, 78, 221, 0.45) 0%, rgba(157, 78, 221, 0.15) 45%, rgba(157, 78, 221, 0) 85%);
 }
 
 .nav-item.active::before {
@@ -199,8 +203,21 @@
   border-radius: 12px;
 }
 
-/* Tooltip for Collapsed Sidebar (Optional but Pro) */
+/* Tooltip & Active Style for Collapsed Sidebar */
 .sidebar-collapsed .nav-item {
   justify-content: center;
+}
+
+.sidebar-collapsed .nav-item.active {
+  background: rgba(14, 165, 233, 0.15);
+  border-radius: var(--radius-md);
+}
+
+[data-theme="dark"] .sidebar-collapsed .nav-item.active {
+  background: rgba(157, 78, 221, 0.25);
+}
+
+.sidebar-collapsed .nav-item.active::before {
+  left: -16px;
 }
 

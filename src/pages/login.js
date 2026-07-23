@@ -4,295 +4,209 @@ import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert, showConfirm } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
 
-export function renderLogin(mode = 'login', pendingEmail = '') {
+export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   const container = document.getElementById('login-view');
   const isReg = mode === 'register';
   const isForgot = mode === 'forgot-password';
   const isVerified = mode === 'email-verified';
   const isVerifiedError = mode === 'email-verified-error';
+  const isResetConfirm = mode === 'reset-password-confirm';
 
   container.innerHTML = `
     <div class="login-container" id="login-parallax-container">
       
-      <!-- BACKGROUND GLOWS (layer-back) -->
-      <div class="parallax-layer layer-back glow-layer-1" data-depth="0.10" style="left: -10%; top: -10%; width: 600px; height: 600px; border-radius: 50%; filter: blur(50px);"></div>
-      <div class="parallax-layer layer-back glow-layer-2" data-depth="0.10" style="right: -10%; bottom: -10%; width: 600px; height: 600px; border-radius: 50%; filter: blur(50px);"></div>
+      <!-- BACKGROUND GLOWS -->
+      <div class="glow-layer-1" style="position: absolute; left: -10%; top: -10%; width: 650px; height: 650px; border-radius: 50%; filter: blur(70px); pointer-events: none;"></div>
+      <div class="glow-layer-2" style="position: absolute; right: -10%; bottom: -10%; width: 650px; height: 650px; border-radius: 50%; filter: blur(70px); pointer-events: none;"></div>
 
       <!-- DYNAMIC DRIFTING CLOUDS CONTAINER -->
       <div id="login-cloud-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;"></div>
 
-      <!-- MIDGROUND DECORATIONS (layer-mid) -->
-      <!-- Floating Gold Coin (Left-Bottom) -->
-      <div class="parallax-layer layer-mid" data-depth="0.25" style="left: 22%; bottom: 15%;">
-        <div class="mascot-interactive floating-element" id="item-coin-small">
-          <div class="mascot-bubble" id="bubble-coin-small">Asetmu aman terjaga!</div>
-          <svg viewBox="0 0 100 100" width="85" height="85" style="filter: drop-shadow(0 12px 24px rgba(245, 158, 11, 0.3));">
-            <!-- Safe Outer Body -->
-            <rect x="15" y="15" width="70" height="70" rx="10" fill="#b45309" />
-            <!-- Safe Door Panel -->
-            <rect x="19" y="19" width="62" height="62" rx="8" fill="url(#goldGrad)" />
-            <rect x="24" y="24" width="52" height="52" rx="4" fill="none" stroke="#d97706" stroke-width="2" />
-            
-            <!-- Big Center Vault Handle Wheel -->
-            <circle cx="50" cy="50" r="18" fill="#fff" opacity="0.9" />
-            <!-- Cross spokes of the wheel -->
-            <line x1="50" y1="35" x2="50" y2="65" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
-            <line x1="35" y1="50" x2="65" y2="50" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
-            <!-- Hub of the wheel -->
-            <circle cx="50" cy="50" r="6" fill="#b45309" />
-            
-            <!-- Dial markings surrounding -->
-            <circle cx="50" cy="50" r="23" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.7" />
-            
-            <!-- Corner details -->
-            <circle cx="24" cy="24" r="2" fill="#fff" opacity="0.7" />
-            <circle cx="76" cy="24" r="2" fill="#fff" opacity="0.7" />
-            <circle cx="24" cy="76" r="2" fill="#fff" opacity="0.7" />
-            <circle cx="76" cy="76" r="2" fill="#fff" opacity="0.7" />
-          </svg>
-        </div>
-      </div>
-
-      <!-- Floating Wallet (Right-Top) -->
-      <div class="parallax-layer layer-mid" data-depth="0.30" style="right: 20%; top: 18%;">
-        <div class="mascot-interactive floating-element-reverse" id="item-wallet">
-          <div class="mascot-bubble" id="bubble-wallet">Simpan uangmu aman!</div>
-          <svg viewBox="0 0 100 100" width="80" height="80" style="filter: drop-shadow(0 8px 16px rgba(124, 58, 237, 0.25));">
-            <rect x="15" y="25" width="70" height="50" rx="12" fill="url(#purpleGrad)" />
-            <path d="M55,35 H85 V65 H55 Z" fill="#6d28d9" />
-            <circle cx="70" cy="50" r="6" fill="#fbbf24" />
-          </svg>
-        </div>
-      </div>
-
-      <!-- FOREGROUND MASCOTS (layer-front) -->
-      <!-- Mascot 1: Cute Flying Piggy Bank (Left-Mid) -->
-      <div class="parallax-layer layer-front" data-depth="0.45" style="left: 10%; top: 22%;">
-        <div class="mascot-interactive floating-element" id="mascot-pig">
-          <div class="mascot-bubble" id="bubble-pig">Oink oink! Klik aku!</div>
-          <svg viewBox="0 0 160 160" width="145" height="145" style="filter: drop-shadow(0 12px 24px rgba(244, 63, 94, 0.35));">
-            <!-- Small Angel Wings (Flapping Anim) -->
-            <path class="wing-left-anim" d="M35,65 Q10,40 30,30 Q45,35 40,60" fill="#fff" opacity="0.9" style="transform-origin: 40px 60px;" />
-            <path class="wing-right-anim" d="M125,65 Q150,40 130,30 Q115,35 120,60" fill="#fff" opacity="0.9" style="transform-origin: 120px 60px;" />
-            
-            <!-- Chubby Piggy Body (Pink Gradient) -->
-            <ellipse cx="80" cy="85" rx="55" ry="45" fill="url(#pigGrad)" />
-            
-            <!-- Curly Tail -->
-            <path d="M25,85 Q10,75 15,65 Q22,65 18,75" fill="none" stroke="#f472b6" stroke-width="4" stroke-linecap="round" />
-            
-            <!-- Pointy Pig Ears -->
-            <polygon points="45,50 35,25 55,35" fill="#f472b6" />
-            <polygon points="43,48 37,28 51,36" fill="#f43f5e" />
-            <polygon points="115,50 125,25 105,35" fill="#f472b6" />
-            <polygon points="117,48 123,28 109,36" fill="#f43f5e" />
-            
-            <!-- Snout -->
-            <ellipse cx="80" cy="98" rx="16" ry="11" fill="#f472b6" stroke="#f43f5e" stroke-width="1.5" />
-            <!-- Nostrils -->
-            <circle cx="74" cy="98" r="3" fill="#be185d" />
-            <circle cx="86" cy="98" r="3" fill="#be185d" />
-            
-            <!-- Eyes (With Classes for Cursor Gaze Tracking) -->
-            <circle cx="58" cy="74" r="5" fill="#1e1b4b" class="pig-eye" />
-            <circle cx="102" cy="74" r="5" fill="#1e1b4b" class="pig-eye" />
-            <circle cx="56" cy="72" r="2" fill="#fff" class="pig-eye-pupil" />
-            <circle cx="100" cy="72" r="2" fill="#fff" class="pig-eye-pupil" />
-            
-            <!-- Blush Cheeks -->
-            <circle cx="48" cy="84" r="7" fill="#f43f5e" opacity="0.35" />
-            <circle cx="112" cy="84" r="7" fill="#f43f5e" opacity="0.35" />
-            
-            <!-- Coin Slot on top -->
-            <rect x="72" y="44" width="16" height="5" rx="2" fill="#be185d" />
-          </svg>
-        </div>
-      </div>
-
-      <!-- Mascot 2: Cute Purple Robot (Right-Bottom) -->
-      <div class="parallax-layer layer-front" data-depth="0.55" style="right: 10%; bottom: 15%;">
-        <div class="mascot-interactive floating-element-reverse" id="mascot-robot">
-          <div class="mascot-bubble" id="bubble-robot">Halo manusia cerdas!</div>
-          <svg viewBox="0 0 140 140" width="130" height="130" style="filter: drop-shadow(0 12px 24px rgba(124, 58, 237, 0.35));">
-            <rect x="25" y="25" width="90" height="90" rx="30" fill="url(#mascotRobot)" />
-            <rect x="35" y="40" width="70" height="45" rx="15" fill="#1e1b4b" />
-            <!-- Eyes (With Classes for Cursor Gaze Tracking) -->
-            <ellipse cx="53" cy="62" rx="4" ry="7" fill="#60a5fa" class="robot-eye" />
-            <ellipse cx="87" cy="62" rx="4" ry="7" fill="#60a5fa" class="robot-eye" />
-            <path d="M62,72 Q70,78 78,72" fill="none" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" />
-            <line x1="70" y1="25" x2="70" y2="12" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
-            <circle cx="70" cy="10" r="6" fill="#fbbf24" />
-          </svg>
-        </div>
-      </div>
-
-      <!-- SVGs GRADIENTS FOR MASCOTS -->
-      <svg width="0" height="0" style="position: absolute;">
-        <defs>
-          <radialGradient id="pigGrad" cx="50%" cy="40%" r="50%">
-            <stop offset="0%" stop-color="#fbcfe8" />
-            <stop offset="100%" stop-color="#ec4899" />
-          </radialGradient>
-          <linearGradient id="mascotRobot" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#a78bfa" />
-            <stop offset="100%" stop-color="#7c3aed" />
-          </linearGradient>
-          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#fcd34d" />
-            <stop offset="100%" stop-color="#f59e0b" />
-          </linearGradient>
-          <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#c084fc" />
-            <stop offset="100%" stop-color="#818cf8" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      <!-- MAIN GLASSMORPHISM CARD -->
-      <div class="login-card">
-        <div class="logo-icon" style="margin: 0 auto 1.5rem; text-align: center; width: 140px;">
-          <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
-          <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
-        </div>
+      <!-- MAIN SPLIT LAYOUT CONTAINER -->
+      <div class="login-layout">
         
-        ${isVerified ? `
-          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 0.5rem 0;">
-            <!-- Success Icon Animated -->
-            <div class="email-verified-icon-wrapper">
-              <div class="email-verified-icon-ring"></div>
-              <div class="email-verified-icon-ring email-verified-icon-ring-2"></div>
-              <div class="email-verified-checkmark">
-                <svg viewBox="0 0 52 52" width="40" height="40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="14 27 22 35 38 19"/>
-                </svg>
-              </div>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <h2 style="margin: 0; font-size: 1.4rem;">Email Terverifikasi! 🎉</h2>
-              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0;">
-                Akunmu sudah aktif dan siap digunakan.<br>
-                <strong style="color: var(--text-main);">Selamat bergabung di MyFinance!</strong>
-              </p>
+        <!-- FORM CARD SECTION (LEFT SIDE) -->
+        <div class="login-card-wrapper">
+          <div class="login-card">
+            <!-- BRAND LOGO HEADER -->
+            <div class="logo-icon" style="margin: 0 auto 1.25rem; text-align: center; width: 140px;">
+              <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
+              <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
             </div>
 
-            <div style="background: var(--bg-color); border: 1.5px dashed var(--border); border-radius: var(--radius-md); padding: 14px 18px; width: 100%; text-align: left; display: flex; align-items: flex-start; gap: 10px;">
-              <i class="ph ph-sparkle" style="color: var(--primary); font-size: 1.2rem; margin-top: 1px; flex-shrink: 0;"></i>
-              <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.7;">
-                Sekarang kamu bisa <strong style="color: var(--text-main);">login</strong> dan mulai mencatat keuangan, membuat anggaran, serta mengelola tabunganmu.
-              </p>
-            </div>
+            ${isVerified ? `
+              <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 0.5rem 0;">
+                <!-- Success Icon Animated -->
+                <div class="email-verified-icon-wrapper">
+                  <div class="email-verified-icon-ring"></div>
+                  <div class="email-verified-icon-ring email-verified-icon-ring-2"></div>
+                  <div class="email-verified-checkmark">
+                    <svg viewBox="0 0 52 52" width="40" height="40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="14 27 22 35 38 19"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <h2 style="margin: 0; font-size: 1.4rem; text-align: center;">Email Terverifikasi!</h2>
+                  <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0; text-align: center;">
+                    Akunmu sudah aktif dan siap digunakan.<br>
+                    <strong style="color: var(--text-main);">Selamat bergabung di MyFinance!</strong>
+                  </p>
+                </div>
 
-            <button id="btn-go-to-login" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              <i class="ph ph-sign-in"></i>
-              Masuk Sekarang
-            </button>
-          </div>
-        ` : isVerifiedError ? `
-          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 0.5rem 0;">
-            <!-- Error Icon -->
-            <div style="background: rgba(239, 68, 68, 0.12); color: #ef4444; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
-              <i class="ph ph-warning-circle"></i>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <h2 style="margin: 0; font-size: 1.3rem;">Tautan Tidak Valid</h2>
-              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0;">
-                Tautan verifikasi sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.
-              </p>
-            </div>
+                <div style="background: var(--bg-color); border: 1.5px dashed var(--border); border-radius: var(--radius-md); padding: 14px 18px; width: 100%; text-align: left; display: flex; align-items: flex-start; gap: 10px;">
+                  <i class="ph ph-sparkle" style="color: var(--primary); font-size: 1.2rem; margin-top: 1px; flex-shrink: 0;"></i>
+                  <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.7;">
+                    Sekarang kamu bisa <strong style="color: var(--text-main);">login</strong> dan mulai mencatat keuangan, membuat anggaran, serta mengelola tabunganmu.
+                  </p>
+                </div>
 
-            <button id="btn-request-new-link" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-              Minta Tautan Baru
-            </button>
-            <a href="javascript:void(0)" id="btn-back-to-login-from-error" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem;">
-              Kembali ke Login
-            </a>
-          </div>
-        ` : isForgot ? `
-          <h2 style="text-align: center; margin-bottom: 0.5rem;">Reset Kata Sandi</h2>
-          <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem; font-size: 0.85rem; line-height: 1.5;">
-            Masukkan email Anda di bawah untuk menerima tautan reset kata sandi.
-          </p>
-          
-          <form id="forgot-form">
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-              <label>Email</label>
-              <input type="email" id="forgot-email" class="form-control" placeholder="Masukkan email terdaftar" required style="height: 48px; border-radius: 12px;">
-            </div>
-            <button type="submit" class="btn btn-primary btn-full mt-md" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-              Kirim Tautan Reset
-            </button>
-          </form>
-
-          <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-            <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--primary); font-weight: 700; text-decoration: none;">
-              Kembali ke Login
-            </a>
-          </p>
-        ` : `
-          <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang'}</h2>
-          <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">
-            ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas & aman.'}
-          </p>
-          
-          <form id="auth-form">
-            ${isReg ? `
-              <div class="form-group">
-                <label>Nama Lengkap</label>
-                <input type="text" id="reg-name" class="form-control" placeholder="Masukkan nama lengkap" required>
-              </div>
-            ` : ''}
-            <div class="form-group">
-              <label>Username / Email</label>
-              <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
-            </div>
-            <div class="form-group">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <label>Password</label>
-                ${!isReg ? `<a href="javascript:void(0)" id="btn-forgot-password" style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-bottom: 0.25rem;">Lupa Password?</a>` : ''}
-              </div>
-              <div style="position: relative; width: 100%;">
-                <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right: 45px;">
-                <button type="button" id="btn-toggle-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
-                  <i class="ph ph-eye"></i>
+                <button id="btn-go-to-login" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                  <i class="ph ph-sign-in"></i>
+                  Masuk Sekarang
                 </button>
               </div>
-            </div>
-            ${isReg ? `
-              <div class="form-group">
-                <label>Konfirmasi Password</label>
-                <div style="position: relative; width: 100%;">
-                  <input type="password" id="confirm-password" class="form-control" placeholder="Ulangi kata sandi" required style="padding-right: 45px;">
-                  <button type="button" id="btn-toggle-confirm-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
-                    <i class="ph ph-eye"></i>
-                  </button>
+            ` : isVerifiedError ? `
+              <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 0.5rem 0;">
+                <!-- Error Icon -->
+                <div style="background: rgba(239, 68, 68, 0.12); color: #ef4444; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
+                  <i class="ph ph-warning-circle"></i>
                 </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <h2 style="margin: 0; font-size: 1.3rem; text-align: center;">Tautan Tidak Valid</h2>
+                  <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0; text-align: center;">
+                    Tautan verifikasi sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.
+                  </p>
+                </div>
+
+                <button id="btn-request-new-link" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
+                  Minta Tautan Baru
+                </button>
+                <a href="javascript:void(0)" id="btn-back-to-login-from-error" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem;">
+                  Kembali ke Login
+                </a>
               </div>
-            ` : ''}
-            <button type="submit" class="btn btn-primary btn-full mt-md">
-              ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
-            </button>
-          </form>
+            ` : isForgot ? `
+              <h2 style="text-align: center; margin-bottom: 0.5rem;">Reset Kata Sandi</h2>
+              <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.85rem; line-height: 1.5;">
+                Masukkan email Anda di bawah untuk menerima tautan reset kata sandi.
+              </p>
+              
+              <form id="forgot-form">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <label>Email</label>
+                  <input type="email" id="forgot-email" class="form-control" placeholder="Masukkan email terdaftar" required style="height: 48px; border-radius: 12px;">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full mt-md" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
+                  Kirim Tautan Reset
+                </button>
+              </form>
 
-          <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-            ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
-            <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
-              ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
-            </a>
-          </p>
+              <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--primary); font-weight: 700; text-decoration: none;">
+                  Kembali ke Login
+                </a>
+              </p>
+            ` : isResetConfirm ? `
+              <h2 style="text-align: center; margin-bottom: 0.5rem;">Buat Kata Sandi Baru</h2>
+              <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.75rem; font-size: 0.88rem;">
+                Silakan masukkan kata sandi baru untuk akun Anda.
+              </p>
+              
+              <form id="confirm-reset-form">
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label>Kata Sandi Baru</label>
+                  <div style="position: relative;">
+                    <input type="password" id="reset-new-password" class="form-control" placeholder="Minimal 6 karakter" required style="height: 48px; border-radius: 12px;">
+                    <i class="ph ph-eye toggle-password" id="toggle-reset-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted);"></i>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
+                  Simpan Kata Sandi Baru
+                </button>
+              </form>
 
-          <div style="margin: 2rem 0; display: flex; align-items: center; gap: 1rem;">
-            <div style="flex: 1; height: 1px; background: var(--border);"></div>
-            <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
-            <div style="flex: 1; height: 1px; background: var(--border);"></div>
+              <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                <a href="javascript:void(0)" id="btn-back-to-login-from-reset" style="color: var(--primary); font-weight: 700; text-decoration: none;">
+                  Kembali ke Login
+                </a>
+              </p>
+            ` : `
+              <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang!'}</h2>
+              <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.75rem; font-size: 0.88rem;">
+                ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas, instan & aman.'}
+              </p>
+              
+              <form id="auth-form">
+                ${isReg ? `
+                  <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="reg-name" class="form-control" placeholder="Masukkan nama lengkap" required>
+                  </div>
+                ` : ''}
+                <div class="form-group">
+                  <label>Username / Email</label>
+                  <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
+                </div>
+                <div class="form-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label>Password</label>
+                    ${!isReg ? `<a href="javascript:void(0)" id="btn-forgot-password" style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-bottom: 0.25rem;">Lupa Password?</a>` : ''}
+                  </div>
+                  <div style="position: relative; width: 100%;">
+                    <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right: 45px;">
+                    <button type="button" id="btn-toggle-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
+                      <i class="ph ph-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                ${isReg ? `
+                  <div class="form-group">
+                    <label>Konfirmasi Password</label>
+                    <div style="position: relative; width: 100%;">
+                      <input type="password" id="confirm-password" class="form-control" placeholder="Ulangi kata sandi" required style="padding-right: 45px;">
+                      <button type="button" id="btn-toggle-confirm-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
+                        <i class="ph ph-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+                ` : ''}
+                <button type="submit" class="btn btn-primary btn-full mt-md">
+                  ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
+                </button>
+              </form>
+
+              <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
+                <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
+                  ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
+                </a>
+              </p>
+
+              <div style="margin: 1.5rem 0; display: flex; align-items: center; gap: 1rem;">
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+              </div>
+
+              <button id="btn-google-login" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+                <span>Masuk dengan Google</span>
+              </button>
+            `}
           </div>
+        </div>
 
-          <button id="btn-google-login" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px;">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-            <span>Masuk dengan Google</span>
-          </button>
-        `}
+        <!-- HERO ILLUSTRATION SHOWCASE (RIGHT SIDE) -->
+        <div class="login-hero-section">
+          <div class="hero-img-wrapper">
+            <div class="hero-img-backdrop-glow"></div>
+            <img src="/assets/animated-saving.svg" class="hero-animated-svg" alt="Kelola Tabungan MyFinance">
+          </div>
+        </div>
+
       </div>
     </div>
   `;
@@ -347,7 +261,7 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
           if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
 
           hideLoading();
-          showAlert('Tautan Terkirim! 📧', data.message || `Link reset password dikirim ke ${emailInput}. Periksa Inbox/Spam!`, 'success');
+          showAlert('Tautan Terkirim!', data.message || `Link reset password dikirim ke ${emailInput}. Periksa Inbox/Spam!`, 'success');
           renderLogin('login');
         } catch (err) {
           hideLoading();
@@ -359,6 +273,58 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
     const backToLoginBtn = document.getElementById('btn-back-to-login');
     if (backToLoginBtn) {
       backToLoginBtn.onclick = () => {
+        renderLogin('login');
+      };
+    }
+  } else if (isResetConfirm) {
+    const confirmResetForm = document.getElementById('confirm-reset-form');
+    if (confirmResetForm) {
+      confirmResetForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const newPassword = document.getElementById('reset-new-password').value;
+        if (!newPassword || newPassword.length < 6) {
+          showToast('Kata sandi minimal 6 karakter.', 'warning');
+          return;
+        }
+        if (!extraData || !extraData.oobCode) {
+          showToast('Kode reset tidak ditemukan atau tidak valid.', 'error');
+          return;
+        }
+
+        showLoading();
+        try {
+          const { confirmPasswordReset, signOut } = await import('../firebase-config.js');
+          await confirmPasswordReset(auth, extraData.oobCode, newPassword);
+          try { await signOut(auth); } catch (err) {}
+          store.setUser(null);
+          hideLoading();
+          showAlert('Kata Sandi Berhasil Diubah!', 'Kata sandi kamu telah berhasil diperbarui. Silakan masuk kembali menggunakan kata sandi baru.', 'success');
+          renderLogin('login');
+        } catch (err) {
+          hideLoading();
+          console.error('Confirm password reset error:', err);
+          showAlert('Gagal Ubah Kata Sandi', 'Tautan ini sudah kedaluwarsa atau tidak valid. Silakan minta tautan baru.', 'error');
+        }
+      };
+    }
+
+    const toggleResetPass = document.getElementById('toggle-reset-password');
+    if (toggleResetPass) {
+      toggleResetPass.onclick = () => {
+        const input = document.getElementById('reset-new-password');
+        if (input.type === 'password') {
+          input.type = 'text';
+          toggleResetPass.classList.replace('ph-eye', 'ph-eye-slash');
+        } else {
+          input.type = 'password';
+          toggleResetPass.classList.replace('ph-eye-slash', 'ph-eye');
+        }
+      };
+    }
+
+    const backToLoginFromReset = document.getElementById('btn-back-to-login-from-reset');
+    if (backToLoginFromReset) {
+      backToLoginFromReset.onclick = () => {
         renderLogin('login');
       };
     }

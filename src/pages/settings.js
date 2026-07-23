@@ -13,7 +13,6 @@ export function renderSettings() {
       <!-- Header -->
       <div>
         <h2 style="margin: 0 0 4px; font-size: 1.4rem; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
-          <i class="ph-fill ph-gear" style="color: var(--primary);"></i>
           Pengaturan
         </h2>
         <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Kelola preferensi keuangan dan tampilan aplikasi.</p>

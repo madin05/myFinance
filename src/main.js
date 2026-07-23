@@ -56,28 +56,47 @@ export async function checkAuth() {
 
   console.log('Checking Auth State...');
 
-  // ─── STEP 0: Intercept Firebase Email Action Link (verifyEmail, etc.) ───
-  // Firebase mengirim link dengan format: /?mode=verifyEmail&oobCode=xxx&...
-  // Kita harus handle ini SEBELUM onAuthStateChanged agar tidak redirect ke dashboard.
+  // ─── STEP 0: Intercept Firebase Email Action Link (verifyEmail, resetPassword, etc.) ───
   const urlParams = new URLSearchParams(window.location.search);
-  const mode = urlParams.get('mode');
-  const oobCode = urlParams.get('oobCode');
+  const hashParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+  const mode = urlParams.get('mode') || hashParams.get('mode');
+  const oobCode = urlParams.get('oobCode') || hashParams.get('oobCode');
+  const isResetSuccess = urlParams.get('resetSuccess') === 'true' || hashParams.get('resetSuccess') === 'true';
 
+  // 1. Setelah reset password selesai di Firebase, kembalikan ke Halaman Login & Logout user!
+  if (isResetSuccess) {
+    try {
+      await signOut(auth);
+    } catch (e) {}
+    store.setUser(null);
+    loginView.style.display = 'block';
+    appLayout.style.display = 'none';
+    renderLogin('login');
+    const { showAlert } = await import('./components/notifications.js');
+    showAlert('Kata Sandi Berhasil Diubah!', 'Kata sandi akunmu telah diperbarui. Silakan masuk kembali menggunakan kata sandi baru.', 'success');
+    return;
+  }
+
+  // 2. Jika verifikasi email dari link
   if (mode === 'verifyEmail' && oobCode) {
-    // Tampilkan login view segera agar tidak ada flash
     loginView.style.display = 'block';
     appLayout.style.display = 'none';
 
     try {
       await applyActionCode(auth, oobCode);
-      // Sukses: tampilkan UI konfirmasi sukses
       renderLogin('email-verified');
     } catch (actionErr) {
       console.warn('applyActionCode gagal:', actionErr.code);
-      // Error: tautan kedaluwarsa / sudah dipakai
       renderLogin('email-verified-error');
     }
-    // Hentikan eksekusi lebih lanjut — tidak perlu cek auth state normal
+    return;
+  }
+
+  // 3. Jika reset password in-app dari link
+  if (mode === 'resetPassword' && oobCode) {
+    loginView.style.display = 'block';
+    appLayout.style.display = 'none';
+    renderLogin('reset-password-confirm', '', { oobCode });
     return;
   }
 

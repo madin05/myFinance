@@ -173,8 +173,9 @@ exports.sendPasswordResetEmail = async (email) => {
   }
 
   // Generate link reset password via Firebase Admin SDK
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const resetLink = await admin.auth().generatePasswordResetLink(email, {
-    url: process.env.FRONTEND_URL || 'http://localhost:5173',
+    url: `${frontendUrl}/#login?resetSuccess=true`,
   });
 
   const transporter = getTransporter();

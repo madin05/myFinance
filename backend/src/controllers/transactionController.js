@@ -32,6 +32,7 @@ exports.getAllTransactions = async (req, res) => {
     });
     res.json(transactions);
   } catch (error) {
+    console.error('Gagal Ambil Transaksi:', error);
     res.status(500).json({ error: error.message });
   }
 };
