@@ -608,70 +608,7 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
   initMascotInteraction('item-coin-small', 'bubble-coin-small');
   initMascotInteraction('item-wallet', 'bubble-wallet');
 
-  // 3D Parallax & Mascot Gaze Tracking (Desktop Only) with Wide Gliding Range
-  const parallaxContainer = document.getElementById('login-parallax-container');
-  if (parallaxContainer && window.innerWidth > 991) {
-    parallaxContainer.onmousemove = (e) => {
-      const { width, height } = parallaxContainer.getBoundingClientRect();
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-
-      const layers = parallaxContainer.querySelectorAll('.parallax-layer');
-      layers.forEach(layer => {
-        const depth = parseFloat(layer.getAttribute('data-depth'));
-        // Standard Parallax Movement
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const deltaX = mouseX - centerX;
-        const deltaY = mouseY - centerY;
-        const moveX = deltaX * depth * 0.45;
-        const moveY = deltaY * depth * 0.45;
-
-        // 3D Head-Turn Face Tilt Angles
-        const rotateY = (deltaX / width) * 25; // up to 25 deg
-        const rotateX = -(deltaY / height) * 25; // up to -25 deg
-
-        layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      });
-
-      // Mascot Eye Gaze Tracking
-      const trackEyes = (mascotId, eyeClass) => {
-        const mascot = document.getElementById(mascotId);
-        if (!mascot) return;
-        const rect = mascot.getBoundingClientRect();
-        const mascotCenterX = rect.left + rect.width / 2;
-        const mascotCenterY = rect.top + rect.height / 2;
-
-        const dx = mouseX - mascotCenterX;
-        const dy = mouseY - mascotCenterY;
-        const angle = Math.atan2(dy, dx);
-        
-        // Eyes smoothly slide up to 4px inside their sockets toward the cursor
-        const eyeX = Math.cos(angle) * 4;
-        const eyeY = Math.sin(angle) * 4;
-
-        const eyes = mascot.querySelectorAll(eyeClass);
-        eyes.forEach(eye => {
-          eye.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
-        });
-      };
-
-      trackEyes('mascot-pig', '.pig-eye, .pig-eye-pupil');
-      trackEyes('mascot-robot', '.robot-eye');
-    };
-
-    parallaxContainer.onmouseleave = () => {
-      const layers = parallaxContainer.querySelectorAll('.parallax-layer');
-      layers.forEach(layer => {
-        layer.style.transform = 'translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg)';
-      });
-
-      // Reset eyes
-      document.querySelectorAll('.pig-eye, .pig-eye-pupil, .robot-eye').forEach(eye => {
-        eye.style.transform = 'translate(0px, 0px)';
-      });
-    };
-  }
+  // Mouse movement parallax telah dinonaktifkan agar tampilan login tetap statis dan stabil
 
   // Dynamic Cloud Generator (Desktop Only)
   const cloudContainer = document.getElementById('login-cloud-container');
