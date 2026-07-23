@@ -54,6 +54,7 @@ export function initNavigation() {
       if (cb.checked) {
         sidebar.classList.add('mobile-active');
         overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
         // Sync all other checkboxes
         document.querySelectorAll('.sidebar-checkbox').forEach(input => input.checked = true);
       } else {
@@ -217,6 +218,8 @@ export function closeMobileSidebar() {
   
   if (sidebar) sidebar.classList.remove('mobile-active');
   if (overlay) overlay.classList.remove('active');
+  
+  document.body.style.overflow = '';
   
   // Reset all hamburger checkboxes
   document.querySelectorAll('.sidebar-checkbox').forEach(cb => cb.checked = false);

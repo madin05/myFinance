@@ -56,8 +56,11 @@
 }
 
 /* Logic Dual Logo */
-[data-theme="light"] .logo-dark { display: none; }
-[data-theme="dark"] .logo-light { display: none; }
+.logo-dark { display: none !important; }
+.logo-light { display: block !important; }
+
+[data-theme="dark"] .logo-dark { display: block !important; }
+[data-theme="dark"] .logo-light { display: none !important; }
 
 .logo-text {
   display: flex;

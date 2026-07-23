@@ -157,6 +157,8 @@
   .sidebar-overlay.active {
     opacity: 1;
     visibility: visible;
+    touch-action: none;
+    overscroll-behavior: contain;
   }
 
   .bottom-grid {
