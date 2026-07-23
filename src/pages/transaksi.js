@@ -30,7 +30,7 @@ export function renderTransaksi() {
         <h3>Daftar Transaksi</h3>
         <div style="display: flex; gap: 1rem; align-items: center;">
           <div style="position: relative;" id="filter-container">
-            <button class="btn btn-outline filter-btn" id="btn-filter-popover" title="Filter Transaksi">
+            <button class="btn filter-btn" id="btn-filter-popover" title="Filter Transaksi">
               <i class="ph ph-funnel"></i>
             </button>
             
