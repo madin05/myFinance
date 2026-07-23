@@ -8,9 +8,19 @@
   position: fixed;
   height: 100vh;
   z-index: 1100;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease, box-shadow 0.3s ease;
   white-space: nowrap;
   overflow: visible !important;
+}
+
+/* Shadow halus untuk Sidebar pada Light Mode */
+[data-theme="light"] .sidebar,
+:root:not([data-theme="dark"]) .sidebar {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05), 1px 0 6px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .sidebar {
+  box-shadow: none;
 }
 
 .logo-container {
