@@ -1,0 +1,72 @@
+// src/services/transactionService.js
+import { API_URL, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
+
+export const transactionService = {
+  async fetchTransactions(token) {
+    const res = await fetch(`${API_URL}/transactions`, {
+      headers: getAuthHeaders(token, false),
+      credentials: "include",
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  },
+
+  async createTransaction(token, txData) {
+    const res = await fetch(`${API_URL}/transactions`, {
+      method: "POST",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(txData),
+    });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal simpan transaksi"));
+    return await res.json();
+  },
+
+  async updateTransaction(token, id, txData) {
+    const res = await fetch(`${API_URL}/transactions/${id}`, {
+      method: "PUT",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify(txData),
+    });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal update transaksi"));
+    return await res.json();
+  },
+
+  async deleteTransaction(token, id) {
+    const res = await fetch(`${API_URL}/transactions/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(token, false),
+    });
+    if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal hapus transaksi"));
+    return true;
+  },
+
+  async scanReceipt(token, base64, mimeType = "image/jpeg") {
+    let res;
+    try {
+      res = await fetch(`${API_URL}/receipts/scan`, {
+        method: "POST",
+        credentials: "include",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({ image: base64, mimeType }),
+      });
+    } catch {
+      throw new Error("Gagal terhubung ke server. Cek koneksi internet kamu.");
+    }
+
+    let json;
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error("Server merespons tidak valid.");
+    }
+
+    if (!res.ok) {
+      throw new Error(json?.error || `Server error (${res.status})`);
+    }
+    if (!json?.success || !json?.data) {
+      throw new Error("Hasil scan tidak lengkap.");
+    }
+
+    return json.data;
+  },
+};

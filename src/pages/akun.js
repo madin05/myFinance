@@ -15,11 +15,14 @@ import {
   auth,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  sendEmailVerification,
 } from "../firebase-config.js";
 
 export function renderAkun() {
   const container = document.getElementById("page-content");
   const user = store.user;
+  const firebaseUser = auth.currentUser;
+  const isVerified = firebaseUser ? firebaseUser.emailVerified : (user?.emailVerified ?? false);
 
   // Format join date dari data riil
   const joinDate = user.createdAt
@@ -55,20 +58,27 @@ export function renderAkun() {
             <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">${user.email}</p>
             
             <!-- Metadata Informasi Akun -->
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.25rem 0.5rem; margin-bottom: 1.5rem; text-align: left;">
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.25rem 0.5rem; margin-bottom: ${!isVerified ? '1.5rem' : '0'}; text-align: left;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="text-muted text-sm">Join Date</span>
                 <span class="font-bold text-sm" style="color: var(--text-main);">${joinDate}</span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="text-muted text-sm">Status Akun</span>
-                <span class="text-green text-sm font-bold">Aktif</span>
+                <span class="${isVerified ? 'text-green' : 'text-amber'} text-sm font-bold">${isVerified ? 'Aktif' : 'Belum Verifikasi'}</span>
               </div>
             </div>
 
-            <div class="account-badge" style="background: var(--primary-light); color: var(--primary); padding: 6px 16px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: inline-block;">
-              VERIFIED USER
-            </div>
+            ${!isVerified ? `
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem; width: 100%;">
+                <div class="account-badge" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); padding: 6px 16px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="ph-bold ph-warning-circle" style="font-size: 0.9rem;"></i> BELUM VERIFIKASI
+                </div>
+                <button id="btn-resend-verification" class="btn btn-outline btn-sm" style="font-size: 0.78rem; padding: 8px 16px; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; width: 100%; justify-content: center;">
+                  <i class="ph ph-paper-plane-tilt"></i> Kirim Ulang Email Verifikasi
+                </button>
+              </div>
+            ` : ''}
           </div>
         </div>
 
@@ -77,7 +87,7 @@ export function renderAkun() {
           <div class="stat-card" style="padding: 2rem;">
             <h4 style="margin-bottom: 1.5rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
               <i class="ph-fill ph-shield-check" style="color: var(--primary);"></i>
-              Akses
+              Akses Keamanan
             </h4>
             
             <!-- Change Password Link -->
@@ -159,6 +169,36 @@ export function renderAkun() {
     ppModalClose.onclick = () => {
       const modal = document.getElementById("pp-preview-modal");
       if (modal) modal.style.display = "none";
+    };
+  }
+
+  // Kirim Ulang Email Verifikasi Handler
+  const btnResendVerif = document.getElementById("btn-resend-verification");
+  if (btnResendVerif) {
+    btnResendVerif.onclick = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        showToast("Pengguna tidak ditemukan. Silakan login ulang.", "error");
+        return;
+      }
+      showLoading();
+      try {
+        const actionCodeSettings = {
+          url: `${window.location.origin}/#login?verified=true`,
+          handleCodeInApp: true
+        };
+        await sendEmailVerification(currentUser, actionCodeSettings);
+        hideLoading();
+        showAlert("Email Verifikasi Terkirim", `Tautan verifikasi telah dikirim ke email Anda (${currentUser.email}). Silakan periksa inbox atau folder spam Anda.`, "success");
+      } catch (err) {
+        hideLoading();
+        console.error("Gagal mengirim email verifikasi:", err);
+        if (err.code === "auth/too-many-requests") {
+          showToast("Permintaan terlalu sering. Harap tunggu beberapa saat.", "warning");
+        } else {
+          showToast("Gagal mengirim email verifikasi: " + err.message, "error");
+        }
+      }
     };
   }
 

@@ -3,37 +3,97 @@ import { showLoading, hideLoading, getFinancialRange } from "../utils.js";
 import { exportService } from "../services/exportService.js";
 import { showToast } from "../components/notifications.js";
 
+// Constants & Shared Formatters
+const CATEGORY_COLORS = [
+  "#6366f1",
+  "#ec4899",
+  "#8b5cf6",
+  "#06b6d4",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+];
+
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+// Module State
 let currentReportDate = new Date();
 let filterPreset = "bulan"; // 'minggu', 'bulan', '3bulan', 'tahun'
 let selectedFormat = "pdf"; // 'pdf', 'excel'
+let activeClickListener = null;
+
+/**
+ * Calculates date bounds based on preset filter and financial start day
+ */
+function calculateDateRange(preset, baseDate, startDay = 1) {
+  let startDate, endDate;
+  const now = new Date();
+
+  switch (preset) {
+    case "minggu": {
+      startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    }
+    case "bulan": {
+      const range = getFinancialRange(baseDate, startDay);
+      startDate = range.start;
+      endDate = range.end;
+      break;
+    }
+    case "3bulan": {
+      endDate = new Date();
+      startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 3);
+      break;
+    }
+    case "tahun": {
+      startDate = new Date(now.getFullYear(), 0, 1);
+      endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+      break;
+    }
+    default: {
+      const range = getFinancialRange(baseDate, startDay);
+      startDate = range.start;
+      endDate = range.end;
+    }
+  }
+
+  return { startDate, endDate };
+}
+
+/**
+ * Helper to render empty illustration state for charts
+ */
+function renderEmptyChartState(message) {
+  return `
+    <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <style>
+        [data-theme="light"] .report-illustration-dark { display: none !important; }
+        [data-theme="dark"] .report-illustration-light { display: none !important; }
+      </style>
+      <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 120px; height: 120px;" />
+      <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 120px; height: 120px;" />
+      <p class="text-muted text-xs" style="margin-top: 0.5rem; font-size: 0.8rem;">${message}</p>
+    </div>
+  `;
+}
 
 export function renderLaporan() {
   const container = document.getElementById("page-content");
+  if (!container) return;
+
   const startDay = store.user?.financialStartDay || 1;
+  const { startDate, endDate } = calculateDateRange(filterPreset, currentReportDate, startDay);
 
-  let startDate, endDate;
-
-  if (filterPreset === "minggu") {
-    const now = new Date();
-    startDate = new Date(now.setDate(now.getDate() - now.getDay()));
-    startDate.setHours(0, 0, 0, 0);
-    endDate = new Date();
-    endDate.setHours(23, 59, 59, 999);
-  } else if (filterPreset === "bulan") {
-    const range = getFinancialRange(currentReportDate, startDay);
-    startDate = range.start;
-    endDate = range.end;
-  } else if (filterPreset === "3bulan") {
-    endDate = new Date();
-    startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 3);
-  } else if (filterPreset === "tahun") {
-    const now = new Date();
-    startDate = new Date(now.getFullYear(), 0, 1);
-    endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
-  }
-
-  // Filter transactions
+  // Filter transactions within selected range
   const filteredTransactions = store.transactions.filter((tx) => {
     const d = new Date(tx.tanggal);
     return d >= startDate && d <= endDate;
@@ -44,7 +104,7 @@ export function renderLaporan() {
   const categoryTotals = {};
 
   filteredTransactions.forEach((tx) => {
-    const amount = Math.abs(tx.harga);
+    const amount = Math.abs(tx.harga || 0);
     if (tx.type === "income") {
       totalIncome += amount;
     } else {
@@ -54,7 +114,7 @@ export function renderLaporan() {
   });
 
   const sortedCategories = Object.entries(categoryTotals).sort(
-    (a, b) => b[1] - a[1],
+    (a, b) => b[1] - a[1]
   );
   const maxVal = sortedCategories[0]?.[1] || 1;
 
@@ -62,16 +122,16 @@ export function renderLaporan() {
     .map(([name, total]) => {
       const percent = (total / maxVal) * 100;
       return `
-      <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-          <span class="font-bold text-sm">${name}</span>
-          <span class="text-sm">${formatRupiah(total)}</span>
+        <div style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span class="font-bold text-sm">${name}</span>
+            <span class="text-sm">${formatRupiah(total)}</span>
+          </div>
+          <div class="progress-bar-container" style="height: 10px; background: var(--bg-color); border-radius: 10px; overflow: hidden;">
+            <div class="progress-bar" style="width: ${percent}%; height: 100%; background: var(--primary); transition: width 0.5s ease;"></div>
+          </div>
         </div>
-        <div class="progress-bar-container" style="height: 10px; background: var(--bg-color); border-radius: 10px; overflow: hidden;">
-          <div class="progress-bar" style="width: ${percent}%; height: 100%; background: var(--primary); transition: width 0.5s ease;"></div>
-        </div>
-      </div>
-    `;
+      `;
     })
     .join("");
 
@@ -135,20 +195,8 @@ export function renderLaporan() {
         <div style="height: 250px; position: relative;">
           ${
             sortedCategories.length > 0
-              ? `
-            <canvas id="categoryChart"></canvas>
-          `
-              : `
-            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <style>
-                [data-theme="light"] .report-illustration-dark { display: none !important; }
-                [data-theme="dark"] .report-illustration-light { display: none !important; }
-              </style>
-              <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 120px; height: 120px;" />
-              <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 120px; height: 120px;" />
-              <p class="text-muted text-xs" style="margin-top: 0.5rem; font-size: 0.8rem;">Belum ada pengeluaran</p>
-            </div>
-          `
+              ? `<canvas id="categoryChart"></canvas>`
+              : renderEmptyChartState("Belum ada pengeluaran")
           }
         </div>
       </div>
@@ -159,20 +207,8 @@ export function renderLaporan() {
         <div style="height: 250px; position: relative;">
           ${
             filteredTransactions.length > 0
-              ? `
-            <canvas id="cashflowChart"></canvas>
-          `
-              : `
-            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <style>
-                [data-theme="light"] .report-illustration-dark { display: none !important; }
-                [data-theme="dark"] .report-illustration-light { display: none !important; }
-              </style>
-              <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 120px; height: 120px;" />
-              <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 120px; height: 120px;" />
-              <p class="text-muted text-xs" style="margin-top: 0.5rem; font-size: 0.8rem;">Belum ada data transaksi</p>
-            </div>
-          `
+              ? `<canvas id="cashflowChart"></canvas>`
+              : renderEmptyChartState("Belum ada data transaksi")
           }
         </div>
       </div>
@@ -247,7 +283,7 @@ export function renderLaporan() {
     </style>
   `;
 
-  // Handlers
+  // Attach Filter Handlers
   container.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.onclick = () => {
       filterPreset = btn.dataset.preset;
@@ -271,6 +307,7 @@ export function renderLaporan() {
     };
   }
 
+  // Export Action Handler
   const handleExport = async (format) => {
     if (filteredTransactions.length === 0) {
       return showToast("Tidak ada data untuk diekspor.", "warning");
@@ -300,10 +337,10 @@ export function renderLaporan() {
 
       showToast(
         `Laporan ${format.toUpperCase()} berhasil didownload!`,
-        "success",
+        "success"
       );
     } catch (err) {
-      console.error(err);
+      console.error("Export Error:", err);
       showToast("Gagal mengekspor data.", "error");
     } finally {
       hideLoading();
@@ -317,7 +354,6 @@ export function renderLaporan() {
   if (mainDownloadBtn) {
     mainDownloadBtn.onclick = (e) => {
       e.preventDefault();
-      console.log("Downloading as:", selectedFormat);
       handleExport(selectedFormat);
     };
   }
@@ -342,6 +378,8 @@ export function renderLaporan() {
 
   // --- Chart Initialization ---
   const initCharts = () => {
+    if (typeof Chart === "undefined") return;
+
     const isDark =
       document.documentElement.getAttribute("data-theme") === "dark";
     const textColor = isDark ? "#a1a1aa" : "#6b7280";
@@ -349,7 +387,7 @@ export function renderLaporan() {
 
     // 1. Category Doughnut Chart
     const categoryCtx = document.getElementById("categoryChart");
-    if (categoryCtx) {
+    if (categoryCtx && sortedCategories.length > 0) {
       new Chart(categoryCtx, {
         type: "doughnut",
         data: {
@@ -357,15 +395,7 @@ export function renderLaporan() {
           datasets: [
             {
               data: sortedCategories.map((c) => c[1]),
-              backgroundColor: [
-                "#6366f1",
-                "#ec4899",
-                "#8b5cf6",
-                "#06b6d4",
-                "#10b981",
-                "#f59e0b",
-                "#ef4444",
-              ],
+              backgroundColor: CATEGORY_COLORS,
               borderWidth: 0,
               hoverOffset: 20,
             },
@@ -392,7 +422,7 @@ export function renderLaporan() {
 
     // 2. Cashflow Trend Chart (Grouped by Date)
     const cashflowCtx = document.getElementById("cashflowChart");
-    if (cashflowCtx) {
+    if (cashflowCtx && filteredTransactions.length > 0) {
       const dailyData = {};
       filteredTransactions.forEach((tx) => {
         const dateStr = new Date(tx.tanggal).toLocaleDateString("id-ID", {
@@ -400,16 +430,17 @@ export function renderLaporan() {
           month: "short",
         });
         if (!dailyData[dateStr]) dailyData[dateStr] = { income: 0, expense: 0 };
-        if (tx.type === "income")
-          dailyData[dateStr].income += Math.abs(tx.harga);
-        else dailyData[dateStr].expense += Math.abs(tx.harga);
+        if (tx.type === "income") {
+          dailyData[dateStr].income += Math.abs(tx.harga || 0);
+        } else {
+          dailyData[dateStr].expense += Math.abs(tx.harga || 0);
+        }
       });
 
       const labels = Object.keys(dailyData);
       const incomeData = labels.map((l) => dailyData[l].income);
       const expenseData = labels.map((l) => dailyData[l].expense);
 
-      // Plugin custom: garis vertikal crosshair saat hover (kayak AI Studio)
       const crosshairPlugin = {
         id: "cashflowCrosshair",
         afterDraw(chart) {
@@ -469,7 +500,6 @@ export function renderLaporan() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          // Hover mode: aktif saat mouse bergerak, tidak perlu klik
           interaction: {
             mode: "index",
             intersect: false,
@@ -480,7 +510,6 @@ export function renderLaporan() {
           },
           onHover: (event, elements, chart) => {
             if (elements && elements.length > 0) {
-              // Simpan posisi X crosshair
               chart._crosshairX = elements[0].element.x;
             } else {
               chart._crosshairX = null;
@@ -501,29 +530,24 @@ export function renderLaporan() {
                 useBorderRadius: true,
                 borderRadius: 6,
                 padding: 16,
-                // Override generateLabels:
-                // - hapus line-through bawaan Chart.js
-                // - toggle: icon filled saat dataset aktif, outline saat dataset disembunyikan
                 generateLabels(chart) {
                   const defaults =
                     Chart.defaults.plugins.legend.labels.generateLabels(chart);
                   defaults.forEach((label) => {
                     const dataset = chart.data.datasets[label.datasetIndex];
                     const isHidden = chart.getDatasetMeta(
-                      label.datasetIndex,
+                      label.datasetIndex
                     ).hidden;
 
                     label.fontStyle = "normal";
                     label.textDecoration = "none";
-                    label.hidden = false; // jangan sembunyikan label di legend-nya sendiri
+                    label.hidden = false;
 
                     if (isHidden) {
-                      // Dataset disembunyikan → icon outline (transparan)
                       label.fillStyle = "transparent";
                       label.strokeStyle = dataset.borderColor;
                       label.lineWidth = 2;
                     } else {
-                      // Dataset aktif/visible → icon solid fill
                       label.fillStyle = dataset.borderColor;
                       label.strokeStyle = dataset.borderColor;
                       label.lineWidth = 0;
@@ -537,7 +561,6 @@ export function renderLaporan() {
               enabled: true,
               mode: "index",
               intersect: false,
-              // Styling premium glassmorphism
               backgroundColor: isDark
                 ? "rgba(20, 18, 30, 0.92)"
                 : "rgba(255, 255, 255, 0.96)",
@@ -570,16 +593,9 @@ export function renderLaporan() {
                 },
                 label(context) {
                   const val = context.parsed.y;
-                  const formatted = new Intl.NumberFormat("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  }).format(val);
-                  return `  ${context.dataset.label}: ${formatted}`;
+                  return `  ${context.dataset.label}: ${currencyFormatter.format(val)}`;
                 },
                 afterBody(contexts) {
-                  // Hitung selisih net di bawah tooltip
                   const income =
                     contexts.find((c) => c.dataset.label === "Pemasukan")
                       ?.parsed.y || 0;
@@ -588,13 +604,7 @@ export function renderLaporan() {
                       ?.parsed.y || 0;
                   const net = income - expense;
                   const sign = net >= 0 ? "+" : "";
-                  const formatted = new Intl.NumberFormat("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  }).format(net);
-                  return [``, `  Net: ${sign}${formatted}`];
+                  return [``, `  Net: ${sign}${currencyFormatter.format(net)}`];
                 },
               },
             },
@@ -617,15 +627,14 @@ export function renderLaporan() {
                   val >= 1000000
                     ? (val / 1000000).toFixed(1) + "M"
                     : val >= 1000
-                      ? val / 1000 + "k"
-                      : val,
+                    ? val / 1000 + "k"
+                    : val,
               },
             },
           },
         },
       });
 
-      // Hapus crosshair saat mouse keluar dari canvas
       cashflowCtx.addEventListener("mouseleave", () => {
         cashflowChart._crosshairX = null;
         cashflowChart.draw();
@@ -635,8 +644,12 @@ export function renderLaporan() {
 
   initCharts();
 
-  // Robust click outside handler
-  const handleOutsideClick = (e) => {
+  // Outside click listener setup
+  if (activeClickListener) {
+    document.removeEventListener("click", activeClickListener);
+  }
+
+  activeClickListener = (e) => {
     const group = document.querySelector(".download-group");
     const menu = document.getElementById("export-menu");
     if (
@@ -649,7 +662,6 @@ export function renderLaporan() {
     }
   };
 
-  // Clean up old listeners and add new one
-  document.removeEventListener("click", handleOutsideClick);
-  document.addEventListener("click", handleOutsideClick);
+  document.addEventListener("click", activeClickListener);
 }
+

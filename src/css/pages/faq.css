@@ -172,7 +172,7 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  background: var(--bg-color);
+  background: transparent;
 }
 
 .faq-item.open .faq-item-answer {

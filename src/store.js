@@ -1,20 +1,61 @@
 // src/store.js
-// src/store.js
-// Auto-detect API URL: Gunakan localhost jika sedang development, gunakan env VITE_API_URL jika di production
-const isLocalhost =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_URL = isLocalhost
-  ? "http://localhost:5000/api"
-  : "/api";
+import { userService } from "./services/userService.js";
+import { transactionService } from "./services/transactionService.js";
+import { savingsService } from "./services/savingsService.js";
+import { accountService } from "./services/accountService.js";
+import { budgetService } from "./services/budgetService.js";
+
+// --- Helper Utilities ---
+
+function getInitialStorage(key, fallback = null) {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : fallback;
+  } catch (e) {
+    console.warn(`[Store] Gagal membaca localStorage key "${key}":`, e);
+    return fallback;
+  }
+}
+
+function generateAvatarUrl(name = "User") {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=7C3AED&color=fff&bold=true`;
+}
+
+function _mapSavingData(s) {
+  if (!s) return null;
+  return {
+    id: s.id,
+    name: s.name,
+    target: s.targetAmount !== undefined ? s.targetAmount : s.target || 0,
+    current: s.currentAmount !== undefined ? s.currentAmount : s.current || 0,
+    icon: s.icon,
+    color: s.color,
+    orderIndex: s.orderIndex,
+    isDone: Boolean(s.isDone),
+  };
+}
+
+function _mapAccountData(a) {
+  if (!a) return null;
+  return {
+    id: a.id,
+    name: a.name,
+    type: a.type,
+    balance: Number(a.balance || 0),
+    logo: a.logo || "",
+    orderIndex: a.orderIndex,
+  };
+}
+
+// --- Main Store ---
 
 export const store = {
-  user: JSON.parse(localStorage.getItem("user")) || null,
-  transactions: JSON.parse(localStorage.getItem("transactions")) || [],
-  savings: JSON.parse(localStorage.getItem("savings")) || [],
-  budgets: JSON.parse(localStorage.getItem("budgets")) || [],
-  saldos: JSON.parse(localStorage.getItem("saldos")) || [],
-  notifications: JSON.parse(localStorage.getItem("notifications")) || [],
+  user: getInitialStorage("user", null),
+  transactions: getInitialStorage("transactions", []),
+  savings: getInitialStorage("savings", []),
+  budgets: getInitialStorage("budgets", []),
+  saldos: getInitialStorage("saldos", []),
+  notifications: getInitialStorage("notifications", []),
   isSyncing: false,
 
   _mapTransaction(tx) {
@@ -38,25 +79,11 @@ export const store = {
     this.isSyncing = true;
 
     try {
-      // Jika user sudah ada di local storage (bukan pendaftaran baru), lakukan seluruh fetch secara PARALEL!
-      // Ini akan memotong latency jaringan hingga 3x lipat dengan menghilangkan network waterfall.
       const isFirstTime = !this.user?.id && this.transactions.length === 0;
 
       if (isFirstTime) {
-        // Skenario User Baru: Harus sekuensial agar user terdaftar di Postgres terlebih dahulu
-        const userRes = await fetch(`${API_URL}/users/sync`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.user.token}`,
-          },
-          body: JSON.stringify(extraData),
-          credentials: "include",
-        });
-
-        if (userRes.ok) {
-          const dbUser = await userRes.json();
-          // Merge data dari DB tanpa menghapus data lokal yang sudah ada (seperti avatar Google)
+        const dbUser = await userService.syncUser(this.user.token, extraData);
+        if (dbUser) {
           this.user = {
             ...this.user,
             ...dbUser,
@@ -67,51 +94,20 @@ export const store = {
         }
       }
 
-      // Siapkan antrean fetch data secara paralel
-      const fetchPromises = [
-        fetch(`${API_URL}/transactions`, {
-          headers: { Authorization: `Bearer ${this.user.token}` },
-          credentials: "include",
-        }),
-        fetch(`${API_URL}/budgets`, {
-          headers: { Authorization: `Bearer ${this.user.token}` },
-          credentials: "include",
-        }),
-        fetch(`${API_URL}/savings`, {
-          headers: { Authorization: `Bearer ${this.user.token}` },
-          credentials: "include",
-        }),
-        fetch(`${API_URL}/accounts`, {
-          headers: { Authorization: `Bearer ${this.user.token}` },
-          credentials: "include",
-        }),
+      const promises = [
+        transactionService.fetchTransactions(this.user.token),
+        budgetService.fetchBudgets(this.user.token),
+        savingsService.fetchSavings(this.user.token),
+        accountService.fetchAccounts(this.user.token),
       ];
 
-      // Jika bukan user baru, jalankan sync user secara paralel juga!
       if (!isFirstTime) {
-        fetchPromises.push(
-          fetch(`${API_URL}/users/sync`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${this.user.token}`,
-            },
-            body: JSON.stringify(extraData),
-            credentials: "include",
-          }),
-        );
+        promises.push(userService.syncUser(this.user.token, extraData));
       }
 
-      const results = await Promise.all(fetchPromises);
-      const txRes = results[0];
-      const budgetRes = results[1];
-      const savingRes = results[2];
-      const accountRes = results[3];
-      const userRes = results[4]; // Hanya akan ada nilainya jika bukan isFirstTime
+      const [dbTxs, dbBudgets, dbSavings, dbAccounts, dbUser] = await Promise.all(promises);
 
-      // Process User Sync jika dijalankan paralel
-      if (userRes && userRes.ok) {
-        const dbUser = await userRes.json();
+      if (dbUser) {
         this.user = {
           ...this.user,
           ...dbUser,
@@ -120,47 +116,13 @@ export const store = {
         };
       }
 
-      // Process Transactions
-      if (txRes && txRes.ok) {
-        const dbTxs = await txRes.json();
-        this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
-      }
-
-      // Process Budgets
-      if (budgetRes && budgetRes.ok) {
-        this.budgets = await budgetRes.json();
-      }
-
-      // Process Savings
-      if (savingRes && savingRes.ok) {
-        const dbSavings = await savingRes.json();
-        this.savings = dbSavings.map((s) => ({
-          id: s.id,
-          name: s.name,
-          target: s.targetAmount,
-          current: s.currentAmount,
-          icon: s.icon,
-          color: s.color,
-          orderIndex: s.orderIndex,
-          isDone: s.isDone,
-        }));
-      }
-
-      // Process Accounts (Saldo)
-      if (accountRes && accountRes.ok) {
-        const dbAccounts = await accountRes.json();
+      if (dbTxs) this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
+      if (dbBudgets) this.budgets = dbBudgets;
+      if (dbSavings) this.savings = dbSavings.map(_mapSavingData);
+      if (dbAccounts) {
         if (dbAccounts.length > 0) {
-          // DB punya data -> pakai data DB, override localStorage
-          this.saldos = dbAccounts.map((a) => ({
-            id: a.id,
-            name: a.name,
-            type: a.type,
-            balance: a.balance,
-            logo: a.logo,
-            orderIndex: a.orderIndex,
-          }));
+          this.saldos = dbAccounts.map(_mapAccountData);
         } else if (this.saldos.length > 0) {
-          // DB kosong tapi localStorage ada -> sync localStorage ke DB (user baru pertama kali)
           this.syncSaldosToDB();
         }
       }
@@ -168,7 +130,6 @@ export const store = {
       console.error("Sync Error:", err);
     } finally {
       this.isSyncing = false;
-      // Final save untuk memicu satu kali refresh UI instan dengan seluruh data terisi
       this.save();
       this.checkBudgetNotifications();
     }
@@ -177,15 +138,7 @@ export const store = {
   async syncSaldosToDB() {
     if (!this.user?.token || this.saldos.length === 0) return;
     try {
-      await fetch(`${API_URL}/accounts/sync`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ accounts: this.saldos }),
-        credentials: "include",
-      });
+      await accountService.syncAccounts(this.user.token, this.saldos);
     } catch (err) {
       console.error("Sync Saldo ke DB Error:", err);
     }
@@ -194,14 +147,9 @@ export const store = {
   async fetchBudgets(period) {
     if (!this.user?.token) return;
     try {
-      const url = period
-        ? `${API_URL}/budgets?period=${period}`
-        : `${API_URL}/budgets`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${this.user.token}` },
-      });
-      if (res.ok) {
-        this.budgets = await res.json();
+      const data = await budgetService.fetchBudgets(this.user.token, period);
+      if (data) {
+        this.budgets = data;
         this.save();
         return this.budgets;
       }
@@ -213,16 +161,8 @@ export const store = {
   async updateBudget(category, amount, period) {
     if (!this.user?.token) return;
     try {
-      const res = await fetch(`${API_URL}/budgets`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ category, amount, period }),
-      });
-      if (res.ok) {
-        const newBudget = await res.json();
+      const newBudget = await budgetService.updateBudget(this.user.token, category, amount, period);
+      if (newBudget) {
         const index = this.budgets.findIndex((b) => b.category === category);
         if (index > -1) this.budgets[index] = newBudget;
         else this.budgets.push(newBudget);
@@ -235,13 +175,10 @@ export const store = {
   },
 
   async deleteBudget(id) {
-    if (!this.user?.token) return;
+    if (!this.user?.token) return false;
     try {
-      const res = await fetch(`${API_URL}/budgets/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${this.user.token}` },
-      });
-      if (res.ok) {
+      const ok = await budgetService.deleteBudget(this.user.token, id);
+      if (ok) {
         this.budgets = this.budgets.filter((b) => b.id !== id);
         this.save();
         return true;
@@ -263,92 +200,76 @@ export const store = {
     this.updateUI();
     this.syncHeaderBadge();
 
-    // Kirim sinyal ke seluruh aplikasi kalau data berubah
     window.dispatchEvent(new CustomEvent("store-updated"));
   },
 
   updateUI() {
-    if (this.user) {
-      const avatarElements = document.querySelectorAll(
-        ".user-avatar-img, #user-avatar, #profile-preview, #full-pp-preview",
-      );
-      const nameElements = document.querySelectorAll(
-        ".user-name, #user-name-display, #nav-user-name",
-      );
-      const emailElements = document.querySelectorAll(
-        ".user-email, #nav-user-email",
-      );
+    if (!this.user) return;
 
-      const avatarUrl =
-        this.user.avatar ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name)}&background=7C3AED&color=fff&bold=true`;
+    const avatarElements = document.querySelectorAll(
+      ".user-avatar-img, #user-avatar, #profile-preview, #full-pp-preview"
+    );
+    const nameElements = document.querySelectorAll(
+      ".user-name, #user-name-display, #nav-user-name"
+    );
+    const emailElements = document.querySelectorAll(
+      ".user-email, #nav-user-email"
+    );
 
-      avatarElements.forEach((el) => {
-        if (el.tagName === "IMG") {
-          // Tambahkan referrerpolicy untuk Google Images agar tidak diblokir oleh kebijakan CORS/Referrer
-          el.setAttribute("referrerpolicy", "no-referrer");
+    const avatarUrl = this.user.avatar || generateAvatarUrl(this.user.name);
 
-          // Fallback system jika gambar profil (dari Google dll) gagal dimuat
-          el.onerror = () => {
-            const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.user.name || "User")}&background=7C3AED&color=fff&bold=true`;
-            if (el.src !== fallbackUrl) {
-              el.src = fallbackUrl;
-            }
-            // Lepas skeleton jika error agar tidak stuck lingkaran hitam
-            const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
-            if (wrapper) {
-              wrapper.classList.remove("skeleton", "skeleton-circle");
-              // Jika ini di halaman akun, pastikan opacity img 1
-              el.style.opacity = "1";
-            }
-          };
+    avatarElements.forEach((el) => {
+      if (el.tagName === "IMG") {
+        el.setAttribute("referrerpolicy", "no-referrer");
 
-          // Hanya pasang src kalau beda (biar gak flicker)
-          if (el.getAttribute("data-src-loaded") !== avatarUrl) {
-            el.src = avatarUrl;
-            el.onload = () => {
-              el.style.opacity = "1";
-              el.setAttribute("data-src-loaded", avatarUrl);
-
-              const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
-              if (wrapper)
-                wrapper.classList.remove("skeleton", "skeleton-circle");
-            };
-          } else {
-            // Jika sudah terload sebelumnya, pastikan skeleton tetap hilang
+        el.onerror = () => {
+          const fallbackUrl = generateAvatarUrl(this.user.name || "User");
+          if (el.src !== fallbackUrl) el.src = fallbackUrl;
+          const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
+          if (wrapper) {
+            wrapper.classList.remove("skeleton", "skeleton-circle");
             el.style.opacity = "1";
-            const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
-            if (wrapper)
-              wrapper.classList.remove("skeleton", "skeleton-circle");
           }
+        };
+
+        if (el.getAttribute("data-src-loaded") !== avatarUrl) {
+          el.src = avatarUrl;
+          el.onload = () => {
+            el.style.opacity = "1";
+            el.setAttribute("data-src-loaded", avatarUrl);
+            const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
+            if (wrapper) wrapper.classList.remove("skeleton", "skeleton-circle");
+          };
         } else {
-          // Kalau bukan img tag (misal div dengan background image)
           el.style.opacity = "1";
           const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
           if (wrapper) wrapper.classList.remove("skeleton", "skeleton-circle");
         }
-      });
+      } else {
+        el.style.opacity = "1";
+        const wrapper = el.closest(".avatar-wrapper") || el.parentElement;
+        if (wrapper) wrapper.classList.remove("skeleton", "skeleton-circle");
+      }
+    });
 
-      nameElements.forEach((el) => {
-        el.textContent = this.user.name;
-        el.classList.remove("skeleton", "skeleton-text");
-      });
+    nameElements.forEach((el) => {
+      el.textContent = this.user.name;
+      el.classList.remove("skeleton", "skeleton-text");
+    });
 
-      emailElements.forEach((el) => {
-        el.textContent = this.user.email;
-        el.classList.remove("skeleton", "skeleton-text");
-      });
-    }
+    emailElements.forEach((el) => {
+      el.textContent = this.user.email;
+      el.classList.remove("skeleton", "skeleton-text");
+    });
   },
 
   addNotification(source, title, desc, route = null) {
-    // Anti-spam harian sederhana
     const todayStr = new Date().toDateString();
     const exists = this.notifications.find(
       (n) =>
         n.title === title &&
         n.desc === desc &&
-        new Date(n.time).toDateString() === todayStr,
+        new Date(n.time).toDateString() === todayStr
     );
     if (exists) return;
 
@@ -407,14 +328,14 @@ export const store = {
             "Anggaran",
             "Anggaran Melebihi Batas",
             `Anggaran kategori "${b.category}" telah melebihi batas (Rp ${spent.toLocaleString("id-ID")}).`,
-            "/anggaran",
+            "/anggaran"
           );
         } else if (pct >= 85) {
           this.addNotification(
             "Anggaran",
             "Anggaran Hampir Habis",
             `Pengeluaran "${b.category}" sudah mencapai ${Math.round(pct)}% dari target anggaran.`,
-            "/anggaran",
+            "/anggaran"
           );
         }
       }
@@ -427,14 +348,7 @@ export const store = {
     this.save();
 
     if (userData?.token) {
-      // Jalankan pembuatan session cookie secara asynchronous di background (non-blocking)
-      // agar proses sinkronisasi data utama (sync) bisa langsung dieksekusi tanpa tertunda!
-      fetch(`${API_URL}/auth/session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken: userData.token }),
-        credentials: "include",
-      }).catch((err) => {
+      userService.createSession(userData.token).catch((err) => {
         console.error("Gagal membuat session cookie:", err);
       });
     }
@@ -448,54 +362,21 @@ export const store = {
     this.save();
 
     try {
-      const res = await fetch(`${API_URL}/users/sync`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify(profileData),
-      });
-      if (!res.ok) {
-        let detail = "";
-        try {
-          const data = await res.json();
-          detail = data?.message || data?.error || JSON.stringify(data);
-        } catch {
-          try {
-            detail = await res.text();
-          } catch {
-            detail = "";
-          }
-        }
-        throw new Error(detail || `Gagal update profil (HTTP ${res.status})`);
-      }
-
-      const updated = await res.json();
+      const updated = await userService.updateProfile(this.user.token, profileData);
       this.user = { ...this.user, ...updated };
       this.save();
       return this.user;
     } catch (err) {
       console.error("Update Profile Error:", err);
-      // UX IMPROVEMENT: We no longer rollback to prevUser.
-      // The change stays in localStorage, and we just inform the user that sync failed.
       throw err;
     }
   },
 
   async update2FAStatus(enabled) {
-    if (!this.user?.token) return;
+    if (!this.user?.token) return false;
     try {
-      const res = await fetch(`${API_URL}/users/sync`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ is2FAEnabled: enabled }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
+      const updated = await userService.update2FA(this.user.token, enabled);
+      if (updated) {
         this.user = { ...this.user, ...updated };
         this.save();
         return true;
@@ -509,36 +390,13 @@ export const store = {
 
   async changePassword(oldPassword, newPassword) {
     if (!this.user?.token) return;
-    try {
-      const res = await fetch(`${API_URL}/users/update-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ oldPassword, newPassword }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal ubah password");
-      return data;
-    } catch (err) {
-      console.error("Change Password Error:", err);
-      throw err;
-    }
+    return userService.changePassword(this.user.token, oldPassword, newPassword);
   },
 
   async deleteAccountRemote() {
     if (!this.user?.token) return;
     try {
-      const res = await fetch(`${API_URL}/users`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${this.user.token}` },
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Gagal hapus akun");
-      }
+      await userService.deleteAccount(this.user.token);
       this.logout();
       return true;
     } catch (err) {
@@ -553,19 +411,14 @@ export const store = {
     this.savings = [];
     this.budgets = [];
     this.saldos = [];
-    // Don't clear UI preferences like theme / sidebar state.
     localStorage.removeItem("user");
     localStorage.removeItem("transactions");
     localStorage.removeItem("savings");
     localStorage.removeItem("budgets");
     localStorage.removeItem("saldos");
 
-    // Clear backend session cookie
     try {
-      await fetch(`${API_URL}/auth/session`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      await userService.deleteSession();
     } catch (err) {
       console.error("Gagal menghapus session cookie:", err);
     }
@@ -579,13 +432,11 @@ export const store = {
     if (tx.metode === "E-Wallet") targetType = "E-Wallet";
     else if (tx.metode === "Bank Transfer" || tx.metode === "Kartu Kredit") targetType = "Bank";
     
-    // Prioritaskan mencari nama akun secara spesifik (Gopay, BCA, dll)
     if (tx.akun) {
-      let searchAkun = tx.akun?.toLowerCase() || '';
-      targetSaldo = this.saldos.find(s => {
-        let sName = s.name?.toLowerCase() || '';
+      const searchAkun = tx.akun?.toLowerCase() || '';
+      targetSaldo = this.saldos.find((s) => {
+        const sName = s.name?.toLowerCase() || '';
         if (sName === searchAkun) return true;
-        // Tangani alias nama bank untuk backward compatibility
         if ((searchAkun === 'bank blu' && sName === 'blubca') || 
             (searchAkun === 'blubca' && sName === 'bank blu')) {
           return true;
@@ -593,99 +444,52 @@ export const store = {
         return false;
       });
       
-      // Auto-create akun jika belum ada
       if (!targetSaldo && !reverse) {
         targetSaldo = {
           id: Date.now() + Math.random(),
           name: tx.akun,
           type: targetType,
           balance: 0,
-          logo: '' // Logo bisa diabaikan dulu, di UI saldo.js ada logoMap fallback
+          logo: ''
         };
         this.saldos.push(targetSaldo);
       }
     }
     
-    // Fallback logic ke tipe umum kalau akun belum di-set / tidak ketemu (hanya saat delete/reverse)
     if (!targetSaldo) {
-      targetSaldo = this.saldos.find(s => s.type === targetType);
+      targetSaldo = this.saldos.find((s) => s.type === targetType);
     }
     
-    // Fallback terakhir ke akun pertama
     if (!targetSaldo) targetSaldo = this.saldos[0]; 
-    if (!targetSaldo) return; // Jika benar-benar kosong
+    if (!targetSaldo) return;
     
     let amount = Number(tx.harga || tx.amount || 0);
-    // Jika expense, nilai aslinya negatif. Jika income, positif.
     if (reverse) amount = -amount;
 
     targetSaldo.balance = Number(targetSaldo.balance) + amount;
   },
 
-  /**
-   * Kirim base64 image struk ke backend, return data hasil ekstraksi Gemini.
-   * Throw error dengan pesan yang user-friendly kalau gagal.
-   */
   async scanReceipt(base64, mimeType = 'image/jpeg') {
     if (!this.user?.token) {
       throw new Error('Kamu harus login dulu untuk pakai fitur scan struk.');
     }
-
-    let res;
-    try {
-      res = await fetch(`${API_URL}/receipts/scan`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ image: base64, mimeType }),
-      });
-    } catch (networkErr) {
-      throw new Error('Gagal terhubung ke server. Cek koneksi internet kamu.');
-    }
-
-    let json;
-    try {
-      json = await res.json();
-    } catch {
-      throw new Error('Server merespons tidak valid.');
-    }
-
-    if (!res.ok) {
-      throw new Error(json?.error || `Server error (${res.status})`);
-    }
-
-    if (!json?.success || !json?.data) {
-      throw new Error('Hasil scan tidak lengkap.');
-    }
-
-    return json.data;
+    return transactionService.scanReceipt(this.user.token, base64, mimeType);
   },
 
   async addTransaction(tx) {
     const tempId = Date.now();
     const newTx = { ...tx, id: tempId };
     this.transactions.unshift(newTx);
-    this._applyTransactionToSaldo(newTx); // Otomatis update saldo
+    this._applyTransactionToSaldo(newTx);
     this.save();
     this.checkBudgetNotifications();
 
     if (this.user?.token) {
       try {
-        const res = await fetch(`${API_URL}/transactions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.user.token}`,
-          },
-          body: JSON.stringify(tx),
-        });
-        if (res.ok) {
-          const savedTx = await res.json();
+        const savedTx = await transactionService.createTransaction(this.user.token, tx);
+        if (savedTx) {
           this.transactions = this.transactions.map((t) =>
-            t.id === tempId ? this._mapTransaction(savedTx) : t,
+            t.id === tempId ? this._mapTransaction(savedTx) : t
           );
           this.save();
           this.syncSaldosToDB();
@@ -715,14 +519,7 @@ export const store = {
     if (!this.user?.token) return;
 
     try {
-      const res = await fetch(`${API_URL}/transactions/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${this.user.token}` },
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Gagal hapus transaksi (HTTP ${res.status})`);
-      }
+      await transactionService.deleteTransaction(this.user.token, id);
       this.syncSaldosToDB();
     } catch (e) {
       this.transactions = prev;
@@ -742,13 +539,13 @@ export const store = {
     const oldTx = this.transactions.find((t) => t.id === id);
     
     if (oldTx) {
-      this._applyTransactionToSaldo(oldTx, true); // kembalikan saldo lama
+      this._applyTransactionToSaldo(oldTx, true);
       const newTx = { ...oldTx, ...data };
-      this._applyTransactionToSaldo(newTx); // terapkan saldo baru
+      this._applyTransactionToSaldo(newTx);
     }
 
     this.transactions = this.transactions.map((t) =>
-      t.id === id ? { ...t, ...data } : t,
+      t.id === id ? { ...t, ...data } : t
     );
     this.save();
     this.checkBudgetNotifications();
@@ -756,27 +553,16 @@ export const store = {
     if (!this.user?.token) return;
 
     try {
-      const res = await fetch(`${API_URL}/transactions/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Gagal update transaksi (HTTP ${res.status})`);
-      }
-      const updatedTx = await res.json();
+      const updatedTx = await transactionService.updateTransaction(this.user.token, id, data);
       this.transactions = this.transactions.map((t) =>
-        t.id === id ? this._mapTransaction(updatedTx) : t,
+        t.id === id ? this._mapTransaction(updatedTx) : t
       );
       this.save();
       this.checkBudgetNotifications();
       this.syncSaldosToDB();
     } catch (e) {
       this.transactions = prev;
+      this.saldos = prevSaldos;
       this.save();
       throw e;
     }
@@ -798,17 +584,13 @@ export const store = {
       const amount = Number(t.amount || t.harga || 0);
       const txDate = new Date(t.tanggal);
 
-      // Lifetime totals for Balance
       if (t.type === "income") totalIncome += amount;
       else totalExpense += Math.abs(amount);
 
-      // Current Period (Last 28 days)
       if (txDate >= fourWeeksAgo && txDate <= now) {
         if (t.type === "income") currentIncome += amount;
         else currentExpense += Math.abs(amount);
-      }
-      // Previous Period (28-56 days ago)
-      else if (txDate >= eightWeeksAgo && txDate < fourWeeksAgo) {
+      } else if (txDate >= eightWeeksAgo && txDate < fourWeeksAgo) {
         if (t.type === "income") prevIncome += amount;
         else prevExpense += Math.abs(amount);
       }
@@ -820,18 +602,17 @@ export const store = {
     };
 
     const rawBalance = totalIncome - totalExpense;
-    // balanceOffset: selisih yang di-set user via tombol pensil (tanpa bikin transaksi)
     const offset = Number(this.user?.balanceOffset || 0);
 
-    // Hitung total saldo dari semua akun (Bank, E-Wallet, Cash) di halaman Saldo
-    const accountBalance = (this.saldos || []).reduce((sum, s) => sum + Number(s.balance || 0), 0);
+    const accountBalance = (this.saldos || []).reduce(
+      (sum, s) => sum + Number(s.balance || 0),
+      0
+    );
     const hasAccounts = (this.saldos || []).length > 0;
 
     return {
       income: currentIncome,
       expense: currentExpense,
-      // Jika user sudah punya akun saldo, tampilkan total dari semua akun
-      // Jika belum, fallback ke perhitungan lama (income - expense + offset)
       balance: hasAccounts ? accountBalance : rawBalance + offset,
       rawBalance,
       accountBalance,
@@ -844,27 +625,15 @@ export const store = {
   },
 
   async addSaldo(saldo) {
-    // Optimistic UI: tambah ke lokal dulu
     saldo.id = Date.now();
     this.saldos.push(saldo);
     this.save();
 
-    // Sync ke DB
     if (this.user?.token) {
       try {
-        const res = await fetch(`${API_URL}/accounts`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.user.token}`,
-          },
-          body: JSON.stringify(saldo),
-          credentials: "include",
-        });
-        if (res.ok) {
-          const saved = await res.json();
-          // Update id lokal dengan id DB yang asli
-          const idx = this.saldos.findIndex(s => s.id === saldo.id);
+        const saved = await accountService.createAccount(this.user.token, saldo);
+        if (saved) {
+          const idx = this.saldos.findIndex((s) => s.id === saldo.id);
           if (idx !== -1) this.saldos[idx].id = saved.id;
           this.save();
         }
@@ -884,18 +653,9 @@ export const store = {
       if (data.logo !== undefined) s.logo = data.logo;
       this.save();
 
-      // Sync ke DB
       if (this.user?.token) {
         try {
-          await fetch(`${API_URL}/accounts/${id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${this.user.token}`,
-            },
-            body: JSON.stringify(data),
-            credentials: "include",
-          });
+          await accountService.updateAccount(this.user.token, id, data);
         } catch (err) {
           console.error("Update Saldo DB Error:", err);
         }
@@ -907,14 +667,9 @@ export const store = {
     this.saldos = this.saldos.filter((s) => s.id !== id);
     this.save();
 
-    // Sync ke DB
     if (this.user?.token) {
       try {
-        await fetch(`${API_URL}/accounts/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${this.user.token}` },
-          credentials: "include",
-        });
+        await accountService.deleteAccount(this.user.token, id);
       } catch (err) {
         console.error("Delete Saldo DB Error:", err);
       }
@@ -922,7 +677,6 @@ export const store = {
   },
 
   addSaving(goal) {
-    // Backward compatible local-only goal (no token).
     goal.id = Date.now();
     this.savings.push(goal);
     this.save();
@@ -934,37 +688,8 @@ export const store = {
       return goal;
     }
 
-    const res = await fetch(`${API_URL}/savings`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.user.token}`,
-      },
-      body: JSON.stringify({
-        name: goal.name,
-        targetAmount: goal.target,
-        currentAmount: goal.current || 0,
-        icon: goal.icon,
-        color: goal.color,
-      }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(text || `Gagal simpan wishlist (HTTP ${res.status})`);
-    }
-
-    const saved = await res.json();
-    const mapped = {
-      id: saved.id,
-      name: saved.name,
-      target: saved.targetAmount,
-      current: saved.currentAmount,
-      icon: saved.icon,
-      color: saved.color,
-      orderIndex: saved.orderIndex,
-      isDone: saved.isDone,
-    };
+    const saved = await savingsService.createSaving(this.user.token, goal);
+    const mapped = _mapSavingData(saved);
     this.savings.push(mapped);
     this.save();
     return mapped;
@@ -973,7 +698,7 @@ export const store = {
   async editSaving(id, data) {
     const goal = this.savings.find((s) => s.id === id);
     if (!goal) return;
-    
+
     const prev = { ...goal };
     Object.assign(goal, data);
     this.save();
@@ -981,25 +706,14 @@ export const store = {
     if (!this.user?.token) return goal;
 
     try {
-      const res = await fetch(`${API_URL}/savings/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({
-          name: goal.name,
-          targetAmount: goal.target,
-          currentAmount: goal.current,
-          icon: goal.icon,
-          color: goal.color,
-          isDone: goal.isDone,
-        }),
+      await savingsService.updateSaving(this.user.token, id, {
+        name: goal.name,
+        targetAmount: goal.target,
+        currentAmount: goal.current,
+        icon: goal.icon,
+        color: goal.color,
+        isDone: goal.isDone,
       });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Gagal update wishlist (HTTP ${res.status})`);
-      }
       return goal;
     } catch (e) {
       Object.assign(goal, prev);
@@ -1022,13 +736,12 @@ export const store = {
 
     const next = goal.current + Number(amount);
 
-    // Pemicu notifikasi saat tabungan terkumpul 100%
     if (next >= goal.target && goal.current < goal.target) {
       this.addNotification(
         "Wishlist",
         "Target Tabungan Tercapai!",
         `Selamat! Target dana untuk "${goal.name}" sudah terkumpul sepenuhnya.`,
-        "/wishlist",
+        "/wishlist"
       );
     }
 
@@ -1043,19 +756,7 @@ export const store = {
     this.save();
 
     try {
-      const res = await fetch(`${API_URL}/savings/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ currentAmount: next }),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Gagal update tabungan (HTTP ${res.status})`);
-      }
-      const updated = await res.json();
+      const updated = await savingsService.updateSaving(this.user.token, id, { currentAmount: next });
       goal.current = updated.currentAmount;
       this.save();
       return goal;
@@ -1079,14 +780,7 @@ export const store = {
     if (!this.user?.token) return;
 
     try {
-      const res = await fetch(`${API_URL}/savings/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${this.user.token}` },
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Gagal hapus wishlist (HTTP ${res.status})`);
-      }
+      await savingsService.deleteSaving(this.user.token, id);
     } catch (e) {
       this.savings = prev;
       this.save();
@@ -1098,6 +792,7 @@ export const store = {
     this.savings = newOrder;
     this.save();
   },
+
   async reorderSavingsRemote(newOrder) {
     const orderedIds = newOrder.map((s) => s.id);
     const prev = this.savings;
@@ -1107,30 +802,8 @@ export const store = {
     if (!this.user?.token) return;
 
     try {
-      const res = await fetch(`${API_URL}/savings/reorder`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.user.token}`,
-        },
-        body: JSON.stringify({ orderedIds }),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(
-          text || `Gagal simpan urutan wishlist (HTTP ${res.status})`,
-        );
-      }
-      const saved = await res.json();
-      this.savings = saved.map((s) => ({
-        id: s.id,
-        name: s.name,
-        target: s.targetAmount,
-        current: s.currentAmount,
-        icon: s.icon,
-        color: s.color,
-        orderIndex: s.orderIndex,
-      }));
+      const saved = await savingsService.reorderSavings(this.user.token, orderedIds);
+      this.savings = saved.map(_mapSavingData);
       this.save();
     } catch (e) {
       this.savings = prev;
@@ -1140,16 +813,28 @@ export const store = {
   },
 };
 
+// --- Formatter & Utility Exports ---
+
+const formatterCache = new Map();
+
 export function formatCurrency(number) {
   const currency = store.user?.currency || "IDR";
   const locale = currency === "IDR" ? "id-ID" : "en-US";
+  const cacheKey = `${locale}-${currency}`;
 
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(number || 0);
+  if (!formatterCache.has(cacheKey)) {
+    formatterCache.set(
+      cacheKey,
+      new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
+  }
+
+  return formatterCache.get(cacheKey).format(number || 0);
 }
 
 export function formatRupiah(number) {
