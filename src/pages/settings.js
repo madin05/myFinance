@@ -1,6 +1,6 @@
 import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast } from '../components/notifications.js';
+import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelect } from '../components/customSelect.js';
 
 export function renderSettings() {
@@ -115,21 +115,23 @@ export function renderSettings() {
   if (currencySelect) initCustomSelect(currencySelect);
 
   // Simpan preferensi keuangan
-  document.getElementById('btn-save-financial-start').onclick = async () => {
-    const newDay = document.getElementById('financial-start-day').value;
-    const newCurrency = document.getElementById('user-currency').value;
-    showLoading();
-    try {
-      await store.updateProfile({
-        financialStartDay: parseInt(newDay),
-        currency: newCurrency
-      });
-      showToast('Preferensi berhasil disimpan!', 'success');
-    } catch (err) {
-      showToast('Gagal menyimpan preferensi.', 'error');
-    } finally {
-      hideLoading();
-    }
+  document.getElementById('btn-save-financial-start').onclick = () => {
+    checkVerification(async () => {
+      const newDay = document.getElementById('financial-start-day').value;
+      const newCurrency = document.getElementById('user-currency').value;
+      showLoading();
+      try {
+        await store.updateProfile({
+          financialStartDay: parseInt(newDay),
+          currency: newCurrency
+        });
+        showToast('Preferensi berhasil disimpan!', 'success');
+      } catch (err) {
+        showToast('Gagal menyimpan preferensi.', 'error');
+      } finally {
+        hideLoading();
+      }
+    });
   };
 
   // Toggle Mode Hemat Kinerja

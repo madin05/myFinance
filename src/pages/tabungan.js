@@ -1,18 +1,20 @@
 import { store, formatRupiah } from '../store.js';
 import { initKebabs, cleanupKebabs, closeAllKebabs } from '../ui/kebab.js';
-import { showToast } from '../components/notifications.js';
+import { showToast, checkVerification } from '../components/notifications.js';
 
 /**
  * Helper to open Wishlist Modal dynamically
  */
 async function openWishlistModal(goal = null, onSuccess = null) {
-  try {
-    const module = await import('../components/wishlist-modal.js');
-    module.openAddWishlistModal(onSuccess, goal);
-  } catch (err) {
-    console.error('Failed to load wishlist modal:', err);
-    showToast('Gagal membuka modal wishlist.', 'error');
-  }
+  checkVerification(async () => {
+    try {
+      const module = await import('../components/wishlist-modal.js');
+      module.openAddWishlistModal(onSuccess, goal);
+    } catch (err) {
+      console.error('Failed to load wishlist modal:', err);
+      showToast('Gagal membuka modal wishlist.', 'error');
+    }
+  });
 }
 
 /**
@@ -376,33 +378,37 @@ export function renderTabungan() {
   // History: Restore
   container.querySelectorAll('.btn-history-restore').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      try {
-        await store.editSaving(id, { isDone: false });
-        showToast('Wishlist berhasil dipulihkan!', 'success');
-        renderTabungan();
-      } catch (err) {
-        showToast('Gagal memulihkan: ' + (err?.message || err), 'error');
-      }
+      checkVerification(async () => {
+        const id = Number(btn.dataset.id);
+        try {
+          await store.editSaving(id, { isDone: false });
+          showToast('Wishlist berhasil dipulihkan!', 'success');
+          renderTabungan();
+        } catch (err) {
+          showToast('Gagal memulihkan: ' + (err?.message || err), 'error');
+        }
+      });
     });
   });
 
   // History: Delete Permanently
   container.querySelectorAll('.btn-history-delete').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      const goal = store.savings.find(s => s.id === id);
-      try {
-        const { showConfirm } = await import('../components/notifications.js');
-        const confirmed = await showConfirm('Hapus Permanen?', `Wishlist "${goal?.name || ''}" akan dihapus selamanya dan tidak bisa dikembalikan.`);
-        if (confirmed) {
-          await store.removeSaving(id);
-          showToast('Wishlist dihapus permanen!', 'info');
-          renderTabungan();
+      checkVerification(async () => {
+        const id = Number(btn.dataset.id);
+        const goal = store.savings.find(s => s.id === id);
+        try {
+          const { showConfirm } = await import('../components/notifications.js');
+          const confirmed = await showConfirm('Hapus Permanen?', `Wishlist "${goal?.name || ''}" akan dihapus selamanya dan tidak bisa dikembalikan.`);
+          if (confirmed) {
+            await store.removeSaving(id);
+            showToast('Wishlist dihapus permanen!', 'info');
+            renderTabungan();
+          }
+        } catch (err) {
+          showToast('Gagal menghapus: ' + (err?.message || err), 'error');
         }
-      } catch (err) {
-        showToast('Gagal menghapus: ' + (err?.message || err), 'error');
-      }
+      });
     });
   });
 
@@ -427,20 +433,22 @@ export function renderTabungan() {
     },
     // onDelete
     (id) => {
-      import('../components/modal.js').then(module => {
-        module.openConfirmModal('Hapus Wishlist?', 'Yakin mau hapus target ini?', () => {
-          store.removeSaving(Number(id))
-            .then(() => {
-              showToast('Target wishlist berhasil dihapus!', 'info');
-              renderTabungan();
-            })
-            .catch((err) => {
-              showToast('Gagal hapus wishlist: ' + (err?.message || err), 'error');
-              renderTabungan();
-            });
+      checkVerification(() => {
+        import('../components/modal.js').then(module => {
+          module.openConfirmModal('Hapus Wishlist?', 'Yakin mau hapus target ini?', () => {
+            store.removeSaving(Number(id))
+              .then(() => {
+                showToast('Target wishlist berhasil dihapus!', 'info');
+                renderTabungan();
+              })
+              .catch((err) => {
+                showToast('Gagal hapus wishlist: ' + (err?.message || err), 'error');
+                renderTabungan();
+              });
+          });
+        }).catch(err => {
+          console.error('Failed to load modal component:', err);
         });
-      }).catch(err => {
-        console.error('Failed to load modal component:', err);
       });
     }
   );
@@ -450,15 +458,17 @@ export function renderTabungan() {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       closeAllKebabs();
-      const id = Number(e.currentTarget.getAttribute('data-id'));
-      const name = e.currentTarget.getAttribute('data-name');
-      try {
-        const module = await import('../components/wishlist-modal.js');
-        module.openAddFundsModal(id, name, () => renderTabungan());
-      } catch (err) {
-        console.error('Failed to load add funds modal:', err);
-        showToast('Gagal membuka modal tabung.', 'error');
-      }
+      checkVerification(async () => {
+        const id = Number(e.currentTarget.getAttribute('data-id'));
+        const name = e.currentTarget.getAttribute('data-name');
+        try {
+          const module = await import('../components/wishlist-modal.js');
+          module.openAddFundsModal(id, name, () => renderTabungan());
+        } catch (err) {
+          console.error('Failed to load add funds modal:', err);
+          showToast('Gagal membuka modal tabung.', 'error');
+        }
+      });
     });
   });
 
@@ -467,17 +477,19 @@ export function renderTabungan() {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       closeAllKebabs();
-      const id = Number(e.currentTarget.getAttribute('data-id'));
-      const goal = store.savings.find(s => s.id === id);
-      if (goal) {
-        try {
-          await store.editSaving(id, { isDone: !goal.isDone });
-          showToast(!goal.isDone ? 'Target ditandai belum selesai' : 'Target berhasil diselesaikan!', 'success');
-          renderTabungan();
-        } catch (err) {
-          showToast('Gagal update status target: ' + (err?.message || err), 'error');
+      checkVerification(async () => {
+        const id = Number(e.currentTarget.getAttribute('data-id'));
+        const goal = store.savings.find(s => s.id === id);
+        if (goal) {
+          try {
+            await store.editSaving(id, { isDone: !goal.isDone });
+            showToast(!goal.isDone ? 'Target ditandai belum selesai' : 'Target berhasil diselesaikan!', 'success');
+            renderTabungan();
+          } catch (err) {
+            showToast('Gagal update status target: ' + (err?.message || err), 'error');
+          }
         }
-      }
+      });
     });
   });
 
