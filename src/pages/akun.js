@@ -87,7 +87,7 @@ export function renderAkun() {
         <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
           <div class="stat-card" style="padding: 2rem;">
             <h4 style="margin-bottom: 1.5rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-shield-check" style="color: var(--primary);"></i>
+              <i class="ph ph-shield-check" style="color: var(--primary); font-size: 1.4rem;"></i>
               Akses Keamanan
             </h4>
             
@@ -117,7 +117,7 @@ export function renderAkun() {
           <!-- Danger Zone -->
           <div class="stat-card" style="padding: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.02);">
             <h4 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
-            Hapus Akun
+              Hapus Akun
             </h4>
             <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Tindakan ini tidak dapat dibatalkan. Semua data finansial Anda akan dihapus permanen.</p>
             <button class="btn" style="background: var(--red); color: white; width: 100%; border-radius: 12px; height: 48px; font-weight: 600; gap: 10px;" id="btn-delete-account">
@@ -146,6 +146,11 @@ export function renderAkun() {
 
       .password-details summary::-webkit-details-marker { display: none; }
       .password-details[open] .caret-icon { transform: rotate(180deg); }
+
+      [data-theme="light"] .delete-warning-img-dark { display: none !important; }
+      [data-theme="light"] .delete-warning-img-light { display: block !important; }
+      [data-theme="dark"] .delete-warning-img-light { display: none !important; }
+      [data-theme="dark"] .delete-warning-img-dark { display: block !important; }
     </style>
   `;
 
@@ -290,8 +295,8 @@ export function renderAkun() {
             }, 2000);
           } catch (err) {
             hideLoading();
-            if (err.code === "auth/wrong-password") {
-              showAlert("Gagal", "Password yang Anda masukkan salah.", "error");
+            if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+              showAlert("Gagal Hapus Akun", "Password yang kamu masukkan salah kocak! Coba ingat-ingat lagi.", "error");
             } else if (err.code === "auth/requires-recent-login") {
               showAlert(
                 "Sesi Kedaluwarsa",

@@ -221,7 +221,7 @@ export function renderLaporan() {
         </h4>
         <div style="display: flex; flex-direction: column; gap: 2rem;">
           <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <div class="icon-box bg-red-light text-red" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 14px;">
+            <div class="icon-box bg-red-light text-red" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 50%;">
               <i class="ph ph-trend-down"></i>
             </div>
             <div>
@@ -230,7 +230,7 @@ export function renderLaporan() {
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <div class="icon-box bg-green-light text-green" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 14px;">
+            <div class="icon-box bg-green-light text-green" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 50%;">
               <i class="ph ph-trend-up"></i>
             </div>
             <div>
@@ -239,7 +239,7 @@ export function renderLaporan() {
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border);">
-            <div class="icon-box bg-blue-light text-blue" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 14px;">
+            <div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #a78bfa;">
               <i class="ph ph-wallet"></i>
             </div>
             <div>

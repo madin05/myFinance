@@ -12,18 +12,29 @@ let cachedTransporter = null;
 const getTransporter = () => {
   if (!cachedTransporter) {
     cachedTransporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // STARTTLS for fast connection setup
       pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
+      maxConnections: 10,
+      maxMessages: 200,
+      rateDelta: 1000,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
   return cachedTransporter;
 };
+
+// Pre-warm SMTP pool on server start
+if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  getTransporter();
+}
 
 /**
  * Kirim email verifikasi ke user menggunakan Firebase Admin SDK.
@@ -38,9 +49,10 @@ exports.sendVerificationEmail = async (email) => {
     throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
   }
 
-  // Cek ketersediaan user di Firebase Auth terlebih dahulu
+  // Generate link verifikasi via Firebase Admin SDK (langsung tangkap jika user tidak ada)
+  let actionLink;
   try {
-    await admin.auth().getUserByEmail(email);
+    actionLink = await admin.auth().generateEmailVerificationLink(email);
   } catch (err) {
     if (err.code === 'auth/user-not-found') {
       const errorObj = new Error('Email tidak terdaftar di sistem.');
@@ -50,11 +62,11 @@ exports.sendVerificationEmail = async (email) => {
     throw err;
   }
 
-  // Generate link verifikasi via Firebase Admin SDK (tidak ada limit!)
-  const verificationLink = await admin.auth().generateEmailVerificationLink(email, {
-    url: process.env.FRONTEND_URL || 'http://localhost:5173',
-    handleCodeInApp: false,
-  });
+  // Parse oobCode untuk membuat direct deep-link ke frontend (Bypass Firebase Console)
+  const urlObj = new URL(actionLink);
+  const oobCode = urlObj.searchParams.get('oobCode');
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verificationLink = `${frontendUrl}/?mode=verifyEmail&oobCode=${oobCode}`;
 
   const transporter = getTransporter();
 
@@ -160,9 +172,10 @@ exports.sendPasswordResetEmail = async (email) => {
     throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
   }
 
-  // Cek ketersediaan user di Firebase Auth terlebih dahulu agar tidak memicu internal assertion error
+  // Generate link reset password via Firebase Admin SDK (langsung tangkap jika user tidak ada)
+  let actionLink;
   try {
-    await admin.auth().getUserByEmail(email);
+    actionLink = await admin.auth().generatePasswordResetLink(email);
   } catch (err) {
     if (err.code === 'auth/user-not-found') {
       const errorObj = new Error('Email tidak terdaftar di sistem.');
@@ -171,12 +184,12 @@ exports.sendPasswordResetEmail = async (email) => {
     }
     throw err;
   }
-
-  // Generate link reset password via Firebase Admin SDK
+  
+  // Parse oobCode untuk membuat direct deep-link ke frontend
+  const urlObj = new URL(actionLink);
+  const oobCode = urlObj.searchParams.get('oobCode');
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const resetLink = await admin.auth().generatePasswordResetLink(email, {
-    url: `${frontendUrl}/#login?resetSuccess=true`,
-  });
+  const resetLink = `${frontendUrl}/?mode=resetPassword&oobCode=${oobCode}`;
 
   const transporter = getTransporter();
 
