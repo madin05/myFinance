@@ -5,6 +5,7 @@ import {
   showToast,
   showAlert,
   showConfirm,
+  checkVerification,
 } from "../components/notifications.js";
 import {
   openEditUsernameModal,
@@ -83,7 +84,7 @@ export function renderAkun() {
         </div>
 
         <!-- Section 2: Security & Identity Form -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
           <div class="stat-card" style="padding: 2rem;">
             <h4 style="margin-bottom: 1.5rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
               <i class="ph-fill ph-shield-check" style="color: var(--primary);"></i>
@@ -229,17 +230,19 @@ export function renderAkun() {
   const btnEditUsername = document.getElementById("btn-edit-username");
   if (btnEditUsername) {
     btnEditUsername.onclick = () => {
-      openEditUsernameModal(user.name, async (newName) => {
-        showLoading();
-        try {
-          await store.updateProfile({ name: newName });
-          renderAkun(); // Re-render to reflect changes
-          showToast("Nama pengguna berhasil diperbarui.", "success");
-        } catch (err) {
-          showAlert("Gagal", err.message, "error");
-        } finally {
-          hideLoading();
-        }
+      checkVerification(() => {
+        openEditUsernameModal(user.name, async (newName) => {
+          showLoading();
+          try {
+            await store.updateProfile({ name: newName });
+            renderAkun(); // Re-render to reflect changes
+            showToast("Nama pengguna berhasil diperbarui.", "success");
+          } catch (err) {
+            showAlert("Gagal", err.message, "error");
+          } finally {
+            hideLoading();
+          }
+        });
       });
     };
   }
@@ -247,57 +250,59 @@ export function renderAkun() {
   const btnDeleteAccount = document.getElementById("btn-delete-account");
   if (btnDeleteAccount) {
     btnDeleteAccount.onclick = () => {
-      const userFirebase = auth.currentUser;
-      if (!userFirebase) {
-        showAlert(
-          "Sesi Habis",
-          "Silakan login ulang untuk melanjutkan.",
-          "error",
-        );
-        return;
-      }
-
-      const providerId = userFirebase.providerData[0]?.providerId || "password";
-
-      openDeleteAccountModal(providerId, async (passwordOrNull) => {
-        showLoading();
-        try {
-          // 1. Re-auth jika pakai password lokal
-          if (providerId === "password" && passwordOrNull) {
-            const credential = EmailAuthProvider.credential(
-              userFirebase.email,
-              passwordOrNull,
-            );
-            await reauthenticateWithCredential(userFirebase, credential);
-          }
-
-          // 2. Hapus data dari Postgres via backend
-          await store.deleteAccountRemote();
-
-          // 3. Hapus user dari Firebase Auth
-          await userFirebase.delete();
-
-          hideLoading();
-          showToast("Akun telah dihapus secara permanen.", "success");
-
-          setTimeout(() => {
-            navigateTo("/login");
-            window.location.reload();
-          }, 2000);
-        } catch (err) {
-          hideLoading();
-          if (err.code === "auth/wrong-password") {
-            showAlert("Gagal", "Password yang Anda masukkan salah.", "error");
-          } else if (err.code === "auth/requires-recent-login") {
-            showAlert(
-              "Sesi Kedaluwarsa",
-              "Silakan logout dan login kembali sebelum menghapus akun demi keamanan.",
-              "warning",
-            );
-          } else {
-            showAlert("Gagal Hapus Akun", err.message, "error");
-          }
+      checkVerification(() => {
+        const userFirebase = auth.currentUser;
+        if (!userFirebase) {
+          showAlert(
+            "Sesi Habis",
+            "Silakan login ulang untuk melanjutkan.",
+            "error",
+          );
+          return;
         }
+
+        const providerId = userFirebase.providerData[0]?.providerId || "password";
+
+        openDeleteAccountModal(providerId, async (passwordOrNull) => {
+          showLoading();
+          try {
+            // 1. Re-auth jika pakai password lokal
+            if (providerId === "password" && passwordOrNull) {
+              const credential = EmailAuthProvider.credential(
+                userFirebase.email,
+                passwordOrNull,
+              );
+              await reauthenticateWithCredential(userFirebase, credential);
+            }
+
+            // 2. Hapus data dari Postgres via backend
+            await store.deleteAccountRemote();
+
+            // 3. Hapus user dari Firebase Auth
+            await userFirebase.delete();
+
+            hideLoading();
+            showToast("Akun telah dihapus secara permanen.", "success");
+
+            setTimeout(() => {
+              navigateTo("/login");
+              window.location.reload();
+            }, 2000);
+          } catch (err) {
+            hideLoading();
+            if (err.code === "auth/wrong-password") {
+              showAlert("Gagal", "Password yang Anda masukkan salah.", "error");
+            } else if (err.code === "auth/requires-recent-login") {
+              showAlert(
+                "Sesi Kedaluwarsa",
+                "Silakan logout dan login kembali sebelum menghapus akun demi keamanan.",
+                "warning",
+              );
+            } else {
+              showAlert("Gagal Hapus Akun", err.message, "error");
+            }
+          }
+        });
       });
     };
   }
@@ -306,34 +311,35 @@ export function renderAkun() {
   if (toggle2FA) {
     toggle2FA.onchange = async (e) => {
       const isChecked = e.target.checked;
+      checkVerification(async () => {
+        if (isChecked) {
+          // Logic Setup 2FA
+          const code = prompt(
+            "Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)",
+          );
 
-      if (isChecked) {
-        // Logic Setup 2FA
-        const code = prompt(
-          "Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)",
-        );
-
-        if (code === "123456") {
-          showLoading();
-          const success = await store.update2FAStatus(true);
-          hideLoading();
-          if (success) {
-            showToast("2FA Aktif! Akun Anda sekarang lebih aman.", "success");
+          if (code === "123456") {
+            showLoading();
+            const success = await store.update2FAStatus(true);
+            hideLoading();
+            if (success) {
+              showToast("2FA Aktif! Akun Anda sekarang lebih aman.", "success");
+            } else {
+              e.target.checked = false;
+              showToast("Gagal update status 2FA.", "error");
+            }
           } else {
             e.target.checked = false;
-            showToast("Gagal update status 2FA.", "error");
+            if (code !== null) showToast("Kode OTP tidak valid.", "error");
           }
         } else {
-          e.target.checked = false;
-          if (code !== null) showToast("Kode OTP tidak valid.", "error");
+          // Deactivate 2FA
+          showLoading();
+          await store.update2FAStatus(false);
+          hideLoading();
+          showToast("2FA dinonaktifkan.", "info");
         }
-      } else {
-        // Deactivate 2FA
-        showLoading();
-        await store.update2FAStatus(false);
-        hideLoading();
-        showToast("2FA dinonaktifkan.", "info");
-      }
+      });
     };
   }
 
@@ -344,62 +350,65 @@ export function renderAkun() {
       const file = e.target.files[0];
       if (!file) return;
 
-      // Validasi tipe file
-      if (!file.type.startsWith("image/")) {
-        return showAlert("Error", "Berkas harus berupa gambar.", "error");
-      }
+      checkVerification(async () => {
+        // Validasi tipe file
+        if (!file.type.startsWith("image/")) {
+          return showAlert("Error", "Berkas harus berupa gambar.", "error");
+        }
 
-      try {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          const img = new Image();
-          img.onload = async () => {
-            // Kompresi Gambar (Cepat)
-            const canvas = document.createElement("canvas");
-            const MAX_WIDTH = 600;
-            const MAX_HEIGHT = 600;
-            let width = img.width;
-            let height = img.height;
+        try {
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const img = new Image();
+            img.onload = async () => {
+              // Kompresi Gambar (Cepat)
+              const canvas = document.createElement("canvas");
+              const MAX_WIDTH = 600;
+              const MAX_HEIGHT = 600;
+              let width = img.width;
+              let height = img.height;
 
-            if (width > height) {
-              if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
               }
-            } else {
-              if (height > MAX_HEIGHT) {
-                width *= MAX_HEIGHT / height;
-                height = MAX_HEIGHT;
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+
+              const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+              // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
+              store.user.avatar = compressedBase64;
+              store.updateUI();
+
+              const modal = document.getElementById("pp-preview-modal");
+              if (modal) modal.style.display = "none";
+
+              // 2. BACKGROUND SYNC: Kirim ke server diem-diem
+              try {
+                await store.updateProfile({ avatar: compressedBase64 });
+                showToast("Foto profil diperbaharui!", "success");
+              } catch (err) {
+                showToast("Gagal sinkron, tapi profil lokal aman.", "warning");
               }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-
-            // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
-            store.user.avatar = compressedBase64;
-            store.updateUI();
-
-            const modal = document.getElementById("pp-preview-modal");
-            if (modal) modal.style.display = "none";
-
-            // 2. BACKGROUND SYNC: Kirim ke server diem-diem
-            try {
-              await store.updateProfile({ avatar: compressedBase64 });
-              showToast("Foto profil diperbaharui!", "success");
-            } catch (err) {
-              showToast("Gagal sinkron, tapi profil lokal aman.", "warning");
-            }
+            };
+            img.src = event.target.result;
           };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      } catch (err) {
-        showAlert("Gagal", "Ada masalah pas baca file gambar.", "error");
-      }
+          reader.readAsDataURL(file);
+        } catch (err) {
+          showAlert("Gagal", "Ada masalah pas baca file gambar.", "error");
+        }
+      });
     };
   }
 
@@ -408,66 +417,68 @@ export function renderAkun() {
   if (btnChangePassword) {
     btnChangePassword.onclick = async (e) => {
       e.preventDefault();
+      checkVerification(async () => {
+        const isGoogle = user.provider && user.provider.includes("google");
 
-      const isGoogle = user.provider && user.provider.includes("google");
-
-      if (isGoogle) {
-        // Open Google Accounts password page in new tab
-        window.open(
-          "https://myaccount.google.com/signinoptions/password",
-          "_blank",
-        );
-      } else {
-        // Trigger password reset email via Firebase Auth for email/password users
-        const confirmed = await showConfirm(
-          "Ubah Kata Sandi",
-          "Tautan untuk menyetel ulang kata sandi akan dikirim ke email Anda (" +
-            user.email +
-            "). Lanjutkan?",
-        );
-        if (!confirmed) return;
-
-        showLoading();
-        try {
-          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
-
-          const res = await fetch(`${API_URL}/auth/reset-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email })
-          });
-
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
-
-          hideLoading();
-
-          showToast(
-            `Tautan reset password telah dikirim ke ${user.email}!`,
-            "success",
+        if (isGoogle) {
+          // Open Google Accounts password page in new tab
+          window.open(
+            "https://myaccount.google.com/signinoptions/password",
+            "_blank",
           );
+        } else {
+          // Trigger password reset email via Firebase Auth / Backend for email/password users
+          const confirmed = await showConfirm(
+            "Ubah Kata Sandi",
+            "Tautan untuk menyetel ulang kata sandi akan dikirim ke email Anda (" +
+              user.email +
+              "). Lanjutkan?",
+          );
+          if (!confirmed) return;
 
-          // Identify email provider for quick access
-          const emailDomain = user.email.split("@")[1] || "";
-          let mailUrl = "https://mail.google.com/";
-          if (emailDomain.includes("yahoo")) {
-            mailUrl = "https://mail.yahoo.com/";
-          } else if (
-            emailDomain.includes("outlook") ||
-            emailDomain.includes("hotmail") ||
-            emailDomain.includes("live")
-          ) {
-            mailUrl = "https://outlook.live.com/";
+          showLoading();
+          try {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+            const res = await fetch(`${API_URL}/auth/reset-password`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: user.email })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
+
+            hideLoading();
+
+            showToast(
+              `Tautan reset password telah dikirim ke ${user.email}!`,
+              "success",
+            );
+
+            // Identify email provider for quick access
+            const emailDomain = user.email.split("@")[1] || "";
+            let mailUrl = "https://mail.google.com/";
+            if (emailDomain.includes("yahoo")) {
+              mailUrl = "https://mail.yahoo.com/";
+            } else if (
+              emailDomain.includes("outlook") ||
+              emailDomain.includes("hotmail") ||
+              emailDomain.includes("live")
+            ) {
+              mailUrl = "https://outlook.live.com/";
+            }
+
+            // Open mail client in new tab
+            window.open(mailUrl, "_blank");
+          } catch (err) {
+            hideLoading();
+            showAlert("Gagal", err.message, "error");
           }
-
-          // Open mail client in new tab
-          window.open(mailUrl, "_blank");
-        } catch (err) {
-          hideLoading();
-          showAlert("Gagal", err.message, "error");
         }
-      }
+      });
     };
   }
 }
+

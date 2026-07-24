@@ -1,10 +1,15 @@
 import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
-import { showToast } from './notifications.js';
+import { showToast, checkVerification } from './notifications.js';
 
 export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData = null) {
+  let allowed = false;
+  checkVerification(() => { allowed = true; });
+  if (!allowed) return;
+
   const container = document.getElementById('modal-container');
+
   const isEdit = !!txToEdit;
   // Apply prefill (dari hasil scan struk) HANYA jika bukan edit mode
   const prefill = !isEdit && prefillData ? prefillData : null;
@@ -317,7 +322,12 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
 }
 
 export function openConfirmModal(title, message, onConfirm) {
+  let allowed = false;
+  checkVerification(() => { allowed = true; });
+  if (!allowed) return;
+
   const container = document.getElementById('modal-container');
+
   
   container.innerHTML = `
     <div class="modal-overlay" id="confirm-overlay" style="align-items: center;">
@@ -381,6 +391,10 @@ export function openConfirmModal(title, message, onConfirm) {
 }
 
 export function openAdjustBalanceModal(currentBalance, onSuccess) {
+  let allowed = false;
+  checkVerification(() => { allowed = true; });
+  if (!allowed) return;
+
   const container = document.getElementById('modal-container');
 
   // Ambil offset yang sudah tersimpan sebelumnya (jika ada)

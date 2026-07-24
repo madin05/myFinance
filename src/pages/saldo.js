@@ -1,6 +1,6 @@
 import { store, formatCurrency } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast } from '../components/notifications.js';
+import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 
@@ -156,178 +156,180 @@ export function renderSaldo() {
   `;
 
   const openSaldoModal = (existingId = null) => {
-    const modalContainer = document.getElementById('modal-container');
-    const isEdit = !!existingId;
-    let existingData = { name: '', type: 'E-Wallet', balance: '' };
+    checkVerification(() => {
+      const modalContainer = document.getElementById('modal-container');
+      const isEdit = !!existingId;
+      let existingData = { name: '', type: 'E-Wallet', balance: '' };
 
-    if (isEdit) {
-      existingData = saldos.find(s => s.id === Number(existingId)) || existingData;
-    }
+      if (isEdit) {
+        existingData = saldos.find(s => s.id === Number(existingId)) || existingData;
+      }
 
-    const types = ['E-Wallet', 'Bank', 'Cash'];
-    const presetNames = {
-      'E-Wallet': [
-        { name: 'Gopay', logo: '/assets/banks/gopay.svg' },
-        { name: 'OVO', logo: '/assets/banks/ovo.png' },
-        { name: 'DANA', logo: '/assets/banks/dana.png' },
-        { name: 'ShopeePay', logo: '/assets/banks/shopeepay.png' },
-        { name: 'LinkAja', logo: '/assets/banks/linkaja.svg' },
-        { name: 'Lainnya (Ketik Manual)', logo: '' }
-      ],
-      'Bank': [
-        { name: 'BCA', logo: '/assets/banks/bca.png' },
-        { name: 'Bank Mandiri', logo: '/assets/banks/mandiri.png' },
-        { name: 'BNI', logo: '/assets/banks/bni.png' },
-        { name: 'BRI', logo: '/assets/banks/bri.png' },
-        { name: 'BSI', logo: '/assets/banks/bsi.png' },
-        { name: 'Bank Jago', logo: '/assets/banks/jago.png' },
-        { name: 'SeaBank', logo: '/assets/banks/seabank.svg' },
-        { name: 'Bank Blu', logo: '/assets/banks/blubca.svg' },
-        { name: 'Lainnya (Ketik Manual)', logo: '' }
-      ],
-      'Cash': [
-        { name: 'Dompet', logo: '' },
-        { name: 'Brankas', logo: '' },
-        { name: 'Uang Tunai', logo: '' },
-        { name: 'Lainnya (Ketik Manual)', logo: '' }
-      ]
-    };
+      const types = ['E-Wallet', 'Bank', 'Cash'];
+      const presetNames = {
+        'E-Wallet': [
+          { name: 'Gopay', logo: '/assets/banks/gopay.svg' },
+          { name: 'OVO', logo: '/assets/banks/ovo.png' },
+          { name: 'DANA', logo: '/assets/banks/dana.png' },
+          { name: 'ShopeePay', logo: '/assets/banks/shopeepay.png' },
+          { name: 'LinkAja', logo: '/assets/banks/linkaja.svg' },
+          { name: 'Lainnya (Ketik Manual)', logo: '' }
+        ],
+        'Bank': [
+          { name: 'BCA', logo: '/assets/banks/bca.png' },
+          { name: 'Bank Mandiri', logo: '/assets/banks/mandiri.png' },
+          { name: 'BNI', logo: '/assets/banks/bni.png' },
+          { name: 'BRI', logo: '/assets/banks/bri.png' },
+          { name: 'BSI', logo: '/assets/banks/bsi.png' },
+          { name: 'Bank Jago', logo: '/assets/banks/jago.png' },
+          { name: 'SeaBank', logo: '/assets/banks/seabank.svg' },
+          { name: 'Bank Blu', logo: '/assets/banks/blubca.svg' },
+          { name: 'Lainnya (Ketik Manual)', logo: '' }
+        ],
+        'Cash': [
+          { name: 'Dompet', logo: '' },
+          { name: 'Brankas', logo: '' },
+          { name: 'Uang Tunai', logo: '' },
+          { name: 'Lainnya (Ketik Manual)', logo: '' }
+        ]
+      };
 
-    modalContainer.innerHTML = `
-      <div class="modal-overlay" id="saldo-modal-overlay">
-        <div class="modal-content" style="max-width: 450px;">
-          <div class="modal-header">
-            <h3>${isEdit ? 'Ubah Saldo Akun' : 'Tambah Saldo Akun'}</h3>
-            <button class="modal-close" id="close-saldo-modal"><i class="ph ph-x"></i></button>
+      modalContainer.innerHTML = `
+        <div class="modal-overlay" id="saldo-modal-overlay">
+          <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+              <h3>${isEdit ? 'Ubah Saldo Akun' : 'Tambah Saldo Akun'}</h3>
+              <button class="modal-close" id="close-saldo-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="form-saldo" style="padding-top: 1rem;">
+              <div class="form-group" style="margin-bottom: 1.5rem;" id="type-group">
+                <label>Jenis Akun</label>
+                <select class="form-control" id="saldo-type" required>
+                  ${types.map(t => `<option value="${t}" ${t === existingData.type ? 'selected' : ''}>${t}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 1.5rem;" id="name-group">
+                <label>Nama Akun</label>
+                <select class="form-control" id="saldo-name-select" required></select>
+                <input type="text" class="form-control" id="saldo-name-manual" placeholder="Ketik nama manual..." style="display: none; margin-top: 0.75rem;">
+              </div>
+              <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Nominal Saldo (Rp)</label>
+                <input type="text" class="form-control" id="saldo-amount" placeholder="Contoh: 100.000,00" inputmode="decimal" value="${existingData.balance ? new Intl.NumberFormat('id-ID').format(existingData.balance) : ''}" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Simpan Perubahan' : 'Tambahkan Akun'}</button>
+            </form>
           </div>
-          <form id="form-saldo" style="padding-top: 1rem;">
-            <div class="form-group" style="margin-bottom: 1.5rem;" id="type-group">
-              <label>Jenis Akun</label>
-              <select class="form-control" id="saldo-type" required>
-                ${types.map(t => `<option value="${t}" ${t === existingData.type ? 'selected' : ''}>${t}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 1.5rem;" id="name-group">
-              <label>Nama Akun</label>
-              <select class="form-control" id="saldo-name-select" required></select>
-              <input type="text" class="form-control" id="saldo-name-manual" placeholder="Ketik nama manual..." style="display: none; margin-top: 0.75rem;">
-            </div>
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-              <label>Nominal Saldo (Rp)</label>
-              <input type="text" class="form-control" id="saldo-amount" placeholder="Contoh: 100.000,00" inputmode="decimal" value="${existingData.balance ? new Intl.NumberFormat('id-ID').format(existingData.balance) : ''}" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Simpan Perubahan' : 'Tambahkan Akun'}</button>
-          </form>
         </div>
-      </div>
-    `;
+      `;
 
-    const typeSelect = document.getElementById('saldo-type');
-    const nameSelect = document.getElementById('saldo-name-select');
-    const manualInput = document.getElementById('saldo-name-manual');
+      const typeSelect = document.getElementById('saldo-type');
+      const nameSelect = document.getElementById('saldo-name-select');
+      const manualInput = document.getElementById('saldo-name-manual');
 
-    const updateNameOptions = () => {
-      const type = typeSelect.value;
-      const options = presetNames[type] || [];
-      nameSelect.innerHTML = options.map(o => `<option value="${o.name}" ${o.logo ? `data-logo="${o.logo}"` : ''}>${o.name}</option>`).join('');
+      const updateNameOptions = () => {
+        const type = typeSelect.value;
+        const options = presetNames[type] || [];
+        nameSelect.innerHTML = options.map(o => `<option value="${o.name}" ${o.logo ? `data-logo="${o.logo}"` : ''}>${o.name}</option>`).join('');
+        
+        if (isEdit && existingData.type === type) {
+          if (!options.find(o => o.name === existingData.name)) {
+            nameSelect.value = 'Lainnya (Ketik Manual)';
+            manualInput.value = existingData.name;
+            manualInput.style.display = 'block';
+            manualInput.required = true;
+          } else {
+            nameSelect.value = existingData.name;
+            manualInput.style.display = 'none';
+            manualInput.required = false;
+          }
+        } else {
+          manualInput.style.display = 'none';
+          manualInput.required = false;
+          manualInput.value = '';
+        }
+        
+        const wrapper = nameSelect.nextElementSibling;
+        if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
+          wrapper.remove();
+          nameSelect.classList.remove('custom-select-hidden');
+        }
+        initCustomSelects(document.getElementById('name-group'));
+      };
+
+      updateNameOptions();
+
+      typeSelect.addEventListener('change', updateNameOptions);
       
-      if (isEdit && existingData.type === type) {
-        if (!options.find(o => o.name === existingData.name)) {
-          nameSelect.value = 'Lainnya (Ketik Manual)';
-          manualInput.value = existingData.name;
+      nameSelect.addEventListener('change', () => {
+        if (nameSelect.value === 'Lainnya (Ketik Manual)') {
           manualInput.style.display = 'block';
           manualInput.required = true;
+          manualInput.focus();
         } else {
-          nameSelect.value = existingData.name;
           manualInput.style.display = 'none';
           manualInput.required = false;
         }
-      } else {
-        manualInput.style.display = 'none';
-        manualInput.required = false;
-        manualInput.value = '';
-      }
+      });
+
+      initCustomSelects(document.getElementById('type-group'));
+
+      const amountInput = document.getElementById('saldo-amount');
       
-      const wrapper = nameSelect.nextElementSibling;
-      if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
-        wrapper.remove();
-        nameSelect.classList.remove('custom-select-hidden');
-      }
-      initCustomSelects(document.getElementById('name-group'));
-    };
+      const formatIDRInput = (str) => {
+        const parts = str.split(',');
+        const intPart = parts[0].replace(/\D/g, '');
+        const intFormatted = intPart ? new Intl.NumberFormat('id-ID').format(parseInt(intPart)) : '';
+        return parts.length > 1 ? intFormatted + ',' + parts[1].replace(/\D/g, '').slice(0, 2) : intFormatted;
+      };
 
-    updateNameOptions();
+      const parseIDRInput = (str) => {
+        if (!str) return 0;
+        const normalized = str.replace(/\./g, '').replace(',', '.');
+        return parseFloat(normalized) || 0;
+      };
 
-    typeSelect.addEventListener('change', updateNameOptions);
-    
-    nameSelect.addEventListener('change', () => {
-      if (nameSelect.value === 'Lainnya (Ketik Manual)') {
-        manualInput.style.display = 'block';
-        manualInput.required = true;
-        manualInput.focus();
-      } else {
-        manualInput.style.display = 'none';
-        manualInput.required = false;
-      }
-    });
+      amountInput.oninput = (e) => {
+        const rawValue = e.target.value;
+        if (!rawValue.endsWith(',')) {
+          e.target.value = formatIDRInput(rawValue);
+        }
+      };
 
-    initCustomSelects(document.getElementById('type-group'));
-
-    const amountInput = document.getElementById('saldo-amount');
-    
-    const formatIDRInput = (str) => {
-      const parts = str.split(',');
-      const intPart = parts[0].replace(/\D/g, '');
-      const intFormatted = intPart ? new Intl.NumberFormat('id-ID').format(parseInt(intPart)) : '';
-      return parts.length > 1 ? intFormatted + ',' + parts[1].replace(/\D/g, '').slice(0, 2) : intFormatted;
-    };
-
-    const parseIDRInput = (str) => {
-      if (!str) return 0;
-      const normalized = str.replace(/\./g, '').replace(',', '.');
-      return parseFloat(normalized) || 0;
-    };
-
-    amountInput.oninput = (e) => {
-      const rawValue = e.target.value;
-      if (!rawValue.endsWith(',')) {
-        e.target.value = formatIDRInput(rawValue);
-      }
-    };
-
-    document.getElementById('close-saldo-modal').onclick = () => modalContainer.innerHTML = '';
-    
-    document.getElementById('saldo-modal-overlay').onclick = (e) => {
-      if (e.target.id === 'saldo-modal-overlay') {
+      document.getElementById('close-saldo-modal').onclick = () => modalContainer.innerHTML = '';
+      
+      document.getElementById('saldo-modal-overlay').onclick = (e) => {
+        if (e.target.id === 'saldo-modal-overlay') {
+          modalContainer.innerHTML = '';
+        }
+      };
+      
+      document.getElementById('form-saldo').onsubmit = (e) => {
+        e.preventDefault();
+        const amount = parseIDRInput(amountInput.value);
+        let name = nameSelect.value;
+        let logo = '';
+        if (name === 'Lainnya (Ketik Manual)') {
+          name = manualInput.value;
+        } else {
+          const selectedOption = nameSelect.options[nameSelect.selectedIndex];
+          logo = selectedOption?.getAttribute('data-logo') || '';
+        }
+        const type = typeSelect.value;
+        
+        showLoading();
+        if (isEdit) {
+          store.updateSaldo(Number(existingId), { balance: amount, name, type, logo });
+          showToast('Saldo berhasil diperbarui!', 'success');
+        } else {
+          store.addSaldo({ name, type, balance: amount, logo });
+          showToast('Akun berhasil ditambahkan!', 'success');
+        }
+        hideLoading();
         modalContainer.innerHTML = '';
-      }
-    };
-    
-    document.getElementById('form-saldo').onsubmit = (e) => {
-      e.preventDefault();
-      const amount = parseIDRInput(amountInput.value);
-      let name = nameSelect.value;
-      let logo = '';
-      if (name === 'Lainnya (Ketik Manual)') {
-        name = manualInput.value;
-      } else {
-        const selectedOption = nameSelect.options[nameSelect.selectedIndex];
-        logo = selectedOption?.getAttribute('data-logo') || '';
-      }
-      const type = typeSelect.value;
-      
-      showLoading();
-      if (isEdit) {
-        store.updateSaldo(Number(existingId), { balance: amount, name, type, logo });
-        showToast('Saldo berhasil diperbarui!', 'success');
-      } else {
-        store.addSaldo({ name, type, balance: amount, logo });
-        showToast('Akun berhasil ditambahkan!', 'success');
-      }
-      hideLoading();
-      modalContainer.innerHTML = '';
-      renderSaldo();
-    };
+        renderSaldo();
+      };
+    });
   };
 
   document.getElementById('btn-add-saldo').onclick = () => openSaldoModal();
@@ -360,17 +362,19 @@ export function renderSaldo() {
     (id) => {
       openSaldoModal(id);
     },
-    async (id) => {
-      const saldo = saldos.find(s => String(s.id) === id);
-      const { showConfirm } = await import('../components/notifications.js');
-      const confirmed = await showConfirm('Hapus Akun?', `Apakah Anda yakin ingin menghapus akun "${saldo?.name}"?`);
-      if (confirmed) {
-        showLoading();
-        store.deleteSaldo(Number(id));
-        hideLoading();
-        showToast('Akun berhasil dihapus!', 'info');
-        renderSaldo();
-      }
+    (id) => {
+      checkVerification(async () => {
+        const saldo = saldos.find(s => String(s.id) === id);
+        const { showConfirm } = await import('../components/notifications.js');
+        const confirmed = await showConfirm('Hapus Akun?', `Apakah Anda yakin ingin menghapus akun "${saldo?.name}"?`);
+        if (confirmed) {
+          showLoading();
+          store.deleteSaldo(Number(id));
+          hideLoading();
+          showToast('Akun berhasil dihapus!', 'info');
+          renderSaldo();
+        }
+      });
     }
   );
 }

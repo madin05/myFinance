@@ -1,4 +1,5 @@
 import { store } from './store.js';
+import { auth } from './firebase-config.js';
 import {
   getDashboardSkeleton,
   getTableSkeleton,
@@ -9,6 +10,27 @@ import {
   getLaporanSkeleton,
   getAkunSkeleton
 } from './components/skeleton.js';
+
+// --- Daftar rute yang DIKUNCI untuk user yang belum verifikasi email ---
+const VERIFICATION_REQUIRED_ROUTES = ['/transaksi', '/anggaran', '/saldo', '/laporan', '/settings'];
+
+/**
+ * Cek apakah user sudah terverifikasi emailnya.
+ * Prioritas: Firebase Auth currentUser > store.user.emailVerified
+ * Google OAuth users dianggap selalu verified.
+ */
+export function isUserVerified() {
+  const firebaseUser = auth.currentUser;
+  if (firebaseUser) {
+    // Google provider selalu dianggap verified
+    const isGoogle = firebaseUser.providerData.some(p => p.providerId === 'google.com');
+    if (isGoogle) return true;
+    return firebaseUser.emailVerified;
+  }
+  // Fallback ke store
+  if (store.user?.provider === 'google') return true;
+  return store.user?.emailVerified ?? false;
+}
 
 // --- URL Security & Sanitization Layer (Anti-XSS / Anti-Path Traversal) ---
 export function sanitizePath(path) {
@@ -100,7 +122,7 @@ export function handleRoute() {
   } else {
     document.body.classList.remove('page-dashboard');
   }
-  
+
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
     const icon = item.querySelector('i');

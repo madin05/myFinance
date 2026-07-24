@@ -8,7 +8,8 @@ import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
 import { hideLoading, initStickyHeader } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
-import { showConfirm } from './components/notifications.js';
+import { showConfirm, checkVerification } from './components/notifications.js';
+
 import './css/variables.css';
 import './css/base.css';
 import './css/components/buttons.css';
@@ -211,9 +212,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. Global FAM Buttons
   document.getElementById('btn-fam-add-tx')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
-    openAddTransactionModal(() => {
-      const path = window.location.pathname || '/dashboard';
-      if (path === '/dashboard' || path === '/transaksi') handleRoute();
+    checkVerification(() => {
+      openAddTransactionModal(() => {
+        const path = window.location.pathname || '/dashboard';
+        if (path === '/dashboard' || path === '/transaksi') handleRoute();
+      });
     });
   });
 
@@ -229,7 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-fam-scan-receipt')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
-    openScanReceiptModal();
+    checkVerification(() => {
+      openScanReceiptModal();
+    });
   });
 
   // 3. Click Outside to Close FAM & Intercept Sidebar Link Clicks (SPA Routing)

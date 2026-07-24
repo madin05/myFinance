@@ -329,16 +329,39 @@ body.page-dashboard .header:not(.scrolled) .search-bar input::placeholder {
 body.page-dashboard .header:not(.scrolled) .search-bar .search-icon {
   color: #FFFFFF;
 }
+/* Fix: Theme toggle pill + semua elemen header harus putih di atas hero biru (light mode) */
+body.page-dashboard .header:not(.scrolled) .header-actions .theme-toggle-group {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: none !important;
+}
+/* Force icon color white — termasuk SVG di dalam toggle */
 body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn,
 body.page-dashboard .header:not(.scrolled) .header-actions .theme-auto-btn,
 body.page-dashboard .header:not(.scrolled) .header-actions .themeToggle {
-  color: #FFFFFF;
+  color: #FFFFFF !important;
+  background: transparent !important;
 }
+/* Paksa background hover semi-transparan (bukan bg-color putih default) */
 body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn:hover,
 body.page-dashboard .header:not(.scrolled) .header-actions .theme-auto-btn:hover,
 body.page-dashboard .header:not(.scrolled) .header-actions .themeToggle:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #FFFFFF !important;
+}
+/* Override active state auto-btn (jika sistem mode aktif, background tetap putih transparan) */
+body.page-dashboard .header:not(.scrolled) .header-actions .theme-auto-btn.active {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #FFFFFF !important;
+}
+/* Force warna SVG icon di dalam toggle tetap putih */
+body.page-dashboard .header:not(.scrolled) .header-actions .st-sunMoonThemeToggleBtn svg {
+  color: #FFFFFF !important;
+}
+body.page-dashboard .header:not(.scrolled) .header-actions .st-sunMoonThemeToggleBtn svg .sunMoon,
+body.page-dashboard .header:not(.scrolled) .header-actions .st-sunMoonThemeToggleBtn svg .sunRay {
+  fill: #FFFFFF !important;
 }
 body.page-dashboard .header:not(.scrolled) .user-profile img {
   border-color: rgba(255, 255, 255, 0.5);

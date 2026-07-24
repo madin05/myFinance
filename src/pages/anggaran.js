@@ -1,6 +1,6 @@
 import { store, formatRupiah } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast } from '../components/notifications.js';
+import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 
@@ -115,61 +115,63 @@ export function renderAnggaran() {
   `;
 
   const openBudgetModal = (existingCategory = '', existingAmount = '') => {
-    const modalContainer = document.getElementById('modal-container');
-    const isEdit = existingCategory !== '';
+    checkVerification(() => {
+      const modalContainer = document.getElementById('modal-container');
+      const isEdit = existingCategory !== '';
 
-    modalContainer.innerHTML = `
-      <div class="modal-overlay" id="budget-modal-overlay">
-        <div class="modal-content" style="max-width: 450px;">
-          <div class="modal-header">
-            <h3>${isEdit ? 'Ubah Jatah Bulanan' : 'Setel Jatah Bulanan'}</h3>
-            <button class="modal-close" id="close-budget-modal"><i class="ph ph-x"></i></button>
+      modalContainer.innerHTML = `
+        <div class="modal-overlay" id="budget-modal-overlay">
+          <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+              <h3>${isEdit ? 'Ubah Jatah Bulanan' : 'Setel Jatah Bulanan'}</h3>
+              <button class="modal-close" id="close-budget-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="form-set-budget" style="padding-top: 1rem;">
+              <div class="form-group">
+                <label>Pilih Kategori</label>
+                <select class="form-control" id="budget-category" ${isEdit ? 'disabled' : ''} required>
+                  ${categories.map(c => `<option value="${c}" ${c === existingCategory ? 'selected' : ''}>${c}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group" style="margin-top: 1.5rem;">
+                <label>Target Nominal (Rp)</label>
+                <input type="text" class="form-control" id="budget-amount" placeholder="Contoh: 1.000.000" value="${existingAmount ? new Intl.NumberFormat('id-ID').format(existingAmount) : ''}" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Update Anggaran' : 'Simpan Anggaran'}</button>
+            </form>
           </div>
-          <form id="form-set-budget" style="padding-top: 1rem;">
-            <div class="form-group">
-              <label>Pilih Kategori</label>
-              <select class="form-control" id="budget-category" ${isEdit ? 'disabled' : ''} required>
-                ${categories.map(c => `<option value="${c}" ${c === existingCategory ? 'selected' : ''}>${c}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-group" style="margin-top: 1.5rem;">
-              <label>Target Nominal (Rp)</label>
-              <input type="text" class="form-control" id="budget-amount" placeholder="Contoh: 1.000.000" value="${existingAmount ? new Intl.NumberFormat('id-ID').format(existingAmount) : ''}" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Update Anggaran' : 'Simpan Anggaran'}</button>
-          </form>
         </div>
-      </div>
-    `;
+      `;
 
-    initCustomSelects(modalContainer);
+      initCustomSelects(modalContainer);
 
-    const amountInput = document.getElementById('budget-amount');
-    amountInput.oninput = (e) => {
-      let val = e.target.value.replace(/\D/g, '');
-      if (val) e.target.value = new Intl.NumberFormat('id-ID').format(val);
-    };
+      const amountInput = document.getElementById('budget-amount');
+      amountInput.oninput = (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val) e.target.value = new Intl.NumberFormat('id-ID').format(val);
+      };
 
-    document.getElementById('close-budget-modal').onclick = () => modalContainer.innerHTML = '';
-    
-    document.getElementById('budget-modal-overlay').onclick = (e) => {
-      if (e.target.id === 'budget-modal-overlay') {
+      document.getElementById('close-budget-modal').onclick = () => modalContainer.innerHTML = '';
+      
+      document.getElementById('budget-modal-overlay').onclick = (e) => {
+        if (e.target.id === 'budget-modal-overlay') {
+          modalContainer.innerHTML = '';
+        }
+      };
+      
+      document.getElementById('form-set-budget').onsubmit = async (e) => {
+        e.preventDefault();
+        const category = document.getElementById('budget-category').value;
+        const amount = Number(amountInput.value.replace(/\./g, ''));
+
+        showLoading();
+        await store.updateBudget(category, amount, periodKey);
+        hideLoading();
         modalContainer.innerHTML = '';
-      }
-    };
-    
-    document.getElementById('form-set-budget').onsubmit = async (e) => {
-      e.preventDefault();
-      const category = document.getElementById('budget-category').value;
-      const amount = Number(amountInput.value.replace(/\./g, ''));
-
-      showLoading();
-      await store.updateBudget(category, amount, periodKey);
-      hideLoading();
-      modalContainer.innerHTML = '';
-      showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, 'success');
-      renderAnggaran();
-    };
+        showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, 'success');
+        renderAnggaran();
+      };
+    });
   };
 
   // Event Listeners
@@ -201,22 +203,24 @@ export function renderAnggaran() {
       if (budget) openBudgetModal(budget.category, budget.amount);
     },
     // onDelete
-    async (id) => {
-      const budget = budgetList.find(b => String(b.id) === id);
-      const category = budget?.category || '';
-      const { showConfirm } = await import('../components/notifications.js');
-      const confirmed = await showConfirm('Hapus Anggaran?', `Apakah Anda yakin ingin menghapus anggaran untuk kategori "${category}" ini?`);
-      if (confirmed) {
-        showLoading();
-        const success = await store.deleteBudget(Number(id));
-        hideLoading();
-        if (success) {
-          showToast(`Anggaran ${category} berhasil dihapus!`, 'info');
-          renderAnggaran();
-        } else {
-          showToast('Gagal menghapus anggaran.', 'error');
+    (id) => {
+      checkVerification(async () => {
+        const budget = budgetList.find(b => String(b.id) === id);
+        const category = budget?.category || '';
+        const { showConfirm } = await import('../components/notifications.js');
+        const confirmed = await showConfirm('Hapus Anggaran?', `Apakah Anda yakin ingin menghapus anggaran untuk kategori "${category}" ini?`);
+        if (confirmed) {
+          showLoading();
+          const success = await store.deleteBudget(Number(id));
+          hideLoading();
+          if (success) {
+            showToast(`Anggaran ${category} berhasil dihapus!`, 'info');
+            renderAnggaran();
+          } else {
+            showToast('Gagal menghapus anggaran.', 'error');
+          }
         }
-      }
+      });
     }
   );
 }
