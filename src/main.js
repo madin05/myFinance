@@ -83,11 +83,38 @@ export async function checkAuth() {
     loginView.style.display = 'block';
     appLayout.style.display = 'none';
 
+    // Jika user sudah terautentikasi dan sudah terverifikasi sebelumnya
+    if (auth.currentUser) {
+      try { await auth.currentUser.reload(); } catch (e) {}
+      if (auth.currentUser.emailVerified) {
+        window.history.replaceState(null, '', window.location.pathname);
+        loginView.style.display = 'none';
+        appLayout.style.display = 'flex';
+        navigateTo('/dashboard');
+        const { showToast } = await import('./components/notifications.js');
+        showToast('Akun Anda sudah terverifikasi!', 'success');
+        return;
+      }
+    }
+
     try {
       await applyActionCode(auth, oobCode);
       renderLogin('email-verified');
     } catch (actionErr) {
       console.warn('applyActionCode gagal:', actionErr.code);
+      // Cek sekali lagi apakah user di Firebase Auth sebenarnya sudah verified
+      if (auth.currentUser) {
+        try { await auth.currentUser.reload(); } catch (e) {}
+        if (auth.currentUser.emailVerified) {
+          window.history.replaceState(null, '', window.location.pathname);
+          loginView.style.display = 'none';
+          appLayout.style.display = 'flex';
+          navigateTo('/dashboard');
+          const { showToast } = await import('./components/notifications.js');
+          showToast('Akun Anda sudah terverifikasi!', 'success');
+          return;
+        }
+      }
       renderLogin('email-verified-error');
     }
     return;
@@ -172,7 +199,9 @@ export async function checkAuth() {
         store.updateUI();
         // Tampilkan banner verifikasi jika email belum diverifikasi
         if (needsVerification) {
-          renderEmailVerificationBanner(user);
+          if (!window.isVerificationModalActive && !document.getElementById('optional-verif-modal-overlay')) {
+            renderEmailVerificationBanner(user);
+          }
         } else {
           // Pastikan banner disembunyikan jika sudah verified
           const banner = document.getElementById('email-verify-banner');

@@ -1,7 +1,7 @@
 import { store } from '../store.js';
 import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast, showAlert, showConfirm } from '../components/notifications.js';
+import { showToast, showAlert, showConfirm, showOptionalVerificationModal } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
 
 export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
@@ -29,7 +29,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
         <div class="login-card-wrapper">
           <div class="login-card">
             <!-- BRAND LOGO HEADER -->
-            <div class="logo-icon" style="margin: 0 auto 1.25rem; text-align: center; width: 140px;">
+            <div class="logo-icon">
               <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
               <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
             </div>
@@ -55,16 +55,9 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
                   </p>
                 </div>
 
-                <div style="background: var(--bg-color); border: 1.5px dashed var(--border); border-radius: var(--radius-md); padding: 14px 18px; width: 100%; text-align: left; display: flex; align-items: flex-start; gap: 10px;">
-                  <i class="ph ph-sparkle" style="color: var(--primary); font-size: 1.2rem; margin-top: 1px; flex-shrink: 0;"></i>
-                  <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.7;">
-                    Sekarang kamu bisa <strong style="color: var(--text-main);">login</strong> dan mulai mencatat keuangan, membuat anggaran, serta mengelola tabunganmu.
-                  </p>
-                </div>
-
                 <button id="btn-go-to-login" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                  <i class="ph ph-sign-in"></i>
-                  Masuk Sekarang
+                  <i class="ph ph-house"></i>
+                  Lanjut ke Dashboard
                 </button>
               </div>
             ` : isVerifiedError ? `
@@ -95,9 +88,9 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
               </p>
               
               <form id="forgot-form">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                  <label>Email</label>
-                  <input type="email" id="forgot-email" class="form-control" placeholder="Masukkan email terdaftar" required style="height: 48px; border-radius: 12px;">
+                <div class="nebula-input">
+                  <input type="email" id="forgot-email" class="input" placeholder=" " required>
+                  <label class="user-label">Email</label>
                 </div>
                 <button type="submit" class="btn btn-primary btn-full mt-md" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
                   Kirim Tautan Reset
@@ -116,12 +109,10 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
               </p>
               
               <form id="confirm-reset-form">
-                <div class="form-group" style="margin-bottom: 1.25rem;">
-                  <label>Kata Sandi Baru</label>
-                  <div style="position: relative;">
-                    <input type="password" id="reset-new-password" class="form-control" placeholder="Minimal 6 karakter" required style="height: 48px; border-radius: 12px;">
-                    <i class="ph ph-eye toggle-password" id="toggle-reset-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted);"></i>
-                  </div>
+                <div class="nebula-input">
+                  <input type="password" id="reset-new-password" class="input" placeholder=" " required style="padding-right: 45px;">
+                  <label class="user-label">Kata Sandi Baru</label>
+                  <i class="ph ph-eye toggle-password" id="toggle-reset-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); z-index: 5;"></i>
                 </div>
                 <button type="submit" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
                   Simpan Kata Sandi Baru
@@ -134,43 +125,37 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
                 </a>
               </p>
             ` : `
-              <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang!'}</h2>
-              <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.75rem; font-size: 0.88rem;">
+              <h2 style="text-align: center; margin-bottom: 0.35rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang!'}</h2>
+              <p style="text-align: center; color: var(--text-muted); margin-bottom: 1rem; font-size: 0.88rem;">
                 ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas, instan & aman.'}
               </p>
               
               <form id="auth-form">
                 ${isReg ? `
-                  <div class="form-group">
-                    <label>Nama Lengkap</label>
-                    <input type="text" id="reg-name" class="form-control" placeholder="Masukkan nama lengkap" required>
+                  <div class="nebula-input">
+                    <input type="text" id="reg-name" class="input" placeholder=" " required>
+                    <label class="user-label">Nama Lengkap</label>
                   </div>
                 ` : ''}
-                <div class="form-group">
-                  <label>Username / Email</label>
-                  <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
+                <div class="nebula-input">
+                  <input type="text" id="email" class="input" placeholder=" " required>
+                  <label class="user-label">Username / Email</label>
                 </div>
-                <div class="form-group">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label>Password</label>
-                    ${!isReg ? `<a href="javascript:void(0)" id="btn-forgot-password" style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-bottom: 0.25rem;">Lupa Password?</a>` : ''}
-                  </div>
-                  <div style="position: relative; width: 100%;">
-                    <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right: 45px;">
-                    <button type="button" id="btn-toggle-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
-                      <i class="ph ph-eye"></i>
-                    </button>
-                  </div>
+                <div class="nebula-input ${!isReg ? 'has-forgot-link' : ''}">
+                  <input type="password" id="password" class="input" placeholder=" " required style="padding-right: 45px;">
+                  <label class="user-label">Password</label>
+                  ${!isReg ? `<a href="javascript:void(0)" id="btn-forgot-password" class="nebula-forgot-link">Lupa Password?</a>` : ''}
+                  <button type="button" id="btn-toggle-password" class="nebula-toggle-btn">
+                    <i class="ph ph-eye"></i>
+                  </button>
                 </div>
                 ${isReg ? `
-                  <div class="form-group">
-                    <label>Konfirmasi Password</label>
-                    <div style="position: relative; width: 100%;">
-                      <input type="password" id="confirm-password" class="form-control" placeholder="Ulangi kata sandi" required style="padding-right: 45px;">
-                      <button type="button" id="btn-toggle-confirm-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
-                        <i class="ph ph-eye"></i>
-                      </button>
-                    </div>
+                  <div class="nebula-input">
+                    <input type="password" id="confirm-password" class="input" placeholder=" " required style="padding-right: 45px;">
+                    <label class="user-label">Konfirmasi Password</label>
+                    <button type="button" id="btn-toggle-confirm-password" class="nebula-toggle-btn">
+                      <i class="ph ph-eye"></i>
+                    </button>
                   </div>
                 ` : ''}
                 <button type="submit" class="btn btn-primary btn-full mt-md">
@@ -178,14 +163,14 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
                 </button>
               </form>
 
-              <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+              <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
                 ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
                 <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
                   ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
                 </a>
               </p>
 
-              <div style="margin: 1.5rem 0; display: flex; align-items: center; gap: 1rem;">
+              <div style="margin: 1rem 0; display: flex; align-items: center; gap: 1rem;">
                 <div style="flex: 1; height: 1px; background: var(--border);"></div>
                 <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
                 <div style="flex: 1; height: 1px; background: var(--border);"></div>
@@ -214,25 +199,51 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   if (isVerified) {
     const goToLoginBtn = document.getElementById('btn-go-to-login');
     if (goToLoginBtn) {
-      goToLoginBtn.onclick = () => {
-        // Bersihkan query params dari URL agar tidak terpicu ulang pada reload
-        window.history.replaceState(null, '', '/');
-        renderLogin('login');
+      goToLoginBtn.onclick = async () => {
+        // Bersihkan query params dari URL
+        window.history.replaceState(null, '', '/dashboard');
+        
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          showLoading();
+          try {
+            await currentUser.reload();
+            if (store.user) {
+              store.user.emailVerified = currentUser.emailVerified;
+              store.save();
+            }
+          } catch (e) {
+            console.warn('Reload auth user error:', e);
+          } finally {
+            hideLoading();
+          }
+
+          // Direct langsung ke Dashboard tanpa lewat Halaman Login lagi!
+          const loginView = document.getElementById('login-view');
+          const appLayout = document.getElementById('app-layout');
+          if (loginView) loginView.style.display = 'none';
+          if (appLayout) appLayout.style.display = 'flex';
+          navigateTo('/dashboard');
+        } else {
+          renderLogin('login');
+        }
       };
     }
   } else if (isVerifiedError) {
     const requestNewBtn = document.getElementById('btn-request-new-link');
     if (requestNewBtn) {
-      requestNewBtn.onclick = () => {
+      requestNewBtn.onclick = async () => {
         window.history.replaceState(null, '', '/');
-        renderLogin('login');
+        const { checkAuth } = await import('../main.js');
+        checkAuth();
       };
     }
     const backBtn = document.getElementById('btn-back-to-login-from-error');
     if (backBtn) {
-      backBtn.onclick = () => {
+      backBtn.onclick = async () => {
         window.history.replaceState(null, '', '/');
-        renderLogin('login');
+        const { checkAuth } = await import('../main.js');
+        checkAuth();
       };
     }
   } else if (isForgot) {
@@ -447,19 +458,29 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             return;
           }
 
+          window.isVerificationModalActive = true;
           const result = await createUserWithEmailAndPassword(auth, email, pass);
           const user = result.user;
 
           // Set displayName di Firebase Auth agar onAuthStateChanged baca nama yang benar
           await updateProfile(user, { displayName: name });
 
-          // Kirim email verifikasi di background (fire-and-forget) — tidak memblokir user masuk
-          sendEmailVerification(user).catch(err => {
-            console.warn("Gagal kirim email verifikasi (background):", err.code);
+          // Kirim email verifikasi via Backend API (Bypass Firebase Console sepenuhnya)
+          const token = await user.getIdToken(true);
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+          
+          fetch(`${API_URL}/users/send-verification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }).catch(err => {
+            console.warn("Gagal trigger kirim email verifikasi backend:", err);
           });
 
           // Langsung set user dan masuk ke app — Soft/Lazy Verification
-          const token = await user.getIdToken(true); // force refresh agar token sudah include displayName
           await store.setUser({
             uid: user.uid,
             name: name,
@@ -470,9 +491,10 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             provider: 'password'
           }, { name }); // pass name ke backend sync
 
+          window.isVerificationModalActive = true;
           hideLoading();
           navigateTo('/dashboard');
-          showToast('Selamat datang! Cek emailmu untuk verifikasi akun.', 'success');
+          showOptionalVerificationModal();
         } else {
           // Handle Login (with Demo Fallback)
           if (email === 'guest' && pass === 'guest123') {
@@ -485,11 +507,27 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             });
             navigateTo('/dashboard');
           } else {
-            await signInWithEmailAndPassword(auth, email, pass);
-            // onAuthStateChanged di main.js akan menangani pendeteksian emailVerified secara otomatis!
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCred.user;
+            await user.reload();
+            const token = await user.getIdToken(true);
+            
+            await store.setUser({
+              uid: user.uid,
+              name: user.displayName || (store.user && store.user.uid === user.uid ? store.user.name : null) || 'User MyFinance',
+              email: user.email,
+              avatar: user.photoURL || (store.user && store.user.uid === user.uid ? store.user.avatar : null) || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+              token: token,
+              emailVerified: user.emailVerified,
+              provider: user.providerData[0]?.providerId || 'password'
+            });
+
+            hideLoading();
+            navigateTo('/dashboard');
           }
         }
       } catch (error) {
+        window.isVerificationModalActive = false;
         console.error("Auth Error:", error);
         let msg = error.message;
         if (error.code === 'auth/operation-not-allowed') {
@@ -641,6 +679,12 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
 export function renderEmailVerificationBanner(firebaseUser) {
   const banner = document.getElementById('email-verify-banner');
   if (!banner) return;
+
+  // Jangan tampilkan banner jika pop-up modal verifikasi sedang/akan aktif
+  if (window.isVerificationModalActive || document.getElementById('optional-verif-modal-overlay')) {
+    banner.style.display = 'none';
+    return;
+  }
 
   // Tampilkan banner dengan animasi slide-down
   banner.style.display = 'flex';

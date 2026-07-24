@@ -1,3 +1,9 @@
+/* ==========================================================================
+   MYFINANCE - LOGIN & AUTHENTICATION MODULE STYLES
+   Clean Code Refactored Design System
+   ========================================================================== */
+
+/* ── 1. CONTAINER & SPLIT-SCREEN LAYOUT ── */
 .login-container {
   position: relative;
   display: flex;
@@ -8,19 +14,16 @@
   width: 100%;
   padding: 1.5rem 2rem;
   box-sizing: border-box;
-  /* Soft, elegant light-indigo morning glow in Light Mode */
   --login-glow: rgba(99, 102, 241, 0.14);
   background: radial-gradient(circle at 50% 120%, var(--login-glow) 0%, rgba(255, 255, 255, 0) 65%), var(--bg-color);
   overflow: hidden;
 }
 
-/* Override lighting glow in Dark Mode */
 [data-theme="dark"] .login-container {
   --login-glow: rgba(139, 92, 246, 0.22);
   background: radial-gradient(circle at 50% 120%, var(--login-glow) 0%, rgba(0, 0, 0, 0) 65%), var(--bg-color);
 }
 
-/* ── Split-Screen Layout Container ── */
 .login-layout {
   display: grid;
   grid-template-columns: minmax(360px, 430px) 1fr;
@@ -36,7 +39,22 @@
   position: relative;
 }
 
-/* ── Right Side: Large Hero Illustration Showcase ── */
+/* Ambient Glowing Background Orbs */
+.glow-layer-1 {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+}
+.glow-layer-2 {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+[data-theme="dark"] .glow-layer-1 {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+}
+[data-theme="dark"] .glow-layer-2 {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+/* ── 2. HERO ILLUSTRATION SHOWCASE ── */
 .login-hero-section {
   display: flex;
   align-items: center;
@@ -47,7 +65,6 @@
   position: relative;
 }
 
-/* ── Hero Animated SVG Centerpiece ── */
 .hero-img-wrapper {
   position: relative;
   width: 100%;
@@ -88,7 +105,7 @@
   filter: drop-shadow(0 25px 50px rgba(139, 92, 246, 0.3));
 }
 
-/* ── Left Card Wrapper & Glass Card ── */
+/* ── 3. GLASSMOPHIC LOGIN CARD & BRANDING ── */
 .login-card-wrapper {
   width: 100%;
   display: flex;
@@ -98,54 +115,59 @@
 
 .login-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.45) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: blur(50px) saturate(220%);
-  -webkit-backdrop-filter: blur(50px) saturate(220%);
-  padding: 2.25rem 2rem;
+  background: rgba(255, 255, 255, 0.22) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(80px) saturate(220%);
+  -webkit-backdrop-filter: blur(80px) saturate(220%);
+  padding: 1.5rem 1.75rem;
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.1),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
   width: 100%;
   max-width: 430px;
+  max-height: calc(100vh - 2.5rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
   text-align: left;
   z-index: 10;
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
 }
 
+.login-card:hover {
+  box-shadow: var(--shadow-xl);
+}
+
 [data-theme="dark"] .login-card {
-  background: rgba(21, 18, 27, 0.38) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 20px 50px rgba(11, 7, 22, 0.65),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(50px) saturate(240%);
-  -webkit-backdrop-filter: blur(50px) saturate(240%);
+  background: rgba(21, 18, 27, 0.18) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 20px 50px rgba(11, 7, 22, 0.55),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(80px) saturate(240%);
+  -webkit-backdrop-filter: blur(80px) saturate(240%);
 }
 
 .login-card .logo-icon {
-  margin: 0 auto 1.25rem;
-  width: 130px;
+  margin: 0 auto 0.75rem;
+  width: 60px;
   height: auto;
   text-align: center;
 }
 
-[data-theme="dark"] .login-card {
-  background: rgba(21, 18, 27, 0.35) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 20px 50px rgba(11, 7, 22, 0.65),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(50px) saturate(240%);
-  -webkit-backdrop-filter: blur(50px) saturate(240%);
-}
+.login-card .logo-light { display: block; }
+.login-card .logo-dark { display: none; }
+
+[data-theme="dark"] .login-card .logo-light { display: none; }
+[data-theme="dark"] .login-card .logo-dark { display: block; }
 
 .login-card h2 {
   color: var(--text-main);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .login-card p {
   color: var(--text-muted);
-  margin-bottom: 2rem;
+  margin-bottom: 1.15rem;
 }
 
 .login-card label {
@@ -154,291 +176,156 @@
   display: block;
 }
 
-.login-card .form-control {
-  background: rgba(255, 255, 255, 0.35) !important; /* Input kaca super mulus */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(15, 23, 42, 0.08) !important;
-  color: #1e293b !important; /* Dark Slate text untuk visibilitas sempurna */
-  font-weight: 500 !important;
-  font-size: 0.9rem !important;
-  transition: all 0.2s ease-in-out !important;
-}
-
-.login-card .form-control::placeholder {
-  color: #64748b !important;
-  opacity: 0.8 !important;
-}
-
-.login-card .form-control:focus {
-  background: rgba(255, 255, 255, 0.65) !important;
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px var(--primary-light) !important;
-}
-
-[data-theme="dark"] .login-card .form-control {
-  background: rgba(255, 255, 255, 0.02) !important; /* Kaca gelap transparan */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] .login-card .form-control::placeholder {
-  color: var(--text-muted) !important; /* Slate-400 placeholder in Dark Mode */
-}
-
-/* Fix browser autofill styling/contrast glitch */
-.login-card .form-control:-webkit-autofill,
-.login-card .form-control:-webkit-autofill:hover,
-.login-card .form-control:-webkit-autofill:focus {
-  -webkit-text-fill-color: #1e293b !important;
-  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
-  transition: background-color 5000s ease-in-out 0s !important;
-}
-
-[data-theme="dark"] .login-card .form-control:-webkit-autofill,
-[data-theme="dark"] .login-card .form-control:-webkit-autofill:hover,
-[data-theme="dark"] .login-card .form-control:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f8fafc !important;
-  -webkit-box-shadow: 0 0 0px 1000px var(--bg-color) inset !important;
-}
-
-.login-card:hover {
-  box-shadow: var(--shadow-xl);
-}
-
-.login-card .logo-icon {
-  margin: 0 auto 1rem;
-  width: 56px;
-  height: 56px;
-  font-size: 2rem;
-}
-
-/* Original theme-based logo display rules */
-.login-card .logo-light {
-  display: block;
-}
-.login-card .logo-dark {
-  display: none;
-}
-[data-theme="dark"] .login-card .logo-light {
-  display: none;
-}
-[data-theme="dark"] .login-card .logo-dark {
-  display: block;
-}
-
-.mt-xl { margin-top: 2rem; }
-
-/* Parallax Layers */
-.parallax-layer {
-  position: absolute;
-  pointer-events: none;
-  transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.3, 1); /* Inertia glide effect */
-  will-change: transform;
-  z-index: 1;
-  transform-style: preserve-3d;
-}
-
-/* Theme-aware Ambient Glowing Lights */
-.glow-layer-1 {
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-}
-.glow-layer-2 {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-}
-
-[data-theme="dark"] .glow-layer-1 {
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
-}
-[data-theme="dark"] .glow-layer-2 {
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
-}
-
-/* Mascot Interactive Container */
-.mascot-interactive {
+/* ── 4. NEBULA FLOATING INPUT COMPONENT ── */
+.nebula-input {
   position: relative;
-  pointer-events: auto; /* Enable hover/clicks on the mascot */
-  cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
-  transform-style: preserve-3d;
+  width: 100%;
+  margin-top: 1.35rem;
+  margin-bottom: 0.65rem;
 }
 
-.mascot-interactive:hover {
-  transform: scale(1.15) translateY(-5px);
-  filter: drop-shadow(0 15px 30px rgba(var(--primary-rgb), 0.35));
+.nebula-input.has-forgot-link {
+  margin-top: 1.85rem;
 }
 
-.mascot-interactive:active {
-  transform: scale(0.95);
-}
-
-/* Eye Tracking Gaze Transitions */
-.pig-eye, .pig-eye-pupil, .robot-eye {
-  transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: transform;
-}
-
-/* Mascot Chat Bubble */
-.mascot-bubble {
-  position: absolute;
-  bottom: 115%;
-  left: 50%;
-  transform: translateX(-50%) scale(0);
-  background: #ffffff !important; /* Force pure solid white in Light Mode for outstanding pop! */
-  color: #1e293b !important; /* Force dark slate text in Light Mode for maximum readability */
-  padding: 10px 18px;
+.nebula-input .input {
+  width: 100%;
+  height: 46px;
+  padding: 12px 16px;
+  border: 1.5px solid rgba(15, 23, 42, 0.14);
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
   border-radius: var(--radius-md);
-  font-size: 0.8rem;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.08) !important; /* Beautiful deeper physical depth shadow */
-  border: 1.5px solid #cbd5e1 !important; /* Visible crisp border in Light Mode */
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  pointer-events: none;
-  z-index: 100;
-}
-
-[data-theme="dark"] .mascot-bubble {
-  background: rgba(21, 18, 27, 0.85) !important; /* Frosted glass-like dark violet in Dark Mode */
-  color: #f3e8ff !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 12px 30px rgba(11, 7, 22, 0.75) !important;
+  box-sizing: border-box;
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-.mascot-bubble.active {
-  transform: translateX(-50%) scale(1);
+[data-theme="dark"] .nebula-input .input {
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgba(21, 18, 27, 0.45);
+  color: #f8fafc;
 }
 
-.mascot-bubble::after {
-  content: '';
+.nebula-input .user-label {
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: #ffffff !important;
-}
-
-[data-theme="dark"] .mascot-bubble::after {
-  border-top-color: rgba(21, 18, 27, 0.85) !important;
-}
-
-/* Spinning Animation on Click */
-.mascot-spin {
-  animation: mascot-spin-anim 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes mascot-spin-anim {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.2) rotate(180deg); }
-  100% { transform: scale(1) rotate(360deg); }
-}
-
-/* Wing Flapping Keyframes for Flying Pig */
-@keyframes flap-left {
-  0% { transform: rotate(-15deg); }
-  100% { transform: rotate(20deg); }
-}
-
-@keyframes flap-right {
-  0% { transform: rotate(15deg); }
-  100% { transform: rotate(-20deg); }
-}
-
-.wing-left-anim {
-  animation: flap-left 0.15s ease-in-out infinite alternate;
-}
-
-.wing-right-anim {
-  animation: flap-right 0.15s ease-in-out infinite alternate;
-}
-
-/* Floating animation for sub-elements */
-@keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(3deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
-}
-
-@keyframes float-reverse {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(8px) rotate(-4deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
-}
-
-.floating-element {
-  animation: float 5s ease-in-out infinite;
-}
-
-.floating-element-reverse {
-  animation: float-reverse 6s ease-in-out infinite;
-}
-
-/* Infinite Drifting Cloud Ornaments with Atmospheric Parallax */
-.cloud-ornament {
-  position: absolute;
-  color: rgba(148, 163, 184, 0.25); /* Fluffy light slate/blue in Light Mode */
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   pointer-events: none;
-  z-index: 1;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  background: transparent;
+  padding: 0 6px;
+  border-radius: 4px;
+  z-index: 2;
+  white-space: nowrap;
 }
 
-[data-theme="dark"] .cloud-ornament {
-  color: rgba(139, 92, 246, 0.08); /* Fluffy glowing neon-violet in Dark Mode */
+/* Floating Label Transition */
+.nebula-input .input:focus ~ .user-label,
+.nebula-input .input:not(:placeholder-shown) ~ .user-label,
+.nebula-input .input:valid ~ .user-label {
+  transform: translateY(-32px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  left: 10px;
+  background: rgba(240, 249, 255, 0.95);
+  box-shadow: 0 0 8px rgba(240, 249, 255, 0.8);
 }
 
-@keyframes cloud-drift-left-to-right {
-  0% { transform: translateX(-200px); }
-  100% { transform: translateX(calc(100vw + 200px)); }
+[data-theme="dark"] .nebula-input .input:focus ~ .user-label,
+[data-theme="dark"] .nebula-input .input:not(:placeholder-shown) ~ .user-label,
+[data-theme="dark"] .nebula-input .input:valid ~ .user-label {
+  color: #c774ff;
+  background: rgba(21, 18, 27, 0.95);
+  box-shadow: 0 0 8px rgba(21, 18, 27, 0.8);
 }
 
-@keyframes cloud-drift-right-to-left {
-  0% { transform: translateX(calc(100vw + 200px)); }
-  100% { transform: translateX(-200px); }
+.nebula-input .input:focus {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 4px 12px rgba(14, 165, 233, 0.22),
+    0 8px 20px rgba(14, 165, 233, 0.15),
+    0 12px 32px rgba(14, 165, 233, 0.08);
 }
 
-/* Responsive styling for Mobile and Tablet */
-@media (max-width: 991px) {
-  .login-container {
-    height: auto;
-    min-height: 100vh;
-    overflow-y: auto;
-    padding: 2rem 1.25rem;
-  }
-  .login-layout {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    max-width: 440px;
-    height: auto;
-    max-height: none;
-  }
-  .login-hero-section {
-    display: none !important; /* Hide large hero SVG on small viewports so card fits cleanly */
-  }
-  .cloud-ornament, .parallax-layer {
-    display: none !important;
-  }
-  .login-card {
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-  }
+[data-theme="dark"] .nebula-input .input:focus {
+  border-color: #b56aff;
+  background: rgba(21, 18, 27, 0.7);
+  box-shadow:
+    0 4px 12px rgba(181, 106, 255, 0.3),
+    0 8px 20px rgba(181, 106, 255, 0.2),
+    0 12px 32px rgba(181, 106, 255, 0.12);
 }
 
-/* Mobile adjustments */
-@media (max-width: 480px) {
-  .login-container {
-    padding: 1.25rem 1rem;
-  }
-  .login-card {
-    padding: 1.75rem 1.25rem;
-  }
+/* Toggle Password Button */
+.nebula-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: color 0.2s ease;
+  z-index: 5;
 }
 
+.nebula-toggle-btn:hover { color: var(--primary); }
+[data-theme="dark"] .nebula-toggle-btn:hover { color: #c774ff; }
+
+/* Forgot Password Link */
+.nebula-forgot-link {
+  position: absolute;
+  right: 6px;
+  top: -20px;
+  line-height: 1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  z-index: 5;
+  transition: opacity 0.2s ease;
+}
+
+[data-theme="dark"] .nebula-forgot-link { color: #c774ff; }
+.nebula-forgot-link:hover { text-decoration: underline; opacity: 0.85; }
+
+/* Browser Autofill Fixes */
+.nebula-input .input:-webkit-autofill,
+.nebula-input .input:-webkit-autofill:hover,
+.nebula-input .input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-main) !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.92) inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+[data-theme="dark"] .nebula-input .input:-webkit-autofill,
+[data-theme="dark"] .nebula-input .input:-webkit-autofill:hover,
+[data-theme="dark"] .nebula-input .input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(21, 18, 27, 0.92) inset !important;
+}
+
+/* ── 5. THIRD-PARTY AUTHENTICATION ── */
 #btn-google-login {
-  background: rgba(255, 255, 255, 0.35) !important; /* Tombol google dengan efek kaca */
+  background: rgba(255, 255, 255, 0.35) !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(15, 23, 42, 0.08) !important;
@@ -467,7 +354,7 @@
   box-shadow: 0 0 12px rgba(157, 78, 221, 0.25) !important;
 }
 
-/* ── Email Verified Success Icon ── */
+/* ── 6. EMAIL VERIFICATION UI & BANNER ── */
 .email-verified-icon-wrapper {
   position: relative;
   width: 80px;
@@ -488,9 +375,7 @@
   animation: email-ring-pulse 2s cubic-bezier(0.25, 1, 0.5, 1) 0.3s infinite;
 }
 
-.email-verified-icon-ring-2 {
-  animation-delay: 0.8s;
-}
+.email-verified-icon-ring-2 { animation-delay: 0.8s; }
 
 .email-verified-checkmark {
   position: relative;
@@ -521,7 +406,7 @@
   100% { transform: scale(1.75); opacity: 0; }
 }
 
-/* ── Email Verification Banner (Soft/Lazy Verification) ── */
+/* Email Verification Banner */
 .email-verify-banner {
   position: fixed;
   top: 1rem;
@@ -575,9 +460,7 @@
   color: #92400e;
 }
 
-[data-theme="dark"] .evb-text strong {
-  color: #fbbf24;
-}
+[data-theme="dark"] .evb-text strong { color: #fbbf24; }
 
 .evb-text span {
   font-size: 0.78rem;
@@ -654,13 +537,8 @@
   flex-shrink: 0;
 }
 
-.evb-btn-close:hover {
-  background: rgba(245, 158, 11, 0.15);
-}
-
-[data-theme="dark"] .evb-btn-close {
-  color: #fbbf24;
-}
+.evb-btn-close:hover { background: rgba(245, 158, 11, 0.15); }
+[data-theme="dark"] .evb-btn-close { color: #fbbf24; }
 
 @keyframes evb-slide-up-in {
   from { transform: translateX(-50%) translateY(-120%); opacity: 0; }
@@ -672,7 +550,60 @@
   to   { transform: translateX(-50%) translateY(-120%); opacity: 0; }
 }
 
+/* ── 7. ATMOSPHERIC DRIFTING CLOUDS ── */
+.cloud-ornament {
+  position: absolute;
+  color: rgba(148, 163, 184, 0.25);
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="dark"] .cloud-ornament {
+  color: rgba(139, 92, 246, 0.12);
+}
+
+@keyframes cloud-drift-left-to-right {
+  0% { transform: translateX(-200px); }
+  100% { transform: translateX(calc(100vw + 200px)); }
+}
+
+@keyframes cloud-drift-right-to-left {
+  0% { transform: translateX(calc(100vw + 200px)); }
+  100% { transform: translateX(-200px); }
+}
+
+/* ── 8. RESPONSIVE BREAKPOINTS ── */
+@media (max-width: 991px) {
+  .login-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    padding: 2rem 1.25rem;
+  }
+  .login-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 440px;
+    height: auto;
+    max-height: none;
+  }
+  .login-hero-section,
+  .cloud-ornament {
+    display: none !important;
+  }
+  .login-card {
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+  }
+}
+
 @media (max-width: 480px) {
+  .login-container {
+    padding: 1.25rem 1rem;
+  }
+  .login-card {
+    padding: 1.75rem 1.25rem;
+  }
   .evb-text span {
     white-space: normal;
     overflow: visible;

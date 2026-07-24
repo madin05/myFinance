@@ -246,6 +246,105 @@ export const showVerificationModal = () => {
   };
 };
 
+export const showOptionalVerificationModal = () => {
+  window.isVerificationModalActive = true;
+  const existing = document.getElementById('optional-verif-modal-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'custom-alert-overlay';
+  overlay.id = 'optional-verif-modal-overlay';
+
+  overlay.innerHTML = `
+    <div class="custom-alert-card" style="text-align: center; max-width: 420px; padding: 2.25rem 1.75rem; position: relative;">
+      <button id="btn-modal-opt-x" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+        <i class="ph ph-x"></i>
+      </button>
+
+      <div style="margin: 0 auto 1rem; display: flex; justify-content: center; align-items: center;">
+        <img src="/assets/asset_notif_light.svg" class="verif-notif-img-light" alt="Verifikasi Email" style="width: 150px; height: auto; max-height: 150px; object-fit: contain;" />
+        <img src="/assets/asset_notif_dark.svg" class="verif-notif-img-dark" alt="Verifikasi Email" style="width: 150px; height: auto; max-height: 150px; object-fit: contain;" />
+      </div>
+
+      <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text-main);">Verifikasi Akunmu</h3>
+      <p class="text-muted" style="font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.75rem;">
+        Link verifikasi telah dikirim ke email kamu. Yuk verifikasi akunmu dulu agar fitur dapat diakses lebih baik.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <button class="btn btn-primary btn-full" id="btn-modal-opt-resend" style="height: 46px; border-radius: 12px; font-weight: 600;">Kirim Ulang Email Verifikasi</button>
+        <button class="btn btn-outline btn-full" id="btn-modal-opt-close" style="height: 44px; border-radius: 12px;">Nanti Saja</button>
+      </div>
+    </div>
+    <style>
+      [data-theme="light"] .verif-notif-img-dark { display: none !important; }
+      [data-theme="light"] .verif-notif-img-light { display: block !important; }
+      [data-theme="dark"] .verif-notif-img-light { display: none !important; }
+      [data-theme="dark"] .verif-notif-img-dark { display: block !important; }
+    </style>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Sembunyikan banner atas dulu saat pop-up modal ini aktif
+  const existingBanner = document.getElementById('email-verify-banner');
+  if (existingBanner) existingBanner.style.display = 'none';
+
+  const close = () => {
+    window.isVerificationModalActive = false;
+    overlay.remove();
+    // Tampilkan banner verifikasi di atas HANYA setelah pop-up modal ditutup/diclose
+    const banner = document.getElementById('email-verify-banner');
+    if (banner) {
+      import('../firebase-config.js').then(({ auth }) => {
+        import('../pages/login.js').then(({ renderEmailVerificationBanner }) => {
+          if (auth.currentUser && !auth.currentUser.emailVerified) {
+            renderEmailVerificationBanner(auth.currentUser);
+          }
+        });
+      });
+    }
+  };
+
+  document.getElementById('btn-modal-opt-close').onclick = close;
+  document.getElementById('btn-modal-opt-x').onclick = close;
+  overlay.onclick = (e) => {
+    if (e.target === overlay) close();
+  };
+
+  document.getElementById('btn-modal-opt-resend').onclick = async () => {
+    const btn = document.getElementById('btn-modal-opt-resend');
+    btn.disabled = true;
+    btn.textContent = 'Mengirim...';
+
+    try {
+      const { store } = await import('../store.js');
+      const token = store.user?.token;
+      if (!token) throw new Error('Token tidak ditemukan, silakan login ulang.');
+
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+      const res = await fetch(`${API_URL}/users/send-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim email.');
+
+      btn.textContent = 'Email Terkirim! ✓';
+      showToast('Tautan verifikasi telah dikirim ke email kamu.', 'success');
+      setTimeout(() => close(), 1500);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Coba Lagi';
+      showToast(err.message || 'Gagal mengirim email verifikasi.', 'error');
+    }
+  };
+};
+
 export const checkVerification = (actionCallback) => {
   import('../router.js').then(({ isUserVerified }) => {
     if (isUserVerified()) {
