@@ -45,6 +45,44 @@ export function renderSaldo() {
     'BluBCA': '/assets/banks/blubca.svg', // keep for backwards compatibility if user had it
   };
 
+  const brandColorMap = {
+    'shopeepay': '#EE4D2D',
+    'gopay': '#00AED6',
+    'dana': '#118EEA',
+    'ovo': '#7C3AED',
+    'linkaja': '#E31E25',
+    'bank blu': '#00A3E0',
+    'blubca': '#00A3E0',
+    'bca': '#0060AF',
+    'bank mandiri': '#003D79',
+    'mandiri': '#003D79',
+    'bni': '#F15A24',
+    'bri': '#00529C',
+    'bsi': '#00A39D',
+    'bank jago': '#FF8A00',
+    'jago': '#FF8A00',
+    'seabank': '#FF5722',
+    'dompet': '#10B981',
+    'brankas': '#10B981',
+    'uang tunai': '#10B981',
+    'cash': '#10B981',
+  };
+
+  const getBrandColor = (s) => {
+    if (!s) return 'var(--primary)';
+    const searchName = (s.name || '').trim().toLowerCase();
+    if (brandColorMap[searchName]) return brandColorMap[searchName];
+    
+    // Fuzzy match
+    for (const [key, color] of Object.entries(brandColorMap)) {
+      if (searchName.includes(key)) return color;
+    }
+
+    if (s.type === 'Bank') return '#3B82F6';
+    if (s.type === 'Cash') return '#10B981';
+    return '#0EA5E9';
+  };
+
   const getLogo = (s) => s.logo || logoMap[s.name] || '';
 
   const viewMode = localStorage.getItem('saldo-view-mode') || 'grid';
@@ -68,12 +106,14 @@ export function renderSaldo() {
       </div>
 
       <div class="saldo-grid ${viewMode === 'list' ? 'list-mode' : ''}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-        ${saldos.length > 0 ? saldos.map((s, index) => `
+        ${saldos.length > 0 ? saldos.map((s, index) => {
+          const brandColor = getBrandColor(s);
+          return `
           <div class="stat-card" style="padding: 1.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: visible;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
               <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, ${getTypeColor(s.type)} 15%, transparent); display: flex; align-items: center; justify-content: center; color: ${getTypeColor(s.type)}; font-size: 1.5rem;">
-                  ${getLogo(s) ? `<img src="${getLogo(s)}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
+                <div style="width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 4px 16px color-mix(in srgb, ${brandColor} 25%, transparent); display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-size: 1.5rem; transition: all 0.3s ease;">
+                  ${getLogo(s) ? `<img src="${getLogo(s)}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
                 </div>
                 <div>
                   <h4 style="margin: 0; font-size: 1.1rem; color: var(--text);">${s.name}</h4>
@@ -100,7 +140,8 @@ export function renderSaldo() {
               <h3 style="margin: 0; font-size: 1.4rem; color: var(--text);">${formatCurrency(s.balance)}</h3>
             </div>
           </div>
-        `).join('') : `
+        `;
+        }).join('') : `
           <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
             <i class="ph ph-wallet" style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
             <p>Belum ada saldo akun yang ditambahkan.<br>Klik "Tambah Saldo" untuk mencatat saldo E-Wallet, Bank, atau Cash Anda.</p>

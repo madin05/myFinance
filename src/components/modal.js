@@ -331,15 +331,15 @@ export function openConfirmModal(title, message, onConfirm) {
   
   container.innerHTML = `
     <div class="modal-overlay" id="confirm-overlay" style="align-items: center;">
-      <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
-        <div class="icon-box bg-red-light text-red" style="margin: 0 auto 1.5rem; width: 64px; height: 64px; font-size: 2rem; border-radius: 20px;">
-          <i class="ph ph-trash"></i>
-        </div>
-        <h3 class="mb-md" style="font-size: 1.25rem;">${title}</h3>
-        <p class="text-muted mb-lg" style="font-size: 0.95rem;">${message}</p>
+      <div class="modal-content" style="max-width: 420px; text-align: left; padding: 2.25rem;">
+        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; font-size: 1.25rem; color: var(--text-main);">
+          <i class="ph-fill ph-question" style="font-size: 1.5rem;"></i>
+          ${title}
+        </h3>
+        <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 0.95rem; line-height: 1.5;">${message}</p>
         <div style="display: flex; gap: 1rem;">
           <button class="btn btn-outline" style="flex: 1; justify-content: center;" id="btn-cancel-confirm">Batal</button>
-          <button class="btn btn-primary" style="flex: 1; justify-content: center; background-color: var(--red); border-color: var(--red);" id="btn-do-confirm">Ya, Hapus</button>
+          <button class="btn btn-primary" style="flex: 1; justify-content: center;" id="btn-do-confirm">Ya, Hapus</button>
         </div>
       </div>
     </div>

@@ -75,9 +75,6 @@ body.disable-animations .toast {
 
 /* Icon Wrapper */
 .toast-icon-wrapper {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,22 +82,22 @@ body.disable-animations .toast {
 }
 
 .toast-icon-wrapper.success {
-  background: rgba(34, 197, 94, 0.15);
+  background: transparent;
   color: var(--green);
 }
 
 .toast-icon-wrapper.error {
-  background: rgba(239, 68, 68, 0.15);
+  background: transparent;
   color: var(--red);
 }
 
 .toast-icon-wrapper.info {
-  background: rgba(59, 130, 246, 0.15);
+  background: transparent;
   color: var(--blue);
 }
 
 .toast-icon-wrapper i {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
 }
 
 /* Content */
