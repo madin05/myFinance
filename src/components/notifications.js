@@ -1,4 +1,6 @@
 // src/components/notifications.js
+import { auth } from '../firebase-config.js';
+import { store } from '../store.js';
 
 export const showToast = (message, type = 'success', duration = 3000) => {
   let container = document.querySelector('.toast-container');
@@ -345,13 +347,22 @@ export const showOptionalVerificationModal = () => {
   };
 };
 
+export function isUserVerified() {
+  const firebaseUser = auth.currentUser;
+  if (firebaseUser) {
+    const isGoogle = firebaseUser.providerData?.some(p => p.providerId === 'google.com');
+    if (isGoogle) return true;
+    return firebaseUser.emailVerified;
+  }
+  if (store.user?.provider === 'google') return true;
+  return store.user?.emailVerified ?? false;
+}
+
 export const checkVerification = (actionCallback) => {
-  import('../router.js').then(({ isUserVerified }) => {
-    if (isUserVerified()) {
-      if (typeof actionCallback === 'function') actionCallback();
-    } else {
-      showVerificationModal();
-    }
-  });
+  if (isUserVerified()) {
+    if (typeof actionCallback === 'function') actionCallback();
+  } else {
+    showVerificationModal();
+  }
 };
 

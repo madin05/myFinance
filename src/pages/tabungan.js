@@ -458,9 +458,9 @@ export function renderTabungan() {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       closeAllKebabs();
+      const id = Number(btn.getAttribute('data-id'));
+      const name = btn.getAttribute('data-name');
       checkVerification(async () => {
-        const id = Number(e.currentTarget.getAttribute('data-id'));
-        const name = e.currentTarget.getAttribute('data-name');
         try {
           const module = await import('../components/wishlist-modal.js');
           module.openAddFundsModal(id, name, () => renderTabungan());
@@ -477,8 +477,8 @@ export function renderTabungan() {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       closeAllKebabs();
+      const id = Number(btn.getAttribute('data-id'));
       checkVerification(async () => {
-        const id = Number(e.currentTarget.getAttribute('data-id'));
         const goal = store.savings.find(s => s.id === id);
         if (goal) {
           try {
