@@ -4,9 +4,13 @@ const prisma = require('../services/db');
 async function getUserId(req) {
   const { uid, name, email } = req.user || {};
   if (!uid) throw new Error('UID tidak ditemukan');
+  const cleanEmail = (email || '').trim().toLowerCase();
+
   let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-  if (!user && email) {
-    user = await prisma.user.findFirst({ where: { email } });
+  if (!user && cleanEmail) {
+    user = await prisma.user.findFirst({
+      where: { email: { equals: cleanEmail, mode: 'insensitive' } }
+    });
     if (user) {
       user = await prisma.user.update({
         where: { id: user.id },
@@ -16,11 +20,19 @@ async function getUserId(req) {
   }
   if (!user) {
     try {
+      const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
       user = await prisma.user.create({
-        data: { firebaseUid: uid, name: name || 'User', email: email || '', currency: 'IDR' }
+        data: { firebaseUid: uid, name: name || 'User', email: safeEmail, currency: 'IDR' }
       });
     } catch {
-      user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { firebaseUid: uid },
+            ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
+          ]
+        }
+      });
     }
   }
   if (!user) throw new Error('User tidak ditemukan di database');

@@ -1,17 +1,20 @@
 const prisma = require('../services/db');
 
 async function getDbUserId(userPayload) {
+  if (!userPayload) return null;
   const uid = typeof userPayload === 'string' ? userPayload : userPayload?.uid;
   if (!uid) return null;
+  const email = (typeof userPayload === 'object' ? userPayload.email : '') || '';
+  const cleanEmail = email.trim().toLowerCase();
 
   let user = await prisma.user.findUnique({
     where: { firebaseUid: uid },
     select: { id: true }
   });
 
-  if (!user && typeof userPayload === 'object' && userPayload.email) {
+  if (!user && cleanEmail) {
     user = await prisma.user.findFirst({
-      where: { email: userPayload.email },
+      where: { email: { equals: cleanEmail, mode: 'insensitive' } },
       select: { id: true }
     });
     if (user) {
@@ -24,20 +27,25 @@ async function getDbUserId(userPayload) {
 
   if (!user) {
     try {
-      const email = typeof userPayload === 'object' ? (userPayload.email || '') : '';
       const name = typeof userPayload === 'object' ? (userPayload.name || 'User') : 'User';
+      const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
       user = await prisma.user.create({
         data: {
           firebaseUid: uid,
           name,
-          email,
+          email: safeEmail,
           currency: 'IDR'
         },
         select: { id: true }
       });
     } catch (e) {
-      user = await prisma.user.findUnique({
-        where: { firebaseUid: uid },
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { firebaseUid: uid },
+            ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
+          ]
+        },
         select: { id: true }
       });
     }

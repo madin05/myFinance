@@ -8,9 +8,10 @@ exports.syncUser = async (req, res) => {
     
     const { uid, name: fbName, email: fbEmail, picture } = req.user;
     const { name, email, avatar, password, financialStartDay, currency, balanceOffset } = req.body || {}; 
-    const targetEmail = email || fbEmail || '';
+    const targetEmail = (email || fbEmail || '').trim().toLowerCase();
+    const displayName = name || fbName || 'User';
 
-    console.log('Syncing user:', fbEmail || uid);
+    console.log('Syncing user:', targetEmail || uid);
 
     // Hash password if provided (during registration)
     let hashedPass = undefined;
@@ -18,45 +19,72 @@ exports.syncUser = async (req, res) => {
       hashedPass = await bcrypt.hash(password, 10);
     }
 
-    let existingUser = await prisma.user.findUnique({
+    // 1. Cari user berdasarkan firebaseUid
+    let user = await prisma.user.findUnique({
       where: { firebaseUid: uid }
     });
 
-    // Jika firebaseUid tidak cocok tapi email cocok, relink firebaseUid ke user yang ada di DB
-    if (!existingUser && targetEmail) {
-      existingUser = await prisma.user.findFirst({
-        where: { email: targetEmail }
+    // 2. Jika belum ada berdasarkan firebaseUid, cari berdasarkan email (case-insensitive) untuk relink
+    if (!user && targetEmail) {
+      user = await prisma.user.findFirst({
+        where: { email: { equals: targetEmail, mode: 'insensitive' } }
       });
-      if (existingUser) {
+      if (user) {
         console.log('Relinking existing Postgres user by email:', targetEmail);
-        existingUser = await prisma.user.update({
-          where: { id: existingUser.id },
-          data: { firebaseUid: uid }
+        try {
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: { firebaseUid: uid }
+          });
+        } catch (e) {
+          console.warn('Relink update warning:', e.message);
+        }
+      }
+    }
+
+    // 3. Upsert / update data user jika user sudah ditemukan
+    if (user) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...(name && { name }),
+          ...(email && { email: targetEmail }),
+          ...(avatar && { avatar }),
+          ...(currency && { currency }),
+          ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) }),
+          ...(balanceOffset !== undefined && { balanceOffset: parseFloat(balanceOffset) })
+        }
+      });
+    } else {
+      // 4. Buat user baru dengan fallback email unik jika email belum ada
+      const safeEmail = targetEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
+      try {
+        user = await prisma.user.create({
+          data: {
+            firebaseUid: uid,
+            name: displayName,
+            email: safeEmail,
+            avatar: avatar || picture || '',
+            currency: currency || 'IDR',
+            password: hashedPass
+          }
+        });
+      } catch (createErr) {
+        // Safe fallback jika unique constraint race-condition terjadi
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { firebaseUid: uid },
+              ...(targetEmail ? [{ email: { equals: targetEmail, mode: 'insensitive' } }] : [])
+            ]
+          }
         });
       }
     }
 
-    const user = await prisma.user.upsert({
-      where: { firebaseUid: uid },
-      update: {
-        ...(name && { name }),
-        ...(email && { email }),
-        ...(avatar && { avatar }),
-        ...(currency && { currency }),
-        ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) }),
-        ...(balanceOffset !== undefined && { balanceOffset: parseFloat(balanceOffset) })
-      },
-      create: {
-        firebaseUid: uid,
-        name: name || fbName || 'User',
-        email: targetEmail,
-        avatar: avatar || picture || '',
-        currency: currency || 'IDR',
-        password: hashedPass
-      }
-    });
+    if (!user) throw new Error('Gagal memproses data user');
 
-    console.log('User Synced:', user.email);
+    console.log('User Synced Successfully:', user.email);
     res.json(user);
   } catch (error) {
     console.error('CRASH di syncUser:', error.message);
