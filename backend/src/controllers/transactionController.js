@@ -10,6 +10,19 @@ async function getDbUserId(userPayload) {
     select: { id: true }
   });
 
+  if (!user && typeof userPayload === 'object' && userPayload.email) {
+    user = await prisma.user.findFirst({
+      where: { email: userPayload.email },
+      select: { id: true }
+    });
+    if (user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { firebaseUid: uid }
+      }).catch(() => {});
+    }
+  }
+
   if (!user) {
     try {
       const email = typeof userPayload === 'object' ? (userPayload.email || '') : '';
@@ -24,7 +37,6 @@ async function getDbUserId(userPayload) {
         select: { id: true }
       });
     } catch (e) {
-      // Jika race condition upsert terjadi di tempat lain
       user = await prisma.user.findUnique({
         where: { firebaseUid: uid },
         select: { id: true }
