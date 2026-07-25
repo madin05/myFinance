@@ -8,6 +8,7 @@ exports.syncUser = async (req, res) => {
     
     const { uid, name: fbName, email: fbEmail, picture } = req.user;
     const { name, email, avatar, password, financialStartDay, currency, balanceOffset } = req.body || {}; 
+    const targetEmail = email || fbEmail || '';
 
     console.log('Syncing user:', fbEmail || uid);
 
@@ -15,6 +16,24 @@ exports.syncUser = async (req, res) => {
     let hashedPass = undefined;
     if (password) {
       hashedPass = await bcrypt.hash(password, 10);
+    }
+
+    let existingUser = await prisma.user.findUnique({
+      where: { firebaseUid: uid }
+    });
+
+    // Jika firebaseUid tidak cocok tapi email cocok, relink firebaseUid ke user yang ada di DB
+    if (!existingUser && targetEmail) {
+      existingUser = await prisma.user.findFirst({
+        where: { email: targetEmail }
+      });
+      if (existingUser) {
+        console.log('Relinking existing Postgres user by email:', targetEmail);
+        existingUser = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { firebaseUid: uid }
+        });
+      }
     }
 
     const user = await prisma.user.upsert({
@@ -26,12 +45,11 @@ exports.syncUser = async (req, res) => {
         ...(currency && { currency }),
         ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) }),
         ...(balanceOffset !== undefined && { balanceOffset: parseFloat(balanceOffset) })
-        // Jangan update password di sini, pakai updatePassword route
       },
       create: {
         firebaseUid: uid,
         name: name || fbName || 'User',
-        email: email || fbEmail || '',
+        email: targetEmail,
         avatar: avatar || picture || '',
         currency: currency || 'IDR',
         password: hashedPass

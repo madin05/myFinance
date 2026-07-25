@@ -5,6 +5,15 @@ async function getUserId(req) {
   const { uid, name, email } = req.user || {};
   if (!uid) throw new Error('UID tidak ditemukan');
   let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+  if (!user && email) {
+    user = await prisma.user.findFirst({ where: { email } });
+    if (user) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { firebaseUid: uid }
+      }).catch(() => null) || user;
+    }
+  }
   if (!user) {
     try {
       user = await prisma.user.create({
