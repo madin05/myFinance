@@ -1,19 +1,42 @@
 const prisma = require('../services/db');
 
-async function getDbUserId(uid) {
-  const user = await prisma.user.findUnique({
+async function getDbUserId(userPayload) {
+  const uid = typeof userPayload === 'string' ? userPayload : userPayload?.uid;
+  if (!uid) return null;
+
+  let user = await prisma.user.findUnique({
     where: { firebaseUid: uid },
     select: { id: true }
   });
+
+  if (!user) {
+    try {
+      const email = typeof userPayload === 'object' ? (userPayload.email || '') : '';
+      const name = typeof userPayload === 'object' ? (userPayload.name || 'User') : 'User';
+      user = await prisma.user.create({
+        data: {
+          firebaseUid: uid,
+          name,
+          email,
+          currency: 'IDR'
+        },
+        select: { id: true }
+      });
+    } catch (e) {
+      user = await prisma.user.findUnique({
+        where: { firebaseUid: uid },
+        select: { id: true }
+      });
+    }
+  }
+
   return user?.id || null;
 }
 
 exports.getBudgets = async (req, res) => {
   try {
-    const { uid } = req.user;
     const { period } = req.query;
-
-    const userId = await getDbUserId(uid);
+    const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
 
     const budgets = await prisma.budget.findMany({
@@ -30,10 +53,9 @@ exports.getBudgets = async (req, res) => {
 
 exports.upsertBudget = async (req, res) => {
   try {
-    const { uid } = req.user;
     const { category, amount, period } = req.body;
 
-    const userId = await getDbUserId(uid);
+    const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
 
     const budget = await prisma.budget.upsert({

@@ -3,12 +3,16 @@ import { API_URL, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
 
 export const savingsService = {
   async fetchSavings(token) {
-    const res = await fetch(`${API_URL}/savings`, {
-      headers: getAuthHeaders(token, false),
-      credentials: "include",
-    });
-    if (!res.ok) return [];
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/savings`, {
+        headers: getAuthHeaders(token, false),
+        credentials: "include",
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
   },
 
   async createSaving(token, goal) {

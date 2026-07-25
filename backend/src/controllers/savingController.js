@@ -1,9 +1,18 @@
 const prisma = require('../services/db');
 
 async function getAuthedUser(req) {
-  const { uid } = req.user || {};
+  const { uid, name, email } = req.user || {};
   if (!uid) throw new Error('UID tidak ditemukan dari token');
-  const user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+  let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+  if (!user) {
+    try {
+      user = await prisma.user.create({
+        data: { firebaseUid: uid, name: name || 'User', email: email || '', currency: 'IDR' }
+      });
+    } catch {
+      user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+    }
+  }
   if (!user) {
     const err = new Error('User belum terdaftar di Postgres');
     err.statusCode = 404;

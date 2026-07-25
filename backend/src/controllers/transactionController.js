@@ -1,18 +1,43 @@
 const prisma = require('../services/db');
 
 // Helper reusable: ambil user.id dari firebaseUid dengan 1 query
-async function getDbUserId(uid) {
-  const user = await prisma.user.findUnique({
+async function getDbUserId(userPayload) {
+  const uid = typeof userPayload === 'string' ? userPayload : userPayload?.uid;
+  if (!uid) return null;
+
+  let user = await prisma.user.findUnique({
     where: { firebaseUid: uid },
-    select: { id: true } // Hanya ambil field id, lebih ringan
+    select: { id: true }
   });
+
+  if (!user) {
+    try {
+      const email = typeof userPayload === 'object' ? (userPayload.email || '') : '';
+      const name = typeof userPayload === 'object' ? (userPayload.name || 'User') : 'User';
+      user = await prisma.user.create({
+        data: {
+          firebaseUid: uid,
+          name,
+          email,
+          currency: 'IDR'
+        },
+        select: { id: true }
+      });
+    } catch (e) {
+      // Jika race condition upsert terjadi di tempat lain
+      user = await prisma.user.findUnique({
+        where: { firebaseUid: uid },
+        select: { id: true }
+      });
+    }
+  }
+
   return user?.id || null;
 }
 
 exports.getAllTransactions = async (req, res) => {
   try {
-    const { uid } = req.user;
-    const userId = await getDbUserId(uid);
+    const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User belum terdaftar di Postgres' });
 
     const transactions = await prisma.transaction.findMany({
@@ -40,9 +65,7 @@ exports.getAllTransactions = async (req, res) => {
 exports.createTransaction = async (req, res) => {
   try {
     const { amount, harga, category, kategori, method, metode, account, akun, description, keterangan, type, tanggal, date } = req.body;
-    const { uid } = req.user;
-
-    const userId = await getDbUserId(uid);
+    const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User belum terdaftar di Postgres' });
 
     const finalAmount = parseFloat(amount || harga || 0);
@@ -68,11 +91,10 @@ exports.createTransaction = async (req, res) => {
 
 exports.deleteTransaction = async (req, res) => {
   try {
-    const { uid } = req.user;
     const id = Number(req.params.id);
     if (!Number.isFinite(id)) return res.status(400).json({ error: 'id tidak valid' });
 
-    const userId = await getDbUserId(uid);
+    const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User belum terdaftar di Postgres' });
 
     // Cukup 1 query: delete langsung dengan validasi kepemilikan
@@ -90,11 +112,10 @@ exports.deleteTransaction = async (req, res) => {
 
 exports.updateTransaction = async (req, res) => {
   try {
-    const { uid } = req.user;
     const id = Number(req.params.id);
     const { amount, harga, category, kategori, method, metode, account, akun, description, keterangan, type, tanggal, date } = req.body;
 
-    const userId = await getDbUserId(uid);
+    const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User belum terdaftar' });
 
     // Gabungkan find + update menjadi 1 operasi dengan updateMany

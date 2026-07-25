@@ -3,12 +3,16 @@ import { API_URL, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
 
 export const transactionService = {
   async fetchTransactions(token) {
-    const res = await fetch(`${API_URL}/transactions`, {
-      headers: getAuthHeaders(token, false),
-      credentials: "include",
-    });
-    if (!res.ok) return [];
-    return await res.json();
+    try {
+      const res = await fetch(`${API_URL}/transactions`, {
+        headers: getAuthHeaders(token, false),
+        credentials: "include",
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
   },
 
   async createTransaction(token, txData) {
