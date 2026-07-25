@@ -3,13 +3,17 @@ import { API_URL, getAuthHeaders } from "./apiClient.js";
 
 export const budgetService = {
   async fetchBudgets(token, period) {
-    const url = period ? `${API_URL}/budgets?period=${period}` : `${API_URL}/budgets`;
-    const res = await fetch(url, {
-      headers: getAuthHeaders(token, false),
-      credentials: "include",
-    });
-    if (!res.ok) return [];
-    return await res.json();
+    try {
+      const url = period ? `${API_URL}/budgets?period=${period}` : `${API_URL}/budgets`;
+      const res = await fetch(url, {
+        headers: getAuthHeaders(token, false),
+        credentials: "include",
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
   },
 
   async updateBudget(token, category, amount, period) {

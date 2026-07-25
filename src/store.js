@@ -79,34 +79,8 @@ export const store = {
     this.isSyncing = true;
 
     try {
-      const isFirstTime = !this.user?.id && this.transactions.length === 0;
-
-      if (isFirstTime) {
-        const dbUser = await userService.syncUser(this.user.token, extraData);
-        if (dbUser) {
-          this.user = {
-            ...this.user,
-            ...dbUser,
-            name: dbUser.name || this.user.name,
-            avatar: dbUser.avatar || this.user.avatar,
-          };
-          this.save();
-        }
-      }
-
-      const promises = [
-        transactionService.fetchTransactions(this.user.token),
-        budgetService.fetchBudgets(this.user.token),
-        savingsService.fetchSavings(this.user.token),
-        accountService.fetchAccounts(this.user.token),
-      ];
-
-      if (!isFirstTime) {
-        promises.push(userService.syncUser(this.user.token, extraData));
-      }
-
-      const [dbTxs, dbBudgets, dbSavings, dbAccounts, dbUser] = await Promise.all(promises);
-
+      // 1. Pastikan user selalu ter-sync di Postgres terlebih dahulu
+      const dbUser = await userService.syncUser(this.user.token, extraData);
       if (dbUser) {
         this.user = {
           ...this.user,
@@ -116,10 +90,37 @@ export const store = {
         };
       }
 
-      if (dbTxs) this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
-      if (dbBudgets) this.budgets = dbBudgets;
-      if (dbSavings) this.savings = dbSavings.map(_mapSavingData);
-      if (dbAccounts) {
+      // 2. Fetch data turunan secara paralel (aman karena user ID di Postgres sudah dipastikan ada)
+      const [dbTxs, dbBudgets, dbSavings, dbAccounts] = await Promise.all([
+        transactionService.fetchTransactions(this.user.token),
+        budgetService.fetchBudgets(this.user.token),
+        savingsService.fetchSavings(this.user.token),
+        accountService.fetchAccounts(this.user.token),
+      ]);
+
+      // 3. Hanya perbarui data jika response valid (bukan null akibat HTTP / network error)
+      if (Array.isArray(dbTxs)) {
+        if (dbTxs.length > 0) {
+          this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
+        } else if (this.transactions.length > 0) {
+          // Sync transaksi lokal ke DB jika DB masih kosong
+          this.syncTransactionsToDB();
+        } else {
+          this.transactions = [];
+        }
+      }
+
+      if (Array.isArray(dbBudgets)) {
+        this.budgets = dbBudgets;
+      }
+
+      if (Array.isArray(dbSavings)) {
+        if (dbSavings.length > 0) {
+          this.savings = dbSavings.map(_mapSavingData);
+        }
+      }
+
+      if (Array.isArray(dbAccounts)) {
         if (dbAccounts.length > 0) {
           this.saldos = dbAccounts.map(_mapAccountData);
         } else if (this.saldos.length > 0) {
@@ -132,6 +133,20 @@ export const store = {
       this.isSyncing = false;
       this.save();
       this.checkBudgetNotifications();
+    }
+  },
+
+  async syncTransactionsToDB() {
+    if (!this.user?.token || this.transactions.length === 0) return;
+    try {
+      for (const tx of this.transactions) {
+        // Sync transaksi yang belum ada di DB (misal temp ID lokal)
+        if (typeof tx.id === 'number' && tx.id > 1000000000000) {
+          await transactionService.createTransaction(this.user.token, tx);
+        }
+      }
+    } catch (err) {
+      console.error("Sync Transaksi ke DB Error:", err);
     }
   },
 

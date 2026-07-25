@@ -2,8 +2,18 @@ const prisma = require('../services/db');
 
 // Helper: ambil userId dari DB berdasarkan Firebase UID
 async function getUserId(req) {
-  const { uid } = req.user;
-  const user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+  const { uid, name, email } = req.user || {};
+  if (!uid) throw new Error('UID tidak ditemukan');
+  let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+  if (!user) {
+    try {
+      user = await prisma.user.create({
+        data: { firebaseUid: uid, name: name || 'User', email: email || '', currency: 'IDR' }
+      });
+    } catch {
+      user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+    }
+  }
   if (!user) throw new Error('User tidak ditemukan di database');
   return user.id;
 }
