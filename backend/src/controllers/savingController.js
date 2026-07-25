@@ -162,18 +162,18 @@ exports.reorderSavings = async (req, res) => {
 
     const existing = await prisma.saving.findMany({ where: { userId: user.id }, select: { id: true } });
     const existingSet = new Set(existing.map(s => s.id));
-    for (const id of ids) {
-      if (!existingSet.has(id)) return res.status(400).json({ error: `Saving id ${id} tidak valid untuk user ini` });
-    }
+    const validIds = ids.filter(id => existingSet.has(id));
 
-    await prisma.$transaction(
-      ids.map((id, idx) =>
-        prisma.saving.update({
-          where: { id },
-          data: { orderIndex: idx }
-        })
-      )
-    );
+    if (validIds.length > 0) {
+      await prisma.$transaction(
+        validIds.map((id, idx) =>
+          prisma.saving.update({
+            where: { id },
+            data: { orderIndex: idx }
+          })
+        )
+      );
+    }
 
     const savings = await prisma.saving.findMany({
       where: { userId: user.id },

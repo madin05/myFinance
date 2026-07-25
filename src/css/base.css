@@ -83,6 +83,43 @@ html, body {
 .flex-end { display: flex; align-items: flex-end; }
 .ml-xs { margin-left: 0.25rem; }
 
+/* Custom Icon Colors */
+.ph-fill.ph-bank,
+.ph-bank,
+.ph-fill.ph-question,
+.ph-question,
+.ph-shield-check,
+.ph-fill.ph-shield-check,
+.ph-gear,
+.ph-fill.ph-gear,
+.ph-monitor,
+.ph-fill.ph-monitor {
+  color: #68788C;
+}
+
+[data-theme="dark"] .ph-fill.ph-bank,
+[data-theme="dark"] .ph-bank,
+[data-theme="dark"] .ph-fill.ph-question,
+[data-theme="dark"] .ph-question,
+[data-theme="dark"] .ph-shield-check,
+[data-theme="dark"] .ph-fill.ph-shield-check,
+[data-theme="dark"] .ph-gear,
+[data-theme="dark"] .ph-fill.ph-gear,
+[data-theme="dark"] .ph-monitor,
+[data-theme="dark"] .ph-fill.ph-monitor,
+body.dark .ph-fill.ph-bank,
+body.dark .ph-bank,
+body.dark .ph-fill.ph-question,
+body.dark .ph-question,
+body.dark .ph-shield-check,
+body.dark .ph-fill.ph-shield-check,
+body.dark .ph-gear,
+body.dark .ph-fill.ph-gear,
+body.dark .ph-monitor,
+body.dark .ph-fill.ph-monitor {
+  color: #9682A9;
+}
+
 /* Background Utilities */
 .bg-primary { background-color: var(--primary) !important; }
 .bg-green { background-color: var(--green) !important; }
@@ -127,21 +164,45 @@ html, body {
 
 /* Skeleton Loading */
 .skeleton {
-  background: linear-gradient(90deg, var(--border-light) 25%, var(--border) 50%, var(--border-light) 75%);
+  background: #CBD5E1;
+  background: linear-gradient(
+    90deg,
+    #CBD5E1 25%,
+    #F1F5F9 50%,
+    #CBD5E1 75%
+  );
   background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite linear;
+  animation: shimmer 1.5s infinite linear;
   border-radius: var(--radius-md);
   color: transparent !important;
   pointer-events: none;
   border: none !important;
+  overflow: hidden;
 }
 
-[data-theme="dark"] .skeleton {
-  background: linear-gradient(90deg, #1E1E1E 25%, #2D2D2D 50%, #1E1E1E 75%);
+[data-theme="dark"] .skeleton,
+body.dark .skeleton {
+  background: #1E1A29;
+  background: linear-gradient(
+    90deg,
+    #1E1A29 25%,
+    #2D263D 50%,
+    #1E1A29 75%
+  );
   background-size: 200% 100%;
 }
 
-@keyframes skeleton-loading {
+.skeleton-circle {
+  border-radius: 50% !important;
+}
+
+.skeleton-text {
+  height: 0.8rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+@keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
@@ -180,36 +241,6 @@ html, body {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
-}
-
-/* Skeleton Loading Shimmer */
-.skeleton {
-  background: var(--border-light);
-  background: linear-gradient(
-    90deg,
-    var(--border-light) 25%,
-    var(--bg-color) 50%,
-    var(--border-light) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.skeleton-circle {
-  border-radius: 50% !important;
-}
-
-.skeleton-text {
-  height: 0.8rem;
-  margin-bottom: 0.5rem;
-  width: 100%;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }
 
 /* Date Picker Fixes */

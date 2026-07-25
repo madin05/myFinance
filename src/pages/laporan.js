@@ -4,15 +4,34 @@ import { exportService } from "../services/exportService.js";
 import { showToast } from "../components/notifications.js";
 
 // Constants & Shared Formatters
-const CATEGORY_COLORS = [
-  "#6366f1",
-  "#ec4899",
-  "#8b5cf6",
-  "#06b6d4",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-];
+const CATEGORY_COLOR_MAP = {
+  "Makanan": "#F97316",
+  "Makanan & Minuman": "#F97316",
+  "Transportasi": "#3B82F6",
+  "Belanja": "#EC4899",
+  "Tagihan": "#06B6D4",
+  "Tagihan & Utilitas": "#06B6D4",
+  "Hiburan": "#8B5CF6",
+  "Kesehatan": "#10B981",
+  "Pendidikan": "#6366F1",
+  "Investasi": "#EAB308",
+  "Gaji": "#10B981",
+  "Bonus": "#3B82F6",
+  "Lainnya": "#64748B",
+};
+
+const CATEGORY_PALETTE = ["#6366F1", "#EC4899", "#8B5CF6", "#06B6D4", "#10B981", "#F97316", "#EF4444", "#3B82F6", "#EAB308"];
+
+function getCategoryColor(categoryName) {
+  if (CATEGORY_COLOR_MAP[categoryName]) {
+    return CATEGORY_COLOR_MAP[categoryName];
+  }
+  let hash = 0;
+  for (let i = 0; i < (categoryName || "").length; i++) {
+    hash = categoryName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return CATEGORY_PALETTE[Math.abs(hash) % CATEGORY_PALETTE.length];
+}
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -121,14 +140,18 @@ export function renderLaporan() {
   const breakdownHtml = sortedCategories
     .map(([name, total]) => {
       const percent = (total / maxVal) * 100;
+      const catColor = getCategoryColor(name);
       return `
         <div style="margin-bottom: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-            <span class="font-bold text-sm">${name}</span>
-            <span class="text-sm">${formatRupiah(total)}</span>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
+            <span class="font-bold text-sm" style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: ${catColor}; display: inline-block; flex-shrink: 0;"></span>
+              ${name}
+            </span>
+            <span class="text-sm font-bold">${formatRupiah(total)}</span>
           </div>
-          <div class="progress-bar-container" style="height: 10px; background: var(--bg-color); border-radius: 10px; overflow: hidden;">
-            <div class="progress-bar" style="width: ${percent}%; height: 100%; background: var(--primary); transition: width 0.5s ease;"></div>
+          <div class="progress-bar-container" style="height: 8px; background: var(--bg-color); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-light);">
+            <div class="progress-bar" style="width: ${percent}%; height: 100%; background: ${catColor}; border-radius: 10px; transition: width 0.5s ease;"></div>
           </div>
         </div>
       `;
@@ -221,7 +244,7 @@ export function renderLaporan() {
         </h4>
         <div style="display: flex; flex-direction: column; gap: 2rem;">
           <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <div class="icon-box bg-red-light text-red" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 50%;">
+            <div class="text-red" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
               <i class="ph ph-trend-down"></i>
             </div>
             <div>
@@ -230,16 +253,16 @@ export function renderLaporan() {
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <div class="icon-box bg-green-light text-green" style="width: 52px; height: 52px; font-size: 1.3rem; border-radius: 50%;">
+            <div class="text-blue" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
               <i class="ph ph-trend-up"></i>
             </div>
             <div>
               <p class="text-muted text-xs font-bold mb-xs">PEMASUKAN</p>
-              <h3 class="text-green">${formatRupiah(totalIncome)}</h3>
+              <h3 class="text-blue">${formatRupiah(totalIncome)}</h3>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border);">
-            <div style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #a78bfa;">
+            <div style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: #a78bfa;">
               <i class="ph ph-wallet"></i>
             </div>
             <div>
@@ -395,15 +418,23 @@ export function renderLaporan() {
           datasets: [
             {
               data: sortedCategories.map((c) => c[1]),
-              backgroundColor: CATEGORY_COLORS,
+              backgroundColor: sortedCategories.map((c) => getCategoryColor(c[0])),
               borderWidth: 0,
-              hoverOffset: 20,
+              hoverOffset: 12,
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 16,
+              bottom: 10,
+              left: 12,
+              right: 12,
+            },
+          },
           plugins: {
             legend: {
               position: "bottom",
@@ -470,13 +501,13 @@ export function renderLaporan() {
             {
               label: "Pemasukan",
               data: incomeData,
-              borderColor: "#10b981",
-              backgroundColor: "rgba(16, 185, 129, 0.08)",
+              borderColor: "#3B82F6",
+              backgroundColor: "rgba(59, 130, 246, 0.08)",
               fill: true,
               tension: 0.4,
               pointRadius: 0,
               pointHoverRadius: 6,
-              pointHoverBackgroundColor: "#10b981",
+              pointHoverBackgroundColor: "#3B82F6",
               pointHoverBorderColor: "#fff",
               pointHoverBorderWidth: 2,
               borderWidth: 2,

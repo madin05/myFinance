@@ -87,7 +87,7 @@ export function renderAkun() {
         <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
           <div class="stat-card" style="padding: 2rem;">
             <h4 style="margin-bottom: 1.5rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph ph-shield-check" style="color: var(--primary); font-size: 1.4rem;"></i>
+              <i class="ph ph-shield-check" style="font-size: 1.4rem;"></i>
               Akses Keamanan
             </h4>
             

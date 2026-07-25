@@ -150,7 +150,7 @@ export const showConfirm = (title, message) => {
     overlay.innerHTML = `
       <div class="custom-alert-card" style="text-align: left;">
         <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-          <i class="ph-fill ph-question text-orange" style="font-size: 1.5rem;"></i>
+          <i class="ph-fill ph-question" style="font-size: 1.5rem;"></i>
           ${title}
         </h3>
         <p class="text-muted" style="margin-bottom: 2.5rem;">${message}</p>

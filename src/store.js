@@ -117,6 +117,10 @@ export const store = {
       if (Array.isArray(dbSavings)) {
         if (dbSavings.length > 0) {
           this.savings = dbSavings.map(_mapSavingData);
+        } else if (this.savings.length > 0) {
+          this.syncSavingsToDB();
+        } else {
+          this.savings = [];
         }
       }
 
@@ -147,6 +151,22 @@ export const store = {
       }
     } catch (err) {
       console.error("Sync Transaksi ke DB Error:", err);
+    }
+  },
+
+  async syncSavingsToDB() {
+    if (!this.user?.token || this.savings.length === 0) return;
+    try {
+      for (const s of this.savings) {
+        await savingsService.createSaving(this.user.token, s);
+      }
+      const dbSavings = await savingsService.fetchSavings(this.user.token);
+      if (Array.isArray(dbSavings)) {
+        this.savings = dbSavings.map(_mapSavingData);
+        this.save();
+      }
+    } catch (err) {
+      console.error("Sync Savings ke DB Error:", err);
     }
   },
 
@@ -803,6 +823,22 @@ export const store = {
     }
   },
 
+  async getToken() {
+    try {
+      const { auth } = await import("./firebase-config.js");
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken();
+        if (token && this.user) {
+          this.user.token = token;
+        }
+        return token || this.user?.token || "";
+      }
+    } catch {
+      // ignore
+    }
+    return this.user?.token || "";
+  },
+
   reorderSavings(newOrder) {
     this.savings = newOrder;
     this.save();
@@ -814,12 +850,14 @@ export const store = {
     this.savings = newOrder;
     this.save();
 
-    if (!this.user?.token) return;
+    const token = await this.getToken();
 
     try {
-      const saved = await savingsService.reorderSavings(this.user.token, orderedIds);
-      this.savings = saved.map(_mapSavingData);
-      this.save();
+      const saved = await savingsService.reorderSavings(token, orderedIds);
+      if (Array.isArray(saved)) {
+        this.savings = saved.map(_mapSavingData);
+        this.save();
+      }
     } catch (e) {
       this.savings = prev;
       this.save();

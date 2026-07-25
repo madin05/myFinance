@@ -19,6 +19,7 @@ export const transactionService = {
     const res = await fetch(`${API_URL}/transactions`, {
       method: "POST",
       headers: getAuthHeaders(token),
+      credentials: "include",
       body: JSON.stringify(txData),
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal simpan transaksi"));
@@ -29,6 +30,7 @@ export const transactionService = {
     const res = await fetch(`${API_URL}/transactions/${id}`, {
       method: "PUT",
       headers: getAuthHeaders(token),
+      credentials: "include",
       body: JSON.stringify(txData),
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal update transaksi"));
@@ -39,6 +41,7 @@ export const transactionService = {
     const res = await fetch(`${API_URL}/transactions/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
+      credentials: "include",
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal hapus transaksi"));
     return true;

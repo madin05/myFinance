@@ -24,7 +24,7 @@ export function renderSettings() {
         <!-- Preferensi Keuangan -->
         <div class="stat-card" style="padding: 1.5rem;">
           <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-            <i class="ph ph-gear" style="color: var(--primary); font-size: 1.4rem;"></i>
+            <i class="ph ph-gear" style="font-size: 1.4rem;"></i>
             Preferensi Keuangan
           </h4>
           <div style="display: flex; flex-direction: column; gap: 1.25rem;">
@@ -62,7 +62,7 @@ export function renderSettings() {
         <!-- Tampilan & Kinerja -->
         <div class="stat-card" style="padding: 1.5rem;">
           <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-            <i class="ph ph-monitor" style="color: var(--primary); font-size: 1.4rem;"></i>
+            <i class="ph ph-monitor" style="font-size: 1.4rem;"></i>
             Tampilan &amp; Kinerja
           </h4>
           <div style="display: flex; flex-direction: column; gap: 1.25rem;">

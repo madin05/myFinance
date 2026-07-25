@@ -20,6 +20,7 @@ export const budgetService = {
     const res = await fetch(`${API_URL}/budgets`, {
       method: "POST",
       headers: getAuthHeaders(token),
+      credentials: "include",
       body: JSON.stringify({ category, amount, period }),
     });
     if (!res.ok) return null;
@@ -30,7 +31,9 @@ export const budgetService = {
     const res = await fetch(`${API_URL}/budgets/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
+      credentials: "include",
     });
+    if (!res.ok) return null;
     return res.ok;
   },
 };

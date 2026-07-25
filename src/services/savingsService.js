@@ -19,6 +19,7 @@ export const savingsService = {
     const res = await fetch(`${API_URL}/savings`, {
       method: "POST",
       headers: getAuthHeaders(token),
+      credentials: "include",
       body: JSON.stringify({
         name: goal.name,
         targetAmount: goal.target,
@@ -35,6 +36,7 @@ export const savingsService = {
     const res = await fetch(`${API_URL}/savings/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(token),
+      credentials: "include",
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal update wishlist"));
@@ -45,6 +47,7 @@ export const savingsService = {
     const res = await fetch(`${API_URL}/savings/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
+      credentials: "include",
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal hapus wishlist"));
     return true;
@@ -54,6 +57,7 @@ export const savingsService = {
     const res = await fetch(`${API_URL}/savings/reorder`, {
       method: "POST",
       headers: getAuthHeaders(token),
+      credentials: "include",
       body: JSON.stringify({ orderedIds }),
     });
     if (!res.ok) throw new Error(await extractErrorMessage(res, "Gagal simpan urutan wishlist"));
