@@ -10,18 +10,32 @@
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
+  position: relative;
 }
 
 .wishlist-empty-illustration {
-  width: 250px;
+  width: 240px;
   height: 220px;
   object-fit: contain;
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="dark"] .wishlist-empty-state::before {
+  content: "";
+  position: absolute;
+  top: 195px;
+  width: 250px;
+  height: 50px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.35) 50%, transparent 80%);
+  border-radius: 50%;
+  filter: blur(8px);
+  z-index: 0;
+  pointer-events: none;
 }
 
 [data-theme="dark"] .wishlist-empty-illustration {
-  background: radial-gradient(ellipse 85% 18% at 50% 94%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.75) 50%, transparent 85%);
-  border-radius: 0;
-  padding: 0;
+  background: transparent;
   box-shadow: none;
 }
 
