@@ -151,8 +151,8 @@ export function renderTabungan() {
     <div class="wishlist-container" id="wishlist-container">
       ${goalsHtml || `
         <div class="wishlist-empty-state">
-          <img class="illustration-light wishlist-empty-illustration" src="/assets/wishlist-light.svg" alt="Wishlist Empty" />
-          <img class="illustration-dark wishlist-empty-illustration" src="/assets/wishlist-dark.svg" alt="Wishlist Empty" />
+          <img class="illustration-light wishlist-empty-illustration" src="/assets/wishlist_blank_illustration_light.svg" alt="Wishlist Empty" />
+          <img class="illustration-dark wishlist-empty-illustration" src="/assets/wishlist_blank_illustration_dark.svg" alt="Wishlist Empty" />
           <div class="wishlist-empty-text-group">
             <h4 class="wishlist-empty-title">Belum Ada Wishlist</h4>
             <p class="text-muted text-xs wishlist-empty-desc">Yuk, mulai buat target baru untuk tabungan impianmu hari ini!</p>
