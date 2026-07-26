@@ -15,6 +15,14 @@
 .wishlist-empty-illustration {
   width: 220px;
   height: 220px;
+  object-fit: contain;
+}
+
+[data-theme="dark"] .wishlist-empty-illustration {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 65%, transparent 100%);
+  border-radius: 50%;
+  padding: 12px;
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.09);
 }
 
 [data-theme="light"] .illustration-dark {
