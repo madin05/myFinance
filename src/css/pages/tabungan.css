@@ -1,11 +1,6 @@
 /* src/css/pages/tabungan.css */
 
-/* Empty State & Floating Illustration Animation */
-@keyframes floatAnim {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
+/* Empty State Illustration */
 .wishlist-empty-state {
   grid-column: 1 / -1;
   text-align: center;
@@ -20,7 +15,6 @@
 .wishlist-empty-illustration {
   width: 220px;
   height: 220px;
-  animation: floatAnim 4s ease-in-out infinite;
 }
 
 [data-theme="light"] .illustration-dark {
