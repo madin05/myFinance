@@ -67,8 +67,10 @@ export function initNavigation() {
       closeMobileSidebar();
     }
 
-    // Close Sidebar on Nav Click or Logo Click (Mobile Only)
-    if ((e.target.closest('.nav-item') || e.target.closest('.logo-wrapper')) && window.innerWidth <= 768) {
+    // Close Sidebar on Nav Click or Logo Click (Mobile Only, exclude dropdown toggles)
+    const navItem = e.target.closest('.nav-item');
+    const isDropdownToggle = e.target.closest('.nav-dropdown-toggle');
+    if ((navItem || e.target.closest('.logo-wrapper')) && !isDropdownToggle && window.innerWidth <= 768) {
       closeMobileSidebar();
     }
 

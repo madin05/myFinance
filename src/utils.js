@@ -100,3 +100,18 @@ export function debounce(func, delay = 300) {
     }, delay);
   };
 }
+
+/**
+ * Sanitisasi string HTML untuk mencegah XSS (Cross-Site Scripting).
+ * @param {string} str - Text mentah dari user/API
+ * @returns {string} - Text tersanitasi aman dipasang ke innerHTML
+ */
+export function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
