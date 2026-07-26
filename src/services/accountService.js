@@ -1,10 +1,10 @@
 // src/services/accountService.js
-import { API_URL, getAuthHeaders } from "./apiClient.js";
+import { API_URL, apiFetch, getAuthHeaders } from "./apiClient.js";
 
 export const accountService = {
   async fetchAccounts(token) {
     try {
-      const res = await fetch(`${API_URL}/accounts`, {
+      const res = await apiFetch(`${API_URL}/accounts`, {
         headers: getAuthHeaders(token, false),
         credentials: "include",
       });
@@ -16,7 +16,7 @@ export const accountService = {
   },
 
   async syncAccounts(token, accounts) {
-    const res = await fetch(`${API_URL}/accounts/sync`, {
+    const res = await apiFetch(`${API_URL}/accounts/sync`, {
       method: "POST",
       headers: getAuthHeaders(token),
       body: JSON.stringify({ accounts }),
@@ -26,7 +26,7 @@ export const accountService = {
   },
 
   async createAccount(token, account) {
-    const res = await fetch(`${API_URL}/accounts`, {
+    const res = await apiFetch(`${API_URL}/accounts`, {
       method: "POST",
       headers: getAuthHeaders(token),
       body: JSON.stringify(account),
@@ -37,7 +37,7 @@ export const accountService = {
   },
 
   async updateAccount(token, id, data) {
-    const res = await fetch(`${API_URL}/accounts/${id}`, {
+    const res = await apiFetch(`${API_URL}/accounts/${id}`, {
       method: "PUT",
       headers: getAuthHeaders(token),
       body: JSON.stringify(data),
@@ -47,7 +47,7 @@ export const accountService = {
   },
 
   async deleteAccount(token, id) {
-    const res = await fetch(`${API_URL}/accounts/${id}`, {
+    const res = await apiFetch(`${API_URL}/accounts/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
       credentials: "include",

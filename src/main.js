@@ -1,5 +1,6 @@
 import { store } from './store.js';
-import { auth, onAuthStateChanged, getRedirectResult, applyActionCode } from './firebase-config.js';
+import { auth, onAuthStateChanged, onIdTokenChanged, getRedirectResult, applyActionCode } from './firebase-config.js';
+import { userService } from './services/userService.js';
 import { renderLogin, renderEmailVerificationBanner } from './pages/login.js';
 import { openAddTransactionModal } from './components/modal.js';
 import { openCalculator } from './components/calculator.js';
@@ -23,6 +24,7 @@ import './css/components/dialogs.css';
 import './css/pages/login.css';
 import './css/pages/error404.css';
 import './css/pages/faq.css';
+import './css/components/tutorial.css';
 import './css/responsive.css';
 import './css/components/custom-select.css';
 import './style.css';
@@ -49,6 +51,87 @@ window.addEventListener('store-updated', () => {
   // agar semua halaman dapat efek blur navbar saat scroll
   initStickyHeader();
 });
+
+// ─── CROSS-TAB AUTO-VERIFICATION SYNC (BROADCASTCHANNEL & POLLING) ───
+let autoVerifPollingTimer = null;
+const authBroadcast = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('myfinance_auth') : null;
+
+if (authBroadcast) {
+  authBroadcast.onmessage = (event) => {
+    if (event.data?.type === 'EMAIL_VERIFIED') {
+      checkAndApplyEmailVerification();
+    }
+  };
+}
+
+let isVerifyingEmailCheck = false;
+
+export async function checkAndApplyEmailVerification() {
+  if (isVerifyingEmailCheck) return false;
+  const user = auth.currentUser;
+  if (!user || !store.user) {
+    stopVerificationPolling();
+    return false;
+  }
+
+  // Jika user sudah verified dan alert sudah pernah ditampilkan, cegah pemanggilan ulang popup!
+  if (user.emailVerified && sessionStorage.getItem('email_verified_alert_shown')) {
+    stopVerificationPolling();
+    return false;
+  }
+
+  isVerifyingEmailCheck = true;
+  try {
+    await user.reload();
+    if (user.emailVerified) {
+      stopVerificationPolling();
+
+      store.user.emailVerified = true;
+      store.save();
+
+      sessionStorage.setItem('email_verified_alert_shown', 'true');
+
+      window.isVerificationModalActive = false;
+      document.getElementById('verification-modal-overlay')?.remove();
+      document.getElementById('optional-verif-modal-overlay')?.remove();
+
+      const banner = document.getElementById('email-verify-banner');
+      if (banner) banner.style.display = 'none';
+
+      const { showAlert } = await import('./components/notifications.js');
+      await showAlert('Email Terverifikasi!', 'Email berhasil diverifikasi.', 'success');
+
+      refreshCurrentPage();
+
+      // Trigger Onboarding Product Tour setelah verifikasi akun selesai!
+      setTimeout(() => {
+        import('./components/tutorial.js').then(m => m.startProductTutorial());
+      }, 400);
+
+      return true;
+    }
+  } catch (e) {
+    // Ignore network reload errors during poll
+  } finally {
+    isVerifyingEmailCheck = false;
+  }
+  return false;
+}
+
+export function startVerificationPolling() {
+  if (autoVerifPollingTimer) return;
+  checkAndApplyEmailVerification();
+  autoVerifPollingTimer = setInterval(() => {
+    checkAndApplyEmailVerification();
+  }, 3000);
+}
+
+export function stopVerificationPolling() {
+  if (autoVerifPollingTimer) {
+    clearInterval(autoVerifPollingTimer);
+    autoVerifPollingTimer = null;
+  }
+}
 
 // --- AUTH LOGIC ---
 export async function checkAuth() {
@@ -99,6 +182,10 @@ export async function checkAuth() {
 
     try {
       await applyActionCode(auth, oobCode);
+      // Broadcast sinyal ke tab lama yang terbuka
+      if (authBroadcast) {
+        authBroadcast.postMessage({ type: 'EMAIL_VERIFIED' });
+      }
       renderLogin('email-verified');
     } catch (actionErr) {
       console.warn('applyActionCode gagal:', actionErr.code);
@@ -106,6 +193,9 @@ export async function checkAuth() {
       if (auth.currentUser) {
         try { await auth.currentUser.reload(); } catch (e) {}
         if (auth.currentUser.emailVerified) {
+          if (authBroadcast) {
+            authBroadcast.postMessage({ type: 'EMAIL_VERIFIED' });
+          }
           window.history.replaceState(null, '', window.location.pathname);
           loginView.style.display = 'none';
           appLayout.style.display = 'flex';
@@ -129,15 +219,10 @@ export async function checkAuth() {
   }
 
   // ─── STEP 1: Selesaikan pending redirect result DULU (mobile Google login) ───
-  // Harus di-await SEBELUM onAuthStateChanged di-register.
-  // Kalau tidak, onAuthStateChanged bisa fire dengan user=null sebelum Firebase
-  // selesai memproses redirect credential → login page flash → kesan "harus login 2x".
   try {
     const redirectResult = await getRedirectResult(auth);
     if (redirectResult?.user) {
       console.log('Google redirect selesai diproses untuk:', redirectResult.user.email);
-      // Firebase sudah update auth state internal → onAuthStateChanged di bawah
-      // akan fire dengan user yang benar. Tidak perlu lakukan apa-apa di sini.
     }
   } catch (redirectError) {
     console.warn('getRedirectResult error:', redirectError.code);
@@ -149,8 +234,6 @@ export async function checkAuth() {
   }
 
   // ─── STEP 2: Baru register onAuthStateChanged ───
-  // Pada titik ini, Firebase sudah settle auth state (termasuk dari redirect).
-  // onAuthStateChanged PERTAMA akan langsung fire dengan user yang benar.
   onAuthStateChanged(auth, async (user) => {
     console.log('Auth State Changed:', user ? 'Logged In' : 'Logged Out');
     
@@ -158,6 +241,12 @@ export async function checkAuth() {
       // Periksa apakah provider email/password dan belum diverifikasi
       const isEmailProvider = user.providerData.some(p => p.providerId === 'password');
       const needsVerification = isEmailProvider && !user.emailVerified;
+
+      if (needsVerification) {
+        startVerificationPolling();
+      } else {
+        stopVerificationPolling();
+      }
 
       const token = await user.getIdToken();
       
@@ -167,9 +256,6 @@ export async function checkAuth() {
         store.user.token = token;
         store.user.emailVerified = user.emailVerified;
 
-        // Kami hapus auto-sync PP dan nama dari Google agar PP yang sudah diubah di web 
-        // tidak tertimpa/balik lagi ke foto profil Google saat login ulang.
-        
         if (store.transactions.length === 0) {
           store.isSyncing = true;
         }
@@ -186,8 +272,6 @@ export async function checkAuth() {
           emailVerified: user.emailVerified,
           provider: user.providerData[0]?.providerId || 'unknown'
         };
-        // Hindari mengirim data profil awal sebagai parameter update (extraData)
-        // agar tidak menimpa data (PP/Nama) yang mungkin sudah ada di database saat user login di device baru.
         store.setUser(userData);
       }
 
@@ -206,6 +290,9 @@ export async function checkAuth() {
           // Pastikan banner disembunyikan jika sudah verified
           const banner = document.getElementById('email-verify-banner');
           if (banner) banner.style.display = 'none';
+
+          // Trigger Onboarding Product Tour (otomatis hanya berjalan 1x untuk pengguna baru terverifikasi)
+          import('./components/tutorial.js').then(m => m.startProductTutorial());
         }
       }, 300);
 
@@ -218,10 +305,41 @@ export async function checkAuth() {
         navigateTo('/dashboard');
       }
     } else {
-      // Tidak ada user (dan tidak ada pending redirect — sudah dicek di Step 1)
+      stopVerificationPolling();
       loginView.style.display = 'block';
       appLayout.style.display = 'none';
       renderLogin();
+    }
+  });
+
+  // ─── STEP 3: Auto-refresh Firebase ID Token & Session Cookie di background ───
+  onIdTokenChanged(auth, async (user) => {
+    if (user && store.user) {
+      const freshToken = await user.getIdToken();
+      if (store.user.token !== freshToken) {
+        console.log('[Auth] Firebase ID Token diperbarui secara otomatis.');
+        store.user.token = freshToken;
+        store.save();
+        userService.createSession(freshToken).catch(() => {});
+      }
+    }
+  });
+
+  // Re-verify & auto-renew session saat user kembali ke tab browser (misal laptop habis sleep)
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && auth.currentUser && store.user) {
+      checkAndApplyEmailVerification();
+      try {
+        const freshToken = await auth.currentUser.getIdToken(true);
+        if (store.user.token !== freshToken) {
+          console.log('[Auth] Sesi diperbarui setelah tab aktif kembali.');
+          store.user.token = freshToken;
+          store.save();
+          userService.createSession(freshToken).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('[Auth] Gagal memperbarui token saat tab aktif:', err);
+      }
     }
   });
 }

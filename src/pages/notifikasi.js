@@ -33,13 +33,13 @@ export function renderNotifikasi() {
         
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           ${selectionActive ? `
-            <button class="icon-btn" id="btn-delete-selected" data-tooltip-left="Hapus Terpilih" title="Hapus yang terpilih" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; width: 36px; height: 36px; position: relative;">
-              <i class="ph ph-trash" style="font-size: 1.2rem;"></i>
+            <button class="icon-btn" id="btn-delete-selected" data-tooltip-left="Hapus Terpilih" title="Hapus yang terpilih" style="background: transparent; border: none; color: var(--red); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              <i class="ph ph-trash" style="font-size: 1.25rem;"></i>
             </button>
           ` : ''}
           
-          <button class="icon-btn" id="btn-mark-all-read" data-tooltip-left="Tandai Semua Dibaca" title="Tandai Semua Dibaca" style="background: var(--card-bg); border: 1px solid var(--border); width: 36px; height: 36px; position: relative;">
-            <i class="ph ph-check-circle" style="font-size: 1.2rem; color: var(--primary);"></i>
+          <button class="icon-btn" id="btn-mark-all-read" data-tooltip-left="Tandai Semua Dibaca" title="Tandai Semua Dibaca" style="background: transparent; border: none; color: var(--text-main); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i class="ph ph-check-circle" style="font-size: 1.25rem;"></i>
           </button>
         </div>
       </div>
@@ -99,7 +99,7 @@ export function renderNotifikasi() {
               </div>
               <div class="row-actions" style="position: absolute; top: 50%; right: 0; transform: translateY(-50%); display: flex; gap: 0.25rem; opacity: 0; visibility: hidden; transition: all 0.2s;">
                 <button class="icon-btn delete-single-btn" data-id="${notif.id}" title="Hapus" 
-                        style="width: 28px; height: 28px; background: var(--bg-color); border-radius: 6px; color: var(--text-muted);">
+                        style="width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); display: flex; align-items: center; justify-content: center; cursor: pointer;">
                   <i class="ph ph-trash" style="font-size: 0.9rem;"></i>
                 </button>
               </div>

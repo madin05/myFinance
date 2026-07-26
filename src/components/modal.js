@@ -651,6 +651,8 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
       </div>
     </div>
     <style>
+      .delete-warning-img-dark { display: none; }
+      .delete-warning-img-light { display: block; }
       [data-theme="light"] .delete-warning-img-dark { display: none !important; }
       [data-theme="light"] .delete-warning-img-light { display: block !important; }
       [data-theme="dark"] .delete-warning-img-light { display: none !important; }

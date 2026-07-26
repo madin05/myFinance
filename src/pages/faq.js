@@ -50,11 +50,14 @@ export function renderFaq() {
 
   container.innerHTML = `
     <div class="faq-container animate-fade-in">
-      <div class="section-header">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <div>
           <h1 class="page-title">Tanya Jawab (FAQ)</h1>
           <p class="text-muted">Temukan jawaban atas pertanyaan umum mengenai pengelolaan keuangan di MyFinance</p>
         </div>
+        <button class="btn btn-primary" id="btn-replay-tutorial" style="border-radius: 12px; height: 42px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+          <i class="ph ph-play-circle" style="font-size: 1.15rem;"></i> Putar Panduan Aplikasi
+        </button>
       </div>
 
       <!-- Search & Filter Controls -->
@@ -151,6 +154,12 @@ export function renderFaq() {
         item.classList.add('open');
       }
     });
+  });
+
+  // Replay Product Tour Button Listener
+  document.getElementById('btn-replay-tutorial')?.addEventListener('click', async () => {
+    const { startProductTutorial } = await import('../components/tutorial.js');
+    startProductTutorial(true);
   });
 }
 

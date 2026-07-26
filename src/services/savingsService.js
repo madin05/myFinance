@@ -1,10 +1,10 @@
 // src/services/savingsService.js
-import { API_URL, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
+import { API_URL, apiFetch, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
 
 export const savingsService = {
   async fetchSavings(token) {
     try {
-      const res = await fetch(`${API_URL}/savings`, {
+      const res = await apiFetch(`${API_URL}/savings`, {
         headers: getAuthHeaders(token, false),
         credentials: "include",
       });
@@ -16,7 +16,7 @@ export const savingsService = {
   },
 
   async createSaving(token, goal) {
-    const res = await fetch(`${API_URL}/savings`, {
+    const res = await apiFetch(`${API_URL}/savings`, {
       method: "POST",
       headers: getAuthHeaders(token),
       credentials: "include",
@@ -33,7 +33,7 @@ export const savingsService = {
   },
 
   async updateSaving(token, id, data) {
-    const res = await fetch(`${API_URL}/savings/${id}`, {
+    const res = await apiFetch(`${API_URL}/savings/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(token),
       credentials: "include",
@@ -44,7 +44,7 @@ export const savingsService = {
   },
 
   async deleteSaving(token, id) {
-    const res = await fetch(`${API_URL}/savings/${id}`, {
+    const res = await apiFetch(`${API_URL}/savings/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
       credentials: "include",
@@ -54,7 +54,7 @@ export const savingsService = {
   },
 
   async reorderSavings(token, orderedIds) {
-    const res = await fetch(`${API_URL}/savings/reorder`, {
+    const res = await apiFetch(`${API_URL}/savings/reorder`, {
       method: "POST",
       headers: getAuthHeaders(token),
       credentials: "include",
