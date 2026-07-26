@@ -141,40 +141,37 @@ export function handleRoute() {
     }
   });
 
-  // Show skeleton for a smooth transition
+  // Render skeleton for immediate visual feedback
   showSkeleton(route);
 
-  // Snappy routing
-  setTimeout(() => {
-    if (store.isSyncing && store.transactions.length === 0) {
-      console.log('Initial sync in progress, keeping skeleton...');
-      return;
-    }
+  // Render page content immediately without artificial delays
+  loadRoutePage(route);
+}
 
-    if (route === '/dashboard') {
-      import('./pages/dashboard.js').then(module => module.renderDashboard());
-    } else if (route === '/transaksi') {
-      import('./pages/transaksi.js').then(module => module.renderTransaksi());
-    } else if (route === '/anggaran') {
-      import('./pages/anggaran.js').then(module => module.renderAnggaran());
-    } else if (route === '/tabungan') {
-      import('./pages/tabungan.js').then(module => module.renderTabungan());
-    } else if (route === '/saldo') {
-      import('./pages/saldo.js').then(module => module.renderSaldo());
-    } else if (route === '/laporan') {
-      import('./pages/laporan.js').then(module => module.renderLaporan());
-    } else if (route === '/akun') {
-      import('./pages/akun.js').then(module => module.renderAkun());
-    } else if (route === '/settings') {
-      import('./pages/settings.js').then(module => module.renderSettings());
-    } else if (route === '/faq') {
-      import('./pages/faq.js').then(module => module.renderFaq());
-    } else if (route === '/notifikasi') {
-      import('./pages/notifikasi.js').then(module => module.renderNotifikasi());
-    } else {
-      import('./pages/error404.js').then(module => module.renderError404());
-    }
-  }, 50);
+function loadRoutePage(route) {
+  if (route === '/dashboard') {
+    import('./pages/dashboard.js').then(module => module.renderDashboard());
+  } else if (route === '/transaksi') {
+    import('./pages/transaksi.js').then(module => module.renderTransaksi());
+  } else if (route === '/anggaran') {
+    import('./pages/anggaran.js').then(module => module.renderAnggaran());
+  } else if (route === '/tabungan') {
+    import('./pages/tabungan.js').then(module => module.renderTabungan());
+  } else if (route === '/saldo') {
+    import('./pages/saldo.js').then(module => module.renderSaldo());
+  } else if (route === '/laporan') {
+    import('./pages/laporan.js').then(module => module.renderLaporan());
+  } else if (route === '/akun') {
+    import('./pages/akun.js').then(module => module.renderAkun());
+  } else if (route === '/settings') {
+    import('./pages/settings.js').then(module => module.renderSettings());
+  } else if (route === '/faq') {
+    import('./pages/faq.js').then(module => module.renderFaq());
+  } else if (route === '/notifikasi') {
+    import('./pages/notifikasi.js').then(module => module.renderNotifikasi());
+  } else {
+    import('./pages/error404.js').then(module => module.renderError404());
+  }
 }
 
 // Fungsi bantu navigasi aman tanpa memicu reload halaman
@@ -187,33 +184,5 @@ export function navigateTo(path) {
 // Fungsi buat render ulang halaman aktif TANPA skeleton (biar gak flicker pas sync data)
 export function refreshCurrentPage() {
   const route = sanitizePath(window.location.pathname);
-  
-  if (store.isSyncing && store.transactions.length === 0) {
-    console.log('Initial sync in progress, keeping skeleton on refresh...');
-    return;
-  }
-  
-  if (route === '/dashboard') {
-    import('./pages/dashboard.js').then(m => m.renderDashboard());
-  } else if (route === '/transaksi') {
-    import('./pages/transaksi.js').then(m => m.renderTransaksi());
-  } else if (route === '/anggaran') {
-    import('./pages/anggaran.js').then(m => m.renderAnggaran());
-  } else if (route === '/tabungan') {
-    import('./pages/tabungan.js').then(m => m.renderTabungan());
-  } else if (route === '/saldo') {
-    import('./pages/saldo.js').then(m => m.renderSaldo());
-  } else if (route === '/laporan') {
-    import('./pages/laporan.js').then(m => m.renderLaporan());
-  } else if (route === '/akun') {
-    import('./pages/akun.js').then(m => m.renderAkun());
-  } else if (route === '/settings') {
-    import('./pages/settings.js').then(m => m.renderSettings());
-  } else if (route === '/faq') {
-    import('./pages/faq.js').then(m => m.renderFaq());
-  } else if (route === '/notifikasi') {
-    import('./pages/notifikasi.js').then(m => m.renderNotifikasi());
-  } else {
-    import('./pages/error404.js').then(m => m.renderError404());
-  }
+  loadRoutePage(route);
 }

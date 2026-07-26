@@ -38,6 +38,15 @@ body.tutorial-active .main-content {
   opacity: 1;
 }
 
+#tutorial-mask-hole {
+  transition: x 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              y 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              rx 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              ry 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .tutorial-svg-bg {
   position: absolute;
   inset: 0;
@@ -393,6 +402,15 @@ body.page-dashboard .header:not(.scrolled) #notif-trigger.tutorial-target-active
 
 [data-theme="light"] .tutorial-dot.active {
   background: #0284c7;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+}
+
+[data-theme="light"] .tutorial-progress-wrapper {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .tutorial-progress-fill {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
 }
 

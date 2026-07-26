@@ -6,8 +6,8 @@ const authMiddleware = async (req, res, next) => {
 
   if (sessionCookie) {
     try {
-      // Verifikasi Firebase session cookie
-      const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+      // Verifikasi Firebase session cookie (local in-memory verification)
+      const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie);
       req.user = decodedClaims;
       return next();
     } catch (error) {
@@ -21,7 +21,7 @@ const authMiddleware = async (req, res, next) => {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const idToken = authHeader.split('Bearer ')[1];
     try {
-      const decodedToken = await admin.auth().verifyIdToken(idToken, true);
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
       req.user = decodedToken;
       return next();
     } catch (error) {

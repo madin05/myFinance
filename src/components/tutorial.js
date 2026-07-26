@@ -4,6 +4,13 @@ import { navigateTo } from '../router.js';
 
 const TUTORIAL_STORAGE_KEY = 'myfinance_tutorial_completed';
 
+
+export const TUTORIAL_TIMING = {
+  ROUTE_CHANGE_DELAY: 120,  // Delay (ms) saat berpindah halaman via router sebelum highlight dirender
+  SYNC_FRAME_DURATION: 400, // Durasi (ms) kuncian loop requestAnimationFrame 60FPS per langkah
+  EXIT_CLEANUP_DELAY: 350,   // Delay (ms) sebelum DOM tutorial dihapus saat selesai/lewati
+};
+
 const TUTORIAL_STEPS = [
   // --- STEP 1-4: DASHBOARD STATS & QUICK ADD ---
   {
@@ -189,6 +196,9 @@ function createTutorialDOM() {
   document.documentElement.classList.add('tutorial-active');
   lockUserScroll();
 
+  window.addEventListener('resize', updateHighlightPosition, { passive: true });
+  window.addEventListener('scroll', updateHighlightPosition, { passive: true });
+
   // Overlay Container with SVG Cutout Mask (z-index: 99998)
   overlayEl = document.createElement('div');
   overlayEl.className = 'tutorial-overlay-container';
@@ -221,11 +231,17 @@ function createTutorialDOM() {
 }
 
 let activeTargetNode = null;
+let rafPositionId = null;
 
 function restoreActiveTarget() {
-  if (activeTargetNode) {
-    activeTargetNode.classList.remove('tutorial-target-active');
-    activeTargetNode = null;
+  document.querySelectorAll('.tutorial-target-active').forEach(el => {
+    el.classList.remove('tutorial-target-active');
+  });
+  activeTargetNode = null;
+
+  if (rafPositionId) {
+    cancelAnimationFrame(rafPositionId);
+    rafPositionId = null;
   }
 }
 
@@ -235,6 +251,7 @@ function showStep(index) {
     return;
   }
 
+  // 1. Reset / Clean-up state sebelumnya sebelum nempelin style step baru!
   restoreActiveTarget();
 
   currentStepIndex = index;
@@ -245,11 +262,70 @@ function showStep(index) {
     navigateTo(step.route);
     setTimeout(() => {
       renderStepHighlight(index);
-    }, 180);
+    }, TUTORIAL_TIMING.ROUTE_CHANGE_DELAY);
     return;
   }
 
   renderStepHighlight(index);
+}
+function updateHighlightPosition() {
+  if (!activeTargetNode || !overlayEl || !spotlightEl) return;
+
+  const rect = activeTargetNode.getBoundingClientRect();
+  const computedStyle = window.getComputedStyle(activeTargetNode);
+  const rawRadius = computedStyle.borderRadius || '12px';
+  const parsedRadius = parseFloat(rawRadius) || 12;
+
+  const isCircle = rawRadius.includes('50%') || 
+                   activeTargetNode.classList.contains('fam-trigger') ||
+                   activeTargetNode.classList.contains('icon-btn') ||
+                   activeTargetNode.id === 'notif-trigger' ||
+                   (Math.abs(rect.width - rect.height) < 16 && (parsedRadius >= 10 || rawRadius.includes('50%')));
+
+  const isPill = (rawRadius.includes('100px') || rawRadius.includes('999')) && rect.width > rect.height * 1.4;
+
+  const padding = 4;
+  const holeX = Math.max(0, rect.left - padding);
+  const holeY = Math.max(0, rect.top - padding);
+  const holeW = rect.width + (padding * 2);
+  const holeH = rect.height + (padding * 2);
+
+  let rxVal, spotBorderRadius;
+  if (isCircle) {
+    rxVal = `${holeW / 2}`;
+    spotBorderRadius = '50%';
+  } else if (isPill) {
+    rxVal = `${holeH / 2}`;
+    spotBorderRadius = '100px';
+  } else {
+    rxVal = `${Math.min(parsedRadius + padding, 24)}`;
+    spotBorderRadius = `${rxVal}px`;
+  }
+
+  // Update SVG Mask Cutout Hole
+  const maskHole = document.getElementById('tutorial-mask-hole');
+  if (maskHole) {
+    maskHole.setAttribute('x', holeX);
+    maskHole.setAttribute('y', holeY);
+    maskHole.setAttribute('width', holeW);
+    maskHole.setAttribute('height', holeH);
+    maskHole.setAttribute('rx', rxVal);
+    maskHole.setAttribute('ry', rxVal);
+  }
+
+  // Update Spotlight Halo Ring position & border-radius
+  if (spotlightEl) {
+    spotlightEl.style.top = `${holeY}px`;
+    spotlightEl.style.left = `${holeX}px`;
+    spotlightEl.style.width = `${holeW}px`;
+    spotlightEl.style.height = `${holeH}px`;
+    spotlightEl.style.borderRadius = spotBorderRadius;
+  }
+
+  // Update Tooltip Card position dynamically
+  if (cardEl && cardEl.classList.contains('active')) {
+    positionCard(rect);
+  }
 }
 
 function renderStepHighlight(index) {
@@ -281,67 +357,24 @@ function renderStepHighlight(index) {
   activeTargetNode = targetNode;
   targetNode.classList.add('tutorial-target-active');
 
-  // Smooth scroll target into center of viewport
-  targetNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Scroll target instantly to center so position is settled without smooth-scroll lag
+  targetNode.scrollIntoView({ behavior: 'auto', block: 'center' });
 
-  // Delay rect computation slightly until smooth scroll centers the target
-  setTimeout(() => {
-    if (!targetNode || currentStepIndex !== index) return;
+  // Render & position Tooltip Card
+  renderTooltipCard(index, targetNode.getBoundingClientRect());
 
-    const rect = targetNode.getBoundingClientRect();
-    const computedStyle = window.getComputedStyle(targetNode);
-    const rawRadius = computedStyle.borderRadius || '12px';
-    const parsedRadius = parseFloat(rawRadius) || 12;
-
-    const isCircle = rawRadius.includes('50%') || 
-                     targetNode.classList.contains('fam-trigger') ||
-                     targetNode.classList.contains('icon-btn') ||
-                     targetNode.id === 'notif-trigger' ||
-                     (Math.abs(rect.width - rect.height) < 16 && (parsedRadius >= 10 || rawRadius.includes('50%')));
-
-    const isPill = (rawRadius.includes('100px') || rawRadius.includes('999')) && rect.width > rect.height * 1.4;
-
-    const padding = isCircle ? 4 : 4;
-    const holeX = Math.max(0, rect.left - padding);
-    const holeY = Math.max(0, rect.top - padding);
-    const holeW = rect.width + (padding * 2);
-    const holeH = rect.height + (padding * 2);
-
-    let rxVal, spotBorderRadius;
-    if (isCircle) {
-      rxVal = `${holeW / 2}`;
-      spotBorderRadius = '50%';
-    } else if (isPill) {
-      rxVal = `${holeH / 2}`;
-      spotBorderRadius = '100px';
+  // Immediately position & run 60FPS rAF sync loop across layout settle frames
+  updateHighlightPosition();
+  const startTime = performance.now();
+  function syncLoop(now) {
+    updateHighlightPosition();
+    if (now - startTime < TUTORIAL_TIMING.SYNC_FRAME_DURATION) {
+      rafPositionId = requestAnimationFrame(syncLoop);
     } else {
-      rxVal = `${Math.min(parsedRadius + padding, 24)}`;
-      spotBorderRadius = `${rxVal}px`;
+      rafPositionId = null;
     }
-
-    // Update SVG Mask Cutout Hole
-    const maskHole = document.getElementById('tutorial-mask-hole');
-    if (maskHole) {
-      maskHole.setAttribute('x', holeX);
-      maskHole.setAttribute('y', holeY);
-      maskHole.setAttribute('width', holeW);
-      maskHole.setAttribute('height', holeH);
-      maskHole.setAttribute('rx', rxVal);
-      maskHole.setAttribute('ry', rxVal);
-    }
-
-    // Update Spotlight Halo Ring position & border-radius
-    if (spotlightEl) {
-      spotlightEl.style.top = `${holeY}px`;
-      spotlightEl.style.left = `${holeX}px`;
-      spotlightEl.style.width = `${holeW}px`;
-      spotlightEl.style.height = `${holeH}px`;
-      spotlightEl.style.borderRadius = spotBorderRadius;
-    }
-
-    // Render & position Tooltip Card
-    renderTooltipCard(index, rect);
-  }, 220);
+  }
+  rafPositionId = requestAnimationFrame(syncLoop);
 }
 
 function renderTooltipCard(index, targetRect) {
@@ -465,7 +498,7 @@ function endTutorial(isSkip = false) {
 
   setTimeout(() => {
     cleanupTutorialDOM();
-  }, 350);
+  }, TUTORIAL_TIMING.EXIT_CLEANUP_DELAY);
 }
 
 function cleanupTutorialDOM() {

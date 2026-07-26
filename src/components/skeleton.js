@@ -185,7 +185,7 @@ export function getLaporanSkeleton() {
     </div>
 
     <!-- Bottom Grid -->
-    <div class="bottom-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+    <div class="bottom-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; align-items: start;">
       <!-- Card 1: Ringkasan Periode -->
       <div class="stat-card" style="padding: 2rem;">
         <div class="skeleton" style="width: 180px; height: 24px; border-radius: 8px; margin-bottom: 2rem;"></div>

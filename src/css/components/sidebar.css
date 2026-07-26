@@ -160,6 +160,58 @@
   margin-top: auto !important;
 }
 
+/* --- Sidebar Dropdown Group (Bantuan Accordion) --- */
+.nav-dropdown {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+}
+
+.nav-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.nav-dropdown-arrow {
+  margin-left: auto;
+  margin-right: 12px;
+  font-size: 0.9rem !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-muted);
+}
+
+.nav-dropdown.open .nav-dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.85rem;
+  margin-top: 0.2rem;
+  transition: all 0.25s ease;
+}
+
+.nav-dropdown.open .nav-dropdown-menu {
+  display: flex;
+}
+
+.nav-sub-item {
+  height: 40px !important;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.nav-sub-item i {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 1.1rem !important;
+}
+
 #btn-toggle-sidebar {
   margin-left: 0;
   color: var(--text-main);
