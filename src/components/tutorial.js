@@ -427,9 +427,11 @@ function renderTooltipCard(index, targetRect) {
 }
 
 function positionCard(targetRect) {
-  const cardWidth = Math.min(window.innerWidth - 32, 360);
-  const cardHeight = cardEl.offsetHeight || 210;
-  const margin = 18;
+  const isMobile = window.innerWidth <= 768;
+  const maxCardW = isMobile ? 310 : 360;
+  const cardWidth = Math.min(window.innerWidth - 32, maxCardW);
+  const cardHeight = cardEl.offsetHeight || (isMobile ? 160 : 210);
+  const margin = isMobile ? 12 : 18;
 
   let top, left;
 

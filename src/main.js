@@ -11,22 +11,6 @@ import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
 import { showConfirm, checkVerification } from './components/notifications.js';
 
-import './css/variables.css';
-import './css/base.css';
-import './css/components/buttons.css';
-import './css/components/sidebar.css';
-import './css/components/header.css';
-import './css/components/cards.css';
-import './css/components/table.css';
-import './css/components/widgets.css';
-import './css/components/modal.css';
-import './css/components/dialogs.css';
-import './css/pages/login.css';
-import './css/pages/error404.css';
-import './css/pages/faq.css';
-import './css/components/tutorial.css';
-import './css/responsive.css';
-import './css/components/custom-select.css';
 import './style.css';
 
 // --- reactive UI update ---

@@ -434,3 +434,54 @@ body.page-dashboard .header:not(.scrolled) #notif-trigger.tutorial-target-active
   filter: brightness(1.08);
   box-shadow: 0 5px 16px rgba(56, 189, 248, 0.6);
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVE COMPACT CARD ADJUSTMENTS
+   ========================================================================== */
+@media (max-width: 768px) {
+  .tutorial-card {
+    max-width: min(310px, 88vw);
+    padding: 0.9rem 1.05rem;
+    border-radius: 16px;
+  }
+
+  .tutorial-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .tutorial-step-badge {
+    font-size: 0.65rem;
+  }
+
+  .tutorial-skip-link {
+    font-size: 0.75rem;
+  }
+
+  .tutorial-title {
+    font-size: 0.95rem;
+    line-height: 1.3;
+    margin: 0 0 0.3rem 0;
+  }
+
+  .tutorial-desc {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    margin: 0 0 0.75rem 0;
+  }
+
+  .tutorial-footer {
+    padding-top: 0.55rem;
+  }
+
+  .tutorial-progress-wrapper {
+    max-width: 75px;
+    height: 4px;
+  }
+
+  .tutorial-btn {
+    height: 28px;
+    padding: 0 0.65rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+  }
+}
