@@ -88,14 +88,23 @@
             <i class="ph ph-user"></i>
             <span>Akun</span>
           </a>
-          <a href="/faq" class="nav-item nav-item-bottom" data-route="faq" data-tooltip-right="Bantuan">
-            <i class="ph ph-question"></i>
-            <span>Bantuan</span>
-          </a>
-          <button type="button" class="nav-item" id="btn-sidebar-tutorial" data-tooltip-right="Panduan Tutorial" style="border: none; background: transparent; width: 100%; text-align: left; cursor: pointer; color: inherit; font: inherit;">
-            <i class="ph ph-play-circle" style="color: var(--primary);"></i>
-            <span>Tutorial</span>
-          </button>
+          <div class="nav-dropdown nav-item-bottom" id="nav-bantuan-group">
+            <button type="button" class="nav-item nav-dropdown-toggle" id="btn-bantuan-toggle" data-tooltip-right="Bantuan" style="border: none; background: transparent; width: 100%; text-align: left; cursor: pointer; color: inherit; font: inherit;">
+              <i class="ph ph-question"></i>
+              <span>Bantuan</span>
+              <i class="ph ph-caret-down nav-dropdown-arrow"></i>
+            </button>
+            <div class="nav-dropdown-menu" id="bantuan-dropdown-menu">
+              <a href="/faq" class="nav-item nav-sub-item" data-route="faq" data-tooltip-right="Pusat Bantuan">
+                <i class="ph ph-info"></i>
+                <span>Pusat Bantuan</span>
+              </a>
+              <button type="button" class="nav-item nav-sub-item" id="btn-sidebar-tutorial" data-tooltip-right="Panduan Tutorial" style="border: none; background: transparent; width: 100%; text-align: left; cursor: pointer; color: inherit; font: inherit;">
+                <i class="ph ph-play-circle"></i>
+                <span>Tutorial</span>
+              </button>
+            </div>
+          </div>
         </nav>
 
         <!-- Sidebar Footer Removed for FAM -->

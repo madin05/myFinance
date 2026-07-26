@@ -84,6 +84,14 @@ export function initNavigation() {
       applySystemTheme();
     }
 
+    // Bantuan Sidebar Dropdown Toggle
+    if (e.target.closest('#btn-bantuan-toggle')) {
+      const group = document.getElementById('nav-bantuan-group');
+      if (group) {
+        group.classList.toggle('open');
+      }
+    }
+
     // Trigger Product Tutorial from Sidebar
     if (e.target.closest('#btn-sidebar-tutorial')) {
       const { startProductTutorial } = await import('../components/tutorial.js');

@@ -79,8 +79,15 @@ export const store = {
     this.isSyncing = true;
 
     try {
-      // 1. Pastikan user selalu ter-sync di Postgres terlebih dahulu
-      const dbUser = await userService.syncUser(this.user.token, extraData);
+      // Fetch user profile and all domain data in parallel (concurrent requests)
+      const [dbUser, dbTxs, dbBudgets, dbSavings, dbAccounts] = await Promise.all([
+        userService.syncUser(this.user.token, extraData),
+        transactionService.fetchTransactions(this.user.token),
+        budgetService.fetchBudgets(this.user.token),
+        savingsService.fetchSavings(this.user.token),
+        accountService.fetchAccounts(this.user.token),
+      ]);
+
       if (dbUser) {
         this.user = {
           ...this.user,
@@ -89,14 +96,6 @@ export const store = {
           avatar: dbUser.avatar || this.user.avatar,
         };
       }
-
-      // 2. Fetch data turunan secara paralel (aman karena user ID di Postgres sudah dipastikan ada)
-      const [dbTxs, dbBudgets, dbSavings, dbAccounts] = await Promise.all([
-        transactionService.fetchTransactions(this.user.token),
-        budgetService.fetchBudgets(this.user.token),
-        savingsService.fetchSavings(this.user.token),
-        accountService.fetchAccounts(this.user.token),
-      ]);
 
       // 3. Hanya perbarui data jika response valid (bukan null akibat HTTP / network error)
       if (Array.isArray(dbTxs)) {

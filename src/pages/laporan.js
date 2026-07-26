@@ -237,7 +237,7 @@ export function renderLaporan() {
       </div>
     </div>
 
-    <div class="bottom-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+    <div class="bottom-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; align-items: start;">
       <div class="stat-card" style="padding: 2rem;">
         <h4 style="margin-bottom: 2rem; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
           Ringkasan Periode

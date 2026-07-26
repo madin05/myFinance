@@ -356,33 +356,29 @@
 
 @media (max-width: 768px) {
   .header.scrolled {
-    /* Fallback solid kalau backdrop-filter tidak support */
-    background-color: rgba(255, 255, 255, 0.88) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10), 0 1px 0 var(--border) !important;
-    border-bottom: 1px solid var(--border);
-    /* Paksa stacking context baru */
-    isolation: isolate;
-    will-change: transform;
-    /* Vendor prefix wajib */
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    backdrop-filter: blur(16px) saturate(180%);
+    top: 0.75rem !important;
+    border-radius: 9999px !important;
+    border: 1px solid var(--border) !important;
+    padding: 0.6rem 1.25rem !important;
+    margin-bottom: 0.75rem !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
   }
 
-  /* Glassmorphism override kalau browser support */
-  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-    .header.scrolled {
-      background-color: rgba(255, 255, 255, 0.65) !important;
-    }
-
-    [data-theme="dark"] .header.scrolled {
-      background-color: rgba(21, 18, 27, 0.70) !important;
-    }
+  /* Sembunyikan input cari transaksi saat mobile di-scroll agar header super ringkas */
+  .header.scrolled .search-bar {
+    display: none !important;
   }
 
   [data-theme="dark"] .header.scrolled {
-    /* Dark mode fallback */
-    background-color: rgba(21, 18, 27, 0.92) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 1px 0 var(--border) !important;
+    background-color: rgba(15, 13, 21, 0.8) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 9999px !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
   }
 
   body.disable-animations .header.scrolled,

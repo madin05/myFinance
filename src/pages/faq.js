@@ -9,42 +9,52 @@ export function renderFaq() {
     {
       category: 'umum',
       question: 'Bagaimana cara kerja sinkronisasi data MyFinance?',
-      answer: 'MyFinance dirancang agar Anda bisa mencatat keuangan kapan saja dan di mana saja tanpa khawatir kehilangan data. Semua perubahan transaksi atau rencana tabungan Anda langsung diselaraskan secara aman ke penyimpanan cloud pribadi kami yang aktif 24 jam. Hebatnya, jika koneksi internet terputus (offline), Anda tetap bisa melakukan pencatatan dengan normal; aplikasi akan menyimpan data tersebut sementara dengan aman di perangkat Anda dan otomatis mengunggahnya begitu Anda terhubung kembali.'
+      answer: 'MyFinance dirancang agar Anda bisa mencatat keuangan kapan saja dan di mana saja tanpa khawatir kehilangan data. Semua perubahan transaksi, anggaran, atau target wishlist diselaraskan secara otomatis dan aman ke database cloud pribadi Anda. Jika koneksi terputus (offline), data akan disimpan sementara di perangkat lokal dan otomatis diunggah kembali saat online.'
     },
     {
       category: 'umum',
       question: 'Apakah data keuangan saya aman di platform ini?',
-      answer: 'Tentu saja, privasi dan keamanan finansial Anda adalah komitmen mutlak kami. MyFinance menjamin bahwa seluruh catatan pengeluaran, pemasukan, dan tabungan Anda bersifat <strong>sangat rahasia dan sepenuhnya milik Anda pribadi</strong>. Kami menerapkan sistem autentikasi aman untuk memvalidasi akses akun Anda, serta memastikan data Anda terlindungi dari pihak luar. Kami tidak akan pernah membagikan atau menjual data finansial Anda kepada pihak ketiga manapun.'
+      answer: 'Tentu saja, privasi dan keamanan finansial Anda adalah prioritas utama kami. MyFinance menjamin seluruh catatan pengeluaran, pemasukan, dan saldo akun bersifat <strong>sangat rahasia dan sepenuhnya milik Anda pribadi</strong>. Menerapkan autentikasi aman dengan Firebase & PostgreSQL backend, data Anda terlindungi dengan enkripsi standar industri.'
     },
     {
       category: 'fitur',
-      question: 'Bagaimana cara mengatur anggaran pengeluaran bulanan?',
-      answer: 'Masuk ke menu <strong>Anggaran</strong>, lalu klik tombol <strong>"Atur Anggaran"</strong> di pojok kanan atas. Pilih kategori pengeluaran (misal: Makanan, Transportasi, Hiburan) dan tentukan batas limit bulanan Anda. Aplikasi akan memperingatkan Anda jika pengeluaran kategori tersebut mendekati batas limit.'
+      question: 'Bagaimana cara mengulang atau memutar kembali Panduan Tutorial?',
+      answer: 'Anda bisa mengulang panduan interaktif kapan saja! Cukup buka menu <strong>Bantuan</strong> di sidebar lalu pilih <strong>Tutorial</strong>, atau klik tombol <strong>"Putar Panduan Aplikasi"</strong> di bagian atas halaman Pusat Bantuan ini.'
     },
     {
       category: 'fitur',
-      question: 'Bagaimana cara menggunakan fitur Wishlist (Target Tabungan)?',
-      answer: 'Masuk ke menu <strong>Wishlist</strong>, klik tombol <strong>"Tambah Wishlist"</strong> untuk memasukkan target barang impian Anda, dana yang dibutuhkan, warna representasi, dan ikon yang menarik. Setiap kali Anda menyisihkan uang, klik tombol <strong>"Isi"</strong> pada kartu wishlist tersebut.'
+      question: 'Bagaimana cara menggunakan Kalkulator Cepat & Quick Actions?',
+      answer: 'Klik ikon tambah <strong>(+) pada Floating Action Menu (FAM)</strong> yang melayang di pojok kanan bawah layar. Dari situ Anda bisa langsung mencatat transaksi baru, menghitung angka menggunakan kalkulator pop-up, atau memasukkan item wishlist tanpa perlu meninggalkan halaman aktif Anda.'
     },
     {
       category: 'fitur',
-      question: 'Dapatkah saya mengunduh atau mengekspor laporan keuangan?',
-      answer: 'Ya! Masuk ke menu <strong>Laporan</strong>, pilih periode laporan yang Anda inginkan (misal: bulan ini atau kustom), lalu pilih tombol <strong>"Ekspor ke PDF"</strong> untuk mengunduh dokumen laporan resmi yang sangat rapi atau <strong>"Ekspor ke Excel"</strong> untuk pengolahan data spreadsheet eksternal.'
+      question: 'Bagaimana cara mengatur batas anggaran pengeluaran bulanan?',
+      answer: 'Masuk ke menu <strong>Anggaran</strong>, lalu klik tombol <strong>"Atur Anggaran"</strong>. Tentukan kategori (misal: Makanan, Transportasi, Hiburan) dan alokasi batas nominalnya. Sistem akan otomatis melacak persentase penggunaan dan memberi notifikasi jika anggaran mendekati batas limit.'
+    },
+    {
+      category: 'fitur',
+      question: 'Bagaimana cara memanfaatkan fitur Target Tabungan (Wishlist)?',
+      answer: 'Buka menu <strong>Wishlist</strong> dan klik <strong>"Tambah Wishlist"</strong> untuk mencatat target barang atau impian finansial Anda. Setiap kali menyisihkan uang, klik tombol <strong>"Isi"</strong> pada kartu wishlist. Wishlist yang sudah tercapai 100% dapat dimasukkan ke Riwayat Tabungan.'
+    },
+    {
+      category: 'fitur',
+      question: 'Dapatkah saya mengekspor laporan keuangan ke PDF atau Excel?',
+      answer: 'Bisa! Masuk ke menu <strong>Laporan</strong>, pilih filter rentang waktu yang diinginkan (Minggu, Bulan, 3 Bulan, Tahun, atau Kustom), lalu klik tombol <strong>"Export PDF"</strong> untuk mengunduh berkas rekapitulasi resmi atau gunakan opsi ekspor spreadsheet.'
     },
     {
       category: 'teknis',
-      question: 'Mengapa saya mendapatkan error saat melakukan login?',
-      answer: 'Pastikan email dan password yang Anda masukkan sudah benar. Jika Anda mendaftar menggunakan email & password, pastikan Anda telah mengklik link verifikasi yang dikirimkan ke email Anda sebelum melakukan login. Jika menggunakan Google Login, pastikan koneksi internet Anda stabil.'
+      question: 'Mengapa saya perlu melakukan verifikasi email saat pendaftaran?',
+      answer: 'Verifikasi email diperlukan untuk menjamin keamanan akun dan pemulihan kata kunci. Saat mendaftar, link verifikasi otomatis dikirim ke email Anda. Setelah mengklik link tersebut, status akun Anda akan langsung aktif tanpa batasan fitur.'
     },
     {
-      category: 'fitur',
-      question: 'Apakah ada kalkulator cepat untuk menghitung transaksi?',
-      answer: 'Ada! Kami menyediakan kalkulator interaktif yang bisa diakses kapan saja. Klik tombol oranye berlogo kalkulator pada <strong>Floating Action Menu (FAM)</strong> di pojok kanan bawah layar untuk langsung menggunakannya tanpa perlu berpindah dari halaman aktif Anda.'
+      category: 'teknis',
+      question: 'Bagaimana cara mengubah tema aplikasi (Dark / Light Mode)?',
+      answer: 'MyFinance menyediakan 3 mode tema: <strong>Terang (Light)</strong>, <strong>Gelap (Dark)</strong>, dan <strong>Otomatis (Ikut Perangkat)</strong>. Anda bisa mengubahnya kapan saja melalui tombol tema di kanan atas header navigasi.'
     },
     {
       category: 'teknis',
       question: 'Bagaimana cara menghapus akun dan data saya secara permanen?',
-      answer: 'Jika Anda ingin menghapus akun, silakan masuk ke menu <strong>Akun</strong>, lalu klik tombol <strong>"Hapus Akun"</strong> di bagian bawah. Seluruh data transaksi, profil, anggaran, dan wishlist Anda akan langsung dihapus secara permanen dari server database PostgreSQL kami secara instan.'
+      answer: 'Jika Anda ingin menghapus akun, silakan masuk ke menu <strong>Akun</strong>, scroll ke bagian bawah dan klik tombol merah <strong>"Hapus Akun"</strong>. Seluruh data transaksi, profil, anggaran, dan wishlist Anda akan dihapus secara permanen dari server database kami.'
     }
   ];
 

@@ -74,8 +74,8 @@ export async function checkAndApplyEmailVerification() {
     return false;
   }
 
-  // Jika user sudah verified dan alert sudah pernah ditampilkan, cegah pemanggilan ulang popup!
-  if (user.emailVerified && sessionStorage.getItem('email_verified_alert_shown')) {
+  // Jika user dari awal SUDAH terverifikasi (di store atau auth), jangan jalankan polling atau tampilkan popup alert lagi!
+  if (store.user.emailVerified) {
     stopVerificationPolling();
     return false;
   }
@@ -88,8 +88,6 @@ export async function checkAndApplyEmailVerification() {
 
       store.user.emailVerified = true;
       store.save();
-
-      sessionStorage.setItem('email_verified_alert_shown', 'true');
 
       window.isVerificationModalActive = false;
       document.getElementById('verification-modal-overlay')?.remove();
@@ -275,29 +273,22 @@ export async function checkAuth() {
         store.setUser(userData);
       }
 
-      // Pastikan route diproses dulu (rendering halaman) baru sinkronkan UI/Avatar
-      handleRoute();
-      
-      // Delay sedikit agar elemen halaman baru (misal: #profile-preview) sudah dirender
-      setTimeout(() => {
-        store.updateUI();
-        // Tampilkan banner verifikasi jika email belum diverifikasi
-        if (needsVerification) {
-          if (!window.isVerificationModalActive && !document.getElementById('optional-verif-modal-overlay')) {
-            renderEmailVerificationBanner(user);
-          }
-        } else {
-          // Pastikan banner disembunyikan jika sudah verified
-          const banner = document.getElementById('email-verify-banner');
-          if (banner) banner.style.display = 'none';
-
-          // Trigger Onboarding Product Tour (otomatis hanya berjalan 1x untuk pengguna baru terverifikasi)
-          import('./components/tutorial.js').then(m => m.startProductTutorial());
-        }
-      }, 300);
-
+      // Switch display layout and render page content instantly
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
+
+      handleRoute();
+      store.updateUI();
+
+      if (needsVerification) {
+        if (!window.isVerificationModalActive && !document.getElementById('optional-verif-modal-overlay')) {
+          renderEmailVerificationBanner(user);
+        }
+      } else {
+        const banner = document.getElementById('email-verify-banner');
+        if (banner) banner.style.display = 'none';
+        import('./components/tutorial.js').then(m => m.startProductTutorial());
+      }
       
       const currentPath = window.location.pathname;
       const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
