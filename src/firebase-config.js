@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, EmailAuthProvider, reauthenticateWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, applyActionCode, confirmPasswordReset, verifyPasswordResetCode, updateProfile } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, EmailAuthProvider, reauthenticateWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, onIdTokenChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, applyActionCode, confirmPasswordReset, verifyPasswordResetCode, updateProfile } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAhRZU5UEnVUhBONJLvAU3u82MiKy8NDwE",
@@ -16,4 +16,4 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, googleProvider, EmailAuthProvider, reauthenticateWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, applyActionCode, confirmPasswordReset, verifyPasswordResetCode, updateProfile };
+export { auth, googleProvider, EmailAuthProvider, reauthenticateWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, onIdTokenChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, applyActionCode, confirmPasswordReset, verifyPasswordResetCode, updateProfile };

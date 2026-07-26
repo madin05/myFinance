@@ -155,11 +155,13 @@ exports.sendVerification = async (req, res) => {
       return res.status(400).json({ error: 'Email tidak ditemukan di token.' });
     }
 
+    const reqOrigin = req.headers.origin || req.headers.referer;
+
     // ⚡ Kirim respon HTTP 200 INSTAN ke UI (tanpa nunggu SMTP latency)
     res.json({ success: true, message: 'Email verifikasi berhasil dikirim!' });
 
     // 🚀 Kirim email via Nodemailer di background secara non-blocking
-    sendVerificationEmail(email).catch(err => {
+    sendVerificationEmail(email, reqOrigin).catch(err => {
       console.error('Background Send Verification Error:', err.message);
     });
   } catch (error) {

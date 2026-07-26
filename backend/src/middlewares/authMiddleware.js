@@ -21,7 +21,7 @@ const authMiddleware = async (req, res, next) => {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const idToken = authHeader.split('Bearer ')[1];
     try {
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const decodedToken = await admin.auth().verifyIdToken(idToken, true);
       req.user = decodedToken;
       return next();
     } catch (error) {

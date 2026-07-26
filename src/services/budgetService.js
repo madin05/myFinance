@@ -1,11 +1,11 @@
 // src/services/budgetService.js
-import { API_URL, getAuthHeaders } from "./apiClient.js";
+import { API_URL, apiFetch, getAuthHeaders } from "./apiClient.js";
 
 export const budgetService = {
   async fetchBudgets(token, period) {
     try {
       const url = period ? `${API_URL}/budgets?period=${period}` : `${API_URL}/budgets`;
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         headers: getAuthHeaders(token, false),
         credentials: "include",
       });
@@ -17,7 +17,7 @@ export const budgetService = {
   },
 
   async updateBudget(token, category, amount, period) {
-    const res = await fetch(`${API_URL}/budgets`, {
+    const res = await apiFetch(`${API_URL}/budgets`, {
       method: "POST",
       headers: getAuthHeaders(token),
       credentials: "include",
@@ -28,7 +28,7 @@ export const budgetService = {
   },
 
   async deleteBudget(token, id) {
-    const res = await fetch(`${API_URL}/budgets/${id}`, {
+    const res = await apiFetch(`${API_URL}/budgets/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
       credentials: "include",

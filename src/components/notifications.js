@@ -116,6 +116,9 @@ export const showToast = (message, type = 'success', duration = 3000) => {
 
 export const showAlert = (title, message, type = 'info') => {
   return new Promise((resolve) => {
+    // Remove existing alert overlay to prevent duplicate stacking
+    document.querySelectorAll('.custom-alert-overlay').forEach(el => el.remove());
+
     const overlay = document.createElement('div');
     overlay.className = 'custom-alert-overlay';
     
@@ -129,16 +132,20 @@ export const showAlert = (title, message, type = 'info') => {
         </div>
         <h3 style="margin-bottom: 0.75rem;">${title}</h3>
         <p class="text-muted" style="margin-bottom: 2rem;">${message}</p>
-        <button class="btn btn-primary btn-full" id="btn-alert-ok">Oke</button>
+        <button class="btn btn-primary btn-full" class="btn-alert-ok">Oke</button>
       </div>
     `;
 
     document.body.appendChild(overlay);
 
-    document.getElementById('btn-alert-ok').onclick = () => {
-      overlay.remove();
-      resolve();
-    };
+    // Bind event directly to button inside this overlay
+    const okBtn = overlay.querySelector('button');
+    if (okBtn) {
+      okBtn.onclick = () => {
+        overlay.remove();
+        resolve();
+      };
+    }
   });
 };
 

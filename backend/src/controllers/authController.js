@@ -72,12 +72,14 @@ exports.resetPassword = async (req, res) => {
       throw err;
     }
 
+    const reqOrigin = req.headers.origin || req.headers.referer;
+
     // ⚡ Kirim respon HTTP 200 INSTAN ke UI (tanpa menunggu loading SMTP!)
     res.json({ success: true, message: `Tautan reset password berhasil dikirim ke ${targetEmail}!`, targetEmail });
 
     // 🚀 Jalankan proses SMTP Nodemailer di background secara non-blocking
     const { sendPasswordResetEmail } = require('../services/emailService');
-    sendPasswordResetEmail(targetEmail).catch(err => {
+    sendPasswordResetEmail(targetEmail, reqOrigin).catch(err => {
       console.error('Background Email Dispatch Error:', err.message);
     });
   } catch (error) {

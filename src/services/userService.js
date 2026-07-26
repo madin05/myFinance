@@ -1,9 +1,9 @@
 // src/services/userService.js
-import { API_URL, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
+import { API_URL, apiFetch, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
 
 export const userService = {
   async syncUser(token, extraData = {}) {
-    const res = await fetch(`${API_URL}/users/sync`, {
+    const res = await apiFetch(`${API_URL}/users/sync`, {
       method: "POST",
       headers: getAuthHeaders(token),
       body: JSON.stringify(extraData),
@@ -14,7 +14,7 @@ export const userService = {
   },
 
   async updateProfile(token, profileData) {
-    const res = await fetch(`${API_URL}/users/sync`, {
+    const res = await apiFetch(`${API_URL}/users/sync`, {
       method: "POST",
       headers: getAuthHeaders(token),
       body: JSON.stringify(profileData),
@@ -27,7 +27,7 @@ export const userService = {
   },
 
   async update2FA(token, enabled) {
-    const res = await fetch(`${API_URL}/users/sync`, {
+    const res = await apiFetch(`${API_URL}/users/sync`, {
       method: "POST",
       headers: getAuthHeaders(token),
       body: JSON.stringify({ is2FAEnabled: enabled }),
@@ -37,7 +37,7 @@ export const userService = {
   },
 
   async changePassword(token, oldPassword, newPassword) {
-    const res = await fetch(`${API_URL}/users/update-password`, {
+    const res = await apiFetch(`${API_URL}/users/update-password`, {
       method: "POST",
       headers: getAuthHeaders(token),
       body: JSON.stringify({ oldPassword, newPassword }),
@@ -48,7 +48,7 @@ export const userService = {
   },
 
   async deleteAccount(token) {
-    const res = await fetch(`${API_URL}/users`, {
+    const res = await apiFetch(`${API_URL}/users`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
     });
@@ -60,7 +60,7 @@ export const userService = {
   },
 
   async createSession(idToken) {
-    return fetch(`${API_URL}/auth/session`, {
+    return apiFetch(`${API_URL}/auth/session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idToken }),
@@ -69,7 +69,7 @@ export const userService = {
   },
 
   async deleteSession() {
-    return fetch(`${API_URL}/auth/session`, {
+    return apiFetch(`${API_URL}/auth/session`, {
       method: "DELETE",
       credentials: "include",
     });

@@ -147,6 +147,8 @@ export function renderAkun() {
       .password-details summary::-webkit-details-marker { display: none; }
       .password-details[open] .caret-icon { transform: rotate(180deg); }
 
+      .delete-warning-img-dark { display: none; }
+      .delete-warning-img-light { display: block; }
       [data-theme="light"] .delete-warning-img-dark { display: none !important; }
       [data-theme="light"] .delete-warning-img-light { display: block !important; }
       [data-theme="dark"] .delete-warning-img-light { display: none !important; }
@@ -286,17 +288,15 @@ export function renderAkun() {
             // 3. Hapus user dari Firebase Auth
             await userFirebase.delete();
 
-            hideLoading();
             showToast("Akun telah dihapus secara permanen.", "success");
 
             setTimeout(() => {
-              navigateTo("/login");
-              window.location.reload();
-            }, 2000);
+              window.location.href = '/login';
+            }, 300);
           } catch (err) {
             hideLoading();
             if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-              showAlert("Gagal Hapus Akun", "Password yang kamu masukkan salah kocak! Coba ingat-ingat lagi.", "error");
+              showAlert("Gagal Hapus Akun", "Password yang kamu masukkan salah! Coba ingat-ingat lagi.", "error");
             } else if (err.code === "auth/requires-recent-login") {
               showAlert(
                 "Sesi Kedaluwarsa",

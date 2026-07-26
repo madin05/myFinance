@@ -1,0 +1,418 @@
+/* Onboarding Product Tour Tutorial System */
+
+/* Hide scrollbars visually during tutorial while allowing programmatic scrollIntoView */
+body.tutorial-active::-webkit-scrollbar,
+html.tutorial-active::-webkit-scrollbar,
+body.tutorial-active #page-content::-webkit-scrollbar,
+body.tutorial-active .main-content::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+body.tutorial-active,
+html.tutorial-active {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+body.tutorial-active #page-content,
+body.tutorial-active .main-content {
+  padding-bottom: 220px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.tutorial-overlay-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99998;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tutorial-overlay-container.active {
+  opacity: 1;
+}
+
+.tutorial-svg-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   Spotlight Halo Ring (Default: Dark Mode Pure White Palette)
+   ========================================================================== */
+.tutorial-spotlight {
+  position: fixed;
+  z-index: 99999;
+  background: transparent !important;
+  border: 2.5px solid rgba(255, 255, 255, 0.95) !important;
+  outline: none !important;
+  box-shadow: 
+    0 0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 25px 8px rgba(255, 255, 255, 0.65),
+    0 0 55px 16px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: tutorial-halo-pulse 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes tutorial-halo-pulse {
+  0% {
+    box-shadow: 
+      0 0 0 2px rgba(255, 255, 255, 0.3),
+      0 0 20px 6px rgba(255, 255, 255, 0.55),
+      0 0 45px 12px rgba(255, 255, 255, 0.35);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 5px rgba(255, 255, 255, 0.5),
+      0 0 32px 10px rgba(255, 255, 255, 0.8),
+      0 0 65px 20px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Target Focus State - Retains 100% Native Original Styling */
+.tutorial-target-active {
+  position: relative !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+}
+
+/* Sidebar nav items elevated background */
+a.nav-item.tutorial-target-active {
+  background-color: var(--card-bg, #ffffff) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Primary buttons (.btn-primary, #btn-tambah-page) retain 100% native background & white text */
+.btn.tutorial-target-active,
+.btn-primary.tutorial-target-active {
+  box-shadow: 0 6px 25px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* Force perfect circular shape & crisp shadow for icon triggers, notification bell, & FAB */
+#notif-trigger.tutorial-target-active,
+.icon-btn.tutorial-target-active,
+.user-profile.tutorial-target-active {
+  border-radius: 50% !important;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* FAB Plus Trigger (.fam-trigger) - Retains 100% Native Signature Primary Color */
+.fam-trigger.tutorial-target-active {
+  border-radius: 50% !important;
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 25px rgba(63, 54, 229, 0.4) !important;
+}
+
+.fam-trigger.tutorial-target-active i,
+.fam-trigger.tutorial-target-active svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* --- Elevated Header Icon Contrast: Dark Mode Default --- */
+#notif-trigger.tutorial-target-active,
+.icon-btn.tutorial-target-active {
+  background-color: #1e1b2e !important;
+  color: #ffffff !important;
+}
+
+#notif-trigger.tutorial-target-active i,
+#notif-trigger.tutorial-target-active svg,
+.icon-btn.tutorial-target-active i,
+.icon-btn.tutorial-target-active svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* --- Elevated Header Icon Contrast: Light Mode Overrides --- */
+[data-theme="light"] #notif-trigger.tutorial-target-active,
+[data-theme="light"] .icon-btn.tutorial-target-active {
+  background-color: #ffffff !important;
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] #notif-trigger.tutorial-target-active i,
+[data-theme="light"] #notif-trigger.tutorial-target-active svg,
+[data-theme="light"] .icon-btn.tutorial-target-active i,
+[data-theme="light"] .icon-btn.tutorial-target-active svg {
+  color: #0284c7 !important;
+  fill: #0284c7 !important;
+}
+
+body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn.tutorial-target-active,
+body.page-dashboard .header:not(.scrolled) #notif-trigger.tutorial-target-active {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ==========================================================================
+   Tooltip Dialog Card (Default: Dark Mode Glassmorphic Card)
+   ========================================================================== */
+.tutorial-card {
+  position: fixed;
+  z-index: 100000;
+  width: calc(100% - 2rem);
+  max-width: 360px;
+  background: #12131e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.3s ease, transform 0.3s ease, top 0.35s cubic-bezier(0.16, 1, 0.3, 1), left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
+}
+
+.tutorial-card.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tutorial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.tutorial-step-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.72);
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.tutorial-skip-link {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: color 0.2s;
+}
+
+.tutorial-skip-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.tutorial-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 0.45rem 0;
+  line-height: 1.35;
+  color: #ffffff;
+}
+
+.tutorial-desc {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #a1a1aa;
+  margin: 0 0 1.15rem 0;
+}
+
+.tutorial-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tutorial-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.tutorial-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s;
+}
+
+.tutorial-dot.active {
+  width: 14px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.tutorial-progress-wrapper {
+  flex: 1;
+  max-width: 110px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tutorial-progress-fill {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 100px;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.tutorial-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tutorial-btn {
+  height: 32px;
+  padding: 0 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.2s;
+  border: none;
+  white-space: nowrap;
+}
+
+.tutorial-btn-prev {
+  background: rgba(255, 255, 255, 0.08);
+  color: #a1a1aa;
+}
+
+.tutorial-btn-prev:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.tutorial-btn-prev:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tutorial-btn-next {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 3px 12px rgba(255, 255, 255, 0.35);
+}
+
+.tutorial-btn-next:hover {
+  background: #f8fafc;
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================================
+   LIGHT MODE PALETTE ADJUSTMENT ([data-theme="light"]) - Sky Blue Theme
+   ========================================================================== */
+[data-theme="light"] .tutorial-spotlight {
+  border-color: rgba(56, 189, 248, 0.95) !important;
+  box-shadow: 
+    0 0 0 3px rgba(56, 189, 248, 0.4),
+    0 0 25px 8px rgba(56, 189, 248, 0.65),
+    0 0 55px 16px rgba(56, 189, 248, 0.45);
+  animation: tutorial-halo-pulse-light 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes tutorial-halo-pulse-light {
+  0% {
+    box-shadow: 
+      0 0 0 2px rgba(56, 189, 248, 0.35),
+      0 0 20px 6px rgba(56, 189, 248, 0.55),
+      0 0 45px 12px rgba(56, 189, 248, 0.4);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 5px rgba(56, 189, 248, 0.55),
+      0 0 32px 10px rgba(56, 189, 248, 0.8),
+      0 0 65px 20px rgba(56, 189, 248, 0.5);
+  }
+}
+
+[data-theme="light"] .tutorial-card {
+  background: #ffffff;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(56, 189, 248, 0.15);
+  color: #0f172a;
+}
+
+[data-theme="light"] .tutorial-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .tutorial-desc {
+  color: #475569;
+}
+
+[data-theme="light"] .tutorial-skip-link {
+  color: #64748b;
+}
+
+[data-theme="light"] .tutorial-skip-link:hover {
+  color: #0284c7;
+}
+
+[data-theme="light"] .tutorial-step-badge {
+  color: #64748b;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+[data-theme="light"] .tutorial-footer {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .tutorial-dot {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .tutorial-dot.active {
+  background: #0284c7;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+}
+
+[data-theme="light"] .tutorial-btn-prev {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+[data-theme="light"] .tutorial-btn-prev:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .tutorial-btn-next {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(56, 189, 248, 0.45);
+}
+
+[data-theme="light"] .tutorial-btn-next:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 5px 16px rgba(56, 189, 248, 0.6);
+}

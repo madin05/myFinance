@@ -118,6 +118,11 @@
 
 [data-theme="dark"] .nav-item.active {
   background: linear-gradient(90deg, rgba(157, 78, 221, 0.45) 0%, rgba(157, 78, 221, 0.15) 45%, rgba(157, 78, 221, 0) 85%);
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .nav-item.active i {
+  color: #FFFFFF !important;
 }
 
 .nav-item.active::before {

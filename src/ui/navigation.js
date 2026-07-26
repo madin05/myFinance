@@ -84,6 +84,12 @@ export function initNavigation() {
       applySystemTheme();
     }
 
+    // Trigger Product Tutorial from Sidebar
+    if (e.target.closest('#btn-sidebar-tutorial')) {
+      const { startProductTutorial } = await import('../components/tutorial.js');
+      startProductTutorial(true);
+    }
+
     // --- Header Dropdowns Multi-Logic (Profile & Notifications) ---
     const pTrigger = e.target.closest('#user-profile-trigger');
     const nTrigger = e.target.closest('#notif-trigger');

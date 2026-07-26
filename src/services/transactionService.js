@@ -1,10 +1,10 @@
 // src/services/transactionService.js
-import { API_URL, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
+import { API_URL, apiFetch, getAuthHeaders, extractErrorMessage } from "./apiClient.js";
 
 export const transactionService = {
   async fetchTransactions(token) {
     try {
-      const res = await fetch(`${API_URL}/transactions`, {
+      const res = await apiFetch(`${API_URL}/transactions`, {
         headers: getAuthHeaders(token, false),
         credentials: "include",
       });
@@ -16,7 +16,7 @@ export const transactionService = {
   },
 
   async createTransaction(token, txData) {
-    const res = await fetch(`${API_URL}/transactions`, {
+    const res = await apiFetch(`${API_URL}/transactions`, {
       method: "POST",
       headers: getAuthHeaders(token),
       credentials: "include",
@@ -27,7 +27,7 @@ export const transactionService = {
   },
 
   async updateTransaction(token, id, txData) {
-    const res = await fetch(`${API_URL}/transactions/${id}`, {
+    const res = await apiFetch(`${API_URL}/transactions/${id}`, {
       method: "PUT",
       headers: getAuthHeaders(token),
       credentials: "include",
@@ -38,7 +38,7 @@ export const transactionService = {
   },
 
   async deleteTransaction(token, id) {
-    const res = await fetch(`${API_URL}/transactions/${id}`, {
+    const res = await apiFetch(`${API_URL}/transactions/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(token, false),
       credentials: "include",
@@ -50,7 +50,7 @@ export const transactionService = {
   async scanReceipt(token, base64, mimeType = "image/jpeg") {
     let res;
     try {
-      res = await fetch(`${API_URL}/receipts/scan`, {
+      res = await apiFetch(`${API_URL}/receipts/scan`, {
         method: "POST",
         credentials: "include",
         headers: getAuthHeaders(token),

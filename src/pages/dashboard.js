@@ -179,12 +179,12 @@ export function renderDashboard() {
         <div class="stat-header">
           <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;"><i class="ph-fill ph-bank" style="font-size: 1.6rem;"></i></div>
           ${stats.hasAccounts ? `
-          <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)';this.style.borderColor='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">
+          <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
             <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
           </a>
           ` : `
-          <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:1px solid var(--border);border-radius:10px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)';this.style.borderColor='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)';this.style.borderColor='var(--border)'">
-            <i class="ph ph-pencil-simple" style="font-size:1rem;"></i>
+          <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
+            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
           </button>
           `}
         </div>

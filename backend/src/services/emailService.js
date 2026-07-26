@@ -44,7 +44,7 @@ if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
  * @param {string} email - Email user yang akan diverifikasi
  * @returns {Promise<void>}
  */
-exports.sendVerificationEmail = async (email) => {
+exports.sendVerificationEmail = async (email, reqOrigin = null) => {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
   }
@@ -65,7 +65,15 @@ exports.sendVerificationEmail = async (email) => {
   // Parse oobCode untuk membuat direct deep-link ke frontend (Bypass Firebase Console)
   const urlObj = new URL(actionLink);
   const oobCode = urlObj.searchParams.get('oobCode');
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  
+  let frontendUrl = process.env.FRONTEND_URL;
+  if ((!frontendUrl || frontendUrl.includes('localhost')) && reqOrigin) {
+    try {
+      frontendUrl = new URL(reqOrigin).origin;
+    } catch (e) {}
+  }
+  frontendUrl = frontendUrl || 'http://localhost:5173';
+
   const verificationLink = `${frontendUrl}/?mode=verifyEmail&oobCode=${oobCode}`;
 
   const transporter = getTransporter();
@@ -114,7 +122,7 @@ exports.sendVerificationEmail = async (email) => {
                     <!-- CTA Button -->
                     <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
                       <tr>
-                        <td align="center" style="background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:12px;">
+                        <td align="center" style="background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:50px;">
                           <a href="${verificationLink}" 
                              style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.2px;">
                             ✓ Verifikasi Email Sekarang
@@ -167,7 +175,7 @@ exports.sendVerificationEmail = async (email) => {
  * @param {string} email - Email user yang akan direset passwordnya
  * @returns {Promise<void>}
  */
-exports.sendPasswordResetEmail = async (email) => {
+exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
   }
@@ -188,7 +196,15 @@ exports.sendPasswordResetEmail = async (email) => {
   // Parse oobCode untuk membuat direct deep-link ke frontend
   const urlObj = new URL(actionLink);
   const oobCode = urlObj.searchParams.get('oobCode');
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  
+  let frontendUrl = process.env.FRONTEND_URL;
+  if ((!frontendUrl || frontendUrl.includes('localhost')) && reqOrigin) {
+    try {
+      frontendUrl = new URL(reqOrigin).origin;
+    } catch (e) {}
+  }
+  frontendUrl = frontendUrl || 'http://localhost:5173';
+
   const resetLink = `${frontendUrl}/?mode=resetPassword&oobCode=${oobCode}`;
 
   const transporter = getTransporter();
@@ -236,7 +252,7 @@ exports.sendPasswordResetEmail = async (email) => {
                     <!-- CTA Button -->
                     <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
                       <tr>
-                        <td align="center" style="background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:12px;">
+                        <td align="center" style="background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:50px;">
                           <a href="${resetLink}" 
                              style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.2px;">
                             🔑 Reset Password Sekarang
