@@ -89,11 +89,12 @@ export const store = {
       ]);
 
       if (dbUser) {
+        const currentAvatar = this.user.avatar;
         this.user = {
           ...this.user,
           ...dbUser,
           name: dbUser.name || this.user.name,
-          avatar: dbUser.avatar || this.user.avatar,
+          avatar: currentAvatar || dbUser.avatar || this.user.avatar,
         };
       }
 
@@ -392,12 +393,31 @@ export const store = {
 
   async updateProfile(profileData) {
     if (!this.user?.token) return;
+    const currentAvatar = this.user.avatar;
+    const isExplicitAvatarDelete = 'avatar' in profileData && (profileData.avatar === null || profileData.avatar === '');
+
     this.user = { ...this.user, ...profileData };
+
+    if (isExplicitAvatarDelete) {
+      this.user.avatar = null;
+    } else if (!profileData.avatar && currentAvatar) {
+      this.user.avatar = currentAvatar;
+    }
     this.save();
 
     try {
       const updated = await userService.updateProfile(this.user.token, profileData);
-      this.user = { ...this.user, ...updated };
+      if (updated) {
+        this.user = { ...this.user, ...updated };
+        if (isExplicitAvatarDelete) {
+          this.user.avatar = null;
+        } else {
+          const preservedAvatar = profileData.avatar || currentAvatar || updated.avatar;
+          if (preservedAvatar) {
+            this.user.avatar = preservedAvatar;
+          }
+        }
+      }
       this.save();
       return this.user;
     } catch (err) {

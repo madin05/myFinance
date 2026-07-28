@@ -8,6 +8,7 @@ let currentViewDate = new Date();
 
 export function renderAnggaran() {
   const container = document.getElementById('page-content');
+  if (!container) return;
   
   const currentMonth = currentViewDate.getMonth();
   const currentYear = currentViewDate.getFullYear();

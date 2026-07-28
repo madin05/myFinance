@@ -58,8 +58,12 @@ export async function checkAndApplyEmailVerification() {
     return false;
   }
 
-  // Jika user dari awal SUDAH terverifikasi (di store atau auth), jangan jalankan polling atau tampilkan popup alert lagi!
-  if (store.user.emailVerified) {
+  // Jika user dari awal SUDAH terverifikasi (di Firebase Auth atau store), simpan & hentikan polling tanpa pop-up
+  if (user.emailVerified || store.user.emailVerified) {
+    if (!store.user.emailVerified) {
+      store.user.emailVerified = true;
+      store.save();
+    }
     stopVerificationPolling();
     return false;
   }

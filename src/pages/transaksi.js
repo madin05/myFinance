@@ -17,6 +17,7 @@ let filterState = {
 
 export function renderTransaksi() {
   const container = document.getElementById('page-content');
+  if (!container) return;
   
   const uniqueYears = [...new Set(store.transactions.map(tx => new Date(tx.tanggal).getFullYear()))].sort((a,b) => b-a);
   const uniqueKategori = [...new Set(store.transactions.map(tx => tx.kategori))].sort();
