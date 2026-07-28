@@ -147,7 +147,7 @@ export function renderDashboard() {
     <div class="stats-cards">
       <div class="stat-card">
         <div class="stat-header">
-          <div class="text-blue" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-up"></i></div>
+          <div class="text-green" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-up"></i></div>
           ${getBadge(stats.incomeDiff, 'income')}
         </div>
         <div class="stat-body">
@@ -155,7 +155,7 @@ export function renderDashboard() {
           <h2 class="stat-value">${formatRupiah(stats.income)}</h2>
         </div>
         <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-blue" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
+          <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
         </div>
         <i class="ph-fill ph-trend-up stat-watermark"></i>
       </div>
@@ -177,7 +177,7 @@ export function renderDashboard() {
 
       <div class="stat-card">
         <div class="stat-header">
-          <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;"><i class="ph-fill ph-bank" style="font-size: 1.6rem;"></i></div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--text-main);"><i class="ph-fill ph-bank" style="font-size: 1.6rem;"></i></div>
           ${stats.hasAccounts ? `
           <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
             <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
@@ -190,10 +190,10 @@ export function renderDashboard() {
         </div>
         <div class="stat-body">
           <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : 'Saldo Saat Ini'}</p>
-          <h2 class="stat-value">${formatRupiah(stats.balance)}</h2>
+          <h2 class="stat-value text-main">${formatRupiah(stats.balance)}</h2>
         </div>
         <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-blue" style="width: 100%"></div></div>
+          <div class="stat-line"><div class="stat-line-fill" style="width: 100%; background: var(--text-muted); opacity: 0.4;"></div></div>
         </div>
         <i class="ph-fill ph-bank stat-watermark"></i>
       </div>

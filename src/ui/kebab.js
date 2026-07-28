@@ -77,8 +77,9 @@ export function closeAllKebabs() {
  * @param {HTMLElement} container   — scoped parent (e.g. tbody, page-content)
  * @param {Function} onEdit(id)     — callback for edit action
  * @param {Function} onDelete(id)   — callback for delete action
+ * @param {Function} onView(id)     — callback for view action
  */
-export function initKebabs(container, onEdit, onDelete) {
+export function initKebabs(container, onEdit, onDelete, onView) {
   // Reset listener lama agar tidak numpuk
   if (_docClickHandler) {
     document.removeEventListener('click', _docClickHandler);
@@ -130,6 +131,15 @@ export function initKebabs(container, onEdit, onDelete) {
           positionDropdown(trigger, actualDropdown);
         });
       }
+    });
+  });
+
+  // View button
+  container.querySelectorAll('.kebab-view').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAllKebabs();
+      onView && onView(btn.dataset.id);
     });
   });
 

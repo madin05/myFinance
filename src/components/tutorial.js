@@ -276,11 +276,11 @@ function updateHighlightPosition() {
   const rawRadius = computedStyle.borderRadius || '12px';
   const parsedRadius = parseFloat(rawRadius) || 12;
 
-  const isCircle = rawRadius.includes('50%') || 
+  const isCircle = (rawRadius.includes('50%') && rect.width < 120) || 
                    activeTargetNode.classList.contains('fam-trigger') ||
                    activeTargetNode.classList.contains('icon-btn') ||
                    activeTargetNode.id === 'notif-trigger' ||
-                   (Math.abs(rect.width - rect.height) < 16 && (parsedRadius >= 10 || rawRadius.includes('50%')));
+                   (rect.width < 90 && rect.height < 90 && Math.abs(rect.width - rect.height) < 12 && (parsedRadius >= 20 || rawRadius.includes('50%')));
 
   const isPill = (rawRadius.includes('100px') || rawRadius.includes('999')) && rect.width > rect.height * 1.4;
 
