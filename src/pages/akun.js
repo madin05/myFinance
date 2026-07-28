@@ -21,9 +21,16 @@ import {
 
 export function renderAkun() {
   const container = document.getElementById("page-content");
+  if (!container) return;
   const user = store.user;
   const firebaseUser = auth.currentUser;
   const isVerified = firebaseUser ? firebaseUser.emailVerified : (user?.emailVerified ?? false);
+
+  const hasCustomAvatar = Boolean(
+    user.avatar &&
+    !user.avatar.includes('ui-avatars.com') &&
+    !user.avatar.includes('api.dicebear.com')
+  );
 
   // Format join date dari data riil
   const joinDate = user.createdAt
@@ -45,7 +52,7 @@ export function renderAkun() {
           <div class="stat-card profile-card" style="padding: 2.5rem 1.5rem; text-align: center;">
             <div class="avatar-wrapper" style="position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; cursor: pointer;" id="btn-preview-pp">
                <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); border: 4px solid var(--white);">
-              <label for="avatar-upload" class="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--white);" onclick="event.stopPropagation()">
+              <label for="avatar-upload" class="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--white);" onclick="event.stopPropagation()" title="Ubah Foto Profil">
                 <i class="ph ph-camera"></i>
               </label>
               <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
@@ -131,9 +138,14 @@ export function renderAkun() {
     </div>
 
     <!-- Lightbox Modal -->
-    <div id="pp-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center;">
+    <div id="pp-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 1.25rem;">
       <div style="position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);" id="pp-modal-close"></div>
-      <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + user.name}" id="full-pp-preview" style="position: relative; width: min(400px, 85vw); height: min(400px, 85vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
+      <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="full-pp-preview" style="position: relative; width: min(360px, 80vw); height: min(360px, 80vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
+      ${hasCustomAvatar ? `
+        <button id="btn-delete-avatar-modal" class="btn" style="position: relative; z-index: 2; background: #ef4444; color: white; border-radius: 100px; padding: 10px 24px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; border: none; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); cursor: pointer;">
+          <i class="ph-bold ph-trash"></i> Hapus Foto Profil
+        </button>
+      ` : ''}
     </div>
   `;
 
@@ -397,6 +409,31 @@ export function renderAkun() {
       });
     };
   }
+
+  // Delete Profile Picture Handler
+  const handleDeleteAvatar = () => {
+    checkVerification(async () => {
+      showLoading();
+      try {
+        const modal = document.getElementById("pp-preview-modal");
+        if (modal) modal.style.display = "none";
+
+        await store.updateProfile({ avatar: null });
+        hideLoading();
+        showToast("Foto profil telah dihapus. Kembali ke avatar bawaan.", "info");
+        renderAkun();
+      } catch (err) {
+        hideLoading();
+        showAlert("Gagal", "Gagal menghapus foto profil: " + err.message, "error");
+      }
+    });
+  };
+
+  const btnDeleteAvatar = document.getElementById("btn-delete-avatar");
+  if (btnDeleteAvatar) btnDeleteAvatar.onclick = handleDeleteAvatar;
+
+  const btnDeleteAvatarModal = document.getElementById("btn-delete-avatar-modal");
+  if (btnDeleteAvatarModal) btnDeleteAvatarModal.onclick = handleDeleteAvatar;
 
   // Change Password Handler
   const btnChangePassword = document.getElementById("btn-change-password");

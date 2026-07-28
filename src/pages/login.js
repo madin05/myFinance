@@ -6,6 +6,7 @@ import { navigateTo } from '../router.js';
 
 export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   const container = document.getElementById('login-view');
+  if (!container) return;
   const isReg = mode === 'register';
   const isForgot = mode === 'forgot-password';
   const isVerified = mode === 'email-verified';
