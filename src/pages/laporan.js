@@ -253,21 +253,21 @@ export function renderLaporan() {
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <div class="text-blue" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
+            <div class="text-green" style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
               <i class="ph ph-trend-up"></i>
             </div>
             <div>
               <p class="text-muted text-xs font-bold mb-xs">PEMASUKAN</p>
-              <h3 class="text-blue">${formatRupiah(totalIncome)}</h3>
+              <h3 class="text-green">${formatRupiah(totalIncome)}</h3>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border);">
-            <div style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: #a78bfa;">
+            <div style="font-size: 1.5rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--text-muted);">
               <i class="ph ph-wallet"></i>
             </div>
             <div>
               <p class="text-muted text-xs font-bold mb-xs">SISA SALDO</p>
-              <h3 class="text-blue">${formatRupiah(totalIncome - totalExpense)}</h3>
+              <h3 class="text-main font-bold">${formatRupiah(totalIncome - totalExpense)}</h3>
             </div>
           </div>
         </div>

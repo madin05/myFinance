@@ -1,4 +1,4 @@
-import { store } from '../store.js';
+import { store, formatRupiah, formatDate } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast, checkVerification } from './notifications.js';
@@ -677,5 +677,82 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
   });
   
   setTimeout(() => document.getElementById('delete-verify-input').focus(), 50);
+}
+
+export function openDetailTransactionModal(tx) {
+  const container = document.getElementById('modal-container');
+  if (!tx || !container) return;
+
+  const isIncome = tx.type === 'income';
+  const colorClass = isIncome ? 'var(--green)' : 'var(--red)';
+  const sign = isIncome ? '+' : '-';
+  const typeText = isIncome ? 'Pemasukan' : 'Pengeluaran';
+  const formattedAmount = `${sign} ${formatRupiah(Math.abs(tx.harga))}`;
+
+  let badgeClass = 'badge-blue';
+  const lowerKategori = (tx.kategori || '').toLowerCase();
+  if (lowerKategori.includes('gaji')) badgeClass = 'badge-green';
+  else if (lowerKategori.includes('makan')) badgeClass = 'badge-orange';
+  else if (lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
+
+  container.innerHTML = `
+    <div class="modal-overlay" id="detail-tx-overlay">
+      <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3>Detail Transaksi</h3>
+          <button class="modal-close" id="btn-close-detail-tx"><i class="ph ph-x"></i></button>
+        </div>
+
+        <div style="text-align: center; padding: 1.25rem 0 1rem; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: ${colorClass}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
+            ${typeText}
+          </span>
+          <h2 style="font-size: 1.75rem; font-weight: 800; color: ${colorClass}; margin: 0.25rem 0 0;">
+            ${formattedAmount}
+          </h2>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Judul / Keterangan</span>
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%; word-break: break-word;">${tx.keterangan || '-'}</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Tanggal</span>
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${formatDate(tx.tanggal)}</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Kategori</span>
+            <span class="badge-soft ${badgeClass}" style="font-size: 0.78rem;">${tx.kategori || 'Umum'}</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Metode Pembayaran</span>
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${tx.metode || '-'}</span>
+          </div>
+
+          ${tx.akun ? `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Akun / Dompet</span>
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${tx.akun}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div style="margin-top: 1.75rem; display: flex; gap: 0.75rem;">
+          <button class="btn btn-outline btn-full" id="btn-close-detail-tx-footer">Tutup</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const close = () => { container.innerHTML = ''; };
+  document.getElementById('btn-close-detail-tx')?.addEventListener('click', close);
+  document.getElementById('btn-close-detail-tx-footer')?.addEventListener('click', close);
+  document.getElementById('detail-tx-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'detail-tx-overlay') close();
+  });
 }
 

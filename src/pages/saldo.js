@@ -111,13 +111,13 @@ export function renderSaldo() {
           return `
           <div class="stat-card" style="padding: 1.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: visible;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-              <div style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 4px 16px color-mix(in srgb, ${brandColor} 25%, transparent); display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-size: 1.5rem; transition: all 0.3s ease;">
-                  ${getLogo(s) ? `<img src="${getLogo(s)}" style="width: 28px; height: 28px; border-radius: 6px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
+              <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 4px 16px color-mix(in srgb, ${brandColor} 25%, transparent); display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-size: 1.35rem; flex-shrink: 0; transition: all 0.3s ease;">
+                  ${getLogo(s) ? `<img src="${getLogo(s)}" style="width: 26px; height: 26px; border-radius: 6px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
                 </div>
-                <div>
-                  <h4 style="margin: 0; font-size: 1.1rem; color: var(--text);">${s.name}</h4>
-                  <span class="badge-soft" style="font-size: 0.7rem; margin-top: 4px; display: inline-block;">${s.type}</span>
+                <div style="min-width: 0; flex: 1;">
+                  <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</h4>
+                  <span class="account-type-subtext" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; display: block; font-weight: 500;">${s.type}</span>
                 </div>
               </div>
               <div class="kebab-wrapper" style="display:inline-block;">
@@ -137,7 +137,7 @@ export function renderSaldo() {
             </div>
             <div>
               <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 4px;">Saldo Saat Ini</p>
-              <h3 style="margin: 0; font-size: 1.4rem; color: var(--text);">${formatCurrency(s.balance)}</h3>
+              <h3 style="margin: 0; font-size: 1.3rem; color: var(--text);">${formatCurrency(s.balance)}</h3>
             </div>
           </div>
         `;
@@ -150,18 +150,25 @@ export function renderSaldo() {
       </div>
     </div>
     <style>
+      .account-type-subtext {
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        font-weight: 500;
+      }
       .saldo-grid.list-mode {
         grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        gap: 0.75rem !important;
       }
       .saldo-grid.list-mode .stat-card {
         flex-direction: row !important;
-        align-items: center;
-        padding: 1rem 1.5rem !important;
+        align-items: center !important;
+        padding: 0.85rem 1.25rem !important;
         border-radius: 16px !important;
+        min-height: 72px;
       }
       .saldo-grid.list-mode .stat-card > div:first-child {
         flex: 1;
+        min-width: 0;
         margin-bottom: 0 !important;
         align-items: center !important;
         justify-content: flex-start !important;
@@ -174,23 +181,74 @@ export function renderSaldo() {
       }
       .saldo-grid.list-mode .stat-card > div:last-child {
         text-align: right;
-        margin-right: 3rem;
+        margin-right: 2.5rem;
+        flex-shrink: 0;
       }
       .saldo-grid.list-mode .stat-card > div:last-child p {
         display: none;
       }
       .saldo-grid.list-mode .stat-card > div:last-child h3 {
-        font-size: 1.1rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 700;
+        white-space: nowrap;
       }
+
+      /* Mobile: Khusus mobile sembunyikan toggle & tampilkan list view secara konsisten */
+      @media (max-width: 768px) {
+        .saldo-section .view-toggle {
+          display: none !important;
+        }
+        .saldo-grid {
+          grid-template-columns: 1fr !important;
+          gap: 0.75rem !important;
+        }
+        .saldo-grid .stat-card {
+          flex-direction: row !important;
+          align-items: center !important;
+          padding: 0.85rem 1rem !important;
+          border-radius: 16px !important;
+          min-height: 72px;
+        }
+        .saldo-grid .stat-card > div:first-child {
+          flex: 1;
+          min-width: 0;
+          margin-bottom: 0 !important;
+          align-items: center !important;
+          justify-content: flex-start !important;
+        }
+        .saldo-grid .kebab-wrapper {
+          position: absolute;
+          right: 0.85rem;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+        .saldo-grid .stat-card > div:last-child {
+          text-align: right;
+          margin-right: 2.2rem;
+          flex-shrink: 0;
+        }
+        .saldo-grid .stat-card > div:last-child p {
+          display: none;
+        }
+        .saldo-grid .stat-card > div:last-child h3 {
+          font-size: 0.88rem !important;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+      }
+
       @media (max-width: 500px) {
-        .saldo-grid.list-mode .stat-card > div:last-child h3 {
-          font-size: 1rem !important;
+        .saldo-grid .stat-card {
+          padding: 0.75rem 0.85rem !important;
         }
-        .saldo-grid.list-mode .stat-card {
-          padding: 1rem !important;
+        .saldo-grid .stat-card > div:last-child h3 {
+          font-size: 0.85rem !important;
         }
-        .saldo-grid.list-mode .kebab-wrapper {
-          right: 0.75rem;
+        .saldo-grid .kebab-wrapper {
+          right: 0.65rem;
+        }
+        .saldo-grid .stat-card > div:last-child {
+          margin-right: 2rem;
         }
       }
     </style>

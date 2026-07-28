@@ -73,10 +73,9 @@
     width: 100% !important;
     max-width: 100vw;
   }
-  
   .dashboard-hero-bg {
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
+    border-bottom-left-radius: 1.5rem !important;
+    border-bottom-right-radius: 1.5rem !important;
   }
   
   .header {
@@ -90,9 +89,18 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    /* Background transparan dulu — efek blur via .scrolled class saat di-scroll */
-    background-color: transparent;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+    /* Background transparan — hilangkan transition background-color agar tidak kilap/flash kotak saat di-unscroll ke atas */
+    background-color: transparent !important;
+    transition: box-shadow 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+  }
+  
+  .header:not(.scrolled) {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
   }
   
   .header-actions {
@@ -130,16 +138,72 @@
   }
   
   .stats-cards {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.65rem !important;
+  }
+
+  .stats-cards .stat-card:nth-child(3) {
+    grid-column: 1 / -1;
   }
 
   .stat-card {
-    padding: 1.25rem;
+    padding: 0.85rem 0.95rem !important;
+    border-radius: 16px !important;
+  }
+
+  .stat-header {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .stat-label {
+    font-size: 0.72rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.02rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stats-cards .stat-card:nth-child(3) .stat-value {
+    font-size: 1.3rem !important;
+  }
+
+  .stat-badge {
+    padding: 2px 7px !important;
+    font-size: 0.65rem !important;
+  }
+
+  .stat-watermark {
+    font-size: 3.8rem !important;
+    right: -6px !important;
+    bottom: -6px !important;
+  }
+
+  @media (max-width: 480px) {
+    .stats-cards {
+      gap: 0.5rem !important;
+    }
+    .stat-card {
+      padding: 0.75rem 0.8rem !important;
+    }
+    .stat-value {
+      font-size: 0.95rem !important;
+    }
+    .stats-cards .stat-card:nth-child(3) .stat-value {
+      font-size: 1.18rem !important;
+    }
+    .stat-label {
+      font-size: 0.68rem !important;
+    }
+    .stat-badge {
+      padding: 2px 5px !important;
+      font-size: 0.62rem !important;
+    }
   }
 
   .mobile-only {

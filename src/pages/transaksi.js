@@ -244,6 +244,10 @@ function renderTableBody(container) {
         <i class="ph-bold ph-dots-three"></i>
       </button>
       <div class="kebab-dropdown" data-kebab-for="${id}">
+        <button class="kebab-item kebab-view" data-id="${id}">
+          <i class="ph ph-eye"></i> Lihat
+        </button>
+        <div class="kebab-divider"></div>
         <button class="kebab-item kebab-edit" data-id="${id}">
           <i class="ph ph-pencil-simple"></i> Edit
         </button>
@@ -360,6 +364,15 @@ function renderTableBody(container) {
           }
         );
       });
+    },
+    // onView
+    (id) => {
+      const txToView = store.getTransactionById(Number(id));
+      if (txToView) {
+        import('../components/modal.js').then(module => {
+          module.openDetailTransactionModal(txToView);
+        });
+      }
     }
   );
 }
