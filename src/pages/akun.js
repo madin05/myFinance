@@ -1,4 +1,5 @@
 import { store, formatDate } from "../store.js";
+import { userService } from "../services/userService.js";
 import { showLoading, hideLoading } from "../utils.js";
 import { navigateTo } from "../router.js";
 import {
@@ -10,6 +11,7 @@ import {
 import {
   openEditUsernameModal,
   openDeleteAccountModal,
+  openConfirmPasswordModal,
 } from "../components/modal.js";
 import { initCustomSelect } from "../components/customSelect.js";
 import {
@@ -112,7 +114,7 @@ export function renderAkun() {
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <p class="font-bold text-sm" style="margin: 0;">Autentikasi 2 Faktor (2FA)</p>
-                <p class="text-muted text-xs">Amankan akun dengan kode OTP.</p>
+                <p class="text-muted text-xs">Tambah keamanan akunmu, yuk aktifin 2FA!</p>
               </div>
               <label class="switch">
                 <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? "checked" : ""}>
@@ -126,7 +128,7 @@ export function renderAkun() {
             <h4 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
               Hapus Akun
             </h4>
-            <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Tindakan ini tidak dapat dibatalkan. Semua data finansial Anda akan dihapus permanen.</p>
+            <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Hati-hati, tindakan ini gak bisa dibatalkan. Seluruh data finansialmu bakal dihapus permanen.</p>
             <button class="btn" style="background: var(--red); color: white; width: 100%; border-radius: 12px; height: 48px; font-weight: 600; gap: 10px;" id="btn-delete-account">
               <i class="ph-bold ph-trash"></i>
               Hapus Akun & Data
@@ -310,32 +312,74 @@ export function renderAkun() {
     toggle2FA.onchange = async (e) => {
       const isChecked = e.target.checked;
       checkVerification(async () => {
+        const userFirebase = auth.currentUser;
         if (isChecked) {
-          // Logic Setup 2FA
-          const code = prompt(
-            "Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)",
-          );
-
-          if (code === "123456") {
-            showLoading();
-            const success = await store.update2FAStatus(true);
+          showLoading();
+          try {
+            const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
+            const res = await userService.toggle2FA(freshToken, true);
             hideLoading();
-            if (success) {
-              showToast("2FA Aktif! Akun Anda sekarang lebih aman.", "success");
-            } else {
-              e.target.checked = false;
-              showToast("Gagal update status 2FA.", "error");
-            }
-          } else {
             e.target.checked = false;
-            if (code !== null) showToast("Kode OTP tidak valid.", "error");
+            showAlert(
+              "Konfirmasi Email 2FA",
+              res.message || "Tautan konfirmasi aktivasi 2FA telah dikirim ke email kamu. Silakan periksa inbox/spam.",
+              "info"
+            );
+          } catch (err) {
+            hideLoading();
+            e.target.checked = false;
+            showAlert("Gagal 2FA", err.message || "Gagal mengaktifkan 2FA.", "error");
           }
         } else {
-          // Deactivate 2FA
-          showLoading();
-          await store.update2FAStatus(false);
-          hideLoading();
-          showToast("2FA dinonaktifkan.", "info");
+          const providerId = userFirebase?.providerData[0]?.providerId || "password";
+          if (providerId === "password") {
+            openConfirmPasswordModal(
+              async (password) => {
+                showLoading();
+                try {
+                  if (userFirebase) {
+                    const credential = EmailAuthProvider.credential(userFirebase.email, password);
+                    await reauthenticateWithCredential(userFirebase, credential);
+                  }
+                  const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
+                  const res = await userService.toggle2FA(freshToken, false, password);
+                  hideLoading();
+                  if (store.user) {
+                    store.user.is2FAEnabled = false;
+                    store.save();
+                  }
+                  showToast(res.message || "2FA berhasil dinonaktifkan.", "info");
+                } catch (err) {
+                  hideLoading();
+                  e.target.checked = true;
+                  let msg = err.message || "Password salah atau gagal menonaktifkan 2FA.";
+                  if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+                    msg = "Password yang kamu masukkan salah! Silakan coba lagi.";
+                  }
+                  showAlert("Gagal Menonaktifkan 2FA", msg, "error");
+                }
+              },
+              () => {
+                e.target.checked = true;
+              }
+            );
+          } else {
+            showLoading();
+            try {
+              const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
+              const res = await userService.toggle2FA(freshToken, false);
+              hideLoading();
+              if (store.user) {
+                store.user.is2FAEnabled = false;
+                store.save();
+              }
+              showToast(res.message || "2FA berhasil dinonaktifkan.", "info");
+            } catch (err) {
+              hideLoading();
+              e.target.checked = true;
+              showAlert("Gagal Menonaktifkan 2FA", err.message || "Gagal menonaktifkan 2FA.", "error");
+            }
+          }
         }
       });
     };

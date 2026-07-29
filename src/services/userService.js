@@ -26,14 +26,24 @@ export const userService = {
     return await res.json();
   },
 
-  async update2FA(token, enabled) {
-    const res = await apiFetch(`${API_URL}/users/sync`, {
+  async toggle2FA(token, enabled, password = null) {
+    const res = await apiFetch(`${API_URL}/auth/2fa/toggle`, {
       method: "POST",
       headers: getAuthHeaders(token),
-      body: JSON.stringify({ is2FAEnabled: enabled }),
+      body: JSON.stringify({ enabled, password }),
     });
-    if (!res.ok) return false;
-    return await res.json();
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal memproses 2FA");
+    return data;
+  },
+
+  async verify2FAMagicLink(rawToken) {
+    const res = await apiFetch(`${API_URL}/auth/2fa/verify?token=${encodeURIComponent(rawToken)}`, {
+      method: "GET",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal verifikasi 2FA");
+    return data;
   },
 
   async changePassword(token, oldPassword, newPassword) {

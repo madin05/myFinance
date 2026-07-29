@@ -9,21 +9,23 @@ datasource db {
 }
 
 model User {
-  id                Int           @id @default(autoincrement())
-  firebaseUid       String        @unique
+  id                Int              @id @default(autoincrement())
+  firebaseUid       String           @unique
   name              String
-  email             String        @unique
+  email             String           @unique
   password          String?
   avatar            String?
-  currency          String        @default("IDR")
-  financialStartDay Int           @default(1)
-  balanceOffset     Float         @default(0)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  currency          String           @default("IDR")
+  financialStartDay Int              @default(1)
+  balanceOffset     Float            @default(0)
+  is2FAEnabled      Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   transactions      Transaction[]
   savings           Saving[]
   budgets           Budget[]
   accounts          Account[]
+  twoFactorTokens   TwoFactorToken[]
 }
 
 model Transaction {
@@ -78,4 +80,19 @@ model Account {
   orderIndex Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model TwoFactorToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  type      String   @default("LOGIN") // "LOGIN" | "SETUP"
+  deviceIp  String
+  userAgent String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([tokenHash])
 }
