@@ -204,6 +204,72 @@ export async function checkAuth() {
     return;
   }
 
+  // 4. Jika verifikasi Magic Link 2FA
+  const token2FA = urlParams.get('token') || hashParams.get('token');
+  const customToken = urlParams.get('customToken') || hashParams.get('customToken');
+
+  if (mode === '2fa' && token2FA) {
+    const { showLoading, hideLoading } = await import('./utils.js');
+    const { showAlert } = await import('./components/notifications.js');
+    showLoading();
+    try {
+      const res = await userService.verify2FAMagicLink(token2FA);
+      hideLoading();
+      window.history.replaceState(null, '', window.location.pathname);
+
+      if (res.customToken) {
+        const { signInWithCustomToken } = await import('./firebase-config.js');
+        await signInWithCustomToken(auth, res.customToken);
+      }
+
+      loginView.style.display = 'none';
+      appLayout.style.display = 'flex';
+
+      if (res.tokenType === 'SETUP') {
+        if (store.user) {
+          store.user.is2FAEnabled = true;
+          store.save();
+        }
+        navigateTo('/akun');
+        showAlert('Aktivasi 2FA Berhasil!', 'Autentikasi 2-Langkah telah diaktifkan pada akun Anda.', 'success');
+      } else {
+        navigateTo('/dashboard');
+        showAlert('Verifikasi 2FA Berhasil!', 'Selamat datang kembali di MyFinance.', 'success');
+      }
+    } catch (err) {
+      hideLoading();
+      window.history.replaceState(null, '', window.location.pathname);
+      const { showAlert } = await import('./components/notifications.js');
+      showAlert('Verifikasi 2FA Gagal', err.message || 'Token 2FA tidak valid atau kadaluarsa.', 'error');
+      renderLogin('login');
+    }
+  } else if (mode === '2faSuccess' || mode === '2faSetupSuccess') {
+    window.history.replaceState(null, '', window.location.pathname);
+    if (customToken) {
+      const { signInWithCustomToken } = await import('./firebase-config.js');
+      await signInWithCustomToken(auth, customToken).catch(() => {});
+    }
+    loginView.style.display = 'none';
+    appLayout.style.display = 'flex';
+    const { showAlert } = await import('./components/notifications.js');
+    if (mode === '2faSetupSuccess') {
+      if (store.user) {
+        store.user.is2FAEnabled = true;
+        store.save();
+      }
+      navigateTo('/akun');
+      showAlert('Aktivasi 2FA Berhasil!', 'Autentikasi 2-Langkah telah diaktifkan pada akun Anda.', 'success');
+    } else {
+      navigateTo('/dashboard');
+      showAlert('Verifikasi 2FA Berhasil!', 'Selamat datang kembali di MyFinance.', 'success');
+    }
+  } else if (mode === '2faError') {
+    const errorMsg = urlParams.get('message') || hashParams.get('message') || 'Verifikasi 2FA gagal atau kedaluwarsa.';
+    window.history.replaceState(null, '', window.location.pathname);
+    const { showAlert } = await import('./components/notifications.js');
+    showAlert('Verifikasi 2FA Gagal', errorMsg, 'error');
+  }
+
   // ─── STEP 1: Selesaikan pending redirect result DULU (mobile Google login) ───
   try {
     const redirectResult = await getRedirectResult(auth);

@@ -508,6 +508,25 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             });
             navigateTo('/dashboard');
           } else {
+            // Check 2FA Status via Backend API
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+            const check2FARes = await fetch(`${API_URL}/auth/2fa/check`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password: pass })
+            }).then(r => r.json()).catch(() => null);
+
+            if (check2FARes && check2FARes.status === 'AWAITING_2FA') {
+              hideLoading();
+              showAlert(
+                'Verifikasi 2-Langkah (2FA)',
+                check2FARes.message || 'Magic Link 2FA telah dikirim ke email Anda. Silakan periksa kotak masuk/spam untuk melanjutkan login.',
+                'info'
+              );
+              return;
+            }
+
             const userCred = await signInWithEmailAndPassword(auth, email, pass);
             const user = userCred.user;
             await user.reload();
