@@ -1,4 +1,5 @@
 const prisma = require('../services/db');
+const { withRetry } = require('../services/db');
 
 // Helper: ambil userId dari DB berdasarkan Firebase UID
 async function getUserId(req) {
@@ -6,47 +7,49 @@ async function getUserId(req) {
   if (!uid) throw new Error('UID tidak ditemukan');
   const cleanEmail = (email || '').trim().toLowerCase();
 
-  let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-  if (!user && cleanEmail) {
-    user = await prisma.user.findFirst({
-      where: { email: { equals: cleanEmail, mode: 'insensitive' } }
-    });
-    if (user) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { firebaseUid: uid }
-      }).catch(() => null) || user;
-    }
-  }
-  if (!user) {
-    try {
-      const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
-      user = await prisma.user.create({
-        data: { firebaseUid: uid, name: name || 'User', email: safeEmail, currency: 'IDR' }
-      });
-    } catch {
+  return withRetry(async () => {
+    let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+    if (!user && cleanEmail) {
       user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { firebaseUid: uid },
-            ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
-          ]
-        }
+        where: { email: { equals: cleanEmail, mode: 'insensitive' } }
       });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { firebaseUid: uid }
+        }).catch(() => null) || user;
+      }
     }
-  }
-  if (!user) throw new Error('User tidak ditemukan di database');
-  return user.id;
+    if (!user) {
+      try {
+        const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
+        user = await prisma.user.create({
+          data: { firebaseUid: uid, name: name || 'User', email: safeEmail, currency: 'IDR' }
+        });
+      } catch {
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { firebaseUid: uid },
+              ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
+            ]
+          }
+        });
+      }
+    }
+    if (!user) throw new Error('User tidak ditemukan di database');
+    return user.id;
+  });
 }
 
 // GET semua akun milik user
 exports.getAccounts = async (req, res) => {
   try {
     const userId = await getUserId(req);
-    const accounts = await prisma.account.findMany({
+    const accounts = await withRetry(() => prisma.account.findMany({
       where: { userId },
       orderBy: { orderIndex: 'asc' }
-    });
+    }));
     res.json(accounts);
   } catch (error) {
     res.status(500).json({ error: error.message });

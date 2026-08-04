@@ -318,9 +318,24 @@ exports.send2FAMagicLinkEmail = async (email, rawToken, type = 'LOGIN', reqOrigi
   const transporter = getTransporter();
 
   const isSetup = type === 'SETUP';
-  const title = isSetup ? 'Aktivasi Autentikasi 2-Langkah (2FA)' : 'Verifikasi Login 2FA MyFinance';
-  const heading = isSetup ? 'Konfirmasi Aktivasi 2FA' : 'Magic Link Verifikasi 2FA';
-  const buttonText = isSetup ? 'Aktifkan 2FA Sekarang' : 'Verifikasi Login Sekarang';
+  const isDisable = type === 'DISABLE';
+
+  let title = 'Verifikasi Login 2FA MyFinance';
+  let heading = 'Magic Link Verifikasi 2FA';
+  let buttonText = 'Verifikasi Login Sekarang';
+  let description = 'Klik tombol di bawah untuk masuk ke akun MyFinance kamu secara aman.';
+
+  if (isSetup) {
+    title = 'Aktivasi Autentikasi 2-Langkah (2FA)';
+    heading = 'Konfirmasi Aktivasi 2FA';
+    buttonText = 'Aktifkan 2FA Sekarang';
+    description = 'Klik tombol di bawah ini untuk mengonfirmasi pengaktifan Autentikasi 2-Langkah pada akun MyFinance kamu.';
+  } else if (isDisable) {
+    title = 'Konfirmasi Penonaktifan 2FA MyFinance';
+    heading = 'Konfirmasi Mematikan 2FA';
+    buttonText = 'Nonaktifkan 2FA Sekarang';
+    description = 'PERINGATAN: Klik tombol di bawah jika kamu benar-benar ingin menonaktifkan Autentikasi 2-Langkah pada akun MyFinance kamu.';
+  }
 
   const mailOptions = {
     from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
@@ -355,9 +370,7 @@ exports.send2FAMagicLinkEmail = async (email, rawToken, type = 'LOGIN', reqOrigi
                       ${heading}
                     </h2>
                     <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.6;">
-                      ${isSetup 
-                        ? 'Klik tombol di bawah ini untuk mengonfirmasi pengaktifan Autentikasi 2-Langkah pada akun MyFinance kamu.' 
-                        : 'Klik tombol di bawah untuk masuk ke akun MyFinance kamu secara aman.'}
+                      ${description}
                     </p>
                     <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
                       <tr>

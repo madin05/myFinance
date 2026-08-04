@@ -170,16 +170,33 @@ exports.verify2FAMagicLink = async (req, res) => {
       } catch (e) {}
     }
 
+    if (tokenType === 'DISABLE') {
+      const { getDeviceIp } = require('../services/twoFactorService');
+      const { send2FADisabledSecurityEmail } = require('../services/emailService');
+      const ipAddress = getDeviceIp(req);
+      const userAgent = req.headers['user-agent'];
+
+      send2FADisabledSecurityEmail(user.email, ipAddress, userAgent, new Date()).catch(err => {
+        console.error('Background 2FA Deactivation Security Email Error:', err.message);
+      });
+    }
+
     // Jika dipanggil langsung dari klik link browser (Navigation Request)
     if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      const mode = tokenType === 'SETUP' ? '2faSetupSuccess' : '2faSuccess';
+      let mode = '2faSuccess';
+      if (tokenType === 'SETUP') mode = '2faSetupSuccess';
+      if (tokenType === 'DISABLE') mode = '2faDisabledSuccess';
       return res.redirect(`${frontendUrl}/?mode=${mode}&customToken=${encodeURIComponent(customToken)}`);
     }
 
     res.json({
       status: 'success',
       tokenType,
-      message: tokenType === 'SETUP' ? 'Aktivasi 2FA berhasil dikonfirmasi!' : 'Verifikasi 2FA berhasil!',
+      message: tokenType === 'SETUP'
+        ? 'Aktivasi 2FA berhasil dikonfirmasi!'
+        : tokenType === 'DISABLE'
+        ? 'Penonaktifan 2FA berhasil dikonfirmasi!'
+        : 'Verifikasi 2FA berhasil!',
       customToken,
       user: {
         id: user.id,
@@ -202,26 +219,27 @@ exports.verify2FAMagicLink = async (req, res) => {
 };
 
 /**
- * Toggle / Setup 2FA Handler (Safe Setup Verification Flow)
+ * Toggle / Setup 2FA Handler (Safe Setup & Deactivation Flow)
  */
 exports.toggle2FA = async (req, res) => {
   try {
     const { enabled } = req.body;
     const firebaseUid = req.user?.uid;
+    const { withRetry } = require('../services/db');
 
     if (!firebaseUid) {
       return res.status(401).json({ error: 'Otentikasi diperlukan.' });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await withRetry(() => prisma.user.findUnique({
       where: { firebaseUid }
-    });
+    }));
 
     if (!user) {
       return res.status(404).json({ error: 'User tidak ditemukan.' });
     }
 
-    // Jika ingin MENONAKTIFKAN 2FA -> Verifikasi Password + Clean-up Sesi + Kirim Alert Email Security
+    // Jika ingin MENONAKTIFKAN 2FA -> Verifikasi Password + Kirim Magic Link Email Konfirmasi Deaktivasi
     if (!enabled) {
       const provider = req.user?.firebase?.sign_in_provider || 'password';
       const isPasswordProvider = provider === 'password';
@@ -238,31 +256,18 @@ exports.toggle2FA = async (req, res) => {
         }
       }
 
-      // 1. Invalidate & clean up all active TwoFactorToken records for this user in DB
-      await prisma.twoFactorToken.deleteMany({
-        where: { userId: user.id }
-      });
+      // Generate token type DISABLE & send email magic link
+      const reqOrigin = req.headers.origin || req.headers.referer;
+      const { rawToken } = await generate2FAToken(user.id, req, 'DISABLE');
 
-      // 2. Set is2FAEnabled = false
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { is2FAEnabled: false }
-      });
-
-      // 3. Immediately trigger security alert email via emailService
-      const { getDeviceIp } = require('../services/twoFactorService');
-      const { send2FADisabledSecurityEmail } = require('../services/emailService');
-      const ipAddress = getDeviceIp(req);
-      const userAgent = req.headers['user-agent'];
-
-      send2FADisabledSecurityEmail(user.email, ipAddress, userAgent, new Date()).catch(err => {
-        console.error('Background 2FA Deactivation Security Email Error:', err.message);
+      send2FAMagicLinkEmail(user.email, rawToken, 'DISABLE', reqOrigin).catch(err => {
+        console.error('Background 2FA Deactivation Email Error:', err.message);
       });
 
       return res.json({
-        status: 'DISABLED',
-        is2FAEnabled: false,
-        message: 'Autentikasi 2-Langkah (2FA) berhasil dinonaktifkan.'
+        status: 'DEACTIVATE_LINK_SENT',
+        is2FAEnabled: true,
+        message: `Tautan konfirmasi penonaktifan 2FA telah dikirim ke ${user.email}. Silakan periksa inbox/spam dan klik link untuk menonaktifkan 2FA.`
       });
     }
 
@@ -280,7 +285,11 @@ exports.toggle2FA = async (req, res) => {
       message: `Tautan verifikasi aktivasi 2FA telah dikirim ke ${user.email}. Silakan buka email dan klik link untuk menyelesaikan pengaktifan.`
     });
   } catch (error) {
-    console.error('Toggle 2FA Error:', error.message);
-    res.status(500).json({ error: error.message || 'Gagal mengubah status 2FA.' });
+    console.error('Toggle 2FA Server Error:', error);
+    const isValidationError = error.statusCode && error.statusCode < 500;
+    const clientMessage = isValidationError
+      ? error.message
+      : 'Gagal mengubah status 2FA karena kendala koneksi server database. Silakan coba beberapa saat lagi.';
+    res.status(error.statusCode || 500).json({ error: clientMessage });
   }
 };

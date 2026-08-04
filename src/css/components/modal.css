@@ -94,6 +94,12 @@ select.form-control {
   cursor: pointer;
 }
 
+select.form-control option {
+  background-color: #18181b;
+  color: #f4f4f5;
+  padding: 10px 14px;
+}
+
 .form-control:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-light);
@@ -153,9 +159,219 @@ select.form-control {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
-/* Responsive Modals Override */
-@media (max-width: 768px) {
-  .modal-overlay {
-    align-items: center !important; /* Pusatkan secara vertikal agar lebih estetik dan mudah dijangkau di HP bre */
+/* ==========================================================================
+   Bottom Sheet System (Mobile Bottom Sheet vs Desktop Floating Modal)
+   ========================================================================== */
+
+/* Keyframes for mobile bottom sheet slide-up animation */
+@keyframes slideUpBottomSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
   }
 }
+
+@keyframes slideDownBottomSheet {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.modal-content.closing,
+.custom-alert-card.closing,
+#calc-card.closing,
+.detail-tx-content.closing {
+  animation: slideDownBottomSheet 0.22s cubic-bezier(0.32, 0.72, 0, 1) forwards !important;
+}
+
+.modal-overlay.closing,
+.custom-alert-overlay.closing,
+.detail-tx-overlay.closing {
+  opacity: 0 !important;
+  transition: opacity 0.22s cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
+/* Desktop Floating Modal Styling (min-width: 769px) */
+@media (min-width: 769px) {
+  .detail-tx-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Float centered on desktop */
+    z-index: 2500;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .detail-tx-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .detail-tx-content {
+    background: var(--card-bg, var(--white));
+    width: 100%;
+    max-width: 460px;
+    border-radius: var(--radius-xl); /* Rounded 24px on all 4 corners */
+    padding: 1.75rem 2rem;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.95);
+    transition: transform 0.25s ease;
+    border: 1px solid var(--border);
+    position: relative;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .detail-tx-overlay.active .detail-tx-content {
+    transform: scale(1);
+  }
+
+  .detail-tx-handle {
+    display: none !important; /* Hide handle bar on desktop */
+  }
+}
+
+/* Mobile Bottom Sheet Styling (max-width: 768px) */
+@media (max-width: 768px) {
+  .modal-overlay,
+  .detail-tx-overlay,
+  .custom-alert-overlay {
+    align-items: flex-end !important; /* Position card flush at bottom of viewport */
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  .detail-tx-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    z-index: 2500;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0.3s;
+  }
+
+  .detail-tx-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .detail-tx-content {
+    background: var(--card-bg, var(--white));
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 28px 28px 0 0 !important;
+    padding: 0.85rem 1.5rem 2rem !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3) !important;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    border-top: 1px solid var(--border);
+    position: relative;
+    height: auto !important;
+    max-height: 90vh !important;
+    overflow-y: auto;
+    box-sizing: border-box !important;
+  }
+
+  .detail-tx-overlay.active .detail-tx-content {
+    transform: translateY(0);
+  }
+
+  .detail-tx-handle {
+    display: block !important;
+    position: sticky;
+    top: -0.85rem;
+    z-index: 50;
+    width: 42px;
+    height: 5px;
+    background: var(--text-muted);
+    border-radius: 3px;
+    margin: 0 auto 0.75rem;
+    opacity: 0.5;
+  }
+
+  /* All general feature modals become full-width bottom sheets on mobile */
+  .modal-content,
+  .custom-alert-card {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 28px 28px 0 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    overflow-y: auto;
+    animation: slideUpBottomSheet 0.32s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    padding: 1rem 1.5rem 2rem !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Automatically add sticky drag handle bar to top of standard modal-content on mobile */
+  .modal-content::before {
+    content: '';
+    display: block;
+    position: sticky;
+    top: -1rem;
+    z-index: 50;
+    width: 42px;
+    height: 5px;
+    background: var(--text-muted);
+    border-radius: 3px;
+    margin: 0 auto 0.75rem;
+    opacity: 0.5;
+  }
+
+  /* Sticky Modal Title Header on Mobile */
+  .modal-content .modal-header,
+  .detail-tx-content .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    background: var(--card-bg, var(--white));
+    padding-top: 0.25rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Calculator on mobile bottom sheet full-width */
+  #calc-card {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    margin: 0 !important;
+    border-radius: 28px 28px 0 0 !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4) !important;
+    animation: slideUpBottomSheet 0.35s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    box-sizing: border-box !important;
+    padding: 1rem 1.5rem 2rem !important;
+  }
+}
+

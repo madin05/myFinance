@@ -243,7 +243,7 @@ export async function checkAuth() {
       showAlert('Verifikasi 2FA Gagal', err.message || 'Token 2FA tidak valid atau kadaluarsa.', 'error');
       renderLogin('login');
     }
-  } else if (mode === '2faSuccess' || mode === '2faSetupSuccess') {
+  } else if (mode === '2faSuccess' || mode === '2faSetupSuccess' || mode === '2faDisabledSuccess') {
     window.history.replaceState(null, '', window.location.pathname);
     if (customToken) {
       const { signInWithCustomToken } = await import('./firebase-config.js');
@@ -259,6 +259,13 @@ export async function checkAuth() {
       }
       navigateTo('/akun');
       showAlert('Aktivasi 2FA Berhasil!', 'Autentikasi 2-Langkah telah diaktifkan pada akun Anda.', 'success');
+    } else if (mode === '2faDisabledSuccess') {
+      if (store.user) {
+        store.user.is2FAEnabled = false;
+        store.save();
+      }
+      navigateTo('/akun');
+      showAlert('Penonaktifan 2FA Berhasil!', 'Autentikasi 2-Langkah pada akun Anda telah berhasil dinonaktifkan.', 'info');
     } else {
       navigateTo('/dashboard');
       showAlert('Verifikasi 2FA Berhasil!', 'Selamat datang kembali di MyFinance.', 'success');
@@ -370,7 +377,7 @@ export async function checkAuth() {
     }
   });
 
-  // Re-verify & auto-renew session saat user kembali ke tab browser (misal laptop habis sleep)
+  // Re-verify & auto-renew session saat user kembali ke tab browser (misal laptop habis sleep / dari tab email)
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible' && auth.currentUser && store.user) {
       checkAndApplyEmailVerification();
@@ -382,6 +389,8 @@ export async function checkAuth() {
           store.save();
           userService.createSession(freshToken).catch(() => {});
         }
+        // Auto-sync data pengguna (termasuk status 2FA) dari database
+        store.sync();
       } catch (err) {
         console.warn('[Auth] Gagal memperbarui token saat tab aktif:', err);
       }
@@ -456,11 +465,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 5. Scroll Lock Observer (Locks background scrolling/sliding when any modal is open)
+  // 5. Scroll Lock Observer (Locks background scrolling/sliding when any modal or mobile sidebar is open)
   const scrollLockObserver = new MutationObserver(() => {
     const hasActiveModal = document.querySelector('.modal-overlay') || 
                            document.querySelector('.modal-card') || 
-                           document.querySelector('.custom-alert-overlay');
+                           document.querySelector('.detail-tx-overlay') || 
+                           document.querySelector('.custom-alert-overlay') ||
+                           document.querySelector('.sidebar.mobile-active') ||
+                           document.querySelector('.sidebar-overlay.active');
     const mainContent = document.querySelector('.main-content');
     const appLayout = document.getElementById('app-layout');
 
@@ -496,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-  scrollLockObserver.observe(document.body, { childList: true, subtree: true });
+  scrollLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 
 });
 

@@ -235,7 +235,40 @@ export const store = {
     this.updateUI();
     this.syncHeaderBadge();
 
+// Cross-Tab Realtime Synchronization via BroadcastChannel & Storage Event
+const storeChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('myfinance_store_channel') : null;
+
+if (storeChannel) {
+  storeChannel.onmessage = (event) => {
+    if (event.data?.type === 'STORE_UPDATED') {
+      try {
+        const updatedUser = JSON.parse(localStorage.getItem('user'));
+        if (updatedUser) {
+          store.user = updatedUser;
+          store.updateUI();
+          window.dispatchEvent(new CustomEvent('store-updated'));
+        }
+      } catch (e) {}
+    }
+  };
+}
+
+window.addEventListener('storage', (event) => {
+  if (event.key === 'user' && event.newValue) {
+    try {
+      store.user = JSON.parse(event.newValue);
+      store.updateUI();
+      window.dispatchEvent(new CustomEvent('store-updated'));
+    } catch (e) {}
+  }
+});
+
     window.dispatchEvent(new CustomEvent("store-updated"));
+    if (storeChannel) {
+      try {
+        storeChannel.postMessage({ type: 'STORE_UPDATED' });
+      } catch (e) {}
+    }
   },
 
   updateUI() {
