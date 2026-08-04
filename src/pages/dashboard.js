@@ -184,7 +184,7 @@ export function renderDashboard() {
         <i class="ph-fill ph-trend-down stat-watermark"></i>
       </div>
 
-      <div class="stat-card">
+      <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
         <div class="stat-header">
           <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--text-main);"><i class="ph-fill ph-bank" style="font-size: 1.6rem;"></i></div>
           ${
@@ -215,7 +215,7 @@ export function renderDashboard() {
     <!-- Bottom Section -->
     <div class="bottom-grid">
       <div class="transactions-section">
-        <div class="section-header">
+        <div class="section-header row-header">
           <h3>Transaksi Terakhir</h3>
           <a href="/transaksi" class="link">Lihat Semua</a>
         </div>
@@ -305,6 +305,19 @@ export function renderDashboard() {
     btnGotoSaldo.addEventListener("click", (e) => {
       e.preventDefault();
       navigateTo("/saldo");
+    });
+  }
+
+  // Touch/Click seluruh card Total Saldo
+  const cardTotalSaldo = document.getElementById("card-total-saldo");
+  if (cardTotalSaldo) {
+    cardTotalSaldo.addEventListener("click", (e) => {
+      if (e.target.closest('#btn-adjust-balance') || e.target.closest('#btn-goto-saldo')) return;
+      if (stats.hasAccounts) {
+        navigateTo("/saldo");
+      } else {
+        openAdjustBalanceModal(stats.balance, () => renderDashboard());
+      }
     });
   }
 
