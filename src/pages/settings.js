@@ -59,7 +59,6 @@ export function renderSettings() {
             </div>
 
             <div style="border-top: 1px dashed var(--border); margin-top: 0.5rem; padding-top: 1rem;">
-              <p class="text-xs text-muted" style="margin-bottom: 0.75rem;">Laporan &amp; Anggaran akan mengikuti siklus dan mata uang ini.</p>
               <button class="btn btn-primary btn-full" id="btn-save-financial-start"
                 style="height: 38px; font-size: 0.85rem; border-radius: 8px;">
                 Simpan Perubahan

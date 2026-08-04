@@ -192,7 +192,7 @@ export const showVerificationModal = () => {
   overlay.id = 'verification-modal-overlay';
 
   overlay.innerHTML = `
-    <div class="custom-alert-card" style="text-align: center; max-width: 400px; padding: 2.25rem 1.75rem;">
+    <div class="custom-alert-card" style="text-align: center;">
       <div style="margin: 0 auto 1rem; display: flex; justify-content: center; align-items: center;">
         <img src="/assets/asset_notif_light.svg" class="verif-notif-img-light" alt="Verifikasi Email" style="width: 160px; height: auto; max-height: 160px; object-fit: contain;" />
         <img src="/assets/asset_notif_dark.svg" class="verif-notif-img-dark" alt="Verifikasi Email" style="width: 160px; height: auto; max-height: 160px; object-fit: contain;" />
@@ -265,7 +265,7 @@ export const showOptionalVerificationModal = () => {
   overlay.id = 'optional-verif-modal-overlay';
 
   overlay.innerHTML = `
-    <div class="custom-alert-card" style="text-align: center; max-width: 420px; padding: 2.25rem 1.75rem; position: relative;">
+    <div class="custom-alert-card" style="text-align: center; position: relative;">
       <button id="btn-modal-opt-x" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
         <i class="ph ph-x"></i>
       </button>

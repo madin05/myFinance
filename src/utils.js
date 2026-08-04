@@ -125,6 +125,11 @@ export function escapeHtml(str) {
 export function getCategoryIconUrl(kategori, type = null) {
   const k = (kategori || '').toLowerCase();
 
+  // Check Transfer Antar Akun
+  if (type === 'transfer' || k.includes('transfer') || k.includes('pindah')) {
+    return '/assets/investment.svg';
+  }
+
   // Check Investasi lebih awal jika ada kata kunci investasi/dividen
   if (k.includes('invest') || k.includes('saham') || k.includes('reksa') || k.includes('kripto') || k.includes('crypto') || k.includes('emas') || k.includes('tabungan') || k.includes('dividen') || k.includes('profit')) {
     return '/assets/investment.svg';

@@ -28,18 +28,26 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
   // Apply prefill (dari hasil scan struk) HANYA jika bukan edit mode
   const prefill = !isEdit && prefillData ? prefillData : null;
   
-    const getMetodeOptions = () => {
-    if (!store.saldos || store.saldos.length === 0) {
-      return `
-        <option value="Cash" ${isEdit && txToEdit.metode === 'Cash' ? 'selected' : ''}>Cash</option>
-        <option value="E-Wallet" ${isEdit && txToEdit.metode === 'E-Wallet' ? 'selected' : ''}>E-Wallet</option>
-        <option value="Bank Transfer" ${isEdit && txToEdit.metode === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
-        <option value="Kartu Kredit" ${isEdit && txToEdit.metode === 'Kartu Kredit' ? 'selected' : ''}>Kartu Kredit</option>
-      `;
+  const getAccountOptions = (selectedVal = '') => {
+    if (store.saldos && store.saldos.length > 0) {
+      return store.saldos.map(s => 
+        `<option value="${s.name}" ${selectedVal === s.name ? 'selected' : ''}>${s.name} (${s.type})</option>`
+      ).join('');
     }
-    return store.saldos.map(s => 
-      `<option value="${s.name}" ${isEdit && txToEdit.metode === s.name ? 'selected' : ''}>${s.name} (${s.type})</option>`
+    const defaultAccounts = ['Cash', 'BCA', 'Bank Mandiri', 'GoPay', 'OVO', 'DANA', 'ShopeePay'];
+    return defaultAccounts.map(acc => 
+      `<option value="${acc}" ${selectedVal === acc ? 'selected' : ''}>${acc}</option>`
     ).join('');
+  };
+
+  const getMetodeOptions = () => {
+    const currentVal = isEdit ? txToEdit.metode : (prefill?.metode || '');
+    return `
+      <option value="Cash" ${currentVal === 'Cash' ? 'selected' : ''}>Cash</option>
+      <option value="E-Wallet" ${currentVal === 'E-Wallet' ? 'selected' : ''}>E-Wallet</option>
+      <option value="Bank Transfer" ${currentVal === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
+      <option value="Kartu Kredit" ${currentVal === 'Kartu Kredit' ? 'selected' : ''}>Kartu Kredit</option>
+    `;
   };
 
   const getKategoriOptions = () => {
@@ -77,6 +85,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
             <select class="form-control" id="tx-type" required>
               <option value="expense" ${initialType === 'expense' ? 'selected' : ''}>Pengeluaran</option>
               <option value="income" ${initialType === 'income' ? 'selected' : ''}>Pemasukan</option>
+              <option value="transfer" ${initialType === 'transfer' ? 'selected' : ''}>Transfer</option>
             </select>
           </div>
           
@@ -85,7 +94,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
             <input type="date" class="form-control" id="tx-date" required value="${isEdit ? txToEdit.tanggal : (prefill?.tanggal || '')}">
           </div>
 
-          <div style="display: flex; gap: 1rem;">
+          <div id="group-standard-fields" style="display: ${initialType === 'transfer' ? 'none' : 'flex'}; gap: 1rem;">
             <div class="form-group" style="flex: 1;">
               <label>Kategori</label>
               <select class="form-control" id="tx-kategori" required>
@@ -99,6 +108,24 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
               <select class="form-control" id="tx-metode" required>
                 <option value="" disabled ${!isEdit ? 'selected' : ''}>Pilih Metode</option>
                 ${getMetodeOptions()}
+              </select>
+            </div>
+          </div>
+
+          <div id="group-transfer-fields" style="display: ${initialType === 'transfer' ? 'flex' : 'none'}; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
+              <label>Dari Akun / Saldo</label>
+              <select class="form-control" id="tx-transfer-from">
+                <option value="" disabled ${!isEdit ? 'selected' : ''}>Pilih Akun Asal</option>
+                ${getAccountOptions(isEdit ? (txToEdit.dariAkun || txToEdit.akun) : '')}
+              </select>
+            </div>
+            
+            <div class="form-group" style="flex: 1;">
+              <label>Ke Akun / Saldo</label>
+              <select class="form-control" id="tx-transfer-to">
+                <option value="" disabled ${!isEdit ? 'selected' : ''}>Pilih Akun Tujuan</option>
+                ${getAccountOptions(isEdit ? txToEdit.keAkun : '')}
               </select>
             </div>
           </div>
@@ -247,6 +274,52 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
     metodeEl.addEventListener('change', updateAkunOptions);
     if (isEdit || prefill?.metode) updateAkunOptions();
 
+    // Toggle dynamic view based on transaction type (Pengeluaran/Pemasukan vs Transfer)
+    const typeEl = document.getElementById('tx-type');
+    const stdGroup = document.getElementById('group-standard-fields');
+    const transferGroup = document.getElementById('group-transfer-fields');
+    const transferFromEl = document.getElementById('tx-transfer-from');
+    const transferToEl = document.getElementById('tx-transfer-to');
+    const kategoriEl = document.getElementById('tx-kategori');
+    const keteranganEl = document.getElementById('tx-keterangan');
+
+    const handleTypeChange = () => {
+      const currentType = typeEl.value;
+      if (currentType === 'transfer') {
+        stdGroup.style.display = 'none';
+        akunGroup.style.display = 'none';
+        transferGroup.style.display = 'flex';
+        kategoriEl.required = false;
+        metodeEl.required = false;
+        akunEl.required = false;
+        transferFromEl.required = true;
+        transferToEl.required = true;
+        
+        // Remove existing custom select wrappers if any and re-init
+        [transferFromEl, transferToEl].forEach(el => {
+          const oldW = el.nextElementSibling;
+          if (oldW && oldW.classList.contains('custom-select-wrapper')) {
+            oldW.remove();
+            el.classList.remove('custom-select-hidden');
+          }
+        });
+        initCustomSelects(transferGroup);
+      } else {
+        stdGroup.style.display = 'flex';
+        transferGroup.style.display = 'none';
+        kategoriEl.required = true;
+        metodeEl.required = true;
+        transferFromEl.required = false;
+        transferToEl.required = false;
+        updateAkunOptions();
+      }
+    };
+
+    typeEl.addEventListener('change', handleTypeChange);
+    if (isEdit && txToEdit.type === 'transfer') {
+      handleTypeChange();
+    }
+
     // Close handlers
     const closeModal = () => animateCloseModal(container);
     document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
@@ -263,72 +336,119 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
       document.querySelectorAll('.form-control, .custom-select-trigger').forEach(el => el.classList.remove('is-invalid'));
 
       let isValid = true;
-
+      const type = typeEl.value;
       const dateEl = document.getElementById('tx-date');
+
       if (!dateEl.value) {
         dateEl.classList.add('is-invalid');
         isValid = false;
       }
 
-      const kategoriEl = document.getElementById('tx-kategori');
-      const kategoriTrigger = kategoriEl.nextElementSibling?.querySelector('.custom-select-trigger');
-      if (!kategoriEl.value) {
-        kategoriTrigger?.classList.add('is-invalid');
-        isValid = false;
-      }
+      let payload = {};
 
-      const metodeTrigger = metodeEl.nextElementSibling?.querySelector('.custom-select-trigger');
-      if (!metodeEl.value) {
-        metodeTrigger?.classList.add('is-invalid');
-        isValid = false;
-      }
+      if (type === 'transfer') {
+        const fromAkun = transferFromEl.value;
+        const toAkun = transferToEl.value;
 
-      const akunTrigger = akunEl.nextElementSibling?.querySelector('.custom-select-trigger');
-      if (akunEl.required && !akunEl.value) {
-        akunTrigger?.classList.add('is-invalid');
-        isValid = false;
-      }
+        if (!fromAkun) {
+          transferFromEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
+          isValid = false;
+        }
+        if (!toAkun) {
+          transferToEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
+          isValid = false;
+        }
 
-      const keteranganEl = document.getElementById('tx-keterangan');
-      if (!keteranganEl.value.trim()) {
-        keteranganEl.classList.add('is-invalid');
-        isValid = false;
-      }
+        if (!isValid) {
+          showToast('Input Tidak Lengkap', 'Harap pilih akun asal dan akun tujuan transfer!', 'error');
+          return;
+        }
 
-      const hargaVal = parseIDRInput(hargaInput.value);
-      if (!hargaInput.value || hargaVal <= 0) {
-        hargaInput.classList.add('is-invalid');
-        isValid = false;
-      }
+        if (fromAkun === toAkun) {
+          transferFromEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
+          transferToEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
+          showToast('Akun Sama', 'Akun asal dan akun tujuan transfer tidak boleh sama!', 'error');
+          return;
+        }
 
-      if (!isValid) {
-        showToast('Input Tidak Lengkap', 'Harap lengkapi semua kolom form dengan benar!', 'error');
-        return;
-      }
+        const hargaVal = parseIDRInput(hargaInput.value);
+        if (!hargaInput.value || hargaVal <= 0) {
+          hargaInput.classList.add('is-invalid');
+          showToast('Input Tidak Lengkap', 'Harap masukkan nominal transfer yang valid!', 'error');
+          return;
+        }
 
-      const type = document.getElementById('tx-type').value;
-      const date = dateEl.value;
-      const kategori = kategoriEl.value;
-      const metode = metodeEl.value;
-      const akun = akunEl.value || '';
-      const keterangan = keteranganEl.value;
-      let harga = hargaVal;
-      
-      if (type === 'expense') {
-        harga = -Math.abs(harga);
+        const ketVal = keteranganEl.value.trim() || `Transfer dari ${fromAkun} ke ${toAkun}`;
+
+        payload = {
+          tanggal: dateEl.value,
+          kategori: 'Transfer',
+          metode: `Transfer (${fromAkun} → ${toAkun})`,
+          akun: fromAkun,
+          dariAkun: fromAkun,
+          keAkun: toAkun,
+          keterangan: ketVal,
+          harga: Math.abs(hargaVal),
+          type: 'transfer'
+        };
       } else {
-        harga = Math.abs(harga);
-      }
+        const kategoriTrigger = kategoriEl.nextElementSibling?.querySelector('.custom-select-trigger');
+        if (!kategoriEl.value) {
+          kategoriTrigger?.classList.add('is-invalid');
+          isValid = false;
+        }
 
-      const payload = {
-        tanggal: date,
-        kategori,
-        metode,
-        akun,
-        keterangan,
-        harga,
-        type
-      };
+        const metodeTrigger = metodeEl.nextElementSibling?.querySelector('.custom-select-trigger');
+        if (!metodeEl.value) {
+          metodeTrigger?.classList.add('is-invalid');
+          isValid = false;
+        }
+
+        const akunTrigger = akunEl.nextElementSibling?.querySelector('.custom-select-trigger');
+        if (akunEl.required && !akunEl.value) {
+          akunTrigger?.classList.add('is-invalid');
+          isValid = false;
+        }
+
+        if (!keteranganEl.value.trim()) {
+          keteranganEl.classList.add('is-invalid');
+          isValid = false;
+        }
+
+        const hargaVal = parseIDRInput(hargaInput.value);
+        if (!hargaInput.value || hargaVal <= 0) {
+          hargaInput.classList.add('is-invalid');
+          isValid = false;
+        }
+
+        if (!isValid) {
+          showToast('Input Tidak Lengkap', 'Harap lengkapi semua kolom form dengan benar!', 'error');
+          return;
+        }
+
+        const date = dateEl.value;
+        const kategori = kategoriEl.value;
+        const metode = metodeEl.value;
+        const akun = akunEl.value || '';
+        const keterangan = keteranganEl.value;
+        let harga = hargaVal;
+        
+        if (type === 'expense') {
+          harga = -Math.abs(harga);
+        } else {
+          harga = Math.abs(harga);
+        }
+
+        payload = {
+          tanggal: date,
+          kategori,
+          metode,
+          akun,
+          keterangan,
+          harga,
+          type
+        };
+      }
 
       showLoading();
       
@@ -655,7 +775,7 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
 
   container.innerHTML = `
     <div class="custom-alert-overlay" id="delete-acc-overlay">
-      <div class="custom-alert-card" style="text-align: center; max-width: 440px; padding: 2.25rem 1.75rem; position: relative;">
+      <div class="custom-alert-card" style="text-align: center; position: relative;">
         <!-- Theme-aware Warning Illustration -->
         <div style="margin: 0 auto 1.25rem; display: flex; justify-content: center; align-items: center;">
           <img src="/assets/warning_delete_light.svg" class="delete-warning-img-light" alt="Peringatan Hapus Akun" style="width: 180px; height: auto; max-height: 180px; object-fit: contain;" />

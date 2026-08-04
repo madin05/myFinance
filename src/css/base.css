@@ -71,6 +71,7 @@ body {
 }
 .text-muted {
   color: var(--text-muted) !important;
+  font-weight: 400;
 }
 .text-light {
   color: var(--text-light) !important;
@@ -95,6 +96,12 @@ body {
 }
 .font-bold {
   font-weight: 700;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-medium {
+  font-weight: 500;
 }
 .font-normal {
   font-weight: 400;
@@ -406,10 +413,12 @@ body.page-dashboard .dashboard-hero-bg {
 
 /* Make sure header and content sit above the background */
 body.page-dashboard .header:not(.scrolled) {
-  position: relative;
   z-index: 20;
   background-color: transparent !important;
   box-shadow: none !important;
+}
+body.page-dashboard .header.scrolled {
+  z-index: 100;
 }
 body.page-dashboard .page-content {
   position: relative;

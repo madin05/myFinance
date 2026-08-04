@@ -44,10 +44,11 @@ export function renderTransaksi() {
                   <i class="ph ph-x"></i>
                 </button>
               </div>
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
-                <button class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; padding: 10px; font-size: 0.85rem; justify-content: center;">Semua</button>
-                <button class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; padding: 10px; font-size: 0.85rem; justify-content: center;">Masuk</button>
-                <button class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; padding: 10px; font-size: 0.85rem; justify-content: center;">Keluar</button>
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                <button class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Semua</button>
+                <button class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Masuk</button>
+                <button class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Keluar</button>
+                <button class="popover-item ${filterState.type === 'transfer' ? 'active' : ''}" data-type="transfer" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Transfer</button>
               </div>
 
               <!-- Waktu Section -->
@@ -264,9 +265,10 @@ function renderTableBody(container) {
 
   const txHtml = filteredTxs.map(tx => {
     const isIncome = tx.type === 'income';
-    const colorClass = isIncome ? 'text-green' : 'text-red';
-    const sign = isIncome ? '+' : '-';
-    let badgeClass = 'badge-blue';
+    const isTransfer = tx.type === 'transfer';
+    const colorClass = isTransfer ? 'text-primary' : (isIncome ? 'text-green' : 'text-red');
+    const sign = isTransfer ? '⇄' : (isIncome ? '+' : '-');
+    let badgeClass = isTransfer ? 'badge-blue' : 'badge-blue';
     const lowerKategori = (tx.kategori || '').toLowerCase();
     if (lowerKategori.includes('gaji')) badgeClass = 'badge-green';
     else if (lowerKategori.includes('makan')) badgeClass = 'badge-orange';

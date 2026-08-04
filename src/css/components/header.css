@@ -366,29 +366,32 @@
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border: none !important;
-    transition: none !important; /* Immediately removes translucent background to prevent rectangular flash */
+    transition: none !important;
   }
 
   .header.scrolled {
+    position: sticky !important;
     top: 0.75rem !important;
+    z-index: 1000 !important;
     border-radius: 9999px !important;
     border: 1px solid var(--border) !important;
     padding: 0.6rem 1.25rem !important;
-    margin-bottom: 0.75rem !important;
-    background-color: rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1) !important;
+    /* Kompensasi tinggi search bar (55px) agar greeting card & konten tidak meloncat ke atas */
+    margin-bottom: 4.75rem !important;
+    background-color: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18) !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     backdrop-filter: blur(20px) saturate(180%) !important;
   }
 
-  /* Sembunyikan input cari transaksi saat mobile di-scroll agar header super ringkas */
+  /* Sembunyikan input cari transaksi saat mobile di-scroll agar header ringkas */
   .header.scrolled .search-bar {
     display: none !important;
   }
 
   [data-theme="dark"] .header.scrolled {
-    background-color: rgba(15, 13, 21, 0.8) !important;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45) !important;
+    background-color: rgba(21, 18, 27, 0.96) !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.55) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     border-radius: 9999px !important;
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
@@ -397,7 +400,7 @@
 
   body.disable-animations .header.scrolled,
   [data-theme="dark"] body.disable-animations .header.scrolled {
-    background-color: var(--bg-color) !important;
+    background-color: var(--card-bg) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }

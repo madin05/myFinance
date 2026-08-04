@@ -513,6 +513,25 @@ window.addEventListener('storage', (event) => {
 
   _applyTransactionToSaldo(tx, reverse = false) {
     if (!this.saldos) this.saldos = [];
+
+    // --- Transfer Antar Akun ---
+    if (tx.type === 'transfer') {
+      const fromName = (tx.dariAkun || tx.akun || '').toLowerCase();
+      const toName = (tx.keAkun || '').toLowerCase();
+      let amount = Math.abs(Number(tx.harga || tx.amount || 0));
+      if (reverse) amount = -amount;
+
+      const fromSaldo = this.saldos.find((s) => (s.name || '').toLowerCase() === fromName);
+      const toSaldo = this.saldos.find((s) => (s.name || '').toLowerCase() === toName);
+
+      if (fromSaldo) {
+        fromSaldo.balance = Number(fromSaldo.balance) - amount;
+      }
+      if (toSaldo) {
+        toSaldo.balance = Number(toSaldo.balance) + amount;
+      }
+      return;
+    }
     
     let targetSaldo = null;
     let targetType = "Cash";
