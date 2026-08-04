@@ -165,8 +165,6 @@ export function getCategoryIconUrl(kategori, type = null) {
  * Dipanggil secara otomatis via observer saat modal muncul di DOM.
  */
 export function initBottomSheetSwipe() {
-  if (window.innerWidth > 768) return;
-
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
@@ -175,11 +173,11 @@ export function initBottomSheetSwipe() {
         let sheet = null;
         let overlay = null;
 
-        if (node.classList?.contains('modal-content') || node.classList?.contains('detail-tx-content') || node.classList?.contains('custom-alert-card')) {
+        if (node.classList?.contains('modal-content') || node.classList?.contains('detail-tx-content') || node.classList?.contains('custom-alert-card') || node.classList?.contains('quick-action-card')) {
           sheet = node;
           overlay = node.closest('.modal-overlay, .detail-tx-overlay, .custom-alert-overlay') || node.parentElement;
         } else {
-          sheet = node.querySelector?.('.modal-content, .detail-tx-content, .custom-alert-card');
+          sheet = node.querySelector?.('.modal-content, .detail-tx-content, .custom-alert-card, .quick-action-card');
           overlay = node.classList?.contains('modal-overlay') || node.classList?.contains('detail-tx-overlay') || node.classList?.contains('custom-alert-overlay') ? node : node.querySelector?.('.modal-overlay, .detail-tx-overlay, .custom-alert-overlay');
         }
 
@@ -200,19 +198,20 @@ function attachSwipeDownToSheet(sheet, overlay) {
   let isDragging = false;
 
   const getCloseBtn = () => {
-    return sheet.querySelector('.modal-close, #close-detail-tx, #close-saldo-modal, #close-anggaran-modal, #close-wishlist-modal, #btn-close-calc') ||
-           overlay?.querySelector('.modal-close, #close-detail-tx, #close-saldo-modal, #close-anggaran-modal, #close-wishlist-modal, #btn-close-calc');
+    return sheet.querySelector('.modal-close, #close-quick-action, #btn-cancel-modal, #btn-cancel-confirm, #btn-cancel-adjust, #btn-cancel-edit-name, #btn-cancel-delete, #btn-close-detail-tx-footer, #btn-cancel-pwd, #close-detail-tx, #close-saldo-modal, #close-anggaran-modal, #close-wishlist-modal, #btn-close-calc') ||
+           overlay?.querySelector('.modal-close, #close-quick-action, #btn-cancel-modal, #btn-cancel-confirm, #btn-cancel-adjust, #btn-cancel-edit-name, #btn-cancel-delete, #btn-close-detail-tx-footer, #btn-cancel-pwd, #close-detail-tx, #close-saldo-modal, #close-anggaran-modal, #close-wishlist-modal, #btn-close-calc');
   };
 
   const getScrollableEl = () => {
-    return sheet.querySelector('form, div:not(.modal-header)') || sheet;
+    const el = sheet.querySelector('.modal-body, form');
+    return (el && el.scrollHeight > el.clientHeight + 5) ? el : sheet;
   };
 
   const onTouchStart = (e) => {
+    if (window.innerWidth > 768) return;
     const scrollEl = getScrollableEl();
-    // Hanya izinkan swipe down jika scroll posisi form berada di paling atas (<= 5px)
-    if (scrollEl.scrollTop > 5) return;
-    
+    if (scrollEl && scrollEl.scrollTop > 5) return;
+
     const touch = e.touches[0];
     startY = touch.clientY;
     currentY = startY;
@@ -225,11 +224,10 @@ function attachSwipeDownToSheet(sheet, overlay) {
     const touch = e.touches[0];
     const deltaY = touch.clientY - startY;
 
-    // Tarik ke bawah saja
     if (deltaY > 0) {
       currentY = touch.clientY;
       sheet.style.transform = `translateY(${deltaY}px)`;
-      e.preventDefault();
+      if (e.cancelable) e.preventDefault();
     } else {
       isDragging = false;
       sheet.style.transform = '';
@@ -239,25 +237,28 @@ function attachSwipeDownToSheet(sheet, overlay) {
   const onTouchEnd = () => {
     if (!isDragging) return;
     isDragging = false;
-    sheet.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
 
     const deltaY = currentY - startY;
-    if (deltaY > 80) {
-      // Ambang batas swipe tercapai: tutup modal!
+    if (deltaY > 70) {
+      sheet.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
       sheet.style.transform = 'translateY(100%)';
+      if (overlay) {
+        overlay.style.transition = 'opacity 0.28s ease';
+        overlay.style.opacity = '0';
+      }
 
       const closeBtn = getCloseBtn();
       setTimeout(() => {
         if (closeBtn) {
           closeBtn.click();
         } else if (overlay) {
-          overlay.click();
+          overlay.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
         } else {
           sheet.remove();
         }
-      }, 180);
+      }, 280);
     } else {
-      // Kembalikan ke posisi terbuka
+      sheet.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
       sheet.style.transform = '';
     }
   };

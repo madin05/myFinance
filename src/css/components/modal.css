@@ -1,13 +1,16 @@
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;          /* Pusatkan secara vertikal di desktop bre */
-  overflow-y: auto;              /* scroll terjadi di overlay (halaman), bukan di dalam box */
-  overflow-x: hidden;            /* Mencegah scrollbar horizontal bre */
-  padding: 2rem 1rem;            /* jarak atas-bawah biar modal gak nempel viewport */
+  align-items: center; /* Pusatkan secara vertikal di desktop bre */
+  overflow-y: auto; /* scroll terjadi di overlay (halaman), bukan di dalam box */
+  overflow-x: hidden; /* Mencegah scrollbar horizontal bre */
+  padding: 2rem 1rem; /* jarak atas-bawah biar modal gak nempel viewport */
   z-index: 2000;
 }
 
@@ -27,19 +30,20 @@
   align-items: center;
   margin-bottom: 1.5rem;
   position: relative;
-  padding-top: 0.75rem;
+  padding-top: 3.25rem;
 }
 
 /* Drag handle bar pill at top center of modal & sheet headers */
 .modal-header::before,
-.quick-action-header::before {
-  content: '';
+.quick-action-header::before,
+.custom-alert-card::before {
+  content: "";
   display: block;
   position: absolute;
-  top: 10px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
-  width: 36px;
+  width: 44px;
   height: 4px;
   background: var(--text-muted);
   border-radius: 99px;
@@ -47,8 +51,10 @@
   pointer-events: none;
 }
 
-.modal-header h3 {
+.modal-header h3,
+.quick-action-header h3 {
   font-size: 1.25rem;
+  margin: 8px 0 0 0 !important;
 }
 
 .modal-close {
@@ -57,6 +63,7 @@
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--text-muted);
+  margin-top: 8px !important;
 }
 
 .modal-close:hover {
@@ -98,7 +105,7 @@
   margin: 0;
 }
 
-input[type=number].form-control {
+input[type="number"].form-control {
   -moz-appearance: textfield;
   appearance: textfield;
   text-align: center;
@@ -168,7 +175,7 @@ select.form-control option {
 }
 
 [data-theme="dark"] .color-radio input:checked + span {
-  border-color: #1E1E1E;
+  border-color: #1e1e1e;
   box-shadow: 0 0 0 2px var(--white);
 }
 
@@ -199,12 +206,13 @@ select.form-control option {
   }
   to {
     transform: translateY(100%);
-    opacity: 0;
+    opacity: 1;
   }
 }
 
 .modal-content.closing,
 .custom-alert-card.closing,
+.quick-action-card.closing,
 #calc-card.closing,
 .detail-tx-content.closing {
   animation: slideDownBottomSheet 0.22s cubic-bezier(0.32, 0.72, 0, 1) forwards !important;
@@ -221,7 +229,10 @@ select.form-control option {
 @media (min-width: 769px) {
   .detail-tx-overlay {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -231,7 +242,9 @@ select.form-control option {
     z-index: 2500;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition:
+      opacity 0.3s ease,
+      visibility 0.3s ease;
   }
 
   .detail-tx-overlay.active {
@@ -280,7 +293,10 @@ select.form-control option {
 
   .detail-tx-overlay {
     position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100%;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -288,7 +304,9 @@ select.form-control option {
     z-index: 2500;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0.3s;
+    transition:
+      opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      visibility 0.3s;
   }
 
   /* Mobile bottom sheet flex-column container (Tidak scroll di level kontainer) */
@@ -323,19 +341,24 @@ select.form-control option {
     animation: slideUpBottomSheet 0.32s cubic-bezier(0.32, 0.72, 0, 1) !important;
   }
 
+  .custom-alert-card {
+    padding: 2.25rem 1.5rem 1.5rem 1.5rem !important;
+  }
+
   .detail-tx-overlay.active .detail-tx-content {
     transform: translateY(0);
   }
 
   /* Header 100% Fixed di atas modal (TIDAK BERGERAK / JITTER SAMA SEKALI) */
   .modal-content .modal-header,
-  .detail-tx-content .modal-header {
+  .detail-tx-content .modal-header,
+  .quick-action-header {
     flex-shrink: 0 !important;
     position: relative !important;
     top: 0 !important;
     z-index: 50 !important;
     background: var(--card-bg, var(--white)) !important;
-    padding: 1.75rem 1.5rem 0.85rem 1.5rem !important;
+    padding: 3.25rem 1.5rem 1.15rem 1.5rem !important;
     margin: 0 !important;
     border-bottom: 1px solid var(--border) !important;
     border-radius: 28px 28px 0 0 !important;
@@ -346,14 +369,15 @@ select.form-control option {
 
   /* Drag handle bar pill persis di tengah atas modal-header */
   .modal-content .modal-header::before,
-  .detail-tx-content .modal-header::before {
-    content: '' !important;
+  .detail-tx-content .modal-header::before,
+  .quick-action-header::before {
+    content: "" !important;
     display: block !important;
     position: absolute !important;
-    top: 10px !important;
+    top: 14px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 36px !important;
+    width: 44px !important;
     height: 4px !important;
     background: var(--text-muted) !important;
     border-radius: 99px !important;
@@ -405,6 +429,8 @@ select.form-control option {
     animation: slideUpBottomSheet 0.35s cubic-bezier(0.32, 0.72, 0, 1) !important;
     margin: 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    background: var(--card-bg, var(--white)) !important;
+    z-index: 2500 !important;
   }
 }
 
@@ -420,7 +446,7 @@ select.form-control option {
 }
 
 .quick-action-header {
-  padding: 1.75rem 1.5rem 0.75rem;
+  padding: 3.25rem 1.5rem 1.15rem;
   border-bottom: none !important;
   display: flex;
   justify-content: space-between;
@@ -429,10 +455,10 @@ select.form-control option {
 }
 
 .quick-action-header h3 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin: 0;
   color: var(--text-main);
+  margin: 8px 0 0 0 !important;
 }
 
 .quick-action-grid {
@@ -453,7 +479,9 @@ select.form-control option {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   text-align: left;
   width: 100%;
   box-sizing: border-box;
@@ -478,7 +506,7 @@ select.form-control option {
 }
 
 [data-theme="light"] .qa-icon {
-  background: #F1F5F9;
+  background: #f1f5f9;
   color: var(--text-main);
 }
 
@@ -524,12 +552,12 @@ select.form-control option {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, color 0.2s;
+  transition:
+    transform 0.2s,
+    color 0.2s;
 }
 
 .quick-action-item:hover .qa-arrow {
   transform: translateX(3px);
   color: var(--text-main);
 }
-
-
