@@ -115,3 +115,62 @@ export function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+/**
+ * Mendapatkan URL icon SVG berdasarkan nama kategori transaksi dan tipe (income/expense)
+ * @param {string} kategori - Nama kategori transaksi
+ * @param {string} [type] - Tipe transaksi ('income' / 'expense')
+ * @returns {string} - Path URL icon SVG
+ */
+export function getCategoryIconUrl(kategori, type = null) {
+  const k = (kategori || '').toLowerCase();
+
+  // Check Investasi lebih awal jika ada kata kunci investasi/dividen
+  if (k.includes('invest') || k.includes('saham') || k.includes('reksa') || k.includes('kripto') || k.includes('crypto') || k.includes('emas') || k.includes('tabungan') || k.includes('dividen') || k.includes('profit')) {
+    return '/assets/investment.svg';
+  }
+
+  // Check Gaji / Pendapatan / Salary / Income
+  if (type === 'income' || k.includes('gaji') || k.includes('salary') || k.includes('income') || k.includes('masuk') || k.includes('pendapatan') || k.includes('pemasukan') || k.includes('bonus') || k.includes('freelance') || k.includes('thr') || k.includes('upah') || k.includes('proyek') || k.includes('hadiah')) {
+    return '/assets/salary.svg';
+  }
+
+  // Check Makanan & Minuman
+  if (k.includes('makan') || k.includes('minum') || k.includes('food') || k.includes('kuliner') || k.includes('resto') || k.includes('jajan') || k.includes('cafe') || k.includes('kopi')) {
+    return '/assets/food.svg';
+  }
+
+  // Check Transportasi
+  if (k.includes('transport') || k.includes('bensin') || k.includes('ojek') || k.includes('grab') || k.includes('gojek') || k.includes('parkir') || k.includes('kendaraan') || k.includes('tol') || k.includes('servis') || k.includes('bbm')) {
+    return '/assets/transport.svg';
+  }
+
+  // Check Tagihan
+  if (k.includes('tagihan') || k.includes('bill') || k.includes('listrik') || k.includes('air') || k.includes('wifi') || k.includes('internet') || k.includes('pulsa') || k.includes('sewa') || k.includes('kos') || k.includes('pajak') || k.includes('cicilan') || k.includes('angsuran') || k.includes('denda') || k.includes('bpjs')) {
+    return '/assets/bill.svg';
+  }
+
+  // Check Belanja
+  if (k.includes('belanja') || k.includes('shop') || k.includes('baju') || k.includes('groceries') || k.includes('supermarket') || k.includes('mall') || k.includes('toko') || k.includes('pakaian')) {
+    return '/assets/shopping.svg';
+  }
+
+  // Check Hiburan
+  if (k.includes('hiburan') || k.includes('entertain') || k.includes('bioskop') || k.includes('game') || k.includes('nonton') || k.includes('liburan') || k.includes('rekreasi') || k.includes('hobi') || k.includes('film') || k.includes('musik')) {
+    return '/assets/entertaint.svg';
+  }
+
+  // Check Kesehatan
+  if (k.includes('sehat') || k.includes('healthy') || k.includes('obat') || k.includes('dokter') || k.includes('rumah sakit') || k.includes('apotek') || k.includes('skincare') || k.includes('kesehatan') || k.includes('fitnes') || k.includes('gym')) {
+    return '/assets/healthy.svg';
+  }
+
+  // Check Pendidikan
+  if (k.includes('didik') || k.includes('edukasi') || k.includes('education') || k.includes('sekolah') || k.includes('kuliah') || k.includes('kursus') || k.includes('buku') || k.includes('spp') || k.includes('pendidikan') || k.includes('les')) {
+    return '/assets/education.svg';
+  }
+
+  // Default fallback berdasarkan type
+  if (type === 'income') return '/assets/salary.svg';
+  return '/assets/shopping.svg';
+}

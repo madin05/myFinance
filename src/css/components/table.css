@@ -82,6 +82,11 @@
   display: inline-block;
 }
 
+/* Hide category icon on desktop by default */
+.tx-cat-icon {
+  display: none;
+}
+
 .badge-blue {
   background-color: var(--blue-light);
   color: var(--blue);

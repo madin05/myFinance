@@ -1,5 +1,5 @@
 import { store, formatRupiah, formatDate } from '../store.js';
-import { showLoading, hideLoading } from '../utils.js';
+import { showLoading, hideLoading, getCategoryIconUrl } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast, checkVerification } from './notifications.js';
 
@@ -755,7 +755,7 @@ export function openDetailTransactionModal(tx) {
 
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Kategori</span>
-            <span class="badge-soft ${badgeClass}" style="font-size: 0.78rem;">${tx.kategori || 'Umum'}</span>
+            <span class="badge-soft ${badgeClass}" style="font-size: 0.78rem;"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori || 'Umum'}</span></span>
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center;">
