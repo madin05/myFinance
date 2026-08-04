@@ -91,9 +91,18 @@ export function initCustomSelects(container = document) {
         e.stopPropagation();
         // Close other open selects
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-          if (w !== wrapper) w.classList.remove('open');
+          if (w !== wrapper) {
+            w.classList.remove('open');
+            const card = w.closest('.stat-card');
+            if (card) card.style.zIndex = '';
+          }
         });
+        const isOpening = !wrapper.classList.contains('open');
         wrapper.classList.toggle('open');
+        const card = wrapper.closest('.stat-card');
+        if (card) {
+          card.style.zIndex = isOpening ? '100' : '';
+        }
       };
     }
   });
@@ -101,5 +110,9 @@ export function initCustomSelects(container = document) {
 
 // Global click to close
 document.addEventListener('click', () => {
-  document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+  document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+    w.classList.remove('open');
+    const card = w.closest('.stat-card');
+    if (card) card.style.zIndex = '';
+  });
 });

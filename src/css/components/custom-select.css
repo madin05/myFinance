@@ -5,6 +5,24 @@
   user-select: none;
 }
 
+.custom-select-wrapper.open {
+  z-index: 1000 !important;
+}
+
+/* Pastikan kartu/container yang berisi custom select tidak meng-clip dropdown dan z-index terangkat */
+.stat-card:has(.custom-select-wrapper.open),
+.form-group:has(.custom-select-wrapper.open),
+.settings-grid .stat-card,
+.account-grid .stat-card {
+  overflow: visible !important;
+}
+
+.stat-card:has(.custom-select-wrapper.open),
+.settings-grid .stat-card:has(.custom-select-wrapper.open),
+.account-grid .stat-card:has(.custom-select-wrapper.open) {
+  z-index: 100 !important;
+}
+
 .custom-select-trigger {
   display: flex;
   align-items: center;

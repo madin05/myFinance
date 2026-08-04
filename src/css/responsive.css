@@ -89,8 +89,6 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    /* Background transparan — hilangkan transition background-color agar tidak kilap/flash kotak saat di-unscroll ke atas */
-    background-color: transparent !important;
     transition: box-shadow 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
   }
   
@@ -587,9 +585,143 @@
     display: none !important;
   }
 
-  /* Curve header box on other pages in mobile view */
+  /* Curve header box on other pages in mobile view & clean bottom spacing */
   .header.curved-header {
     border-radius: 100px !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* Standardized Page Title Spacing (Laporan, Saldo, Wishlist, Transaksi, Anggaran, Settings, Akun) */
+  .section-header {
+    margin-top: 0.5rem !important;
+    margin-bottom: 1.35rem !important;
+  }
+
+  .section-header h3,
+  .section-header-top h3 {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+    margin-bottom: 0.35rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .section-header p,
+  .section-header-top p {
+    font-size: 0.78rem !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+  }
+
+  /* =========================================================
+     Mobile Refinements: Settings, Profile (Akun), & Dashboard
+     ========================================================= */
+
+  /* 1. Dashboard Layout & Cards (Mobile) */
+  .main-content {
+    padding: 0.75rem 0.85rem 2.5rem 0.85rem !important;
+  }
+
+  .dashboard-container {
+    gap: 1rem !important;
+  }
+
+  .stats-cards {
+    margin-bottom: 1rem !important;
+    gap: 0.75rem !important;
+  }
+
+  .stat-card {
+    padding: 0.9rem 1rem !important;
+    border-radius: 18px !important;
+  }
+
+  .stat-label {
+    font-size: 0.72rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.01em;
+  }
+
+  .stat-value {
+    font-size: 1.05rem !important;
+  }
+
+  .stats-cards .stat-card:nth-child(3) .stat-value {
+    font-size: 1.25rem !important;
+  }
+
+  .bottom-grid {
+    gap: 1rem !important;
+  }
+
+  .bottom-grid .stat-card,
+  .bottom-grid .widget-card {
+    padding: 1.15rem 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  /* 2. Settings & Profile / Akun Page (Mobile) */
+  .settings-grid,
+  .account-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .account-settings .stat-card,
+  .settings-grid .stat-card {
+    padding: 1.25rem 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  .account-settings .profile-card {
+    padding: 1.5rem 1rem 1.25rem !important;
+    text-align: center;
+  }
+
+  .account-settings .avatar-wrapper {
+    width: 90px !important;
+    height: 90px !important;
+    margin: 0 auto 1rem !important;
+  }
+
+  .account-settings .edit-avatar-btn {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .account-settings .profile-card h3 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  .account-settings .profile-card p.text-muted {
+    font-size: 0.78rem !important;
+    margin-bottom: 1.15rem !important;
+  }
+
+  .account-settings .stat-card h4,
+  .settings-grid .stat-card h4 {
+    font-size: 0.95rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .account-settings .stat-card h4 i,
+  .settings-grid .stat-card h4 i {
+    font-size: 1.2rem !important;
+  }
+
+  /* Form & switch sizing adjustments in Mobile Settings/Profile */
+  .settings-grid .form-group label,
+  .account-settings .form-group label {
+    font-size: 0.76rem !important;
+  }
+
+  .settings-grid .switch,
+  .account-settings .switch {
+    transform: scale(0.9);
+    transform-origin: right center;
   }
 }
 
