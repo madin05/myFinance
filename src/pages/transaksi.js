@@ -1,7 +1,7 @@
 import { store, formatRupiah, formatDate } from '../store.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
-import { initStickyHeader } from '../utils.js';
+import { initStickyHeader, getCategoryIconUrl } from '../utils.js';
 import { showToast } from '../components/notifications.js';
 
 let filterState = {
@@ -280,7 +280,10 @@ function renderTableBody(container) {
             <div style="position:relative;">
               <!-- Baris 1: Badge + Harga -->
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span class="badge-soft ${badgeClass}" style="font-size:0.68rem; padding:2px 9px;">${tx.kategori}</span>
+                <span class="badge-soft ${badgeClass}" style="font-size:0.68rem; padding:2px 9px;">
+                  <img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" />
+                  <span>${tx.kategori}</span>
+                </span>
                 <span class="${colorClass} font-bold" style="font-size:0.88rem; white-space:nowrap;">${sign} ${formatRupiah(Math.abs(tx.harga))}</span>
               </div>
               <!-- Baris 2: Keterangan -->
@@ -305,7 +308,7 @@ function renderTableBody(container) {
     return `
       <tr>
         <td>${formatDate(tx.tanggal)}</td>
-        <td><span class="badge-soft ${badgeClass}">${tx.kategori}</span></td>
+        <td><span class="badge-soft ${badgeClass}"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
         <td>${tx.metode}</td>
         <td>${tx.keterangan}</td>
         <td class="text-right ${colorClass} font-bold">${sign} ${formatRupiah(Math.abs(tx.harga))}</td>

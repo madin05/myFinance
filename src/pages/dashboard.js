@@ -1,7 +1,7 @@
 import { store, formatRupiah, formatDate } from "../store.js";
 import { openAdjustBalanceModal } from "../components/modal.js";
 import { navigateTo } from "../router.js";
-import { initStickyHeader, escapeHtml } from "../utils.js";
+import { initStickyHeader, escapeHtml, getCategoryIconUrl } from "../utils.js";
 
 let currentSavingIndex = 0;
 let savingInterval = null;
@@ -52,7 +52,7 @@ export function renderDashboard() {
       return `
       <tr>
         <td>${formatDate(tx.tanggal)}</td>
-        <td><span class="badge-soft ${badgeClass}">${tx.kategori}</span></td>
+        <td><span class="badge-soft ${badgeClass}"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
         <td>${tx.metode}</td>
         <td>${tx.keterangan}</td>
         <td class="text-right ${colorClass} font-bold">${sign}${formatRupiah(Math.abs(tx.harga))}</td>
