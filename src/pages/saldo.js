@@ -114,7 +114,7 @@ export function renderSaldo() {
           <div class="stat-card" style="padding: 1.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: visible;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
               <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 4px 16px color-mix(in srgb, ${brandColor} 25%, transparent); display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-size: 1.35rem; flex-shrink: 0; transition: all 0.3s ease;">
+                <div style="width: 44px; height: 44px; border-radius: 100px; background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 4px 16px color-mix(in srgb, ${brandColor} 25%, transparent); display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-size: 1.35rem; flex-shrink: 0; transition: all 0.3s ease;">
                   ${getLogo(s) ? `<img src="${getLogo(s)}" style="width: 26px; height: 26px; border-radius: 6px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
                 </div>
                 <div style="min-width: 0; flex: 1;">

@@ -137,13 +137,14 @@
   right: 0;
   left: auto !important;
   width: 240px;
-  background-color: var(--card-bg);
-  backdrop-filter: blur(12px);
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+  opacity: 1 !important;
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 40px -4px rgba(0, 0, 0, 0.35), 0 4px 14px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
   padding: 0.5rem;
-  z-index: 1000;
+  z-index: 1200;
   display: none;
   transform-origin: top right;
   animation: dropdownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -248,13 +249,14 @@
   top: calc(100% + 15px);
   right: -10px;
   width: 320px;
-  background-color: var(--card-bg);
-  backdrop-filter: blur(15px);
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+  opacity: 1 !important;
   border-radius: var(--radius-lg);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 40px -4px rgba(0, 0, 0, 0.35), 0 4px 14px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
   padding: 0;
-  z-index: 1000;
+  z-index: 1200;
   display: none;
   transform-origin: top right;
   animation: dropdownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -341,67 +343,31 @@
 }
 
 /* Responsive Header Fixes */
-@media (max-width: 520px) {
-  .header-dropdown {
-    position: fixed;
-    top: 80px; /* Posisi menggantung pas di bawah navbar header */
-    left: 0;
-    right: 0;
-    margin: 0 auto; /* Magic centering tanpa bentrok transform animation */
-    width: calc(100vw - 32px);
-    max-width: 340px;
-    transform-origin: top center;
-  }
-}
-
 @media (max-width: 768px) {
   .header {
-    transition: none !important;
-  }
-
-  .header:not(.scrolled) {
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    transition: none !important;
-  }
-
-  .header.scrolled {
-    position: sticky !important;
-    top: 0.75rem !important;
+    position: relative !important;
+    top: auto !important;
     z-index: 1000 !important;
-    border-radius: 9999px !important;
-    border: 1px solid var(--border) !important;
-    padding: 0.6rem 1.25rem !important;
-    /* Kompensasi tinggi search bar (55px) agar greeting card & konten tidak meloncat ke atas */
-    margin-bottom: 4.75rem !important;
-    background-color: rgba(255, 255, 255, 0.96) !important;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
+    margin-bottom: 1.25rem !important;
   }
 
-  /* Sembunyikan input cari transaksi saat mobile di-scroll agar header ringkas */
-  .header.scrolled .search-bar {
-    display: none !important;
+  .header-actions {
+    position: relative;
   }
 
-  [data-theme="dark"] .header.scrolled {
-    background-color: rgba(21, 18, 27, 0.96) !important;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.55) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 9999px !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-  }
-
-  body.disable-animations .header.scrolled,
-  [data-theme="dark"] body.disable-animations .header.scrolled {
+  .profile-dropdown,
+  .header-dropdown {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    left: auto !important;
+    width: 280px !important;
+    max-width: calc(100vw - 2rem) !important;
+    background: var(--card-bg) !important;
     background-color: var(--card-bg) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    opacity: 1 !important;
+    z-index: 2000 !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid var(--border) !important;
   }
 }

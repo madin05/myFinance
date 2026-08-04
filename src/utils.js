@@ -13,38 +13,18 @@ export function hideLoading() {
 }
 
 /**
- * Mengaktifkan sticky header yang responsif di mobile.
- * Menambahkan class 'scrolled' ke .header saat halaman digulir > threshold.
- * Aman dipanggil berkali-kali saat page re-render (listener lama dibersihkan).
- *
- * @param {number} threshold - Jarak scroll (px) sebelum efek aktif. Default: 10px.
+ * Sticky header dinonaktifkan atas permintaan user (header tetap di atas saat scroll).
+ * Fungsi dipertahankan untuk kompatibilitas panggilan di main.js & halaman lain.
  */
-export function initStickyHeader(threshold = 10) {
-  // Hanya jalankan di mobile
-  if (window.innerWidth > 768) return;
-
+export function initStickyHeader() {
   const header = document.querySelector('.header');
-  if (!header) return;
-
-  // Cleanup listener lama agar tidak numpuk saat page re-render
-  if (header._stickyScrollHandler) {
-    window.removeEventListener('scroll', header._stickyScrollHandler, { passive: true });
-  }
-
-  const handler = () => {
-    if (window.scrollY > threshold) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
+  if (header) {
+    if (header._stickyScrollHandler) {
+      window.removeEventListener('scroll', header._stickyScrollHandler);
+      header._stickyScrollHandler = null;
     }
-  };
-
-  // Simpan referensi ke handler agar bisa di-cleanup nanti
-  header._stickyScrollHandler = handler;
-  window.addEventListener('scroll', handler, { passive: true });
-
-  // Jalankan sekali untuk state awal (misal user refresh di tengah halaman)
-  handler();
+    header.classList.remove('scrolled');
+  }
 }
 
 

@@ -1,0 +1,231 @@
+/* ==========================================================================
+   Mobile Bottom Navigation Bar
+   Only visible on screens ≤ 768px. Replaces the sidebar for quick navigation.
+   ========================================================================== */
+
+/* Hidden by default (desktop) */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
+    left: 0.85rem;
+    right: 0.85rem;
+    z-index: 1050;
+    height: 66px;
+    border-radius: 9999px;
+    padding: 0 0.6rem;
+    justify-content: space-around;
+    align-items: center;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                background-color 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+  }
+
+  /* Glassmorphism backdrop — Light Mode Floating Pill */
+  [data-theme="light"] .bottom-nav {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.14),
+                0 6px 18px -2px rgba(14, 165, 233, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  /* Glassmorphism backdrop — Dark Mode Floating Pill */
+  [data-theme="dark"] .bottom-nav {
+    background: rgba(24, 20, 32, 0.95);
+    backdrop-filter: blur(28px) saturate(1.8);
+    -webkit-backdrop-filter: blur(28px) saturate(1.8);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.7),
+                0 8px 24px -4px rgba(157, 78, 221, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  /* Individual Tab Item */
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.63rem;
+    font-weight: 500;
+    padding: 5px 0 3px;
+    flex: 1;
+    gap: 2px;
+    position: relative;
+    transition: color 0.25s ease, transform 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    outline: none;
+    border-radius: 9999px;
+    height: 56px;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav-item i {
+    font-size: 1.25rem;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bottom-nav-item span {
+    letter-spacing: 0.01em;
+    line-height: 1;
+    transition: color 0.25s ease, font-weight 0.2s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Hover & Active Feedback */
+  .bottom-nav-item:hover {
+    color: var(--text-main);
+  }
+
+  .bottom-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  /* Active State (Clean Primary Color + Glowing Top Dot) */
+  .bottom-nav-item.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .bottom-nav-item.active i {
+    transform: scale(1.12);
+    color: var(--primary);
+  }
+
+  /* Active Indicator Dot */
+  .bottom-nav-item.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 8px var(--primary);
+    animation: navDotIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes navDotIn {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) scale(0);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+  }
+
+  /* Center FAB Button (Elevated Radiant Gradient) */
+  .bottom-nav-fab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    position: relative;
+    padding: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    background: none;
+    outline: none;
+    height: 64px;
+  }
+
+  .bottom-nav-fab-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    border: 3.5px solid var(--card-bg);
+    transform: translateY(-16px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease,
+                filter 0.25s ease;
+    cursor: pointer;
+  }
+
+  [data-theme="light"] .bottom-nav-fab-btn {
+    border-color: rgba(255, 255, 255, 0.95);
+    background: linear-gradient(135deg, #0EA5E9 0%, #8B5CF6 100%);
+    box-shadow: 0 8px 22px rgba(14, 165, 233, 0.4), 0 2px 8px rgba(139, 92, 246, 0.25);
+  }
+
+  [data-theme="dark"] .bottom-nav-fab-btn {
+    border-color: rgba(21, 18, 27, 0.95);
+    background: linear-gradient(135deg, #9D4EDD 0%, #6366F1 100%);
+    box-shadow: 0 8px 24px rgba(157, 78, 221, 0.5), 0 0 16px rgba(157, 78, 221, 0.3);
+  }
+
+  .bottom-nav-fab:hover .bottom-nav-fab-btn,
+  .bottom-nav-fab:focus .bottom-nav-fab-btn {
+    transform: translateY(-18px) scale(1.08) rotate(90deg);
+    filter: brightness(1.1);
+  }
+
+  .bottom-nav-fab:active .bottom-nav-fab-btn {
+    transform: translateY(-14px) scale(0.95) rotate(45deg);
+  }
+
+  .bottom-nav-fab span {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: -12px;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    transition: color 0.25s ease;
+  }
+
+  .bottom-nav-fab:hover span {
+    color: var(--primary);
+  }
+
+  /* Hide floating FAM on mobile */
+  .menu-tooltip-container {
+    display: none !important;
+  }
+
+  /* Add bottom padding to main-content so content isn't hidden behind bottom nav */
+  .main-content {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Hide bottom nav when mobile sidebar is active */
+  .sidebar.mobile-active ~ .bottom-nav {
+    transform: translateY(150%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Show bottom nav by default */
+  .bottom-nav {
+    transform: translateY(0);
+  }
+}
