@@ -89,19 +89,21 @@ export function renderSaldo() {
 
   container.innerHTML = `
     <div class="saldo-section">
-      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-        <div>
-          <h3>Saldo Akun</h3>
-          <p class="text-muted" style="margin-top: 4px; font-size: 0.9rem;">Total: <strong style="color: var(--text);">${formatCurrency(totalSaldo)}</strong></p>
-        </div>
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
-          <div class="view-toggle" style="display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px;">
-            <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'grid' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'grid' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-fill ph-squares-four" style="font-size: 1.2rem;"></i></button>
-            <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'list' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'list' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-bold ph-list" style="font-size: 1.2rem;"></i></button>
+      <div class="section-header">
+        <div class="section-header-top">
+          <div>
+            <h3>Saldo Akun</h3>
+            <p class="text-muted" style="margin-top: 2px; font-size: 0.85rem;">Total: <strong style="color: var(--text);">${formatCurrency(totalSaldo)}</strong></p>
           </div>
-          <button class="btn btn-primary" id="btn-add-saldo">
-            <i class="ph ph-plus"></i> Tambah Saldo
-          </button>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <div class="view-toggle" style="display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px;">
+              <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'grid' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'grid' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-fill ph-squares-four" style="font-size: 1.2rem;"></i></button>
+              <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'list' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'list' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-bold ph-list" style="font-size: 1.2rem;"></i></button>
+            </div>
+            <button class="btn btn-primary" id="btn-add-saldo">
+              <i class="ph ph-plus"></i> Tambah Saldo
+            </button>
+          </div>
         </div>
       </div>
 

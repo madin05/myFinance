@@ -159,14 +159,35 @@ export function renderLaporan() {
     .join("");
 
   container.innerHTML = `
-    <div class="section-header" style="flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem;">
-      <div>
-        <h3>Laporan Keuangan</h3>
-        <p class="text-muted text-sm">
-          Periode: <span class="font-bold text-main">${startDate.toLocaleDateString("id-ID")} - ${endDate.toLocaleDateString("id-ID")}</span>
-        </p>
+    <div class="section-header" style="margin-bottom: 2rem;">
+      <div class="section-header-top">
+        <div>
+          <h3>Laporan Keuangan</h3>
+          <p class="text-muted text-sm">
+            Periode: <span class="font-bold text-main">${startDate.toLocaleDateString("id-ID")} - ${endDate.toLocaleDateString("id-ID")}</span>
+          </p>
+        </div>
+        <div class="download-group">
+          <button class="download-main" id="btn-main-download">
+            <i class="ph-bold ${selectedFormat === "pdf" ? "ph-file-pdf" : "ph-file-xls"}"></i>
+            <span>Export ${selectedFormat.toUpperCase()}</span>
+          </button>
+          <button class="download-toggle" id="btn-toggle-export-menu">
+            <i class="ph-bold ph-caret-down"></i>
+          </button>
+          
+          <div class="download-menu" id="export-menu">
+            <button class="menu-item ${selectedFormat === "pdf" ? "active" : ""}" data-format="pdf">
+              <i class="ph-bold ph-file-pdf text-red"></i> PDF
+            </button>
+            <button class="menu-item ${selectedFormat === "excel" ? "active" : ""}" data-format="excel">
+              <i class="ph-bold ph-file-xls text-green"></i> Excel
+            </button>
+          </div>
+        </div>
       </div>
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+
+      <div class="section-header-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 0.75rem;">
         <div class="filter-tabs" style="display: flex; background: var(--bg-color); padding: 4px; border-radius: 12px; border: 1px solid var(--border);">
           <button class="tab-btn ${filterPreset === "minggu" ? "active" : ""}" data-preset="minggu">Minggu</button>
           <button class="tab-btn ${filterPreset === "bulan" ? "active" : ""}" data-preset="bulan">Bulan</button>
@@ -187,25 +208,6 @@ export function renderLaporan() {
         `
             : ""
         }
-
-        <div class="download-group">
-          <button class="download-main" id="btn-main-download">
-            <i class="ph-bold ${selectedFormat === "pdf" ? "ph-file-pdf" : "ph-file-xls"}"></i>
-            <span>Export ${selectedFormat.toUpperCase()}</span>
-          </button>
-          <button class="download-toggle" id="btn-toggle-export-menu">
-            <i class="ph-bold ph-caret-down"></i>
-          </button>
-          
-          <div class="download-menu" id="export-menu">
-            <button class="menu-item ${selectedFormat === "pdf" ? "active" : ""}" data-format="pdf">
-              <i class="ph-bold ph-file-pdf text-red"></i> PDF
-            </button>
-            <button class="menu-item ${selectedFormat === "excel" ? "active" : ""}" data-format="excel">
-              <i class="ph-bold ph-file-xls text-green"></i> Excel
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 

@@ -34,24 +34,24 @@ export function renderAnggaran() {
   
   container.innerHTML = `
     <div class="transactions-section">
-      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-        <div>
+      <div class="section-header">
+        <div class="section-header-top">
           <h3>Anggaran Bulanan</h3>
-          <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
-            <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
-              <i class="ph ph-caret-left"></i>
-            </button>
-            <span class="font-bold" style="min-width: 120px; text-align: center; color: var(--primary);">
-              ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-            </span>
-            <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
-              <i class="ph ph-caret-right"></i>
-            </button>
-          </div>
+          <button class="btn btn-primary" id="btn-set-budget">
+            <i class="ph ph-plus"></i> Atur Anggaran
+          </button>
         </div>
-        <button class="btn btn-primary" id="btn-set-budget">
-          <i class="ph ph-plus"></i> Atur Anggaran
-        </button>
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 0.5rem;">
+          <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+            <i class="ph ph-caret-left"></i>
+          </button>
+          <span class="font-bold" style="min-width: 120px; text-align: center; color: var(--primary);">
+            ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+          </span>
+          <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+            <i class="ph ph-caret-right"></i>
+          </button>
+        </div>
       </div>
 
       <div class="table-container">

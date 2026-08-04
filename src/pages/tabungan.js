@@ -139,12 +139,12 @@ export function renderTabungan() {
 
   container.innerHTML = `
     <div class="section-header">
-      <div>
+      <div class="section-header-top">
         <h3>My Wishlist &amp; Savings</h3>
-      </div>
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        ${historyGoals.length > 0 ? `<button class="btn btn-outline btn-history-header" id="btn-toggle-history"><i class="ph ph-clock-counter-clockwise"></i> Histori</button>` : ''}
-        ${allGoals.length > 0 ? '<button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i> Buat Target Baru</button>' : ''}
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          ${historyGoals.length > 0 ? `<button class="btn btn-outline btn-history-header" id="btn-toggle-history"><i class="ph ph-clock-counter-clockwise"></i> Histori</button>` : ''}
+          ${allGoals.length > 0 ? '<button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i> Buat Target Baru</button>' : ''}
+        </div>
       </div>
     </div>
 
