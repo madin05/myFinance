@@ -980,3 +980,107 @@ export function openConfirmPasswordModal(onConfirm, onCancel) {
   };
 }
 
+export function openQuickActionSheet() {
+  const container = document.getElementById('modal-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="modal-overlay" id="quick-action-overlay">
+      <div class="modal-content quick-action-card" id="quick-action-card">
+        <div class="quick-action-header">
+          <h3>Pilih Aksi Cepat</h3>
+          <button type="button" class="modal-close" id="close-quick-action"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="quick-action-grid">
+          <div class="quick-action-item" role="button" tabindex="0" id="qa-add-tx">
+            <div class="qa-icon">
+              <i class="ph-fill ph-receipt"></i>
+            </div>
+            <div class="qa-info">
+              <h4>Tambah Transaksi</h4>
+            </div>
+            <i class="ph ph-caret-right qa-arrow"></i>
+          </div>
+
+          <div class="quick-action-item" role="button" tabindex="0" id="qa-scan-receipt">
+            <div class="qa-icon">
+              <i class="ph-fill ph-scan"></i>
+            </div>
+            <div class="qa-info">
+              <h4>Scan Struk (OCR)</h4>
+            </div>
+            <i class="ph ph-caret-right qa-arrow"></i>
+          </div>
+
+          <div class="quick-action-item" role="button" tabindex="0" id="qa-wishlist">
+            <div class="qa-icon">
+              <i class="ph-fill ph-heart"></i>
+            </div>
+            <div class="qa-info">
+              <h4>Wishlist & Tabungan</h4>
+            </div>
+            <i class="ph ph-caret-right qa-arrow"></i>
+          </div>
+
+          <div class="quick-action-item" role="button" tabindex="0" id="qa-calculator">
+            <div class="qa-icon">
+              <i class="ph-fill ph-calculator"></i>
+            </div>
+            <div class="qa-info">
+              <h4>Kalkulator Finansial</h4>
+            </div>
+            <i class="ph ph-caret-right qa-arrow"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const overlay = document.getElementById('quick-action-overlay');
+  const closeBtn = document.getElementById('close-quick-action');
+
+  const closeSheet = () => {
+    animateCloseModal(container);
+  };
+
+  overlay?.addEventListener('click', (e) => {
+    if (e.target === overlay) closeSheet();
+  });
+  closeBtn?.addEventListener('click', closeSheet);
+
+  // Bind Actions
+  document.getElementById('qa-add-tx')?.addEventListener('click', () => {
+    animateCloseModal(container, () => {
+      checkVerification(() => {
+        openAddTransactionModal(() => {
+          const path = window.location.pathname || '/dashboard';
+          if (path === '/dashboard' || path === '/transaksi') {
+            import('../router.js').then(m => m.handleRoute());
+          }
+        });
+      });
+    });
+  });
+
+  document.getElementById('qa-scan-receipt')?.addEventListener('click', () => {
+    animateCloseModal(container, () => {
+      checkVerification(() => {
+        import('./scanReceipt.js').then(m => m.openScanReceiptModal());
+      });
+    });
+  });
+
+  document.getElementById('qa-wishlist')?.addEventListener('click', () => {
+    animateCloseModal(container, () => {
+      import('../router.js').then(m => m.navigateTo('/tabungan'));
+    });
+  });
+
+  document.getElementById('qa-calculator')?.addEventListener('click', () => {
+    animateCloseModal(container, () => {
+      import('./calculator.js').then(m => m.openCalculator());
+    });
+  });
+}
+
+

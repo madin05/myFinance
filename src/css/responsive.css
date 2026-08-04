@@ -66,10 +66,23 @@
     display: inline !important;
   }
 
+  /* Sisakan Anggaran, Wishlist, Laporan, dan Bantuan saja pada Mobile Drawer */
+  .sidebar .nav-item[data-route="dashboard"],
+  .sidebar .nav-item[data-route="transaksi"],
+  .sidebar .nav-item[data-route="saldo"],
+  .sidebar .nav-item[data-route="akun"] {
+    display: none !important;
+  }
+
+  /* Posisikan Bantuan sejajar di bawah Laporan (tidak didorong ke paling bawah) */
+  .sidebar .nav-item-bottom {
+    margin-top: 0 !important;
+  }
+
   .main-content,
   .dashboard-container.sidebar-collapsed .main-content {
     margin-left: 0 !important;
-    padding: 1rem;
+    padding: 1rem 1rem calc(105px + env(safe-area-inset-bottom, 0px)) 1rem !important;
     width: 100% !important;
     max-width: 100vw;
   }
@@ -86,19 +99,9 @@
     gap: 0.75rem;
     padding: 1rem;
     margin-bottom: 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    transition: box-shadow 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
-  }
-  
-  .header:not(.scrolled) {
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    transition: none !important;
+    position: relative;
+    top: auto;
+    z-index: 1000;
   }
   
   .header-actions {

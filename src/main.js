@@ -2,7 +2,7 @@ import { store } from './store.js';
 import { auth, onAuthStateChanged, onIdTokenChanged, getRedirectResult, applyActionCode } from './firebase-config.js';
 import { userService } from './services/userService.js';
 import { renderLogin, renderEmailVerificationBanner } from './pages/login.js';
-import { openAddTransactionModal } from './components/modal.js';
+import { openAddTransactionModal, openQuickActionSheet } from './components/modal.js';
 import { openCalculator } from './components/calculator.js';
 import { openScanReceiptModal } from './components/scanReceipt.js';
 import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
@@ -411,7 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initStickyHeader();
   initBottomSheetSwipe();
 
-  // 2. Global FAM Buttons
+  // 2. Global FAM & Bottom Nav Buttons
+  document.getElementById('bnav-fab')?.addEventListener('click', () => {
+    openQuickActionSheet();
+  });
+
   document.getElementById('btn-fam-add-tx')?.addEventListener('click', () => {
     document.getElementById('fam-toggle').checked = false; // Close menu
     checkVerification(() => {
