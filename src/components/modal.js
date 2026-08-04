@@ -3,6 +3,20 @@ import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast, checkVerification } from './notifications.js';
 
+export function animateCloseModal(container, callback) {
+  if (!container) return;
+  const card = container.querySelector('.modal-content, .custom-alert-card, #calc-card, .detail-tx-content');
+  const overlay = container.querySelector('.modal-overlay, .custom-alert-overlay, .detail-tx-overlay');
+
+  if (card) card.classList.add('closing');
+  if (overlay) overlay.classList.add('closing');
+
+  setTimeout(() => {
+    container.innerHTML = '';
+    if (callback) callback();
+  }, 210);
+}
+
 export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData = null) {
   let allowed = false;
   checkVerification(() => { allowed = true; });
@@ -28,19 +42,41 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
     ).join('');
   };
 
+  const getKategoriOptions = () => {
+    const defaultKategori = [
+      { val: 'Makanan & Minuman', label: 'Makanan & Minuman' },
+      { val: 'Transportasi', label: 'Transportasi' },
+      { val: 'Belanja', label: 'Belanja' },
+      { val: 'Tagihan & Utilitas', label: 'Tagihan & Utilitas' },
+      { val: 'Hiburan', label: 'Hiburan' },
+      { val: 'Kesehatan', label: 'Kesehatan' },
+      { val: 'Pendidikan', label: 'Pendidikan' },
+      { val: 'Investasi & Tabungan', label: 'Investasi & Tabungan' },
+      { val: 'Gaji & Pendapatan', label: 'Gaji & Pendapatan' },
+      { val: 'Lain-lain', label: 'Lain-lain' }
+    ];
+
+    const currentVal = isEdit ? txToEdit.kategori : (prefill?.kategori || '');
+
+    return defaultKategori.map(k => 
+      `<option value="${k.val}" ${currentVal === k.val ? 'selected' : ''}>${k.label}</option>`
+    ).join('');
+  };
+
+  const initialType = isEdit ? txToEdit.type : (prefill?.type || 'expense');
+
   container.innerHTML = `
     <div class="modal-overlay" id="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
           <h3>${isEdit ? 'Edit Transaksi' : 'Tambah Transaksi Baru'}</h3>
-          <button class="modal-close" id="btn-close-modal"><i class="ph ph-x"></i></button>
         </div>
-        <form id="form-tambah" novalidate>
+        <form id="form-tambah">
           <div class="form-group">
             <label>Tipe Transaksi</label>
             <select class="form-control" id="tx-type" required>
-              <option value="expense" ${(isEdit && txToEdit.type === 'expense') || (prefill && prefill.type === 'expense') || (!isEdit && !prefill) ? 'selected' : ''}>Pengeluaran</option>
-              <option value="income" ${(isEdit && txToEdit.type === 'income') || (prefill && prefill.type === 'income') ? 'selected' : ''}>Pemasukan</option>
+              <option value="expense" ${initialType === 'expense' ? 'selected' : ''}>Pengeluaran</option>
+              <option value="income" ${initialType === 'income' ? 'selected' : ''}>Pemasukan</option>
             </select>
           </div>
           
@@ -49,34 +85,26 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
             <input type="date" class="form-control" id="tx-date" required value="${isEdit ? txToEdit.tanggal : (prefill?.tanggal || '')}">
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
+          <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
               <label>Kategori</label>
               <select class="form-control" id="tx-kategori" required>
-                <option value="" disabled ${!isEdit && !prefill ? 'selected' : ''}>Pilih Kategori</option>
-                <option value="Makanan & Minuman" ${(isEdit && txToEdit.kategori === 'Makanan & Minuman') || (prefill && prefill.kategori === 'Makanan & Minuman') ? 'selected' : ''}>Makanan & Minuman</option>
-                <option value="Transportasi" ${(isEdit && txToEdit.kategori === 'Transportasi') || (prefill && prefill.kategori === 'Transportasi') ? 'selected' : ''}>Transportasi</option>
-                <option value="Belanja" ${(isEdit && txToEdit.kategori === 'Belanja') || (prefill && prefill.kategori === 'Belanja') ? 'selected' : ''}>Belanja</option>
-                <option value="Gaji" ${(isEdit && txToEdit.kategori === 'Gaji') || (prefill && prefill.kategori === 'Gaji') ? 'selected' : ''}>Gaji</option>
-                <option value="Investasi" ${(isEdit && txToEdit.kategori === 'Investasi') || (prefill && prefill.kategori === 'Investasi') ? 'selected' : ''}>Investasi</option>
-                <option value="Tagihan" ${(isEdit && txToEdit.kategori === 'Tagihan') || (prefill && prefill.kategori === 'Tagihan') ? 'selected' : ''}>Tagihan</option>
-                <option value="Lainnya" ${(isEdit && txToEdit.kategori === 'Lainnya') || (prefill && prefill.kategori === 'Lainnya') ? 'selected' : ''}>Lainnya</option>
+                <option value="" disabled ${!isEdit && !prefill?.kategori ? 'selected' : ''}>Pilih Kategori</option>
+                ${getKategoriOptions()}
               </select>
             </div>
-            <div class="form-group">
+            
+            <div class="form-group" style="flex: 1;">
               <label>Metode</label>
               <select class="form-control" id="tx-metode" required>
-                <option value="" disabled ${!isEdit && !prefill?.metode ? 'selected' : ''}>Pilih Metode</option>
-                <option value="Cash" ${(isEdit && txToEdit.metode === 'Cash') || (prefill && prefill.metode === 'Cash') ? 'selected' : ''}>Cash</option>
-                <option value="E-Wallet" ${(isEdit && txToEdit.metode === 'E-Wallet') || (prefill && prefill.metode === 'E-Wallet') ? 'selected' : ''}>E-Wallet</option>
-                <option value="Bank Transfer" ${(isEdit && txToEdit.metode === 'Bank Transfer') || (prefill && prefill.metode === 'Bank Transfer') ? 'selected' : ''}>Bank Transfer</option>
-                <option value="Kartu Kredit" ${(isEdit && txToEdit.metode === 'Kartu Kredit') || (prefill && prefill.metode === 'Kartu Kredit') ? 'selected' : ''}>Kartu Kredit</option>
+                <option value="" disabled ${!isEdit ? 'selected' : ''}>Pilih Metode</option>
+                ${getMetodeOptions()}
               </select>
             </div>
           </div>
-          
+
           <div class="form-group" id="group-tx-akun" style="display: none;">
-            <label>Pilih Akun / Dompet</label>
+            <label id="label-tx-akun">Pilih Akun / Dompet</label>
             <select class="form-control" id="tx-akun">
               <option value="" disabled selected>Pilih Akun</option>
             </select>
@@ -84,7 +112,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
 
           <div class="form-group">
             <label>Keterangan</label>
-            <input type="text" class="form-control" id="tx-keterangan" placeholder="Keterangan transaksi..." required value="${isEdit ? txToEdit.keterangan : (prefill?.keterangan || '')}">
+            <input type="text" class="form-control" id="tx-keterangan" placeholder="Keterangan transaksi..." required value="${isEdit ? (txToEdit.keterangan || '') : (prefill?.keterangan || '')}">
           </div>
 
           <div class="form-group">
@@ -92,7 +120,10 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
             <input type="text" class="form-control" id="tx-harga" placeholder="Contoh: 100.000,00" inputmode="decimal" required>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-full mt-md">${isEdit ? 'Simpan Perubahan' : 'Simpan Transaksi'}</button>
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-outline" style="flex: 1; justify-content: center;" id="btn-cancel-modal">Batal</button>
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">${isEdit ? 'Simpan Perubahan' : 'Tambah Transaksi'}</button>
+          </div>
         </form>
       </div>
     </div>
@@ -217,10 +248,9 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
     if (isEdit || prefill?.metode) updateAkunOptions();
 
     // Close handlers
-    const closeModal = () => {
-      container.innerHTML = '';
-    };
-    document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+    const closeModal = () => animateCloseModal(container);
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeModal);
     document.getElementById('modal-overlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('modal-overlay')) closeModal();
     });
@@ -345,7 +375,7 @@ export function openConfirmModal(title, message, onConfirm) {
     </div>
   `;
 
-  const close = () => { container.innerHTML = ''; };
+  const close = () => animateCloseModal(container);
 
   document.getElementById('btn-cancel-confirm').addEventListener('click', close);
   document.getElementById('btn-do-confirm').addEventListener('click', () => {
@@ -413,7 +443,6 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
             <i class="ph-fill ph-scales" style="color:var(--primary);"></i>
             Sesuaikan Tampilan Saldo
           </h3>
-          <button class="modal-close" id="btn-close-adjust"><i class="ph ph-x"></i></button>
         </div>
 
         <div style="background:var(--bg-color);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.5rem;">
@@ -464,10 +493,10 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
     </div>
   `;
 
-  const close = () => { container.innerHTML = ''; };
+  const close = () => animateCloseModal(container);
 
-  document.getElementById('btn-close-adjust').addEventListener('click', close);
-  document.getElementById('btn-cancel-adjust').addEventListener('click', close);
+  document.getElementById('btn-close-adjust')?.addEventListener('click', close);
+  document.getElementById('btn-cancel-adjust')?.addEventListener('click', close);
   document.getElementById('adjust-balance-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'adjust-balance-overlay') close();
   });
@@ -579,7 +608,6 @@ export function openEditUsernameModal(currentName, onUpdate) {
       <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
           <h3>Ubah Username</h3>
-          <button class="modal-close" id="btn-close-edit-name"><i class="ph ph-x"></i></button>
         </div>
         <form id="form-edit-name">
           <div class="form-group">
@@ -595,9 +623,9 @@ export function openEditUsernameModal(currentName, onUpdate) {
     </div>
   `;
 
-  const close = () => { container.innerHTML = ''; };
+  const close = () => animateCloseModal(container);
 
-  document.getElementById('btn-close-edit-name').addEventListener('click', close);
+  document.getElementById('btn-close-edit-name')?.addEventListener('click', close);
   document.getElementById('btn-cancel-edit-name').addEventListener('click', close);
   document.getElementById('edit-name-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'edit-name-overlay') close();
@@ -660,7 +688,7 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
     </style>
   `;
 
-  const close = () => { container.innerHTML = ''; };
+  const close = () => animateCloseModal(container);
   document.getElementById('btn-cancel-delete').addEventListener('click', close);
   
   document.getElementById('form-delete-acc').addEventListener('submit', (e) => {
@@ -696,23 +724,25 @@ export function openDetailTransactionModal(tx) {
   else if (lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
 
   container.innerHTML = `
-    <div class="modal-overlay" id="detail-tx-overlay">
-      <div class="modal-content" style="max-width: 440px;">
-        <div class="modal-header">
-          <h3>Detail Transaksi</h3>
-          <button class="modal-close" id="btn-close-detail-tx"><i class="ph ph-x"></i></button>
+    <div class="detail-tx-overlay" id="detail-tx-overlay">
+      <div class="detail-tx-content" id="detail-tx-content">
+        <!-- Pill / Drag Handle Indicator -->
+        <div class="detail-tx-handle"></div>
+
+        <div class="modal-header" style="margin-bottom: 1.25rem; justify-content: center; text-align: center;">
+          <h3 style="font-size: 1.2rem; font-weight: 700;">Detail Transaksi</h3>
         </div>
 
-        <div style="text-align: center; padding: 1.25rem 0 1rem; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
+        <div style="text-align: center; padding: 1.25rem 0 1.25rem; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
           <span style="font-size: 0.75rem; font-weight: 700; color: ${colorClass}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
             ${typeText}
           </span>
-          <h2 style="font-size: 1.75rem; font-weight: 800; color: ${colorClass}; margin: 0.25rem 0 0;">
+          <h2 style="font-size: 1.85rem; font-weight: 800; color: ${colorClass}; margin: 0.25rem 0 0; letter-spacing: -0.02em;">
             ${formattedAmount}
           </h2>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.1rem;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Judul / Keterangan</span>
             <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%; word-break: break-word;">${tx.keterangan || '-'}</span>
@@ -742,18 +772,38 @@ export function openDetailTransactionModal(tx) {
         </div>
 
         <div style="margin-top: 1.75rem; display: flex; gap: 0.75rem;">
-          <button class="btn btn-outline btn-full" id="btn-close-detail-tx-footer">Tutup</button>
+          <button class="btn btn-outline btn-full" id="btn-close-detail-tx-footer" style="height: 46px; border-radius: 14px; font-weight: 600;">Tutup</button>
         </div>
       </div>
     </div>
   `;
 
-  const close = () => { container.innerHTML = ''; };
-  document.getElementById('btn-close-detail-tx')?.addEventListener('click', close);
-  document.getElementById('btn-close-detail-tx-footer')?.addEventListener('click', close);
-  document.getElementById('detail-tx-overlay')?.addEventListener('click', (e) => {
-    if (e.target.id === 'detail-tx-overlay') close();
+  const overlay = document.getElementById('detail-tx-overlay');
+
+  // Slide up animation on open
+  requestAnimationFrame(() => {
+    overlay?.classList.add('active');
   });
+
+  let isClosing = false;
+  const closeModal = () => {
+    if (isClosing) return;
+    isClosing = true;
+    animateCloseModal(container);
+  };
+
+  document.getElementById('btn-close-detail-tx-footer')?.addEventListener('click', closeModal);
+  overlay?.addEventListener('click', (e) => {
+    if (e.target.id === 'detail-tx-overlay') closeModal();
+  });
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      window.removeEventListener('keydown', handleKeyDown);
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
 }
 
 export function openConfirmPasswordModal(onConfirm, onCancel) {
@@ -786,9 +836,7 @@ export function openConfirmPasswordModal(onConfirm, onCancel) {
     </div>
   `;
 
-  const close = () => {
-    container.innerHTML = '';
-  };
+  const close = () => animateCloseModal(container);
 
   const form = document.getElementById('form-confirm-pwd');
   form.onsubmit = (e) => {

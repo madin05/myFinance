@@ -116,7 +116,15 @@ export function openCalculator() {
 
 export function closeCalculator() {
   state.isOpen = false;
-  document.getElementById('calc-card')?.remove();
+  const calcCard = document.getElementById('calc-card');
+  if (calcCard) {
+    calcCard.classList.add('closing');
+    setTimeout(() => {
+      calcCard.remove();
+    }, 210);
+  } else {
+    document.getElementById('calc-card')?.remove();
+  }
   window.removeEventListener('keydown', handleKeyboard);
   window.removeEventListener('paste', handlePaste);
   window.removeEventListener('copy', handleCopy);

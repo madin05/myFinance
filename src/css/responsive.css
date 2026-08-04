@@ -390,13 +390,13 @@
     to { transform: translateY(0); }
   }
 
-  /* Modal & Alert Adjustments for Mobile */
+  /* Modal & Alert Adjustments for Mobile Bottom Sheet */
   .modal-content, 
   .custom-alert-card {
-    padding: 1.5rem !important;
-    width: calc(100% - 2rem) !important;
-    max-width: 340px !important;
-    margin: 1rem;
+    padding: 1rem 1.5rem 2rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
   }
 
   .modal-content h3,

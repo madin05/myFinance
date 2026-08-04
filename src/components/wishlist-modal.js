@@ -2,6 +2,7 @@ import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast } from './notifications.js';
+import { animateCloseModal } from './modal.js';
 
 export function openAddWishlistModal(onSuccess, editData = null) {
   const container = document.getElementById('modal-container');
@@ -13,7 +14,6 @@ export function openAddWishlistModal(onSuccess, editData = null) {
       <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
           <h3>${isEdit ? 'Edit Target Wishlist' : 'Buat Target Wishlist'}</h3>
-          <button class="icon-btn" id="btn-close-wishlist"><i class="ph ph-x"></i></button>
         </div>
         <form id="form-wishlist">
           <div class="form-group">
@@ -62,8 +62,8 @@ export function openAddWishlistModal(onSuccess, editData = null) {
     if (val) e.target.value = new Intl.NumberFormat('id-ID').format(val);
   });
 
-  const close = () => container.innerHTML = '';
-  document.getElementById('btn-close-wishlist').addEventListener('click', close);
+  const close = () => animateCloseModal(container);
+  document.getElementById('btn-close-wishlist')?.addEventListener('click', close);
   document.getElementById('wishlist-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'wishlist-overlay') close();
   });
@@ -121,7 +121,7 @@ export function openAddFundsModal(id, currentName, onSuccess) {
     if (val) e.target.value = new Intl.NumberFormat('id-ID').format(val);
   });
 
-  const close = () => container.innerHTML = '';
+  const close = () => animateCloseModal(container);
   document.getElementById('btn-cancel-fund').addEventListener('click', close);
   
   document.getElementById('btn-save-fund').addEventListener('click', async () => {

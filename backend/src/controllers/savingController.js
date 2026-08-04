@@ -1,54 +1,57 @@
 const prisma = require('../services/db');
+const { withRetry } = require('../services/db');
 
 async function getAuthedUser(req) {
   const { uid, name, email } = req.user || {};
   if (!uid) throw new Error('UID tidak ditemukan dari token');
   const cleanEmail = (email || '').trim().toLowerCase();
 
-  let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-  if (!user && cleanEmail) {
-    user = await prisma.user.findFirst({
-      where: { email: { equals: cleanEmail, mode: 'insensitive' } }
-    });
-    if (user) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { firebaseUid: uid }
-      }).catch(() => null) || user;
-    }
-  }
-  if (!user) {
-    try {
-      const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
-      user = await prisma.user.create({
-        data: { firebaseUid: uid, name: name || 'User', email: safeEmail, currency: 'IDR' }
-      });
-    } catch {
+  return withRetry(async () => {
+    let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+    if (!user && cleanEmail) {
       user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { firebaseUid: uid },
-            ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
-          ]
-        }
+        where: { email: { equals: cleanEmail, mode: 'insensitive' } }
       });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { firebaseUid: uid }
+        }).catch(() => null) || user;
+      }
     }
-  }
-  if (!user) {
-    const err = new Error('User belum terdaftar di Postgres');
-    err.statusCode = 404;
-    throw err;
-  }
-  return user;
+    if (!user) {
+      try {
+        const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
+        user = await prisma.user.create({
+          data: { firebaseUid: uid, name: name || 'User', email: safeEmail, currency: 'IDR' }
+        });
+      } catch {
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { firebaseUid: uid },
+              ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
+            ]
+          }
+        });
+      }
+    }
+    if (!user) {
+      const err = new Error('User belum terdaftar di Postgres');
+      err.statusCode = 404;
+      throw err;
+    }
+    return user;
+  });
 }
 
 exports.getAllSavings = async (req, res) => {
   try {
     const user = await getAuthedUser(req);
-    const savings = await prisma.saving.findMany({
+    const savings = await withRetry(() => prisma.saving.findMany({
       where: { userId: user.id },
       orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }]
-    });
+    }));
     res.json(savings);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });

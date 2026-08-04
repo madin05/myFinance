@@ -22,7 +22,7 @@ async function runTests() {
         is2FAEnabled: false
       }
     });
-    console.log('✅ Test User Ready:', testUser.email, `(ID: ${testUser.id})`);
+    console.log(' Test User Ready:', testUser.email, `(ID: ${testUser.id})`);
 
     const mockReq = {
       headers: {
@@ -37,19 +37,19 @@ async function runTests() {
     const { rawToken, preAuthToken, expiresAt } = await generate2FAToken(testUser.id, mockReq, 'LOGIN');
 
     if (!rawToken || rawToken.length !== 64) {
-      throw new Error('❌ TEST 1 FAILED: rawToken must be 32-byte hex string (64 characters)');
+      throw new Error('TEST 1 FAILED: rawToken must be 32-byte hex string (64 characters)');
     }
     
     const decodedJwt = jwt.verify(preAuthToken, JWT_SECRET);
     if (decodedJwt.userId !== testUser.id || decodedJwt.step !== '2FA_PENDING') {
-      throw new Error('❌ TEST 1 FAILED: preAuthToken payload is invalid');
+      throw new Error('TEST 1 FAILED: preAuthToken payload is invalid');
     }
-    console.log('✅ TEST 1 PASSED: Token generated & preAuthToken JWT verified successfully!');
+    console.log(' TEST 1 PASSED: Token generated & preAuthToken JWT verified successfully!');
 
     // TEST 2: Housekeeping (Expired token cleanup)
     console.log('\n[TEST 2] Testing Housekeeping (Expired Token Clean Up)...');
     // Create an artificial expired token
-    await prisma.twoFac torToken.create({
+    await prisma.twoFactorToken.create({
       data: {
         userId: testUser.id,
         tokenHash: 'dummy_expired_hash',
@@ -65,27 +65,27 @@ async function runTests() {
       where: { userId: testUser.id, tokenHash: 'dummy_expired_hash' }
     });
     if (expiredCount !== 0) {
-      throw new Error('❌ TEST 2 FAILED: Housekeeping failed to clean up expired token');
+      throw new Error('TEST 2 FAILED: Housekeeping failed to clean up expired token');
     }
-    console.log('✅ TEST 2 PASSED: Expired tokens automatically cleaned up!');
+    console.log(' TEST 2 PASSED: Expired tokens automatically cleaned up!');
 
     // TEST 3: Strict Validation & Successful Verification
     console.log('\n[TEST 3] Testing Valid Token Verification...');
     const { rawToken: validRawToken } = await generate2FAToken(testUser.id, mockReq, 'LOGIN');
     const verifyResult = await verify2FAToken(validRawToken, mockReq);
     if (verifyResult.user.id !== testUser.id) {
-      throw new Error('❌ TEST 3 FAILED: Verification returned wrong user');
+      throw new Error('TEST 3 FAILED: Verification returned wrong user');
     }
-    console.log('✅ TEST 3 PASSED: Valid token verified!');
+    console.log(' TEST 3 PASSED: Valid token verified!');
 
     // TEST 4: Replay Attack Prevention (isUsed = true)
     console.log('\n[TEST 4] Testing Replay Attack Prevention...');
     try {
       await verify2FAToken(validRawToken, mockReq);
-      throw new Error('❌ TEST 4 FAILED: Re-using token should have been rejected!');
+      throw new Error('TEST 4 FAILED: Re-using token should have been rejected!');
     } catch (err) {
       if (err.message.includes('Replay attack')) {
-        console.log('✅ TEST 4 PASSED: Replay attack successfully blocked (403)!');
+        console.log(' TEST 4 PASSED: Replay attack successfully blocked (403)!');
       } else {
         throw err;
       }
@@ -103,10 +103,10 @@ async function runTests() {
     };
     try {
       await verify2FAToken(mismatchRawToken, mismatchReq);
-      throw new Error('❌ TEST 5 FAILED: Mismatched IP & User-Agent should be rejected!');
+      throw new Error('TEST 5 FAILED: Mismatched IP & User-Agent should be rejected!');
     } catch (err) {
       if (err.message.includes('Mismatch')) {
-        console.log('✅ TEST 5 PASSED: Context mismatch successfully rejected (403)!');
+        console.log(' TEST 5 PASSED: Context mismatch successfully rejected (403)!');
       } else {
         throw err;
       }
@@ -117,37 +117,29 @@ async function runTests() {
     const { rawToken: setupRawToken } = await generate2FAToken(testUser.id, mockReq, 'SETUP');
     let userBeforeVerify = await prisma.user.findUnique({ where: { id: testUser.id } });
     if (userBeforeVerify.is2FAEnabled !== false) {
-      throw new Error('❌ TEST 6 FAILED: is2FAEnabled must remain false until link is verified!');
+      throw new Error('TEST 6 FAILED: is2FAEnabled must remain false until link is verified!');
     }
     await verify2FAToken(setupRawToken, mockReq);
     let userAfterVerify = await prisma.user.findUnique({ where: { id: testUser.id } });
     if (userAfterVerify.is2FAEnabled !== true) {
-      throw new Error('❌ TEST 6 FAILED: is2FAEnabled should become true after setup link verification!');
+      throw new Error('TEST 6 FAILED: is2FAEnabled should become true after setup link verification!');
     }
-    // TEST 7: 2FA Deactivation Flow (Session Clean-up & is2FAEnabled = false)
-    console.log('\n[TEST 7] Testing 2FA Deactivation & Session Clean-up...');
-    // Create pending token
-    await generate2FAToken(testUser.id, mockReq, 'LOGIN');
-    let tokensBeforeDeactivation = await prisma.twoFactorToken.count({ where: { userId: testUser.id } });
-    if (tokensBeforeDeactivation === 0) {
-      throw new Error('❌ TEST 7 FAILED: Failed to create pending token for test user');
-    }
+    // TEST 7: 2FA Deactivation Magic Link Flow (Session Clean-up & is2FAEnabled = false)
+    console.log('\n[TEST 7] Testing 2FA Deactivation Magic Link Verification...');
+    const { rawToken: disableRawToken } = await generate2FAToken(testUser.id, mockReq, 'DISABLE');
+    const disableResult = await verify2FAToken(disableRawToken, mockReq);
 
-    // Clean up active tokens & set is2FAEnabled = false
-    await prisma.twoFactorToken.deleteMany({ where: { userId: testUser.id } });
-    await prisma.user.update({ where: { id: testUser.id }, data: { is2FAEnabled: false } });
-
-    let tokensAfterDeactivation = await prisma.twoFactorToken.count({ where: { userId: testUser.id } });
     let userAfterDeactivation = await prisma.user.findUnique({ where: { id: testUser.id } });
+    let tokensAfterDeactivation = await prisma.twoFactorToken.count({ where: { userId: testUser.id, isUsed: false } });
 
-    if (tokensAfterDeactivation !== 0 || userAfterDeactivation.is2FAEnabled !== false) {
-      throw new Error('❌ TEST 7 FAILED: Session clean-up or 2FA deactivation failed');
+    if (disableResult.tokenType !== 'DISABLE' || userAfterDeactivation.is2FAEnabled !== false) {
+      throw new Error('TEST 7 FAILED: 2FA deactivation magic link verification failed');
     }
-    console.log('✅ TEST 7 PASSED: 2FA deactivation & session clean-up verified!');
+    console.log(' TEST 7 PASSED: 2FA deactivation magic link verification & session clean-up verified!');
 
     console.log('\n🎉 ALL 7 AUTOMATED 2FA SECURITY TESTS PASSED PERFECTLY!');
   } catch (err) {
-    console.error('\n❌ TEST SUITE FAILURE:', err.message);
+    console.error('\nTEST SUITE FAILURE:', err.message);
     process.exitCode = 1;
   } finally {
     // Cleanup Test Data

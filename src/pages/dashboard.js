@@ -1,47 +1,55 @@
-import { store, formatRupiah, formatDate } from '../store.js';
-import { openAdjustBalanceModal } from '../components/modal.js';
-import { navigateTo } from '../router.js';
-import { initStickyHeader } from '../utils.js';
+import { store, formatRupiah, formatDate } from "../store.js";
+import { openAdjustBalanceModal } from "../components/modal.js";
+import { navigateTo } from "../router.js";
+import { initStickyHeader, escapeHtml } from "../utils.js";
 
 let currentSavingIndex = 0;
 let savingInterval = null;
 
 export function renderDashboard() {
-  const container = document.getElementById('page-content');
+  const container = document.getElementById("page-content");
   if (!container) return;
-  
+
   const stats = store.getStats();
 
   const getBadge = (diff, type) => {
     const isPositive = diff >= 0;
     const absDiff = Math.abs(diff).toFixed(1);
-    const icon = isPositive ? 'ph-caret-up' : 'ph-caret-down';
+    const icon = isPositive ? "ph-caret-up" : "ph-caret-down";
     // Income up = green(up), Income down = red(down)
     // Expense up = red(down), Expense down = green(up)
-    const badgeClass = type === 'income' ? (isPositive ? 'up' : 'down') : (isPositive ? 'down' : 'up');
+    const badgeClass =
+      type === "income"
+        ? isPositive
+          ? "up"
+          : "down"
+        : isPositive
+          ? "down"
+          : "up";
     return `<div class="stat-badge ${badgeClass}"><i class="ph-bold ${icon}"></i> ${absDiff}%</div>`;
   };
-  
+
   // Sortir terbaru: Tanggal desc, lalu ID desc
   const sortedTxs = [...store.transactions].sort((a, b) => {
     const dateDiff = new Date(b.tanggal) - new Date(a.tanggal);
     if (dateDiff !== 0) return dateDiff;
     return (b.id || 0) - (a.id || 0);
   });
-  
-  const topTransactions = sortedTxs.slice(0, 4);
-  const txHtml = topTransactions.map(tx => {
-    const isIncome = tx.type === 'income';
-    const colorClass = isIncome ? 'text-green' : 'text-red';
-    const sign = isIncome ? '+ ' : '- ';
-    
-    let badgeClass = 'badge-blue';
-    const lowerKategori = tx.kategori.toLowerCase();
-    if(lowerKategori.includes('gaji')) badgeClass = 'badge-green';
-    else if(lowerKategori.includes('makan')) badgeClass = 'badge-orange';
-    else if(lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
 
-    return `
+  const topTransactions = sortedTxs.slice(0, 4);
+  const txHtml = topTransactions
+    .map((tx) => {
+      const isIncome = tx.type === "income";
+      const colorClass = isIncome ? "text-green" : "text-red";
+      const sign = isIncome ? "+ " : "- ";
+
+      let badgeClass = "badge-blue";
+      const lowerKategori = tx.kategori.toLowerCase();
+      if (lowerKategori.includes("gaji")) badgeClass = "badge-green";
+      else if (lowerKategori.includes("makan")) badgeClass = "badge-orange";
+      else if (lowerKategori.includes("belanja")) badgeClass = "badge-purple";
+
+      return `
       <tr>
         <td>${formatDate(tx.tanggal)}</td>
         <td><span class="badge-soft ${badgeClass}">${tx.kategori}</span></td>
@@ -50,53 +58,54 @@ export function renderDashboard() {
         <td class="text-right ${colorClass} font-bold">${sign}${formatRupiah(Math.abs(tx.harga))}</td>
       </tr>
     `;
-  }).join('');
+    })
+    .join("");
 
   const getDayPhase = () => {
     const hrs = new Date().getHours();
-    if (hrs >= 5 && hrs < 11) return 'morning';
-    if (hrs >= 11 && hrs < 18) return 'afternoon';
-    if (hrs >= 18 && hrs < 21) return 'evening';
-    return 'night';
+    if (hrs >= 5 && hrs < 11) return "morning";
+    if (hrs >= 11 && hrs < 18) return "afternoon";
+    if (hrs >= 18 && hrs < 21) return "evening";
+    return "night";
   };
 
   const getGreeting = () => {
     const phase = getDayPhase();
-    if (phase === 'morning') return 'Selamat Pagi';
-    if (phase === 'afternoon') {
+    if (phase === "morning") return "Selamat Pagi";
+    if (phase === "afternoon") {
       const hrs = new Date().getHours();
-      return hrs < 15 ? 'Selamat Siang' : 'Selamat Sore';
+      return hrs < 15 ? "Selamat Siang" : "Selamat Sore";
     }
-    return 'Selamat Malam';
+    return "Selamat Malam";
   };
 
   const getFormattedTimeParts = () => {
     const now = new Date();
     let hours = now.getHours();
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
     hours = hours ? hours : 12;
     return {
       time: `${hours}:${minutes}`,
-      ampm
+      ampm,
     };
   };
 
   const getFormattedDayText = () => {
-    const options = { weekday: 'long', month: 'long', day: 'numeric' };
-    const text = new Date().toLocaleDateString('en-US', options);
+    const options = { weekday: "long", month: "long", day: "numeric" };
+    const text = new Date().toLocaleDateString("en-US", options);
     const day = new Date().getDate();
-    let suffix = 'th';
-    if (day === 1 || day === 21 || day === 31) suffix = 'st';
-    else if (day === 2 || day === 22) suffix = 'nd';
-    else if (day === 3 || day === 23) suffix = 'rd';
+    let suffix = "th";
+    if (day === 1 || day === 21 || day === 31) suffix = "st";
+    else if (day === 2 || day === 22) suffix = "nd";
+    else if (day === 3 || day === 23) suffix = "rd";
     return `${text}${suffix}`;
   };
 
   const getWeatherIcon = () => {
     const phase = getDayPhase();
-    if (phase === 'night') {
+    if (phase === "night") {
       return `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="weather-moon-svg">
           <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"></path>
@@ -116,8 +125,8 @@ export function renderDashboard() {
     <!-- Greeting Section -->
     <div class="dashboard-greeting ${getDayPhase()}">
       <div class="greeting-content">
-        <h1 class="greeting-title">${getGreeting()}, <span class="text-primary font-bold">${store.user?.name || 'Tamu'}</span>! 👋</h1>
-        <p class="greeting-subtitle text-muted">Selamat datang kembali. Pantau keuanganmu hari ini yuk!</p>
+        <h1 class="greeting-title">${getGreeting()}, <span class="text-primary font-bold">${store.user?.name || "Tamu"}</span>! 👋</h1>
+        
       </div>
       
       <!-- Unified Weather & Time Block -->
@@ -148,10 +157,10 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="text-green" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-up"></i></div>
-          ${getBadge(stats.incomeDiff, 'income')}
+          ${getBadge(stats.incomeDiff, "income")}
         </div>
         <div class="stat-body">
-          <p class="stat-label">Pemasukan (4 Minggu)</p>
+          <p class="stat-label">Pemasukan bulan ini</p>
           <h2 class="stat-value">${formatRupiah(stats.income)}</h2>
         </div>
         <div class="stat-footer">
@@ -163,10 +172,10 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div class="text-red" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-down"></i></div>
-          ${getBadge(stats.expenseDiff, 'expense')}
+          ${getBadge(stats.expenseDiff, "expense")}
         </div>
         <div class="stat-body">
-          <p class="stat-label">Pengeluaran (4 Minggu)</p>
+          <p class="stat-label">Pengeluaran bulan ini</p>
           <h2 class="stat-value">${formatRupiah(stats.expense)}</h2>
         </div>
         <div class="stat-footer">
@@ -178,18 +187,22 @@ export function renderDashboard() {
       <div class="stat-card">
         <div class="stat-header">
           <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--text-main);"><i class="ph-fill ph-bank" style="font-size: 1.6rem;"></i></div>
-          ${stats.hasAccounts ? `
+          ${
+            stats.hasAccounts
+              ? `
           <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
             <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
           </a>
-          ` : `
+          `
+              : `
           <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
             <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
           </button>
-          `}
+          `
+          }
         </div>
         <div class="stat-body">
-          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : 'Saldo Saat Ini'}</p>
+          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
           <h2 class="stat-value text-main">${formatRupiah(stats.balance)}</h2>
         </div>
         <div class="stat-footer">
@@ -218,7 +231,9 @@ export function renderDashboard() {
               </tr>
             </thead>
             <tbody>
-              ${txHtml || `
+              ${
+                txHtml ||
+                `
                 <tr>
                   <td colspan="5" style="text-align: center; padding: 3rem 1.5rem;">
                     <style>
@@ -232,7 +247,8 @@ export function renderDashboard() {
                     </div>
                   </td>
                 </tr>
-              `}
+              `
+              }
             </tbody>
           </table>
         </div>
@@ -265,28 +281,30 @@ export function renderDashboard() {
   savingInterval = setInterval(updateSavingWidget, 4000);
 
   // Event Listeners
-  document.getElementById('btn-manage-budget').addEventListener('click', () => {
-    navigateTo('/anggaran');
+  document.getElementById("btn-manage-budget").addEventListener("click", () => {
+    navigateTo("/anggaran");
   });
 
-  document.getElementById('btn-go-to-wishlist').addEventListener('click', () => {
-    navigateTo('/tabungan');
-  });
+  document
+    .getElementById("btn-go-to-wishlist")
+    .addEventListener("click", () => {
+      navigateTo("/tabungan");
+    });
 
   // Tombol pensil hanya muncul jika belum ada akun saldo
-  const btnAdjust = document.getElementById('btn-adjust-balance');
+  const btnAdjust = document.getElementById("btn-adjust-balance");
   if (btnAdjust) {
-    btnAdjust.addEventListener('click', () => {
+    btnAdjust.addEventListener("click", () => {
       openAdjustBalanceModal(stats.balance, () => renderDashboard());
     });
   }
 
   // Link ke halaman saldo (SPA navigation)
-  const btnGotoSaldo = document.getElementById('btn-goto-saldo');
+  const btnGotoSaldo = document.getElementById("btn-goto-saldo");
   if (btnGotoSaldo) {
-    btnGotoSaldo.addEventListener('click', (e) => {
+    btnGotoSaldo.addEventListener("click", (e) => {
       e.preventDefault();
-      navigateTo('/saldo');
+      navigateTo("/saldo");
     });
   }
 
@@ -295,7 +313,7 @@ export function renderDashboard() {
 }
 
 function renderBudgetWidget() {
-  const container = document.getElementById('budget-widget-content');
+  const container = document.getElementById("budget-widget-content");
   if (!container) return;
 
   if (store.budgets.length === 0) {
@@ -312,34 +330,39 @@ function renderBudgetWidget() {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  
+
   const spendingByCategory = {};
-  store.transactions.forEach(tx => {
+  store.transactions.forEach((tx) => {
     const d = new Date(tx.tanggal);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear && tx.type === 'expense') {
-      spendingByCategory[tx.kategori] = (spendingByCategory[tx.kategori] || 0) + Math.abs(tx.harga);
+    if (
+      d.getMonth() === currentMonth &&
+      d.getFullYear() === currentYear &&
+      tx.type === "expense"
+    ) {
+      spendingByCategory[tx.kategori] =
+        (spendingByCategory[tx.kategori] || 0) + Math.abs(tx.harga);
     }
   });
 
   // Tampilkan max 3 anggaran
   const topBudgets = store.budgets.slice(0, 3);
-  
-  let html = '';
+
+  let html = "";
   topBudgets.forEach((b, index) => {
     const spent = spendingByCategory[b.category] || 0;
     const percent = b.amount > 0 ? (spent / b.amount) * 100 : 0;
     const roundedPercent = Math.round(percent);
-    
+
     // Tentukan warna progress bar
-    let colorClass = 'bg-green';
-    if (percent > 90) colorClass = 'bg-red';
-    else if (percent > 70) colorClass = 'bg-orange';
+    let colorClass = "bg-green";
+    if (percent > 90) colorClass = "bg-red";
+    else if (percent > 70) colorClass = "bg-orange";
 
     html += `
-      <div class="budget-item ${index > 0 ? 'mt-md' : ''}">
+      <div class="budget-item ${index > 0 ? "mt-md" : ""}">
         <div class="budget-header">
           <span class="budget-name">${b.category}</span>
-          <span class="budget-percent" style="color: ${percent > 90 ? 'var(--red)' : percent > 70 ? 'var(--orange)' : 'var(--text-main)'}">${roundedPercent}%</span>
+          <span class="budget-percent" style="color: ${percent > 90 ? "var(--red)" : percent > 70 ? "var(--orange)" : "var(--text-main)"}">${roundedPercent}%</span>
         </div>
         <div class="progress-bar-container bg-gray-light">
           <div class="progress-bar ${colorClass}" style="width: ${Math.min(percent, 100)}%;"></div>
@@ -352,39 +375,55 @@ function renderBudgetWidget() {
 }
 
 function updateSavingWidget() {
-  const container = document.getElementById('saving-widget-content');
+  const container = document.getElementById("saving-widget-content");
   if (!container) {
     if (savingInterval) clearInterval(savingInterval);
     return;
   }
-  
+
   if (store.savings.length === 0) {
     container.innerHTML = `
-      <p class="text-white-dim mb-lg">Belum ada wishlist. Mari buat target baru!</p>
+      <div style="height: 105px; display: flex; flex-direction: column; justify-content: center;">
+        <p class="text-white-dim mb-0" style="font-size: 0.875rem;">Belum ada wishlist. Mari buat target baru!</p>
+      </div>
     `;
     return;
   }
-  
+
   const saving = store.savings[currentSavingIndex];
   const percent = Math.min((saving.current / saving.target) * 100, 100);
-  
-  container.style.opacity = '0';
-  container.style.transform = 'translateY(10px)';
-  
+
+  container.style.opacity = "0";
+  container.style.transform = "translateY(6px)";
+
   setTimeout(() => {
     container.innerHTML = `
-      <p class="text-white-dim mb-lg">${saving.name}</p>
-      <h2 class="text-white mb-md" style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; font-size: 1.2rem; line-height: 1.2;">
-        ${formatRupiah(saving.current)} 
-        <span class="text-xs text-white-dim font-normal" style="opacity: 0.7; white-space: nowrap;">/ ${formatRupiah(saving.target)}</span>
-      </h2>
-      <div class="progress-bar-container bg-white-dim mb-lg" style="height: 8px; margin-top: 0.5rem;">
-        <div class="progress-bar bg-white" style="width: ${percent}%;"></div>
+      <div style="height: 105px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <p class="text-white-dim" style="font-size: 0.875rem; margin-bottom: 0.25rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 82%;" title="${escapeHtml(saving.name)}">${escapeHtml(saving.name)}</p>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: nowrap;">
+            <h2 class="text-white" style="font-size: clamp(1rem, 2.5vw, 1.25rem); font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${formatRupiah(saving.current)}
+            </h2>
+            <span class="text-xs text-white-dim font-normal" style="opacity: 0.85; white-space: nowrap; flex-shrink: 0;">
+              / ${formatRupiah(saving.target)}
+            </span>
+          </div>
+        </div>
+        <div style="margin-top: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; font-size: 0.75rem;">
+            <span class="text-white-dim" style="opacity: 0.8;">Terkumpul</span>
+            <span class="text-white font-bold">${Math.round(percent)}%</span>
+          </div>
+          <div class="progress-bar-container bg-white-dim" style="height: 7px; margin: 0;">
+            <div class="progress-bar bg-white" style="width: ${percent}%;"></div>
+          </div>
+        </div>
       </div>
     `;
-    container.style.opacity = '1';
-    container.style.transform = 'translateY(0)';
-  }, 300);
-  
+    container.style.opacity = "1";
+    container.style.transform = "translateY(0)";
+  }, 250);
+
   currentSavingIndex = (currentSavingIndex + 1) % store.savings.length;
 }

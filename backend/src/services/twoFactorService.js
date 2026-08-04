@@ -153,11 +153,16 @@ async function verify2FAToken(rawToken, req) {
     }
   });
 
-  // If this was a SETUP token, activate 2FA for the user now
+  // Handle SETUP or DISABLE token types
   if (record.type === 'SETUP') {
     await prisma.user.update({
       where: { id: record.userId },
       data: { is2FAEnabled: true }
+    });
+  } else if (record.type === 'DISABLE') {
+    await prisma.user.update({
+      where: { id: record.userId },
+      data: { is2FAEnabled: false }
     });
   }
 

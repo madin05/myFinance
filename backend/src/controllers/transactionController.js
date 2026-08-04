@@ -1,4 +1,5 @@
 const prisma = require('../services/db');
+const { withRetry } = require('../services/db');
 
 // Helper reusable: ambil user.id dari firebaseUid dengan 1 query
 async function getDbUserId(userPayload) {
@@ -8,51 +9,53 @@ async function getDbUserId(userPayload) {
   const email = (typeof userPayload === 'object' ? userPayload.email : '') || '';
   const cleanEmail = email.trim().toLowerCase();
 
-  let user = await prisma.user.findUnique({
-    where: { firebaseUid: uid },
-    select: { id: true }
-  });
-
-  if (!user && cleanEmail) {
-    user = await prisma.user.findFirst({
-      where: { email: { equals: cleanEmail, mode: 'insensitive' } },
+  return withRetry(async () => {
+    let user = await prisma.user.findUnique({
+      where: { firebaseUid: uid },
       select: { id: true }
     });
-    if (user) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { firebaseUid: uid }
-      }).catch(() => {});
-    }
-  }
 
-  if (!user) {
-    try {
-      const name = typeof userPayload === 'object' ? (userPayload.name || 'User') : 'User';
-      const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
-      user = await prisma.user.create({
-        data: {
-          firebaseUid: uid,
-          name,
-          email: safeEmail,
-          currency: 'IDR'
-        },
-        select: { id: true }
-      });
-    } catch (e) {
+    if (!user && cleanEmail) {
       user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { firebaseUid: uid },
-            ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
-          ]
-        },
+        where: { email: { equals: cleanEmail, mode: 'insensitive' } },
         select: { id: true }
       });
+      if (user) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { firebaseUid: uid }
+        }).catch(() => {});
+      }
     }
-  }
 
-  return user?.id || null;
+    if (!user) {
+      try {
+        const name = typeof userPayload === 'object' ? (userPayload.name || 'User') : 'User';
+        const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
+        user = await prisma.user.create({
+          data: {
+            firebaseUid: uid,
+            name,
+            email: safeEmail,
+            currency: 'IDR'
+          },
+          select: { id: true }
+        });
+      } catch (e) {
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { firebaseUid: uid },
+              ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
+            ]
+          },
+          select: { id: true }
+        });
+      }
+    }
+
+    return user?.id || null;
+  });
 }
 
 exports.getAllTransactions = async (req, res) => {
@@ -60,10 +63,9 @@ exports.getAllTransactions = async (req, res) => {
     const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User belum terdaftar di Postgres' });
 
-    const transactions = await prisma.transaction.findMany({
+    const transactions = await withRetry(() => prisma.transaction.findMany({
       where: { userId },
       orderBy: { date: 'desc' },
-      // Select hanya kolom yang dipakai frontend — kurangi payload hingga 40%
       select: {
         id: true,
         date: true,
@@ -74,7 +76,7 @@ exports.getAllTransactions = async (req, res) => {
         amount: true,
         type: true,
       }
-    });
+    }));
     res.json(transactions);
   } catch (error) {
     console.error('Gagal Ambil Transaksi:', error);
