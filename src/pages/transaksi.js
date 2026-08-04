@@ -27,15 +27,16 @@ export function renderTransaksi() {
 
   container.innerHTML = `
     <div class="transactions-section">
-      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-        <h3>Daftar Transaksi</h3>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          <div style="position: relative;" id="filter-container">
-            <button class="btn filter-btn" id="btn-filter-popover" title="Filter Transaksi">
-              <i class="ph ph-funnel"></i>
-            </button>
-            
-            <div class="filter-popover" id="filter-popover" style="display: none;">
+      <div class="section-header">
+        <div class="section-header-top">
+          <h3>Daftar Transaksi</h3>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <div style="position: relative;" id="filter-container">
+              <button class="btn filter-btn" id="btn-filter-popover" title="Filter Transaksi">
+                <i class="ph ph-funnel"></i>
+              </button>
+              
+              <div class="filter-popover" id="filter-popover" style="display: none;">
               <!-- Tipe Section -->
               <div class="popover-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 Tipe Transaksi
@@ -97,8 +98,9 @@ export function renderTransaksi() {
           <button class="btn btn-primary" id="btn-tambah-page"><i class="ph ph-plus"></i> Tambah</button>
         </div>
       </div>
+    </div>
       
-      <div class="table-container">
+    <div class="table-container">
         <table class="transactions-table">
           <thead>
             <tr>
