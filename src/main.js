@@ -6,7 +6,7 @@ import { openAddTransactionModal } from './components/modal.js';
 import { openCalculator } from './components/calculator.js';
 import { openScanReceiptModal } from './components/scanReceipt.js';
 import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
-import { hideLoading, initStickyHeader } from './utils.js';
+import { hideLoading, initStickyHeader, initBottomSheetSwipe } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
 import { showConfirm, checkVerification } from './components/notifications.js';
@@ -409,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init sticky header global untuk semua halaman
   initStickyHeader();
+  initBottomSheetSwipe();
 
   // 2. Global FAM Buttons
   document.getElementById('btn-fam-add-tx')?.addEventListener('click', () => {

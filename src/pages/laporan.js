@@ -160,13 +160,35 @@ export function renderLaporan() {
 
   container.innerHTML = `
     <div class="section-header" style="margin-bottom: 2rem;">
-      <div class="section-header-top">
-        <div>
-          <h3>Laporan Keuangan</h3>
-          <p class="text-muted text-sm">
-            Periode: <span class="font-bold text-main">${startDate.toLocaleDateString("id-ID")} - ${endDate.toLocaleDateString("id-ID")}</span>
-          </p>
+      <div>
+        <h3>Laporan Keuangan</h3>
+        <p class="text-muted text-sm">
+          Periode: <span class="font-bold text-main">${startDate.toLocaleDateString("id-ID")} - ${endDate.toLocaleDateString("id-ID")}</span>
+        </p>
+      </div>
+
+      <div class="section-header-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div class="filter-tabs" style="display: flex; background: var(--bg-color); padding: 4px; border-radius: 12px; border: 1px solid var(--border);">
+          <button class="tab-btn ${filterPreset === "minggu" ? "active" : ""}" data-preset="minggu">Minggu</button>
+          <button class="tab-btn ${filterPreset === "bulan" ? "active" : ""}" data-preset="bulan">Bulan</button>
+          <button class="tab-btn ${filterPreset === "3bulan" ? "active" : ""}" data-preset="3bulan">3 Bulan</button>
+          <button class="tab-btn ${filterPreset === "tahun" ? "active" : ""}" data-preset="tahun">Tahun</button>
         </div>
+        
+        ${
+          filterPreset === "bulan"
+            ? `
+        <div class="date-preset-nav" style="display: flex; align-items: center; gap: 8px; background: var(--card-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--border);">
+          <button class="icon-btn" id="prev-report" style="width: 32px; height: 32px;"><i class="ph ph-caret-left"></i></button>
+          <span class="font-bold text-xs" style="min-width: 100px; text-align: center;">
+            ${currentReportDate.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
+          </span>
+          <button class="icon-btn" id="next-report" style="width: 32px; height: 32px;"><i class="ph ph-caret-right"></i></button>
+        </div>
+        `
+            : ""
+        }
+
         <div class="download-group">
           <button class="download-main" id="btn-main-download">
             <i class="ph-bold ${selectedFormat === "pdf" ? "ph-file-pdf" : "ph-file-xls"}"></i>
@@ -185,29 +207,6 @@ export function renderLaporan() {
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="section-header-controls" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 0.75rem;">
-        <div class="filter-tabs" style="display: flex; background: var(--bg-color); padding: 4px; border-radius: 12px; border: 1px solid var(--border);">
-          <button class="tab-btn ${filterPreset === "minggu" ? "active" : ""}" data-preset="minggu">Minggu</button>
-          <button class="tab-btn ${filterPreset === "bulan" ? "active" : ""}" data-preset="bulan">Bulan</button>
-          <button class="tab-btn ${filterPreset === "3bulan" ? "active" : ""}" data-preset="3bulan">3 Bulan</button>
-          <button class="tab-btn ${filterPreset === "tahun" ? "active" : ""}" data-preset="tahun">Tahun</button>
-        </div>
-        
-        ${
-          filterPreset === "bulan"
-            ? `
-        <div style="display: flex; align-items: center; gap: 8px; background: var(--card-bg); padding: 4px; border-radius: 12px; border: 1px solid var(--border);">
-          <button class="icon-btn" id="prev-report" style="width: 32px; height: 32px;"><i class="ph ph-caret-left"></i></button>
-          <span class="font-bold text-xs" style="min-width: 100px; text-align: center;">
-            ${currentReportDate.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
-          </span>
-          <button class="icon-btn" id="next-report" style="width: 32px; height: 32px;"><i class="ph ph-caret-right"></i></button>
-        </div>
-        `
-            : ""
-        }
       </div>
     </div>
 

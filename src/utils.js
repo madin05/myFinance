@@ -174,3 +174,110 @@ export function getCategoryIconUrl(kategori, type = null) {
   if (type === 'income') return '/assets/salary.svg';
   return '/assets/shopping.svg';
 }
+
+/**
+ * Mengaktifkan gesture geser ke bawah (swipe-down to dismiss) pada bottom sheet modal di mobile.
+ * Dipanggil secara otomatis via observer saat modal muncul di DOM.
+ */
+export function initBottomSheetSwipe() {
+  if (window.innerWidth > 768) return;
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType !== 1) continue;
+
+        let sheet = null;
+        let overlay = null;
+
+        if (node.classList?.contains('modal-content') || node.classList?.contains('detail-tx-content') || node.classList?.contains('custom-alert-card')) {
+          sheet = node;
+          overlay = node.closest('.modal-overlay, .detail-tx-overlay, .custom-alert-overlay') || node.parentElement;
+        } else {
+          sheet = node.querySelector?.('.modal-content, .detail-tx-content, .custom-alert-card');
+          overlay = node.classList?.contains('modal-overlay') || node.classList?.contains('detail-tx-overlay') || node.classList?.contains('custom-alert-overlay') ? node : node.querySelector?.('.modal-overlay, .detail-tx-overlay, .custom-alert-overlay');
+        }
+
+        if (sheet && !sheet._swipeInit) {
+          sheet._swipeInit = true;
+          attachSwipeDownToSheet(sheet, overlay);
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function attachSwipeDownToSheet(sheet, overlay) {
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+
+  const getCloseBtn = () => {
+    return sheet.querySelector('.modal-close, #close-detail-tx, #close-saldo-modal, #close-anggaran-modal, #close-wishlist-modal, #btn-close-calc') ||
+           overlay?.querySelector('.modal-close, #close-detail-tx, #close-saldo-modal, #close-anggaran-modal, #close-wishlist-modal, #btn-close-calc');
+  };
+
+  const getScrollableEl = () => {
+    return sheet.querySelector('form, div:not(.modal-header)') || sheet;
+  };
+
+  const onTouchStart = (e) => {
+    const scrollEl = getScrollableEl();
+    // Hanya izinkan swipe down jika scroll posisi form berada di paling atas (<= 5px)
+    if (scrollEl.scrollTop > 5) return;
+    
+    const touch = e.touches[0];
+    startY = touch.clientY;
+    currentY = startY;
+    isDragging = true;
+    sheet.style.transition = 'none';
+  };
+
+  const onTouchMove = (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - startY;
+
+    // Tarik ke bawah saja
+    if (deltaY > 0) {
+      currentY = touch.clientY;
+      sheet.style.transform = `translateY(${deltaY}px)`;
+      e.preventDefault();
+    } else {
+      isDragging = false;
+      sheet.style.transform = '';
+    }
+  };
+
+  const onTouchEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    sheet.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+
+    const deltaY = currentY - startY;
+    if (deltaY > 80) {
+      // Ambang batas swipe tercapai: tutup modal!
+      sheet.style.transform = 'translateY(100%)';
+
+      const closeBtn = getCloseBtn();
+      setTimeout(() => {
+        if (closeBtn) {
+          closeBtn.click();
+        } else if (overlay) {
+          overlay.click();
+        } else {
+          sheet.remove();
+        }
+      }, 180);
+    } else {
+      // Kembalikan ke posisi terbuka
+      sheet.style.transform = '';
+    }
+  };
+
+  sheet.addEventListener('touchstart', onTouchStart, { passive: true });
+  sheet.addEventListener('touchmove', onTouchMove, { passive: false });
+  sheet.addEventListener('touchend', onTouchEnd);
+}
