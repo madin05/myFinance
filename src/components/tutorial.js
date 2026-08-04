@@ -4,11 +4,10 @@ import { navigateTo } from '../router.js';
 
 const TUTORIAL_STORAGE_KEY = 'myfinance_tutorial_completed';
 
-
 export const TUTORIAL_TIMING = {
-  ROUTE_CHANGE_DELAY: 120,  // Delay (ms) saat berpindah halaman via router sebelum highlight dirender
-  SYNC_FRAME_DURATION: 400, // Durasi (ms) kuncian loop requestAnimationFrame 60FPS per langkah
-  EXIT_CLEANUP_DELAY: 350,   // Delay (ms) sebelum DOM tutorial dihapus saat selesai/lewati
+  ROUTE_CHANGE_DELAY: 120,
+  SYNC_FRAME_DURATION: 400,
+  EXIT_CLEANUP_DELAY: 350,
 };
 
 const TUTORIAL_STEPS = [
@@ -141,13 +140,14 @@ let overlayEl = null;
 let spotlightEl = null;
 let cardEl = null;
 let keydownHandler = null;
+let activeTargetNode = null;
+let rafPositionId = null;
+
+const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 
 function preventScrollListener(e) {
-  if (e.type === 'keydown') {
-    const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
-    if (scrollKeys.includes(e.key)) {
-      e.preventDefault();
-    }
+  if (e.type === 'keydown' && SCROLL_KEYS.has(e.key)) {
+    e.preventDefault();
   } else if (e.type === 'wheel' || e.type === 'touchmove') {
     e.preventDefault();
   }
@@ -169,22 +169,16 @@ export function startProductTutorial(force = false) {
   const userId = store.user?.uid || 'guest';
   const key = `${TUTORIAL_STORAGE_KEY}_${userId}`;
 
-  if (!force && localStorage.getItem(key)) {
-    return;
-  }
+  if (!force && localStorage.getItem(key)) return;
 
   currentStepIndex = 0;
   createTutorialDOM();
   showStep(0);
 
   keydownHandler = (e) => {
-    if (e.key === 'Escape') {
-      endTutorial(true);
-    } else if (e.key === 'ArrowRight') {
-      nextStep();
-    } else if (e.key === 'ArrowLeft') {
-      prevStep();
-    }
+    if (e.key === 'Escape') endTutorial(true);
+    else if (e.key === 'ArrowRight') nextStep();
+    else if (e.key === 'ArrowLeft') prevStep();
   };
   window.addEventListener('keydown', keydownHandler);
 }
@@ -199,7 +193,6 @@ function createTutorialDOM() {
   window.addEventListener('resize', updateHighlightPosition, { passive: true });
   window.addEventListener('scroll', updateHighlightPosition, { passive: true });
 
-  // Overlay Container with SVG Cutout Mask (z-index: 99998)
   overlayEl = document.createElement('div');
   overlayEl.className = 'tutorial-overlay-container';
   overlayEl.innerHTML = `
@@ -215,30 +208,24 @@ function createTutorialDOM() {
   `;
   document.body.appendChild(overlayEl);
 
-  // Spotlight Soft Purple Halo Aura Ring (z-index: 99999)
   spotlightEl = document.createElement('div');
   spotlightEl.className = 'tutorial-spotlight';
   document.body.appendChild(spotlightEl);
 
-  // Tooltip Dialog Card (z-index: 100000)
   cardEl = document.createElement('div');
   cardEl.className = 'tutorial-card';
   document.body.appendChild(cardEl);
 
   requestAnimationFrame(() => {
-    overlayEl.classList.add('active');
+    overlayEl?.classList.add('active');
   });
 }
 
-let activeTargetNode = null;
-let rafPositionId = null;
-
 function restoreActiveTarget() {
-  document.querySelectorAll('.tutorial-target-active').forEach(el => {
-    el.classList.remove('tutorial-target-active');
-  });
-  activeTargetNode = null;
-
+  if (activeTargetNode) {
+    activeTargetNode.classList.remove('tutorial-target-active');
+    activeTargetNode = null;
+  }
   if (rafPositionId) {
     cancelAnimationFrame(rafPositionId);
     rafPositionId = null;
@@ -251,23 +238,19 @@ function showStep(index) {
     return;
   }
 
-  // 1. Reset / Clean-up state sebelumnya sebelum nempelin style step baru!
   restoreActiveTarget();
-
   currentStepIndex = index;
   const step = TUTORIAL_STEPS[index];
 
-  // Auto-navigate to page if step requires a specific route
   if (step.route && window.location.pathname !== step.route) {
     navigateTo(step.route);
-    setTimeout(() => {
-      renderStepHighlight(index);
-    }, TUTORIAL_TIMING.ROUTE_CHANGE_DELAY);
+    setTimeout(() => { renderStepHighlight(index); }, TUTORIAL_TIMING.ROUTE_CHANGE_DELAY);
     return;
   }
 
   renderStepHighlight(index);
 }
+
 function updateHighlightPosition() {
   if (!activeTargetNode || !overlayEl || !spotlightEl) return;
 
@@ -302,7 +285,6 @@ function updateHighlightPosition() {
     spotBorderRadius = `${rxVal}px`;
   }
 
-  // Update SVG Mask Cutout Hole
   const maskHole = document.getElementById('tutorial-mask-hole');
   if (maskHole) {
     maskHole.setAttribute('x', holeX);
@@ -313,16 +295,12 @@ function updateHighlightPosition() {
     maskHole.setAttribute('ry', rxVal);
   }
 
-  // Update Spotlight Halo Ring position & border-radius
-  if (spotlightEl) {
-    spotlightEl.style.top = `${holeY}px`;
-    spotlightEl.style.left = `${holeX}px`;
-    spotlightEl.style.width = `${holeW}px`;
-    spotlightEl.style.height = `${holeH}px`;
-    spotlightEl.style.borderRadius = spotBorderRadius;
-  }
+  spotlightEl.style.top = `${holeY}px`;
+  spotlightEl.style.left = `${holeX}px`;
+  spotlightEl.style.width = `${holeW}px`;
+  spotlightEl.style.height = `${holeH}px`;
+  spotlightEl.style.borderRadius = spotBorderRadius;
 
-  // Update Tooltip Card position dynamically
   if (cardEl && cardEl.classList.contains('active')) {
     positionCard(rect);
   }
@@ -332,38 +310,22 @@ function renderStepHighlight(index) {
   const step = TUTORIAL_STEPS[index];
   let targetNode = document.querySelector(step.target);
 
-  if (!targetNode && step.fallback) {
-    targetNode = document.querySelector(step.fallback);
-  }
-
-  // Fallback to mobile hamburger if sidebar link is hidden on small screens
-  if (!targetNode && step.target.includes('data-route')) {
-    targetNode = document.querySelector('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
-  }
+  if (!targetNode && step.fallback) targetNode = document.querySelector(step.fallback);
+  if (!targetNode && step.target.includes('data-route')) targetNode = document.querySelector('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
+  if (!targetNode) targetNode = document.querySelector('.main-content, #page-content');
 
   if (!targetNode) {
-    targetNode = document.querySelector('.main-content, #page-content');
-  }
-
-  if (!targetNode) {
-    if (index < TUTORIAL_STEPS.length - 1) {
-      showStep(index + 1);
-    } else {
-      endTutorial(false);
-    }
+    if (index < TUTORIAL_STEPS.length - 1) showStep(index + 1);
+    else endTutorial(false);
     return;
   }
 
   activeTargetNode = targetNode;
   targetNode.classList.add('tutorial-target-active');
-
-  // Scroll target instantly to center so position is settled without smooth-scroll lag
   targetNode.scrollIntoView({ behavior: 'auto', block: 'center' });
 
-  // Render & position Tooltip Card
   renderTooltipCard(index, targetNode.getBoundingClientRect());
 
-  // Immediately position & run 60FPS rAF sync loop across layout settle frames
   updateHighlightPosition();
   const startTime = performance.now();
   function syncLoop(now) {
@@ -404,7 +366,6 @@ function renderTooltipCard(index, targetRect) {
 
     <div class="tutorial-footer">
       ${dotsOrBarHTML}
-
       <div class="tutorial-actions">
         <button class="tutorial-btn tutorial-btn-prev" id="tut-btn-prev" ${index === 0 ? 'disabled' : ''}>
           <i class="ph ph-caret-left"></i> Kembali
@@ -416,7 +377,6 @@ function renderTooltipCard(index, targetRect) {
     </div>
   `;
 
-  // Position Tooltip Card near target without overlap
   positionCard(targetRect);
 
   document.getElementById('tut-btn-skip')?.addEventListener('click', () => endTutorial(true));
@@ -434,13 +394,11 @@ function positionCard(targetRect) {
   const margin = isMobile ? 12 : 18;
 
   let top, left;
-
   const spaceAbove = targetRect.top;
   const spaceBelow = window.innerHeight - targetRect.bottom;
   const spaceLeft = targetRect.left;
   const spaceRight = window.innerWidth - targetRect.right;
 
-  // Smart positioning: Prefer placing card ABOVE when target is in bottom section of viewport
   if (spaceAbove >= cardHeight + margin && (targetRect.top > window.innerHeight * 0.55 || spaceBelow < cardHeight + margin)) {
     top = targetRect.top - cardHeight - margin;
     left = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
@@ -455,27 +413,17 @@ function positionCard(targetRect) {
     left = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
   }
 
-  // Viewport boundary clamping with 16px safe margin
   if (left < margin) left = margin;
-  if (left + cardWidth > window.innerWidth - margin) {
-    left = window.innerWidth - cardWidth - margin;
-  }
+  if (left + cardWidth > window.innerWidth - margin) left = window.innerWidth - cardWidth - margin;
   if (top < margin) top = margin;
-  if (top + cardHeight > window.innerHeight - margin) {
-    top = window.innerHeight - cardHeight - margin;
-  }
+  if (top + cardHeight > window.innerHeight - margin) top = window.innerHeight - cardHeight - margin;
 
   cardEl.style.top = `${top}px`;
   cardEl.style.left = `${left}px`;
 }
 
-function nextStep() {
-  showStep(currentStepIndex + 1);
-}
-
-function prevStep() {
-  showStep(currentStepIndex - 1);
-}
+function nextStep() { showStep(currentStepIndex + 1); }
+function prevStep() { showStep(currentStepIndex - 1); }
 
 function endTutorial(isSkip = false) {
   const userId = store.user?.uid || 'guest';
@@ -490,27 +438,26 @@ function endTutorial(isSkip = false) {
     keydownHandler = null;
   }
 
-  if (cardEl) cardEl.classList.remove('active');
-  if (overlayEl) overlayEl.classList.remove('active');
+  cardEl?.classList.remove('active');
+  overlayEl?.classList.remove('active');
 
-  // Return home to dashboard if user ends on another page
   if (window.location.pathname !== '/dashboard') {
     navigateTo('/dashboard');
   }
 
-  setTimeout(() => {
-    cleanupTutorialDOM();
-  }, TUTORIAL_TIMING.EXIT_CLEANUP_DELAY);
+  setTimeout(() => { cleanupTutorialDOM(); }, TUTORIAL_TIMING.EXIT_CLEANUP_DELAY);
 }
 
 function cleanupTutorialDOM() {
   document.body.classList.remove('tutorial-active');
   document.documentElement.classList.remove('tutorial-active');
   unlockUserScroll();
+  window.removeEventListener('resize', updateHighlightPosition);
+  window.removeEventListener('scroll', updateHighlightPosition);
 
-  if (overlayEl && overlayEl.parentNode) overlayEl.parentNode.removeChild(overlayEl);
-  if (spotlightEl && spotlightEl.parentNode) spotlightEl.parentNode.removeChild(spotlightEl);
-  if (cardEl && cardEl.parentNode) cardEl.parentNode.removeChild(cardEl);
+  if (overlayEl?.parentNode) overlayEl.parentNode.removeChild(overlayEl);
+  if (spotlightEl?.parentNode) spotlightEl.parentNode.removeChild(spotlightEl);
+  if (cardEl?.parentNode) cardEl.parentNode.removeChild(cardEl);
   overlayEl = null;
   spotlightEl = null;
   cardEl = null;

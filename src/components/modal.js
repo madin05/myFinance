@@ -3,75 +3,185 @@ import { showLoading, hideLoading, getCategoryIconUrl } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast, checkVerification } from './notifications.js';
 
-export function animateCloseModal(container, callback) {
-  if (!container) return;
-  const card = container.querySelector('.modal-content, .custom-alert-card, #calc-card, .detail-tx-content');
-  const overlay = container.querySelector('.modal-overlay, .custom-alert-overlay, .detail-tx-overlay');
+// --- SHARED MODAL HELPERS & UTILITIES ---
+function getContainer() {
+  return document.getElementById('modal-container');
+}
 
-  if (card) card.classList.add('closing');
-  if (overlay) overlay.classList.add('closing');
+export function animateCloseModal(container, callback) {
+  const target = container || getContainer();
+  if (!target) return;
+
+  const card = target.querySelector('.modal-content, .custom-alert-card, #calc-card, .detail-tx-content, .quick-action-card');
+  const overlay = target.querySelector('.modal-overlay, .custom-alert-overlay, .detail-tx-overlay');
+
+  if (window.innerWidth <= 768) {
+    if (card) {
+      card.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
+      card.style.transform = 'translateY(100%)';
+    }
+    if (overlay) {
+      overlay.style.transition = 'opacity 0.28s ease';
+      overlay.style.opacity = '0';
+    }
+  } else {
+    if (card) {
+      card.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      card.style.transform = 'scale(0.95)';
+      card.style.opacity = '0';
+    }
+    if (overlay) {
+      overlay.style.transition = 'opacity 0.2s ease';
+      overlay.style.opacity = '0';
+    }
+  }
 
   setTimeout(() => {
-    container.innerHTML = '';
+    target.innerHTML = '';
     if (callback) callback();
-  }, 210);
+  }, 280);
 }
+
+function bindModalEvents(container, overlayId, closeBtnIds = [], onDismiss = null) {
+  const overlay = document.getElementById(overlayId);
+
+  let cleanupTouch = () => {};
+
+  const close = () => {
+    window.removeEventListener('keydown', handleKey);
+    cleanupTouch();
+    animateCloseModal(container, onDismiss);
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Escape') close();
+  };
+
+  window.addEventListener('keydown', handleKey);
+
+  overlay?.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+
+  closeBtnIds.forEach(id => {
+    document.getElementById(id)?.addEventListener('click', close);
+  });
+
+  // Touch Swipe-Down to Dismiss gesture for mobile bottom sheet
+  const sheet = container?.querySelector('.modal-content, .detail-tx-content, .custom-alert-card, .quick-action-card, #calc-card');
+  if (sheet) {
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    const getScrollEl = () => {
+      const el = sheet.querySelector('.modal-body, form');
+      return (el && el.scrollHeight > el.clientHeight + 5) ? el : sheet;
+    };
+
+    const onTouchStart = (e) => {
+      if (window.innerWidth > 768) return;
+      const scrollEl = getScrollEl();
+      if (scrollEl && scrollEl.scrollTop > 5) return;
+
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      isDragging = true;
+      sheet.style.transition = 'none';
+    };
+
+    const onTouchMove = (e) => {
+      if (!isDragging) return;
+      const deltaY = e.touches[0].clientY - startY;
+      if (deltaY > 0) {
+        currentY = e.touches[0].clientY;
+        sheet.style.transform = `translateY(${deltaY}px)`;
+        if (e.cancelable) e.preventDefault();
+      } else {
+        isDragging = false;
+        sheet.style.transform = '';
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      const deltaY = currentY - startY;
+
+      if (deltaY > 70) {
+        close();
+      } else {
+        sheet.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+        sheet.style.transform = '';
+      }
+    };
+
+    sheet.addEventListener('touchstart', onTouchStart, { passive: true });
+    sheet.addEventListener('touchmove', onTouchMove, { passive: false });
+    sheet.addEventListener('touchend', onTouchEnd);
+
+    cleanupTouch = () => {
+      sheet.removeEventListener('touchstart', onTouchStart);
+      sheet.removeEventListener('touchmove', onTouchMove);
+      sheet.removeEventListener('touchend', onTouchEnd);
+    };
+  }
+
+  return close;
+}
+
+export function parseIDRInput(str) {
+  if (!str) return 0;
+  const normalized = String(str).replace(/\./g, '').replace(',', '.');
+  return parseFloat(normalized) || 0;
+}
+
+export function formatIDRInput(str) {
+  if (!str) return '';
+  const parts = String(str).split(',');
+  const intPart = parts[0].replace(/\D/g, '');
+  const intFormatted = intPart ? new Intl.NumberFormat('id-ID').format(parseInt(intPart)) : '';
+  return parts.length > 1 ? intFormatted + ',' + parts[1].replace(/\D/g, '').slice(0, 2) : intFormatted;
+}
+
+
+// --- MODAL IMPLEMENTATIONS ---
 
 export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData = null) {
   let allowed = false;
   checkVerification(() => { allowed = true; });
   if (!allowed) return;
 
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
+  if (!container) return;
 
   const isEdit = !!txToEdit;
-  // Apply prefill (dari hasil scan struk) HANYA jika bukan edit mode
   const prefill = !isEdit && prefillData ? prefillData : null;
-  
+  const initialType = isEdit ? txToEdit.type : (prefill?.type || 'expense');
+
   const getAccountOptions = (selectedVal = '') => {
-    if (store.saldos && store.saldos.length > 0) {
-      return store.saldos.map(s => 
-        `<option value="${s.name}" ${selectedVal === s.name ? 'selected' : ''}>${s.name} (${s.type})</option>`
-      ).join('');
-    }
-    const defaultAccounts = ['Cash', 'BCA', 'Bank Mandiri', 'GoPay', 'OVO', 'DANA', 'ShopeePay'];
-    return defaultAccounts.map(acc => 
-      `<option value="${acc}" ${selectedVal === acc ? 'selected' : ''}>${acc}</option>`
-    ).join('');
+    const list = (store.saldos && store.saldos.length > 0)
+      ? store.saldos.map(s => s.name)
+      : ['Cash', 'BCA', 'Bank Mandiri', 'GoPay', 'OVO', 'DANA', 'ShopeePay'];
+    return list.map(acc => `<option value="${acc}" ${selectedVal === acc ? 'selected' : ''}>${acc}</option>`).join('');
   };
 
   const getMetodeOptions = () => {
     const currentVal = isEdit ? txToEdit.metode : (prefill?.metode || '');
-    return `
-      <option value="Cash" ${currentVal === 'Cash' ? 'selected' : ''}>Cash</option>
-      <option value="E-Wallet" ${currentVal === 'E-Wallet' ? 'selected' : ''}>E-Wallet</option>
-      <option value="Bank Transfer" ${currentVal === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
-      <option value="Kartu Kredit" ${currentVal === 'Kartu Kredit' ? 'selected' : ''}>Kartu Kredit</option>
-    `;
-  };
-
-  const getKategoriOptions = () => {
-    const defaultKategori = [
-      { val: 'Makanan & Minuman', label: 'Makanan & Minuman' },
-      { val: 'Transportasi', label: 'Transportasi' },
-      { val: 'Belanja', label: 'Belanja' },
-      { val: 'Tagihan & Utilitas', label: 'Tagihan & Utilitas' },
-      { val: 'Hiburan', label: 'Hiburan' },
-      { val: 'Kesehatan', label: 'Kesehatan' },
-      { val: 'Pendidikan', label: 'Pendidikan' },
-      { val: 'Investasi & Tabungan', label: 'Investasi & Tabungan' },
-      { val: 'Gaji & Pendapatan', label: 'Gaji & Pendapatan' },
-      { val: 'Lain-lain', label: 'Lain-lain' }
-    ];
-
-    const currentVal = isEdit ? txToEdit.kategori : (prefill?.kategori || '');
-
-    return defaultKategori.map(k => 
-      `<option value="${k.val}" ${currentVal === k.val ? 'selected' : ''}>${k.label}</option>`
+    return ['Cash', 'E-Wallet', 'Bank Transfer', 'Kartu Kredit'].map(m =>
+      `<option value="${m}" ${currentVal === m ? 'selected' : ''}>${m}</option>`
     ).join('');
   };
 
-  const initialType = isEdit ? txToEdit.type : (prefill?.type || 'expense');
+  const getKategoriOptions = () => {
+    const categories = [
+      'Makanan & Minuman', 'Transportasi', 'Belanja', 'Tagihan & Utilitas',
+      'Hiburan', 'Kesehatan', 'Pendidikan', 'Investasi & Tabungan',
+      'Gaji & Pendapatan', 'Lain-lain'
+    ];
+    const currentVal = isEdit ? txToEdit.kategori : (prefill?.kategori || '');
+    return categories.map(k => `<option value="${k}" ${currentVal === k ? 'selected' : ''}>${k}</option>`).join('');
+  };
 
   container.innerHTML = `
     <div class="modal-overlay" id="modal-overlay">
@@ -156,55 +266,28 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
     </div>
   `;
 
-  // Attach event listeners after content is in DOM
+  const closeModal = bindModalEvents(container, 'modal-overlay', ['btn-close-modal', 'btn-cancel-modal']);
+
   setTimeout(() => {
     const hargaInput = document.getElementById('tx-harga');
 
-    // Helper: format input ke gaya Indonesia (100.000,50)
-    const formatIDRInput = (str) => {
-      const parts = str.split(',');
-      const intPart = parts[0].replace(/\D/g, '');
-      const intFormatted = intPart ? new Intl.NumberFormat('id-ID').format(parseInt(intPart)) : '';
-      return parts.length > 1 ? intFormatted + ',' + parts[1].replace(/\D/g, '').slice(0, 2) : intFormatted;
-    };
-
-    // Helper: parse format Indonesia ke float (100.000,50 -> 100000.50)
-    const parseIDRInput = (str) => {
-      if (!str) return 0;
-      const normalized = str.replace(/\./g, '').replace(',', '.');
-      return parseFloat(normalized) || 0;
-    };
-    
-    // Real-time formatting
     hargaInput.addEventListener('input', (e) => {
-      const rawValue = e.target.value;
-      if (!rawValue.endsWith(',')) {
-        e.target.value = formatIDRInput(rawValue);
+      if (!e.target.value.endsWith(',')) {
+        e.target.value = formatIDRInput(e.target.value);
       }
     });
 
-    // Handle initial value formatting for edit mode
     if (isEdit) {
-      const absHarga = Math.abs(txToEdit.harga);
-      hargaInput.value = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(absHarga);
-    } else if (prefill && prefill.harga) {
-      // Prefill dari hasil scan struk
+      hargaInput.value = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(txToEdit.harga));
+    } else if (prefill?.harga) {
       const absHarga = Math.abs(Number(prefill.harga) || 0);
-      if (absHarga > 0) {
-        hargaInput.value = new Intl.NumberFormat('id-ID').format(absHarga);
-      }
+      if (absHarga > 0) hargaInput.value = new Intl.NumberFormat('id-ID').format(absHarga);
     }
 
-    // Set default date to today if not editing dan tidak ada prefill date
     if (!isEdit && !prefill?.tanggal) {
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      document.getElementById('tx-date').value = `${yyyy}-${mm}-${dd}`;
+      document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
     }
 
-    // Handle Akun dropdown logic
     const metodeEl = document.getElementById('tx-metode');
     const akunGroup = document.getElementById('group-tx-akun');
     const akunEl = document.getElementById('tx-akun');
@@ -239,9 +322,8 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
 
     const updateAkunOptions = () => {
       const type = metodeEl.value;
-      
       const oldWrapper = akunEl.nextElementSibling;
-      if (oldWrapper && oldWrapper.classList.contains('custom-select-wrapper')) {
+      if (oldWrapper?.classList.contains('custom-select-wrapper')) {
         oldWrapper.remove();
         akunEl.classList.remove('custom-select-hidden');
       }
@@ -252,11 +334,9 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
         return;
       }
       
-      let targetType = 'Cash';
-      if (type === 'E-Wallet') targetType = 'E-Wallet';
-      else if (type === 'Bank Transfer' || type === 'Kartu Kredit') targetType = 'Bank';
-      
+      const targetType = (type === 'E-Wallet') ? 'E-Wallet' : (type === 'Bank Transfer' || type === 'Kartu Kredit') ? 'Bank' : 'Cash';
       const presetList = presetNames[targetType] || [];
+
       if (presetList.length > 0) {
         akunEl.innerHTML = '<option value="" disabled selected>Pilih Akun</option>' + 
           presetList.map(s => `<option value="${s.name}" data-logo="${s.logo}" ${isEdit && txToEdit.akun === s.name ? 'selected' : ''}>${s.name}</option>`).join('');
@@ -267,14 +347,12 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
         akunEl.required = false;
         akunEl.innerHTML = '<option value="" disabled selected>Pilih Akun</option>';
       }
-      
       initCustomSelects(akunGroup);
     };
 
     metodeEl.addEventListener('change', updateAkunOptions);
     if (isEdit || prefill?.metode) updateAkunOptions();
 
-    // Toggle dynamic view based on transaction type (Pengeluaran/Pemasukan vs Transfer)
     const typeEl = document.getElementById('tx-type');
     const stdGroup = document.getElementById('group-standard-fields');
     const transferGroup = document.getElementById('group-transfer-fields');
@@ -295,10 +373,9 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
         transferFromEl.required = true;
         transferToEl.required = true;
         
-        // Remove existing custom select wrappers if any and re-init
         [transferFromEl, transferToEl].forEach(el => {
           const oldW = el.nextElementSibling;
-          if (oldW && oldW.classList.contains('custom-select-wrapper')) {
+          if (oldW?.classList.contains('custom-select-wrapper')) {
             oldW.remove();
             el.classList.remove('custom-select-hidden');
           }
@@ -316,23 +393,10 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
     };
 
     typeEl.addEventListener('change', handleTypeChange);
-    if (isEdit && txToEdit.type === 'transfer') {
-      handleTypeChange();
-    }
+    if (isEdit && txToEdit.type === 'transfer') handleTypeChange();
 
-    // Close handlers
-    const closeModal = () => animateCloseModal(container);
-    document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
-    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeModal);
-    document.getElementById('modal-overlay').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('modal-overlay')) closeModal();
-    });
-
-    // Submit handler
     document.getElementById('form-tambah').addEventListener('submit', (e) => {
       e.preventDefault();
-
-      // Reset previous error states
       document.querySelectorAll('.form-control, .custom-select-trigger').forEach(el => el.classList.remove('is-invalid'));
 
       let isValid = true;
@@ -378,8 +442,6 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
           return;
         }
 
-        const ketVal = keteranganEl.value.trim() || `Transfer dari ${fromAkun} ke ${toAkun}`;
-
         payload = {
           tanggal: dateEl.value,
           kategori: 'Transfer',
@@ -387,29 +449,23 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
           akun: fromAkun,
           dariAkun: fromAkun,
           keAkun: toAkun,
-          keterangan: ketVal,
+          keterangan: keteranganEl.value.trim() || `Transfer dari ${fromAkun} ke ${toAkun}`,
           harga: Math.abs(hargaVal),
           type: 'transfer'
         };
       } else {
-        const kategoriTrigger = kategoriEl.nextElementSibling?.querySelector('.custom-select-trigger');
         if (!kategoriEl.value) {
-          kategoriTrigger?.classList.add('is-invalid');
+          kategoriEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
           isValid = false;
         }
-
-        const metodeTrigger = metodeEl.nextElementSibling?.querySelector('.custom-select-trigger');
         if (!metodeEl.value) {
-          metodeTrigger?.classList.add('is-invalid');
+          metodeEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
           isValid = false;
         }
-
-        const akunTrigger = akunEl.nextElementSibling?.querySelector('.custom-select-trigger');
         if (akunEl.required && !akunEl.value) {
-          akunTrigger?.classList.add('is-invalid');
+          akunEl.nextElementSibling?.querySelector('.custom-select-trigger')?.classList.add('is-invalid');
           isValid = false;
         }
-
         if (!keteranganEl.value.trim()) {
           keteranganEl.classList.add('is-invalid');
           isValid = false;
@@ -426,32 +482,18 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
           return;
         }
 
-        const date = dateEl.value;
-        const kategori = kategoriEl.value;
-        const metode = metodeEl.value;
-        const akun = akunEl.value || '';
-        const keterangan = keteranganEl.value;
-        let harga = hargaVal;
-        
-        if (type === 'expense') {
-          harga = -Math.abs(harga);
-        } else {
-          harga = Math.abs(harga);
-        }
-
         payload = {
-          tanggal: date,
-          kategori,
-          metode,
-          akun,
-          keterangan,
-          harga,
+          tanggal: dateEl.value,
+          kategori: kategoriEl.value,
+          metode: metodeEl.value,
+          akun: akunEl.value || '',
+          keterangan: keteranganEl.value.trim(),
+          harga: (type === 'expense') ? -Math.abs(hargaVal) : Math.abs(hargaVal),
           type
         };
       }
 
       showLoading();
-      
       setTimeout(() => {
         if (isEdit) {
           store.updateTransaction(txToEdit.id, payload);
@@ -464,7 +506,7 @@ export function openAddTransactionModal(onSuccess, txToEdit = null, prefillData 
         hideLoading();
         closeModal();
         if (onSuccess) onSuccess();
-      }, 1000);
+      }, 800);
     });
 
     initCustomSelects(document.getElementById('form-tambah'));
@@ -476,9 +518,9 @@ export function openConfirmModal(title, message, onConfirm) {
   checkVerification(() => { allowed = true; });
   if (!allowed) return;
 
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
+  if (!container) return;
 
-  
   container.innerHTML = `
     <div class="modal-overlay" id="confirm-overlay" style="align-items: center;">
       <div class="modal-content" style="max-width: 420px; text-align: left; padding: 2.25rem;">
@@ -495,49 +537,16 @@ export function openConfirmModal(title, message, onConfirm) {
     </div>
   `;
 
-  const close = () => animateCloseModal(container);
+  const closeModal = bindModalEvents(container, 'confirm-overlay', ['btn-cancel-confirm']);
 
-  document.getElementById('btn-cancel-confirm').addEventListener('click', close);
   document.getElementById('btn-do-confirm').addEventListener('click', () => {
-    close();
+    closeModal();
     showLoading();
     setTimeout(() => {
       onConfirm();
       hideLoading();
-    }, 1000);
+    }, 800);
   });
-  document.getElementById('confirm-overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'confirm-overlay') close();
-  });
-
-  // Handle Enter to confirm
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      const confirmBtn = document.getElementById('btn-do-confirm');
-      if (confirmBtn) confirmBtn.click();
-      window.removeEventListener('keydown', handleKeyDown);
-    } else if (e.key === 'Escape') {
-      close();
-      window.removeEventListener('keydown', handleKeyDown);
-    }
-  };
-  
-  // Wrap close function to also remove listener
-  const originalClose = close;
-  const safeClose = () => {
-    window.removeEventListener('keydown', handleKeyDown);
-    originalClose();
-  };
-  
-  // Update event listeners to use safeClose
-  document.getElementById('btn-cancel-confirm').removeEventListener('click', close);
-  document.getElementById('btn-cancel-confirm').addEventListener('click', safeClose);
-  
-  document.getElementById('confirm-overlay').removeEventListener('click', close);
-  document.getElementById('confirm-overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'confirm-overlay') safeClose();
-  });
-  window.addEventListener('keydown', handleKeyDown);
 }
 
 export function openAdjustBalanceModal(currentBalance, onSuccess) {
@@ -545,12 +554,11 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
   checkVerification(() => { allowed = true; });
   if (!allowed) return;
 
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
+  if (!container) return;
 
-  // Ambil offset yang sudah tersimpan sebelumnya (jika ada)
   const existingOffset = Number(store.user?.balanceOffset || 0);
-  const displayedBalance = currentBalance; // sudah include offset dari getStats()
-
+  const displayedBalance = currentBalance;
   const formattedBalance = new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', minimumFractionDigits: 2
   }).format(displayedBalance);
@@ -577,27 +585,11 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
           <div class="form-group">
             <label style="font-weight:700;">Saldo Riilmu Sekarang (Rp)</label>
             <div style="position: relative; width: 100%;">
-              <input 
-                type="text" 
-                class="form-control" 
-                id="input-real-balance" 
-                placeholder="Contoh: 598.334,82" 
-                inputmode="decimal"
-                autocomplete="off"
-                required
-                style="padding-right: 40px;"
-              >
-              <button 
-                type="button" 
-                id="btn-clear-balance" 
-                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.25rem; padding: 0; transition: color 0.2s;"
-                onmouseenter="this.style.color='var(--red)'"
-                onmouseleave="this.style.color='var(--text-muted)'"
-              >
+              <input type="text" class="form-control" id="input-real-balance" placeholder="Contoh: 598.334,82" inputmode="decimal" autocomplete="off" required style="padding-right: 40px;">
+              <button type="button" id="btn-clear-balance" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.25rem; padding: 0;">
                 <i class="ph ph-x-circle"></i>
               </button>
             </div>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;">Gunakan <strong>koma</strong> untuk desimal. Contoh: <code style="background:var(--bg-color);padding:1px 5px;border-radius:4px;">598.334,82</code></p>
           </div>
 
           <div id="adjust-preview" style="display:none;border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;"></div>
@@ -613,13 +605,7 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
     </div>
   `;
 
-  const close = () => animateCloseModal(container);
-
-  document.getElementById('btn-close-adjust')?.addEventListener('click', close);
-  document.getElementById('btn-cancel-adjust')?.addEventListener('click', close);
-  document.getElementById('adjust-balance-overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'adjust-balance-overlay') close();
-  });
+  const closeModal = bindModalEvents(container, 'adjust-balance-overlay', ['btn-close-adjust', 'btn-cancel-adjust']);
 
   const input = document.getElementById('input-real-balance');
   const preview = document.getElementById('adjust-preview');
@@ -636,39 +622,19 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
     };
   }
 
-  // Helper: parse "598.334,82" → 598334.82
-  const parseIDR = (str) => {
-    if (!str) return 0;
-    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-  };
-
-  // Helper: format input real-time
-  const formatIDRInput = (str) => {
-    const parts = str.split(',');
-    const intPart = parts[0].replace(/\D/g, '');
-    const intFormatted = intPart ? new Intl.NumberFormat('id-ID').format(parseInt(intPart)) : '';
-    return parts.length > 1 ? intFormatted + ',' + parts[1].replace(/\D/g, '').slice(0, 2) : intFormatted;
-  };
-
-  // Real-time preview
   input.addEventListener('input', (e) => {
     const rawValue = e.target.value;
-    if (clearBtn) {
-      clearBtn.style.display = rawValue ? 'flex' : 'none';
-    }
-    if (!rawValue.endsWith(',')) {
-      e.target.value = formatIDRInput(rawValue);
-    }
+    if (clearBtn) clearBtn.style.display = rawValue ? 'flex' : 'none';
+    if (!rawValue.endsWith(',')) e.target.value = formatIDRInput(rawValue);
 
-    const realBalance = parseIDR(e.target.value);
+    const realBalance = parseIDRInput(e.target.value);
     const diff = realBalance - displayedBalance;
 
     if (e.target.value && diff !== 0) {
       const isDeficit = diff < 0;
-      const absDiff = Math.abs(diff);
       const formattedDiff = new Intl.NumberFormat('id-ID', {
         style: 'currency', currency: 'IDR', minimumFractionDigits: 2
-      }).format(absDiff);
+      }).format(Math.abs(diff));
 
       preview.style.display = 'block';
       preview.style.background = isDeficit ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)';
@@ -686,9 +652,6 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
         </div>
       `;
       submitBtn.disabled = false;
-    } else if (e.target.value && diff === 0) {
-      preview.style.display = 'none';
-      submitBtn.disabled = true;
     } else {
       preview.style.display = 'none';
       submitBtn.disabled = true;
@@ -697,15 +660,13 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
 
   document.getElementById('form-adjust-balance').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const realBalance = parseIDR(input.value);
-    // Hitung offset baru: selisih dari raw balance (tanpa offset sebelumnya) ke saldo riil
+    const realBalance = parseIDRInput(input.value);
     const rawBalance = currentBalance - existingOffset;
     const newOffset = realBalance - rawBalance;
 
-    close();
+    closeModal();
     showLoading();
     try {
-      // Simpan ke profile user (lokal + backend), tidak bikin transaksi
       store.user.balanceOffset = newOffset;
       store.save();
       await store.updateProfile({ balanceOffset: newOffset });
@@ -719,10 +680,10 @@ export function openAdjustBalanceModal(currentBalance, onSuccess) {
   setTimeout(() => { input.focus(); }, 100);
 }
 
-
 export function openEditUsernameModal(currentName, onUpdate) {
-  const container = document.getElementById('modal-container');
-  
+  const container = getContainer();
+  if (!container) return;
+
   container.innerHTML = `
     <div class="modal-overlay" id="edit-name-overlay">
       <div class="modal-content" style="max-width: 400px;">
@@ -743,40 +704,33 @@ export function openEditUsernameModal(currentName, onUpdate) {
     </div>
   `;
 
-  const close = () => animateCloseModal(container);
+  const closeModal = bindModalEvents(container, 'edit-name-overlay', ['btn-close-edit-name', 'btn-cancel-edit-name']);
 
-  document.getElementById('btn-close-edit-name')?.addEventListener('click', close);
-  document.getElementById('btn-cancel-edit-name').addEventListener('click', close);
-  document.getElementById('edit-name-overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'edit-name-overlay') close();
-  });
-
-  document.getElementById('form-edit-name').addEventListener('submit', async (e) => {
+  document.getElementById('form-edit-name').addEventListener('submit', (e) => {
     e.preventDefault();
     const newName = document.getElementById('new-username').value.trim();
-    if (newName && newName !== currentName) {
-      close();
+    closeModal();
+    if (newName && newName !== currentName && onUpdate) {
       onUpdate(newName);
-    } else {
-      close();
     }
   });
 
-// Focus input
   setTimeout(() => {
-    document.getElementById('new-username').focus();
-    document.getElementById('new-username').select();
-  }, 0);
+    const input = document.getElementById('new-username');
+    input?.focus();
+    input?.select();
+  }, 50);
 }
 
 export function openDeleteAccountModal(authProvider, onConfirm) {
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
+  if (!container) return;
+
   const isGoogle = authProvider === 'google.com';
 
   container.innerHTML = `
     <div class="custom-alert-overlay" id="delete-acc-overlay">
       <div class="custom-alert-card" style="text-align: center; position: relative;">
-        <!-- Theme-aware Warning Illustration -->
         <div style="margin: 0 auto 1.25rem; display: flex; justify-content: center; align-items: center;">
           <img src="/assets/warning_delete_light.svg" class="delete-warning-img-light" alt="Peringatan Hapus Akun" style="width: 180px; height: auto; max-height: 180px; object-fit: contain;" />
           <img src="/assets/warning_delete_dark.svg" class="delete-warning-img-dark" alt="Peringatan Hapus Akun" style="width: 180px; height: auto; max-height: 180px; object-fit: contain;" />
@@ -808,9 +762,8 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
     </style>
   `;
 
-  const close = () => animateCloseModal(container);
-  document.getElementById('btn-cancel-delete').addEventListener('click', close);
-  
+  const closeModal = bindModalEvents(container, 'delete-acc-overlay', ['btn-cancel-delete']);
+
   document.getElementById('form-delete-acc').addEventListener('submit', (e) => {
     e.preventDefault();
     const val = document.getElementById('delete-verify-input').value;
@@ -820,22 +773,21 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
       return;
     }
     
-    close();
-    onConfirm(isGoogle ? null : val); // if local, return password
+    closeModal();
+    if (onConfirm) onConfirm(isGoogle ? null : val);
   });
   
-  setTimeout(() => document.getElementById('delete-verify-input').focus(), 50);
+  setTimeout(() => document.getElementById('delete-verify-input')?.focus(), 50);
 }
 
 export function openDetailTransactionModal(tx) {
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
   if (!tx || !container) return;
 
   const isIncome = tx.type === 'income';
   const colorClass = isIncome ? 'var(--green)' : 'var(--red)';
-  const sign = isIncome ? '+' : '-';
   const typeText = isIncome ? 'Pemasukan' : 'Pengeluaran';
-  const formattedAmount = `${sign} ${formatRupiah(Math.abs(tx.harga))}`;
+  const formattedAmount = `${isIncome ? '+' : '-'} ${formatRupiah(Math.abs(tx.harga))}`;
 
   let badgeClass = 'badge-blue';
   const lowerKategori = (tx.kategori || '').toLowerCase();
@@ -846,14 +798,13 @@ export function openDetailTransactionModal(tx) {
   container.innerHTML = `
     <div class="detail-tx-overlay" id="detail-tx-overlay">
       <div class="detail-tx-content" id="detail-tx-content">
-        <!-- Pill / Drag Handle Indicator -->
         <div class="detail-tx-handle"></div>
 
         <div class="modal-header" style="margin-bottom: 1.25rem; justify-content: center; text-align: center;">
           <h3 style="font-size: 1.2rem; font-weight: 700;">Detail Transaksi</h3>
         </div>
 
-        <div style="text-align: center; padding: 1.25rem 0 1.25rem; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
+        <div style="text-align: center; padding: 1.25rem 0; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
           <span style="font-size: 0.75rem; font-weight: 700; color: ${colorClass}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
             ${typeText}
           </span>
@@ -898,36 +849,14 @@ export function openDetailTransactionModal(tx) {
     </div>
   `;
 
-  const overlay = document.getElementById('detail-tx-overlay');
-
-  // Slide up animation on open
+  const closeModal = bindModalEvents(container, 'detail-tx-overlay', ['btn-close-detail-tx-footer']);
   requestAnimationFrame(() => {
-    overlay?.classList.add('active');
+    document.getElementById('detail-tx-overlay')?.classList.add('active');
   });
-
-  let isClosing = false;
-  const closeModal = () => {
-    if (isClosing) return;
-    isClosing = true;
-    animateCloseModal(container);
-  };
-
-  document.getElementById('btn-close-detail-tx-footer')?.addEventListener('click', closeModal);
-  overlay?.addEventListener('click', (e) => {
-    if (e.target.id === 'detail-tx-overlay') closeModal();
-  });
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      window.removeEventListener('keydown', handleKeyDown);
-    }
-  };
-  window.addEventListener('keydown', handleKeyDown);
 }
 
 export function openConfirmPasswordModal(onConfirm, onCancel) {
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
   if (!container) return;
 
   container.innerHTML = `
@@ -956,32 +885,19 @@ export function openConfirmPasswordModal(onConfirm, onCancel) {
     </div>
   `;
 
-  const close = () => animateCloseModal(container);
+  const closeModal = bindModalEvents(container, 'pwd-confirm-overlay', ['btn-cancel-pwd'], onCancel);
 
-  const form = document.getElementById('form-confirm-pwd');
-  form.onsubmit = (e) => {
+  document.getElementById('form-confirm-pwd').onsubmit = (e) => {
     e.preventDefault();
     const pwd = document.getElementById('input-confirm-pwd').value.trim();
     if (!pwd) return;
-    close();
+    closeModal();
     if (onConfirm) onConfirm(pwd);
-  };
-
-  document.getElementById('btn-cancel-pwd').onclick = () => {
-    close();
-    if (onCancel) onCancel();
-  };
-
-  document.getElementById('pwd-confirm-overlay').onclick = (e) => {
-    if (e.target.id === 'pwd-confirm-overlay') {
-      close();
-      if (onCancel) onCancel();
-    }
   };
 }
 
 export function openQuickActionSheet() {
-  const container = document.getElementById('modal-container');
+  const container = getContainer();
   if (!container) return;
 
   container.innerHTML = `
@@ -993,42 +909,26 @@ export function openQuickActionSheet() {
         </div>
         <div class="quick-action-grid">
           <div class="quick-action-item" role="button" tabindex="0" id="qa-add-tx">
-            <div class="qa-icon">
-              <i class="ph-fill ph-receipt"></i>
-            </div>
-            <div class="qa-info">
-              <h4>Tambah Transaksi</h4>
-            </div>
+            <div class="qa-icon"><i class="ph-fill ph-receipt"></i></div>
+            <div class="qa-info"><h4>Tambah Transaksi</h4></div>
             <i class="ph ph-caret-right qa-arrow"></i>
           </div>
 
           <div class="quick-action-item" role="button" tabindex="0" id="qa-scan-receipt">
-            <div class="qa-icon">
-              <i class="ph-fill ph-scan"></i>
-            </div>
-            <div class="qa-info">
-              <h4>Scan Struk (OCR)</h4>
-            </div>
+            <div class="qa-icon"><i class="ph-fill ph-scan"></i></div>
+            <div class="qa-info"><h4>Scan Struk (OCR)</h4></div>
             <i class="ph ph-caret-right qa-arrow"></i>
           </div>
 
           <div class="quick-action-item" role="button" tabindex="0" id="qa-wishlist">
-            <div class="qa-icon">
-              <i class="ph-fill ph-heart"></i>
-            </div>
-            <div class="qa-info">
-              <h4>Wishlist & Tabungan</h4>
-            </div>
+            <div class="qa-icon"><i class="ph-fill ph-heart"></i></div>
+            <div class="qa-info"><h4>Wishlist &amp; Tabungan</h4></div>
             <i class="ph ph-caret-right qa-arrow"></i>
           </div>
 
           <div class="quick-action-item" role="button" tabindex="0" id="qa-calculator">
-            <div class="qa-icon">
-              <i class="ph-fill ph-calculator"></i>
-            </div>
-            <div class="qa-info">
-              <h4>Kalkulator Finansial</h4>
-            </div>
+            <div class="qa-icon"><i class="ph-fill ph-calculator"></i></div>
+            <div class="qa-info"><h4>Kalkulator Finansial</h4></div>
             <i class="ph ph-caret-right qa-arrow"></i>
           </div>
         </div>
@@ -1036,19 +936,8 @@ export function openQuickActionSheet() {
     </div>
   `;
 
-  const overlay = document.getElementById('quick-action-overlay');
-  const closeBtn = document.getElementById('close-quick-action');
+  const closeModal = bindModalEvents(container, 'quick-action-overlay', ['close-quick-action']);
 
-  const closeSheet = () => {
-    animateCloseModal(container);
-  };
-
-  overlay?.addEventListener('click', (e) => {
-    if (e.target === overlay) closeSheet();
-  });
-  closeBtn?.addEventListener('click', closeSheet);
-
-  // Bind Actions
   document.getElementById('qa-add-tx')?.addEventListener('click', () => {
     animateCloseModal(container, () => {
       checkVerification(() => {
@@ -1082,5 +971,3 @@ export function openQuickActionSheet() {
     });
   });
 }
-
-
