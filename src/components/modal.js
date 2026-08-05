@@ -15,6 +15,11 @@ export function animateCloseModal(container, callback) {
   const card = target.querySelector('.modal-content, .custom-alert-card, #calc-card, .detail-tx-content, .quick-action-card');
   const overlay = target.querySelector('.modal-overlay, .custom-alert-overlay, .detail-tx-overlay');
 
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.classList.add('closing');
+  }
+
   if (window.innerWidth <= 768) {
     if (card) {
       card.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
@@ -42,8 +47,14 @@ export function animateCloseModal(container, callback) {
   }, 280);
 }
 
-function bindModalEvents(container, overlayId, closeBtnIds = [], onDismiss = null) {
+export function bindModalEvents(container, overlayId, closeBtnIds = [], onDismiss = null) {
   const overlay = document.getElementById(overlayId);
+
+  if (overlay) {
+    requestAnimationFrame(() => {
+      overlay.classList.add('active');
+    });
+  }
 
   let cleanupTouch = () => {};
 
@@ -75,7 +86,7 @@ function bindModalEvents(container, overlayId, closeBtnIds = [], onDismiss = nul
     let isDragging = false;
 
     const getScrollEl = () => {
-      const el = sheet.querySelector('.modal-body, form');
+      const el = sheet.querySelector('.modal-body, form, .detail-tx-body');
       return (el && el.scrollHeight > el.clientHeight + 5) ? el : sheet;
     };
 
@@ -109,7 +120,15 @@ function bindModalEvents(container, overlayId, closeBtnIds = [], onDismiss = nul
       const deltaY = currentY - startY;
 
       if (deltaY > 70) {
-        close();
+        sheet.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+        sheet.style.transform = 'translateY(100%)';
+        if (overlay) {
+          overlay.style.transition = 'opacity 0.25s ease';
+          overlay.style.opacity = '0';
+        }
+        setTimeout(() => {
+          close();
+        }, 250);
       } else {
         sheet.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
         sheet.style.transform = '';
@@ -522,16 +541,20 @@ export function openConfirmModal(title, message, onConfirm) {
   if (!container) return;
 
   container.innerHTML = `
-    <div class="modal-overlay" id="confirm-overlay" style="align-items: center;">
-      <div class="modal-content" style="max-width: 420px; text-align: left; padding: 2.25rem;">
-        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; font-size: 1.25rem; color: var(--text-main);">
-          <i class="ph-fill ph-question" style="font-size: 1.5rem;"></i>
-          ${title}
-        </h3>
-        <p class="text-muted" style="margin-bottom: 2.5rem; font-size: 0.95rem; line-height: 1.5;">${message}</p>
-        <div style="display: flex; gap: 1rem;">
-          <button class="btn btn-outline" style="flex: 1; justify-content: center;" id="btn-cancel-confirm">Batal</button>
-          <button class="btn btn-primary" style="flex: 1; justify-content: center;" id="btn-do-confirm">Ya, Hapus</button>
+    <div class="modal-overlay" id="confirm-overlay">
+      <div class="modal-content" style="max-width: 420px; text-align: left;">
+        <div class="modal-header" style="justify-content: flex-start;">
+          <h3 style="display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: 700; color: var(--text-main); margin: 0 !important;">
+            <i class="ph-fill ph-question" style="font-size: 1.4rem;"></i>
+            ${title}
+          </h3>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted" style="margin-bottom: 2rem; font-size: 0.92rem; line-height: 1.5;">${message}</p>
+          <div style="display: flex; gap: 0.75rem;">
+            <button class="btn btn-outline" style="flex: 1; justify-content: center; height: 46px; border-radius: 12px; font-weight: 600;" id="btn-cancel-confirm">Batal</button>
+            <button class="btn btn-primary" style="flex: 1; justify-content: center; height: 46px; border-radius: 12px; font-weight: 600; background: var(--red); border-color: var(--red); color: white;" id="btn-do-confirm">Ya, Hapus</button>
+          </div>
         </div>
       </div>
     </div>
@@ -729,27 +752,31 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
   const isGoogle = authProvider === 'google.com';
 
   container.innerHTML = `
-    <div class="custom-alert-overlay" id="delete-acc-overlay">
-      <div class="custom-alert-card" style="text-align: center; position: relative;">
-        <div style="margin: 0 auto 1.25rem; display: flex; justify-content: center; align-items: center;">
-          <img src="/assets/warning_delete_light.svg" class="delete-warning-img-light" alt="Peringatan Hapus Akun" style="width: 180px; height: auto; max-height: 180px; object-fit: contain;" />
-          <img src="/assets/warning_delete_dark.svg" class="delete-warning-img-dark" alt="Peringatan Hapus Akun" style="width: 180px; height: auto; max-height: 180px; object-fit: contain;" />
+    <div class="modal-overlay" id="delete-acc-overlay">
+      <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3 style="color: var(--red); font-size: 1.15rem; margin: 0;">Hapus Akun &amp; Data Permanen</h3>
         </div>
+        <div class="modal-body" style="padding: 1.25rem 1.5rem 1.5rem;">
+          <div style="margin: 0 auto 1.25rem; display: flex; justify-content: center; align-items: center;">
+            <img src="/assets/warning_delete_light.svg" class="delete-warning-img-light" alt="Peringatan Hapus Akun" style="width: 160px; height: auto; max-height: 160px; object-fit: contain;" />
+            <img src="/assets/warning_delete_dark.svg" class="delete-warning-img-dark" alt="Peringatan Hapus Akun" style="width: 160px; height: auto; max-height: 160px; object-fit: contain;" />
+          </div>
 
-        <h3 style="color: var(--red); font-size: 1.25rem; margin-bottom: 0.5rem;">Hapus Akun &amp; Data Permanen?</h3>
-        <p style="margin-bottom: 1.5rem; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6;">Tindakan ini tidak dapat dibatalkan. Semua transaksi, anggaran, dan wishlist Anda akan terhapus selamanya.</p>
-        
-        <form id="form-delete-acc" style="text-align: left;">
-          <div class="form-group" style="margin-bottom: 1.25rem;">
-            <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block;">${isGoogle ? 'Ketik "HAPUS" untuk konfirmasi' : 'Masukkan Password Anda'}</label>
-            <input type="${isGoogle ? 'text' : 'password'}" class="form-control" id="delete-verify-input" required autocomplete="off" placeholder="${isGoogle ? 'HAPUS' : 'Password...'}" style="height: 44px; border-radius: 10px;">
-          </div>
+          <p style="margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; text-align: center;">Tindakan ini tidak dapat dibatalkan. Semua transaksi, anggaran, dan wishlist Anda akan terhapus selamanya.</p>
           
-          <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
-            <button type="button" class="btn btn-outline" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 600;" id="btn-cancel-delete">Batal</button>
-            <button type="submit" class="btn btn-primary" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 600; background: var(--red); border-color: var(--red); color: white;">Hapus Permanen</button>
-          </div>
-        </form>
+          <form id="form-delete-acc" style="text-align: left;">
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; display: block;">${isGoogle ? 'Ketik "HAPUS" untuk konfirmasi' : 'Masukkan Password Anda'}</label>
+              <input type="${isGoogle ? 'text' : 'password'}" class="form-control" id="delete-verify-input" required autocomplete="off" placeholder="${isGoogle ? 'HAPUS' : 'Password...'}" style="height: 44px; border-radius: 10px;">
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+              <button type="button" class="btn btn-outline" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 600;" id="btn-cancel-delete">Batal</button>
+              <button type="submit" class="btn btn-primary" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 600; background: var(--red); border-color: var(--red); color: white;">Hapus Permanen</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
     <style>
@@ -762,7 +789,10 @@ export function openDeleteAccountModal(authProvider, onConfirm) {
     </style>
   `;
 
-  const closeModal = bindModalEvents(container, 'delete-acc-overlay', ['btn-cancel-delete']);
+  const closeModal = bindModalEvents(container, 'delete-acc-overlay', ['btn-cancel-delete', 'btn-close-delete-x']);
+  requestAnimationFrame(() => {
+    document.getElementById('delete-acc-overlay')?.classList.add('active');
+  });
 
   document.getElementById('form-delete-acc').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -800,50 +830,55 @@ export function openDetailTransactionModal(tx) {
       <div class="detail-tx-content" id="detail-tx-content">
         <div class="detail-tx-handle"></div>
 
-        <div class="modal-header" style="margin-bottom: 1.25rem; justify-content: center; text-align: center;">
+        <div class="modal-header" style="margin-bottom: 0; justify-content: center; text-align: center;">
           <h3 style="font-size: 1.2rem; font-weight: 700;">Detail Transaksi</h3>
         </div>
 
-        <div style="text-align: center; padding: 1.25rem 0; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
-          <span style="font-size: 0.75rem; font-weight: 700; color: ${colorClass}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
-            ${typeText}
-          </span>
-          <h2 style="font-size: 1.85rem; font-weight: 800; color: ${colorClass}; margin: 0.25rem 0 0; letter-spacing: -0.02em;">
-            ${formattedAmount}
-          </h2>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 1.1rem;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Judul / Keterangan</span>
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%; word-break: break-word;">${tx.keterangan || '-'}</span>
+        <div class="detail-tx-body">
+          <div style="text-align: center; padding: 1rem 0 1.25rem; border-bottom: 1px dashed var(--border); margin-bottom: 1.25rem;">
+            <div class="detail-tx-icon-wrapper">
+              <img src="${getCategoryIconUrl(tx.kategori, tx.type)}" alt="${tx.kategori || ''}" class="detail-tx-icon" />
+            </div>
+            <span style="font-size: 0.75rem; font-weight: 700; color: ${colorClass}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
+              ${typeText}
+            </span>
+            <h2 style="font-size: 1.85rem; font-weight: 800; color: ${colorClass}; margin: 0.25rem 0 0; letter-spacing: -0.02em;">
+              ${formattedAmount}
+            </h2>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Tanggal</span>
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${formatDate(tx.tanggal)}</span>
+          <div style="display: flex; flex-direction: column; gap: 1.1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Judul / Keterangan</span>
+              <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main); text-align: right; max-width: 60%; word-break: break-word;">${tx.keterangan || '-'}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Tanggal</span>
+              <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${formatDate(tx.tanggal)}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Kategori</span>
+              <span class="badge-soft ${badgeClass}" style="font-size: 0.78rem;"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori || 'Umum'}</span></span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Metode Pembayaran</span>
+              <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${tx.metode || '-'}</span>
+            </div>
+
+            ${tx.akun ? `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Akun / Dompet</span>
+              <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${tx.akun}</span>
+            </div>
+            ` : ''}
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Kategori</span>
-            <span class="badge-soft ${badgeClass}" style="font-size: 0.78rem;"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori || 'Umum'}</span></span>
+          <div style="margin-top: 1.75rem; display: flex; gap: 0.75rem;">
+            <button class="btn btn-outline btn-full" id="btn-close-detail-tx-footer" style="height: 46px; border-radius: 14px; font-weight: 600;">Tutup</button>
           </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Metode Pembayaran</span>
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${tx.metode || '-'}</span>
-          </div>
-
-          ${tx.akun ? `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Akun / Dompet</span>
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-main);">${tx.akun}</span>
-          </div>
-          ` : ''}
-        </div>
-
-        <div style="margin-top: 1.75rem; display: flex; gap: 0.75rem;">
-          <button class="btn btn-outline btn-full" id="btn-close-detail-tx-footer" style="height: 46px; border-radius: 14px; font-weight: 600;">Tutup</button>
         </div>
       </div>
     </div>
@@ -905,7 +940,6 @@ export function openQuickActionSheet() {
       <div class="modal-content quick-action-card" id="quick-action-card">
         <div class="quick-action-header">
           <h3>Pilih Aksi Cepat</h3>
-          <button type="button" class="modal-close" id="close-quick-action"><i class="ph ph-x"></i></button>
         </div>
         <div class="quick-action-grid">
           <div class="quick-action-item" role="button" tabindex="0" id="qa-add-tx">

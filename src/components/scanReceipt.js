@@ -4,7 +4,7 @@
 
 import { store } from '../store.js';
 import { showToast } from './notifications.js';
-import { openAddTransactionModal } from './modal.js';
+import { openAddTransactionModal, bindModalEvents } from './modal.js';
 
 const MAX_DIMENSION = 1280;     // Resize max sisi panjang (px)
 const JPEG_QUALITY = 0.7;        // Kualitas JPEG (0-1)
@@ -69,8 +69,7 @@ export function openScanReceiptModal() {
     <div class="modal-overlay" id="scan-modal-overlay">
       <div class="modal-content" style="max-width: 480px;">
         <div class="modal-header">
-          <h3><i class="ph ph-receipt" style="margin-right: 6px;"></i> Scan Struk Belanja</h3>
-          <button class="modal-close" id="btn-close-scan-modal"><i class="ph ph-x"></i></button>
+          <h3 style="margin: 0;"><i class="ph ph-receipt" style="margin-right: 6px;"></i> Scan Struk Belanja</h3>
         </div>
 
         <div id="scan-step-pick">
@@ -140,9 +139,7 @@ export function openScanReceiptModal() {
     stepLoading.style.display = step === 'loading' ? 'block' : 'none';
   };
 
-  const closeModal = () => {
-    container.innerHTML = '';
-  };
+  let closeModal;
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -206,10 +203,6 @@ export function openScanReceiptModal() {
     }
   });
 
-  container.querySelector('#btn-close-scan-modal').addEventListener('click', closeModal);
-  container.querySelector('#scan-modal-overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'scan-modal-overlay') closeModal();
-  });
-
+  closeModal = bindModalEvents(container, 'scan-modal-overlay', []);
   showStep('pick');
 }

@@ -203,7 +203,7 @@ function attachSwipeDownToSheet(sheet, overlay) {
   };
 
   const getScrollableEl = () => {
-    const el = sheet.querySelector('.modal-body, form');
+    const el = sheet.querySelector('.modal-body, form, .detail-tx-body');
     return (el && el.scrollHeight > el.clientHeight + 5) ? el : sheet;
   };
 

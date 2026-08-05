@@ -3,6 +3,7 @@ import { showLoading, hideLoading } from '../utils.js';
 import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
+import { animateCloseModal, bindModalEvents } from '../components/modal.js';
 
 let currentViewDate = new Date();
 
@@ -126,40 +127,34 @@ export function renderAnggaran() {
         <div class="modal-overlay" id="budget-modal-overlay">
           <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
-              <h3>${isEdit ? 'Ubah Jatah Bulanan' : 'Setel Jatah Bulanan'}</h3>
-              <button class="modal-close" id="close-budget-modal"><i class="ph ph-x"></i></button>
+              <h3 style="margin: 0;">${isEdit ? 'Ubah Jatah Bulanan' : 'Setel Jatah Bulanan'}</h3>
             </div>
-            <form id="form-set-budget" style="padding-top: 1rem;">
-              <div class="form-group">
-                <label>Pilih Kategori</label>
-                <select class="form-control" id="budget-category" ${isEdit ? 'disabled' : ''} required>
-                  ${categories.map(c => `<option value="${c}" ${c === existingCategory ? 'selected' : ''}>${c}</option>`).join('')}
-                </select>
-              </div>
-              <div class="form-group" style="margin-top: 1.5rem;">
-                <label>Target Nominal (Rp)</label>
-                <input type="text" class="form-control" id="budget-amount" placeholder="Contoh: 1.000.000" value="${existingAmount ? new Intl.NumberFormat('id-ID').format(existingAmount) : ''}" required>
-              </div>
-              <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Update Anggaran' : 'Simpan Anggaran'}</button>
-            </form>
+            <div class="modal-body">
+              <form id="form-set-budget">
+                <div class="form-group">
+                  <label>Pilih Kategori</label>
+                  <select class="form-control" id="budget-category" ${isEdit ? 'disabled' : ''} required>
+                    ${categories.map(c => `<option value="${c}" ${c === existingCategory ? 'selected' : ''}>${c}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="form-group" style="margin-top: 1.25rem;">
+                  <label>Target Nominal (Rp)</label>
+                  <input type="text" class="form-control" id="budget-amount" placeholder="Contoh: 1.000.000" value="${existingAmount ? new Intl.NumberFormat('id-ID').format(existingAmount) : ''}" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Update Anggaran' : 'Simpan Anggaran'}</button>
+              </form>
+            </div>
           </div>
         </div>
       `;
 
       initCustomSelects(modalContainer);
+      const closeBudgetModal = bindModalEvents(modalContainer, 'budget-modal-overlay', []);
 
       const amountInput = document.getElementById('budget-amount');
       amountInput.oninput = (e) => {
         let val = e.target.value.replace(/\D/g, '');
         if (val) e.target.value = new Intl.NumberFormat('id-ID').format(val);
-      };
-
-      document.getElementById('close-budget-modal').onclick = () => modalContainer.innerHTML = '';
-      
-      document.getElementById('budget-modal-overlay').onclick = (e) => {
-        if (e.target.id === 'budget-modal-overlay') {
-          modalContainer.innerHTML = '';
-        }
       };
       
       document.getElementById('form-set-budget').onsubmit = async (e) => {
@@ -170,7 +165,7 @@ export function renderAnggaran() {
         showLoading();
         await store.updateBudget(category, amount, periodKey);
         hideLoading();
-        modalContainer.innerHTML = '';
+        closeBudgetModal();
         showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, 'success');
         renderAnggaran();
       };
