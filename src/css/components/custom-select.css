@@ -61,14 +61,42 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.03);
   z-index: 2000;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(-8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 250px;
   overflow-y: auto;
+}
+
+[data-theme="dark"] .custom-options {
+  box-shadow: 0 10px 26px -4px rgba(0, 0, 0, 0.25), 0 2px 8px -2px rgba(0, 0, 0, 0.15);
+}
+
+/* Speech Bubble / Callout Arrow Pointer */
+.custom-select-wrapper::before {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  right: 18px;
+  width: 9px;
+  height: 9px;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  transform: rotate(45deg);
+  z-index: 2001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.custom-select-wrapper.open::before {
+  opacity: 1;
+  visibility: visible;
 }
 
 .custom-select-wrapper.open .custom-options {

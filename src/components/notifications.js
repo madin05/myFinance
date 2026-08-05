@@ -114,9 +114,23 @@ export const showToast = (message, type = 'success', duration = 3000) => {
   };
 };
 
+const animateCloseAlert = (overlay, resolveValue, resolve) => {
+  if (!overlay) return;
+  overlay.classList.remove('active');
+  overlay.classList.add('closing');
+  const card = overlay.querySelector('.custom-alert-card');
+  if (card && window.innerWidth <= 768) {
+    card.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+    card.style.transform = 'translateY(100%)';
+  }
+  setTimeout(() => {
+    overlay.remove();
+    if (resolve) resolve(resolveValue);
+  }, 250);
+};
+
 export const showAlert = (title, message, type = 'info') => {
   return new Promise((resolve) => {
-    // Remove existing alert overlay to prevent duplicate stacking
     document.querySelectorAll('.custom-alert-overlay').forEach(el => el.remove());
 
     const overlay = document.createElement('div');
@@ -137,14 +151,71 @@ export const showAlert = (title, message, type = 'info') => {
     `;
 
     document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('active'));
 
-    // Bind event directly to button inside this overlay
+    let isResolved = false;
+    const close = () => {
+      if (isResolved) return;
+      isResolved = true;
+      window.removeEventListener('keydown', handleKey);
+      animateCloseAlert(overlay, undefined, resolve);
+    };
+
+    const handleKey = (e) => {
+      if (e.key === 'Escape' || e.key === 'Enter') close();
+    };
+
+    window.addEventListener('keydown', handleKey);
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close();
+    };
+
     const okBtn = overlay.querySelector('button');
-    if (okBtn) {
-      okBtn.onclick = () => {
-        overlay.remove();
-        resolve();
+    if (okBtn) okBtn.onclick = close;
+
+    const card = overlay.querySelector('.custom-alert-card');
+    if (card) {
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+
+      const onTouchStart = (e) => {
+        if (window.innerWidth > 768) return;
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isDragging = true;
+        card.style.transition = 'none';
       };
+
+      const onTouchMove = (e) => {
+        if (!isDragging) return;
+        const deltaY = e.touches[0].clientY - startY;
+        if (deltaY > 0) {
+          currentY = e.touches[0].clientY;
+          card.style.transform = `translateY(${deltaY}px)`;
+          if (e.cancelable) e.preventDefault();
+        } else {
+          isDragging = false;
+          card.style.transform = '';
+        }
+      };
+
+      const onTouchEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        const deltaY = currentY - startY;
+        if (deltaY > 70) {
+          close();
+        } else {
+          card.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+          card.style.transform = '';
+        }
+      };
+
+      card.addEventListener('touchstart', onTouchStart, { passive: true });
+      card.addEventListener('touchmove', onTouchMove, { passive: false });
+      card.addEventListener('touchend', onTouchEnd);
     }
   });
 };
@@ -169,16 +240,75 @@ export const showConfirm = (title, message) => {
     `;
 
     document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('active'));
 
-    document.getElementById('btn-confirm-cancel').onclick = () => {
-      overlay.remove();
-      resolve(false);
+    let isResolved = false;
+    const close = (result) => {
+      if (isResolved) return;
+      isResolved = true;
+      window.removeEventListener('keydown', handleKey);
+      animateCloseAlert(overlay, result, resolve);
     };
 
-    document.getElementById('btn-confirm-yes').onclick = () => {
-      overlay.remove();
-      resolve(true);
+    const handleKey = (e) => {
+      if (e.key === 'Escape') close(false);
     };
+
+    window.addEventListener('keydown', handleKey);
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close(false);
+    };
+
+    const cancelBtn = overlay.querySelector('#btn-confirm-cancel');
+    if (cancelBtn) cancelBtn.onclick = () => close(false);
+
+    const yesBtn = overlay.querySelector('#btn-confirm-yes');
+    if (yesBtn) yesBtn.onclick = () => close(true);
+
+    const card = overlay.querySelector('.custom-alert-card');
+    if (card) {
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+
+      const onTouchStart = (e) => {
+        if (window.innerWidth > 768) return;
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isDragging = true;
+        card.style.transition = 'none';
+      };
+
+      const onTouchMove = (e) => {
+        if (!isDragging) return;
+        const deltaY = e.touches[0].clientY - startY;
+        if (deltaY > 0) {
+          currentY = e.touches[0].clientY;
+          card.style.transform = `translateY(${deltaY}px)`;
+          if (e.cancelable) e.preventDefault();
+        } else {
+          isDragging = false;
+          card.style.transform = '';
+        }
+      };
+
+      const onTouchEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        const deltaY = currentY - startY;
+        if (deltaY > 70) {
+          close(false);
+        } else {
+          card.style.transition = 'transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+          card.style.transform = '';
+        }
+      };
+
+      card.addEventListener('touchstart', onTouchStart, { passive: true });
+      card.addEventListener('touchmove', onTouchMove, { passive: false });
+      card.addEventListener('touchend', onTouchEnd);
+    }
   });
 };
 
@@ -215,6 +345,7 @@ export const showVerificationModal = () => {
   `;
 
   document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('active'));
 
   const close = () => overlay.remove();
   document.getElementById('btn-modal-close-verif').onclick = close;
@@ -294,6 +425,7 @@ export const showOptionalVerificationModal = () => {
   `;
 
   document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('active'));
 
   // Sembunyikan banner atas dulu saat pop-up modal ini aktif
   const existingBanner = document.getElementById('email-verify-banner');

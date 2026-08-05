@@ -80,23 +80,27 @@
   padding: 8px 14px !important;
 }
 
+.wishlist-container {
+  margin-top: 1.5rem !important;
+}
+
 /* Goal Card Styling */
 .wishlist-item {
-  padding: 1.5rem;
+  padding: 1.15rem 1.25rem;
   position: relative;
 }
 
 .wishlist-item-header {
   display: flex;
-  gap: 1.25rem;
+  gap: 0.85rem;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.85rem;
 }
 
 .wishlist-item-icon {
-  width: 54px;
-  height: 54px;
-  font-size: 1.5rem;
+  width: 44px;
+  height: 44px;
+  font-size: 1.2rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -110,8 +114,10 @@
 }
 
 .wishlist-item-title {
-  margin: 0;
-  font-size: 1.1rem;
+  margin: 0 0 2px 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -120,18 +126,19 @@
 .wishlist-percent-wrapper {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 0.35rem;
-  margin-top: -0.5rem;
+  margin-bottom: 0.25rem;
+  margin-top: 0;
 }
 
 .wishlist-percent-text {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
   line-height: 1;
 }
 
 .wishlist-progress-container {
-  height: 10px;
-  margin-bottom: 1.25rem;
+  height: 8px;
+  margin-bottom: 0.85rem;
   background-color: var(--border-light);
 }
 
@@ -143,7 +150,8 @@
 
 .wishlist-amount-value {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 0.98rem;
+  font-weight: 700;
 }
 
 .wishlist-kebab-wrapper {

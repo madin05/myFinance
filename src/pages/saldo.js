@@ -3,6 +3,7 @@ import { showLoading, hideLoading } from '../utils.js';
 import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
+import { animateCloseModal, bindModalEvents } from '../components/modal.js';
 
 export function renderSaldo() {
   const container = document.getElementById('page-content');
@@ -299,30 +300,33 @@ export function renderSaldo() {
         <div class="modal-overlay" id="saldo-modal-overlay">
           <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
-              <h3>${isEdit ? 'Ubah Saldo Akun' : 'Tambah Saldo Akun'}</h3>
-              <button class="modal-close" id="close-saldo-modal"><i class="ph ph-x"></i></button>
+              <h3 style="margin: 0;">${isEdit ? 'Ubah Saldo Akun' : 'Tambah Saldo Akun'}</h3>
             </div>
-            <form id="form-saldo" style="padding-top: 1rem;">
-              <div class="form-group" style="margin-bottom: 1.5rem;" id="type-group">
-                <label>Jenis Akun</label>
-                <select class="form-control" id="saldo-type" required>
-                  ${types.map(t => `<option value="${t}" ${t === existingData.type ? 'selected' : ''}>${t}</option>`).join('')}
-                </select>
-              </div>
-              <div class="form-group" style="margin-bottom: 1.5rem;" id="name-group">
-                <label>Nama Akun</label>
-                <select class="form-control" id="saldo-name-select" required></select>
-                <input type="text" class="form-control" id="saldo-name-manual" placeholder="Ketik nama manual..." style="display: none; margin-top: 0.75rem;">
-              </div>
-              <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label>Nominal Saldo (Rp)</label>
-                <input type="text" class="form-control" id="saldo-amount" placeholder="Contoh: 100.000,00" inputmode="decimal" value="${existingData.balance ? new Intl.NumberFormat('id-ID').format(existingData.balance) : ''}" required>
-              </div>
-              <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Simpan Perubahan' : 'Tambahkan Akun'}</button>
-            </form>
+            <div class="modal-body">
+              <form id="form-saldo">
+                <div class="form-group" style="margin-bottom: 1.25rem;" id="type-group">
+                  <label>Jenis Akun</label>
+                  <select class="form-control" id="saldo-type" required>
+                    ${types.map(t => `<option value="${t}" ${t === existingData.type ? 'selected' : ''}>${t}</option>`).join('')}
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.25rem;" id="name-group">
+                  <label>Nama Akun</label>
+                  <select class="form-control" id="saldo-name-select" required></select>
+                  <input type="text" class="form-control" id="saldo-name-manual" placeholder="Ketik nama manual..." style="display: none; margin-top: 0.75rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <label>Nominal Saldo (Rp)</label>
+                  <input type="text" class="form-control" id="saldo-amount" placeholder="Contoh: 100.000,00" inputmode="decimal" value="${existingData.balance ? new Intl.NumberFormat('id-ID').format(existingData.balance) : ''}" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full mt-lg">${isEdit ? 'Simpan Perubahan' : 'Tambahkan Akun'}</button>
+              </form>
+            </div>
           </div>
         </div>
       `;
+
+      const closeSaldoModal = bindModalEvents(modalContainer, 'saldo-modal-overlay', []);
 
       const typeSelect = document.getElementById('saldo-type');
       const nameSelect = document.getElementById('saldo-name-select');
@@ -396,14 +400,6 @@ export function renderSaldo() {
           e.target.value = formatIDRInput(rawValue);
         }
       };
-
-      document.getElementById('close-saldo-modal').onclick = () => modalContainer.innerHTML = '';
-      
-      document.getElementById('saldo-modal-overlay').onclick = (e) => {
-        if (e.target.id === 'saldo-modal-overlay') {
-          modalContainer.innerHTML = '';
-        }
-      };
       
       document.getElementById('form-saldo').onsubmit = (e) => {
         e.preventDefault();
@@ -427,7 +423,7 @@ export function renderSaldo() {
           showToast('Akun berhasil ditambahkan!', 'success');
         }
         hideLoading();
-        modalContainer.innerHTML = '';
+        closeSaldoModal();
         renderSaldo();
       };
     });
