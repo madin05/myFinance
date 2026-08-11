@@ -197,4 +197,217 @@ function validateDate(dateStr) {
   return dateStr;
 }
 
-module.exports = { extractReceiptData };
+module.exports = { 
+  extractReceiptData,
+  parseNaturalLanguageInput,
+  generateFinancialReport
+};
+
+/**
+ * Parse teks natural language dari user untuk mendeteksi Intent (Transaksi vs Wishlist)
+ * @param {string} userText - Teks dari user (misal: "Nabung laptop gaming 15jt" atau "Bensin 50rb cash")
+ * @returns {Promise<object>} parsed JSON intent
+ */
+async function parseNaturalLanguageInput(userText) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    const err = new Error('GEMINI_API_KEY belum di-set di environment variable.');
+    err.statusCode = 500;
+    throw err;
+  }
+
+  const now = new Date();
+  const todayISO = now.toISOString().split('T')[0];
+  const dayName = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][now.getDay()];
+
+  const prompt = `Kamu adalah AI Asisten Keuangan MyFinance Indonesia yang SANGAT jago memahami bahasa Indonesia santai, gaul, typo, dan slang.
+
+KONTEKS:
+- Hari ini: ${dayName}, ${todayISO}
+- Tujuanmu: Menerjemahkan teks bebas user menjadi data terstruktur yang LENGKAP.
+- User bisa mengetik asal-asalan, singkatan, typo, bahasa gaul → kamu HARUS tetap paham.
+
+CONTOH INPUT SANTAI & CARA KAMU MEMAHAMI:
+- "kmaren beli bakso 15rb" → Transaksi, kemarin, Makanan & Minuman, Rp15.000, Cash
+- "tdi pgi bensin pertalite 52k" → Transaksi, hari ini, Transportasi, Rp52.000, Cash
+- "senin lalu gajian 5jt transfer bca" → Transaksi income, Senin lalu, Gaji & Pendapatan, Rp5.000.000, Transfer Bank
+- "3 hari lalu bayar wifi 350rb" → Transaksi, 3 hari lalu, Tagihan & Tagihan, Rp350.000, Cash
+- "tgl 5 beli baju di tokped 200rb" → Transaksi, tanggal 5 bulan ini, Belanja, Rp200.000, E-Wallet
+- "mau nabung laptop gaming 15jt" → Wishlist
+- "ringkasin keuangan 3 bulan" → Summary request
+
+ATURAN TANGGAL (SANGAT PENTING):
+- "hari ini" / "tadi" / "barusan" / "tdi" → ${todayISO}
+- "kemarin" / "kmaren" / "kmrn" / "yesterday" → hitung tanggal kemarin
+- "2 hari lalu" / "3 hari yang lalu" → hitung mundur dari hari ini
+- "senin lalu" / "jumat kemarin" → hitung tanggal hari itu di minggu lalu
+- "minggu lalu" (tanpa sebut hari) → 7 hari lalu
+- "tgl 5" / "tanggal 10" → tanggal tersebut di bulan ini (jika sudah lewat = bulan ini, jika belum = bulan lalu)
+- "awal bulan" → tanggal 1 bulan ini
+- Jika TIDAK ada petunjuk waktu sama sekali → ${todayISO}
+- Format output tanggal WAJIB: YYYY-MM-DD
+
+ATURAN KATEGORI (pilih TEPAT SATU):
+- "Makanan & Minuman" → makan, minum, kopi, bakso, nasi, resto, warung, starbucks, kfc, mcd, goFood
+- "Transportasi" → bensin, solar, pertamax, pertalite, parkir, tol, gojek, grab, angkot, bus, kereta, pesawat
+- "Belanja" → baju, sepatu, tas, tokopedia, shopee, lazada, mall, olshop, skincare
+- "Tagihan & Tagihan" → listrik, air, wifi, pulsa, kuota, token PLN, indihome, iuran, sewa, kos
+- "Gaji & Pendapatan" → gaji, gajian, payroll, thr, bonus, honor, freelance, proyek, dividen, jual
+- "Investasi & Tabungan" → investasi, saham, crypto, reksadana, nabung (tanpa target barang), deposito
+- "Kesehatan" → obat, dokter, apotek, rumah sakit, rs, klinik, gym, vitamin
+- "Pendidikan" → kursus, buku, udemy, kuliah, sekolah, les, pelatihan, seminar
+- "Lain-lain" → yang tidak masuk kategori di atas
+
+ATURAN METODE PEMBAYARAN:
+- "Cash" → tunai, cash, bayar langsung, uang, duit (atau jika tidak disebutkan)
+- "E-Wallet" → gopay, ovo, dana, shopeepay, spay, qris, linkaja, ewallet
+- "Transfer Bank" → transfer, bank, bca, mandiri, bni, bri, bsi, cimb, blu, sea bank, jago
+- "Kartu Kredit/Debit" → kartu kredit, kartu debit, visa, mastercard, cc
+
+ATURAN TIPE:
+- "expense" (pengeluaran) → default, kecuali jelas-jelas income
+- "income" (pemasukan) → gaji, gajian, bonus, thr, terima, dapat uang, jual, profit, omset, honor, freelance
+
+Kembalikan HANYA JSON valid (tanpa markdown wrapper) dengan struktur:
+
+Untuk intent "transaction":
+{
+  "intent": "transaction",
+  "data": {
+    "type": "expense" | "income",
+    "tanggal": "YYYY-MM-DD",
+    "kategori": "<salah satu kategori di atas>",
+    "metode": "Cash" | "E-Wallet" | "Transfer Bank" | "Kartu Kredit/Debit",
+    "keterangan": "<deskripsi bersih dan rapi, capitalize, max 50 karakter>",
+    "harga": <number nominal rupiah tanpa pemisah>
+  }
+}
+
+Untuk intent "wishlist":
+{
+  "intent": "wishlist",
+  "data": {
+    "name": "<nama barang/target, rapi & capitalize>",
+    "target": <number nominal rupiah>,
+    "current": 0,
+    "icon": "ph-star" | "ph-laptop" | "ph-phone" | "ph-car" | "ph-house" | "ph-airplane" | "ph-shopping-bag",
+    "color": "purple" | "blue" | "green" | "orange"
+  }
+}
+
+Untuk intent "summary_request":
+{
+  "intent": "summary_request",
+  "period": "1_week" | "1_month" | "3_months" | "1_year"
+}
+
+Untuk intent "unknown":
+{
+  "intent": "unknown",
+  "message": "<pesan ramah dalam bahasa Indonesia kasual yang membantu user tahu cara pakai, contoh: 'Coba ketik kayak gini: Makan siang 25rb cash 😊'>"
+}
+
+Input User: "${userText.replace(/"/g, '\\"')}"`;
+
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.1,
+      responseMimeType: 'application/json'
+    }
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+  try {
+    const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API Error status ${response.status}`);
+    }
+
+    const json = await response.json();
+    const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) throw new Error('Kosong dari Gemini.');
+
+    return JSON.parse(rawText);
+  } catch (err) {
+    console.warn('[GeminiService] Fallback ke parsing manual untuk input:', userText, err.message);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * Generate analisis & saran finansial berbasis AI sesuai periode waktu tertentu
+ * @param {object} metrics - Data statistik keuangan (income, expense, netBalance, topCategory, periodLabel)
+ * @returns {Promise<object>}
+ */
+async function generateFinancialReport(metrics) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  const prompt = `Kamu adalah Penasihat Keuangan Profesional untuk aplikasi MyFinance.
+Analisis data agregat keuangan pengguna untuk periode: **${metrics.periodLabel}**.
+
+Data Keuangan User:
+- Periode: ${metrics.periodLabel}
+- Total Pemasukan: Rp ${Number(metrics.income).toLocaleString('id-ID')}
+- Total Pengeluaran: Rp ${Number(metrics.expense).toLocaleString('id-ID')}
+- Net Surplus/Defisit: Rp ${Number(metrics.netBalance).toLocaleString('id-ID')}
+- Kategori Pengeluaran Terbesar: ${metrics.topCategory || 'Belum Ada'} (${Number(metrics.topAmount || 0).toLocaleString('id-ID')})
+- Jumlah Transaksi: ${metrics.txCount || 0} transaksi
+
+Tugasmu:
+Kembalikan HANYA JSON valid (tanpa markdown wrapper) dengan struktur:
+{
+  "status": "surplus" | "defisit" | "seimbang",
+  "healthRating": <number 1 - 10>,
+  "headline": "Ringkasan tajam & memotivasi dalam 1 kalimat (max 15 kata)",
+  "insights": [
+    "Poin analisis 1 terkait pengeluaran terbesar & dampaknya",
+    "Poin analisis 2 terkait perbandingan pemasukan vs pengeluaran",
+    "Saran konkret & bisa langsung dieksekusi user (contoh: alokasi ke Wishlist / rem pengeluaran kategori X)"
+  ]
+}`;
+
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.3,
+      responseMimeType: 'application/json'
+    }
+  };
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+  try {
+    const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    if (!response.ok) return null;
+    const json = await response.json();
+    const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) return null;
+
+    return JSON.parse(rawText);
+  } catch (err) {
+    console.error('[GeminiService] Gagal generate report:', err.message);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+

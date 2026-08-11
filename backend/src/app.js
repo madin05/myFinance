@@ -67,6 +67,7 @@ const budgetRoutes = require('./routes/budgetRoutes');
 const savingRoutes = require('./routes/savingRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
@@ -75,5 +76,6 @@ app.use('/api/budgets', budgetRoutes);
 app.use('/api/savings', savingRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/receipts', receiptRoutes);
+app.use('/api/ai', aiRoutes);
 
 module.exports = app;

@@ -247,3 +247,13 @@ export function getAkunSkeleton() {
     </div>
   `;
 }
+
+export function getAiSkeleton() {
+  return `
+    <div class="ai-page-skeleton" style="display: flex; gap: 1.25rem; height: calc(100vh - 140px);">
+      <div class="skeleton" style="width: 280px; height: 100%; border-radius: 20px;"></div>
+      <div class="skeleton" style="flex: 1; height: 100%; border-radius: 20px;"></div>
+    </div>
+  `;
+}
+

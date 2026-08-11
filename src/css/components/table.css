@@ -60,6 +60,15 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* Prevent unwanted line-breaks in structured data columns */
+.transactions-table td:nth-child(1),
+.transactions-table td:nth-child(2),
+.transactions-table td:nth-child(3),
+.transactions-table td:nth-child(5),
+.transactions-table td:nth-child(6) {
+  white-space: nowrap;
+}
+
 .transactions-table th:first-child,
 .transactions-table td:first-child {
   padding-left: 1.5rem;
@@ -79,7 +88,10 @@
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 /* Hide category icon on desktop by default */

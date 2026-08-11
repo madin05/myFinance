@@ -1,6 +1,6 @@
 /* Responsive Adjustments */
 
-@media (max-width: 1200px) {
+@media (max-width: 1280px) {
   .bottom-grid {
     grid-template-columns: 1fr;
   }
