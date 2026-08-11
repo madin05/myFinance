@@ -114,7 +114,7 @@ export function renderAkun() {
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <p class="font-bold text-sm" style="margin: 0;">Autentikasi 2 Faktor (2FA)</p>
-                <p class="text-muted text-xs">Tambah keamanan akunmu, yuk aktifin 2FA!</p>
+                <p class="text-muted text-xs" style="font-size: 0.76rem !important; margin-top: 3px; margin-bottom: 0;">Tambah keamanan akunmu, yuk aktifin 2FA!</p>
               </div>
               <label class="switch">
                 <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? "checked" : ""}>
@@ -125,10 +125,10 @@ export function renderAkun() {
 
           <!-- Danger Zone -->
           <div class="stat-card" style="padding: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.02);">
-            <h4 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
+            <h4 style="margin-bottom: 0.35rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
               Hapus Akun
             </h4>
-            <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Hati-hati, tindakan ini gak bisa dibatalkan. Seluruh data finansialmu bakal dihapus permanen.</p>
+            <p class="text-muted text-xs" style="font-size: 0.76rem !important; margin-bottom: 1.25rem; line-height: 1.45;">Hati-hati, tindakan ini gak bisa dibatalkan. Seluruh data finansialmu bakal dihapus permanen.</p>
             <button class="btn" style="background: var(--red); color: white; width: 100%; border-radius: 12px; height: 48px; font-weight: 600; gap: 10px;" id="btn-delete-account">
               <i class="ph-bold ph-trash"></i>
               Hapus Akun & Data

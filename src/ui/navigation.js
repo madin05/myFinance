@@ -14,13 +14,13 @@ export function initNavigation() {
     document.documentElement.setAttribute('data-theme', safeTheme);
     localStorage.setItem('theme', safeTheme);
     
-    // Sync animated toggle checkbox
-    const toggleInput = document.getElementById('themeToggle');
-    if (toggleInput) {
+    // Sync all animated toggle checkboxes
+    document.querySelectorAll('#themeToggle, #themeToggleDropdown, .themeToggleInput').forEach(toggleInput => {
       toggleInput.checked = safeTheme === 'dark';
-    }
-    // Deactivate auto button when a manual choice is made
-    document.getElementById('btn-theme-auto')?.classList.remove('active');
+    });
+
+    // Deactivate auto buttons when a manual choice is made
+    document.querySelectorAll('#btn-theme-auto, #btn-theme-auto-dropdown').forEach(btn => btn.classList.remove('active'));
   };
 
   // System/Auto: follows device OS preference
@@ -29,9 +29,12 @@ export function initNavigation() {
     const effective = isDark ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', effective);
     localStorage.setItem('theme', 'system');
-    const toggleInput = document.getElementById('themeToggle');
-    if (toggleInput) toggleInput.checked = isDark;
-    document.getElementById('btn-theme-auto')?.classList.add('active');
+    
+    document.querySelectorAll('#themeToggle, #themeToggleDropdown, .themeToggleInput').forEach(toggleInput => {
+      toggleInput.checked = isDark;
+    });
+
+    document.querySelectorAll('#btn-theme-auto, #btn-theme-auto-dropdown').forEach(btn => btn.classList.add('active'));
   };
 
   // React to OS preference changes when in system mode
@@ -74,25 +77,25 @@ export function initNavigation() {
       closeMobileSidebar();
     }
 
-    // Theme Toggle (Animated Checkbox)
-    const themeInput = e.target.closest('#themeToggle');
+    // Theme Toggle (Animated Checkbox & Dropdown Theme Row)
+    const themeInput = e.target.closest('#themeToggle, #themeToggleDropdown, .themeToggleInput');
     if (themeInput) {
       const newTheme = themeInput.checked ? 'dark' : 'light';
-      applyTheme(newTheme); // applyTheme already removes auto-active
+      applyTheme(newTheme);
+    } else {
+      const themeRow = e.target.closest('#dropdown-theme-row');
+      if (themeRow) {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+      }
     }
 
     // Auto / System theme button
-    if (e.target.closest('#btn-theme-auto')) {
+    if (e.target.closest('#btn-theme-auto, #btn-theme-auto-dropdown')) {
       applySystemTheme();
     }
 
-    // Bantuan Sidebar Dropdown Toggle
-    if (e.target.closest('#btn-bantuan-toggle')) {
-      const group = document.getElementById('nav-bantuan-group');
-      if (group) {
-        group.classList.toggle('open');
-      }
-    }
+
 
     // Trigger Product Tutorial from Sidebar
     if (e.target.closest('#btn-sidebar-tutorial')) {

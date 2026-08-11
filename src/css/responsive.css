@@ -82,7 +82,7 @@
   .main-content,
   .dashboard-container.sidebar-collapsed .main-content {
     margin-left: 0 !important;
-    padding: 1rem 1rem calc(105px + env(safe-area-inset-bottom, 0px)) 1rem !important;
+    padding: 1rem 1rem calc(6.5rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
     width: 100% !important;
     max-width: 100vw;
   }
@@ -127,10 +127,32 @@
     display: flex !important;
   }
   
+  .header-actions > .theme-toggle-group {
+    display: none !important;
+  }
+
+  /* On mobile, show theme toggle inside profile dropdown */
+  .profile-dropdown-theme-wrapper.dropdown-item {
+    display: flex !important;
+  }
+  .profile-dropdown-theme-wrapper.dropdown-divider {
+    display: block !important;
+  }
+
   .search-bar {
     width: 100%;
     order: 3;
-    margin-top: 0.5rem;
+    margin-top: 0.35rem;
+    padding: 0.45rem 0.9rem !important;
+  }
+
+  .search-bar input {
+    font-size: 0.82rem !important;
+  }
+
+  .search-bar .search-icon {
+    font-size: 1rem !important;
+    margin-right: 0.5rem !important;
   }
 
   .user-profile img {
@@ -143,7 +165,7 @@
     gap: 0.65rem !important;
   }
 
-  .stats-cards .stat-card:nth-child(3) {
+  .stats-cards .stat-card:nth-child(1) {
     grid-column: 1 / -1;
   }
 
@@ -170,7 +192,7 @@
     text-overflow: ellipsis;
   }
 
-  .stats-cards .stat-card:nth-child(3) .stat-value {
+  .stats-cards .stat-card:nth-child(1) .stat-value {
     font-size: 1.3rem !important;
   }
 
@@ -195,7 +217,7 @@
     .stat-value {
       font-size: 0.95rem !important;
     }
-    .stats-cards .stat-card:nth-child(3) .stat-value {
+    .stats-cards .stat-card:nth-child(1) .stat-value {
       font-size: 1.18rem !important;
     }
     .stat-label {
@@ -447,13 +469,13 @@
 
   .modal-content h3,
   .custom-alert-card h3 {
-    font-size: 1.1rem !important;
+    font-size: 1.05rem !important;
   }
 
   .modal-content p,
   .custom-alert-card p {
-    font-size: 0.85rem !important;
-    margin-bottom: 1.5rem !important;
+    font-size: 0.8rem !important;
+    margin-bottom: 1.25rem !important;
   }
 
   .icon-box {
@@ -622,7 +644,7 @@
 
   /* 1. Dashboard Layout & Cards (Mobile) */
   .main-content {
-    padding: 0.75rem 0.85rem 2.5rem 0.85rem !important;
+    padding: 0.75rem 0.85rem calc(6.5rem + env(safe-area-inset-bottom, 0px)) 0.85rem !important;
   }
 
   .dashboard-container {
@@ -649,7 +671,7 @@
     font-size: 1.05rem !important;
   }
 
-  .stats-cards .stat-card:nth-child(3) .stat-value {
+  .stats-cards .stat-card:nth-child(1) .stat-value {
     font-size: 1.25rem !important;
   }
 

@@ -53,7 +53,7 @@
 
 .modal-header h3,
 .quick-action-header h3 {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   margin: 8px 0 0 0 !important;
 }
 
@@ -68,21 +68,21 @@
 
 .form-group label {
   display: block;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   color: var(--text-main);
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid var(--border);
   background-color: var(--card-bg);
   color: var(--text-main);
   border-radius: var(--radius-md);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   outline: none;
   transition: all 0.2s;
   appearance: none; /* Hide default arrow */
@@ -114,7 +114,8 @@ select.form-control {
 select.form-control option {
   background-color: #18181b;
   color: #f4f4f5;
-  padding: 10px 14px;
+  padding: 8px 12px;
+  font-size: 0.825rem;
 }
 
 .form-control:focus {
@@ -385,7 +386,7 @@ select.form-control option {
     flex: 1 !important;
     overflow-y: auto !important;
     overscroll-behavior: contain !important;
-    padding: 1.25rem 1.5rem 2rem 1.5rem !important;
+    padding: 1.15rem 1.25rem calc(2.25rem + env(safe-area-inset-bottom, 0px)) 1.25rem !important;
     box-sizing: border-box !important;
   }
 
@@ -517,7 +518,7 @@ select.form-control option {
 }
 
 .qa-info h4 {
-  font-size: 0.94rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-main);
   margin: 0;
@@ -529,7 +530,7 @@ select.form-control option {
 }
 
 .qa-info p {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   margin: 3px 0 0 0;
   padding: 0;

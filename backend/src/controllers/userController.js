@@ -1,86 +1,91 @@
 const prisma = require('../services/db');
+const { withRetry } = require('../services/db');
 const bcrypt = require('bcrypt');
 const { sendVerificationEmail } = require('../services/emailService');
 
 exports.syncUser = async (req, res) => {
   try {
     if (!req.user) throw new Error('Token valid tapi data user tidak terbaca');
-    
+
     const { uid, name: fbName, email: fbEmail, picture } = req.user;
-    const { name, email, avatar, password, financialStartDay, currency, balanceOffset } = req.body || {}; 
+    const { name, email, avatar, password, financialStartDay, currency, balanceOffset } = req.body || {};
     const targetEmail = (email || fbEmail || '').trim().toLowerCase();
     const displayName = name || fbName || 'User';
 
     console.log('Syncing user:', targetEmail || uid);
 
-    // Hash password if provided (during registration)
+    // Hash password jika disertakan (saat registrasi)
     let hashedPass = undefined;
     if (password) {
       hashedPass = await bcrypt.hash(password, 10);
     }
 
-    // 1. Cari user berdasarkan firebaseUid
-    let user = await prisma.user.findUnique({
-      where: { firebaseUid: uid }
-    });
-
-    // 2. Jika belum ada berdasarkan firebaseUid, cari berdasarkan email (case-insensitive) untuk relink
-    if (!user && targetEmail) {
-      user = await prisma.user.findFirst({
-        where: { email: { equals: targetEmail, mode: 'insensitive' } }
+    let user = await withRetry(async () => {
+      // 1. Cari user berdasarkan firebaseUid
+      let found = await prisma.user.findUnique({
+        where: { firebaseUid: uid }
       });
-      if (user) {
-        console.log('Relinking existing Postgres user by email:', targetEmail);
-        try {
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: { firebaseUid: uid }
-          });
-        } catch (e) {
-          console.warn('Relink update warning:', e.message);
+
+      // 2. Jika belum ada, cari berdasarkan email untuk relink
+      if (!found && targetEmail) {
+        found = await prisma.user.findFirst({
+          where: { email: { equals: targetEmail, mode: 'insensitive' } }
+        });
+        if (found) {
+          console.log('Relinking existing Postgres user by email:', targetEmail);
+          try {
+            found = await prisma.user.update({
+              where: { id: found.id },
+              data: { firebaseUid: uid }
+            });
+          } catch (e) {
+            console.warn('Relink update warning:', e.message);
+          }
         }
       }
-    }
 
-    // 3. Upsert / update data user jika user sudah ditemukan
-    if (user) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          ...(name && { name }),
-          ...(email && { email: targetEmail }),
-          ...(avatar && { avatar }),
-          ...(currency && { currency }),
-          ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) }),
-          ...(balanceOffset !== undefined && { balanceOffset: parseFloat(balanceOffset) })
-        }
-      });
-    } else {
-      // 4. Buat user baru dengan fallback email unik jika email belum ada
-      const safeEmail = targetEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
-      try {
-        user = await prisma.user.create({
+      // 3. Update data user jika sudah ditemukan
+      if (found) {
+        found = await prisma.user.update({
+          where: { id: found.id },
           data: {
-            firebaseUid: uid,
-            name: displayName,
-            email: safeEmail,
-            avatar: avatar || picture || '',
-            currency: currency || 'IDR',
-            password: hashedPass
+            ...(name && { name }),
+            ...(email && { email: targetEmail }),
+            ...(avatar && { avatar }),
+            ...(currency && { currency }),
+            ...(financialStartDay !== undefined && { financialStartDay: parseInt(financialStartDay) }),
+            ...(balanceOffset !== undefined && { balanceOffset: parseFloat(balanceOffset) })
           }
         });
-      } catch (createErr) {
-        // Safe fallback jika unique constraint race-condition terjadi
-        user = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { firebaseUid: uid },
-              ...(targetEmail ? [{ email: { equals: targetEmail, mode: 'insensitive' } }] : [])
-            ]
-          }
-        });
+      } else {
+        // 4. Buat user baru
+        const safeEmail = targetEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
+        try {
+          found = await prisma.user.create({
+            data: {
+              firebaseUid: uid,
+              name: displayName,
+              email: safeEmail,
+              avatar: avatar || picture || '',
+              currency: currency || 'IDR',
+              password: hashedPass
+            }
+          });
+        } catch (createErr) {
+          // Fallback: race-condition unique constraint
+          found = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { firebaseUid: uid },
+                ...(targetEmail ? [{ email: { equals: targetEmail, mode: 'insensitive' } }] : [])
+              ]
+            }
+          });
+        }
       }
-    }
+
+      return found;
+    });
 
     if (!user) throw new Error('Gagal memproses data user');
 
@@ -88,9 +93,9 @@ exports.syncUser = async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error('CRASH di syncUser:', error.message);
-    res.status(500).json({ 
-      error: 'Backend lagi error bre!', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Backend lagi error bre!',
+      message: error.message
     });
   }
 };
@@ -100,33 +105,32 @@ exports.updatePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     const { uid } = req.user;
 
-    const user = await prisma.user.findUnique({
-      where: { firebaseUid: uid }
-    });
+    const user = await withRetry(() =>
+      prisma.user.findUnique({ where: { firebaseUid: uid } })
+    );
 
     if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
 
-    // Verifikasi password lama jika ada
+    // Verifikasi password lama jika user sudah punya password
     if (user.password) {
       const isMatch = await bcrypt.compare(oldPassword, user.password);
       if (!isMatch) {
         return res.status(400).json({ error: 'Password lama tidak sesuai' });
       }
-    } else {
-      // Jika user belum punya password (login google), 
-      // kita izinkan set password baru pertama kali tanpa cek password lama (karena ga ada)
-      // tapi biasanya fieldnya tetep harus diisi (dummy/confirm)
     }
 
     const hashedNewPass = await bcrypt.hash(newPassword, 10);
-    
-    await prisma.user.update({
-      where: { firebaseUid: uid },
-      data: { password: hashedNewPass }
-    });
+
+    await withRetry(() =>
+      prisma.user.update({
+        where: { firebaseUid: uid },
+        data: { password: hashedNewPass }
+      })
+    );
 
     res.json({ message: 'Password berhasil diubah, silakan login ulang' });
   } catch (error) {
+    console.error('Update Password Error:', error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -134,9 +138,9 @@ exports.updatePassword = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
   try {
     const { uid } = req.user;
-    await prisma.user.delete({
-      where: { firebaseUid: uid }
-    });
+    await withRetry(() =>
+      prisma.user.delete({ where: { firebaseUid: uid } })
+    );
     res.json({ message: 'Akun dan seluruh data finansial berhasil dihapus' });
   } catch (error) {
     console.error('Delete Account Error:', error);
@@ -157,10 +161,10 @@ exports.sendVerification = async (req, res) => {
 
     const reqOrigin = req.headers.origin || req.headers.referer;
 
-    // ⚡ Kirim respon HTTP 200 INSTAN ke UI (tanpa nunggu SMTP latency)
+    // Kirim respon HTTP 200 instan ke UI (non-blocking)
     res.json({ success: true, message: 'Email verifikasi berhasil dikirim!' });
 
-    // 🚀 Kirim email via Nodemailer di background secara non-blocking
+    // Kirim email via Nodemailer di background
     sendVerificationEmail(email, reqOrigin).catch(err => {
       console.error('Background Send Verification Error:', err.message);
     });

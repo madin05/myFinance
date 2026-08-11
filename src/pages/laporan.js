@@ -142,15 +142,15 @@ export function renderLaporan() {
       const percent = (total / maxVal) * 100;
       const catColor = getCategoryColor(name);
       return `
-        <div style="margin-bottom: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
-            <span class="font-bold text-sm" style="display: flex; align-items: center; gap: 8px;">
-              <span style="width: 8px; height: 8px; border-radius: 50%; background: ${catColor}; display: inline-block; flex-shrink: 0;"></span>
+        <div style="margin-bottom: 1.15rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; align-items: center;">
+            <span class="font-bold text-xs" style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 7px; height: 7px; border-radius: 50%; background: ${catColor}; display: inline-block; flex-shrink: 0;"></span>
               ${name}
             </span>
-            <span class="text-sm font-bold">${formatRupiah(total)}</span>
+            <span class="text-xs font-bold">${formatRupiah(total)}</span>
           </div>
-          <div class="progress-bar-container" style="height: 8px; background: var(--bg-color); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-light);">
+          <div class="progress-bar-container" style="height: 7px; background: var(--bg-color); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-light);">
             <div class="progress-bar" style="width: ${percent}%; height: 100%; background: ${catColor}; border-radius: 10px; transition: width 0.5s ease;"></div>
           </div>
         </div>
