@@ -42,7 +42,7 @@ export function renderDashboard() {
     .map((tx) => {
       const isIncome = tx.type === "income";
       const colorClass = isIncome ? "text-green" : "text-red";
-      const sign = isIncome ? "+ " : "- ";
+      const sign = isIncome ? "+" : "-";
 
       let badgeClass = "badge-blue";
       const lowerKategori = tx.kategori.toLowerCase();
@@ -56,7 +56,7 @@ export function renderDashboard() {
         <td><span class="badge-soft ${badgeClass}"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
         <td>${tx.metode}</td>
         <td>${tx.keterangan}</td>
-        <td class="text-right ${colorClass} font-bold">${sign}${formatRupiah(Math.abs(tx.harga))}</td>
+        <td class="text-right ${colorClass} font-bold" style="white-space: nowrap;">${sign} ${formatRupiah(Math.abs(tx.harga))}</td>
       </tr>
     `;
     })

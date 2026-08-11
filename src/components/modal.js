@@ -942,6 +942,12 @@ export function openQuickActionSheet() {
           <h3>Pilih Aksi Cepat</h3>
         </div>
         <div class="quick-action-grid">
+          <div class="quick-action-item" role="button" tabindex="0" id="qa-ai-chat">
+            <div class="qa-icon"><i class="ph-fill ph-robot"></i></div>
+            <div class="qa-info"><h4>Asisten AI MyFinance</h4></div>
+            <i class="ph ph-caret-right qa-arrow"></i>
+          </div>
+
           <div class="quick-action-item" role="button" tabindex="0" id="qa-add-tx">
             <div class="qa-icon"><i class="ph-fill ph-receipt"></i></div>
             <div class="qa-info"><h4>Tambah Transaksi</h4></div>
@@ -971,6 +977,12 @@ export function openQuickActionSheet() {
   `;
 
   const closeModal = bindModalEvents(container, 'quick-action-overlay', ['close-quick-action']);
+
+  document.getElementById('qa-ai-chat')?.addEventListener('click', () => {
+    animateCloseModal(container, () => {
+      import('../router.js').then(m => m.navigateTo('/ai'));
+    });
+  });
 
   document.getElementById('qa-add-tx')?.addEventListener('click', () => {
     animateCloseModal(container, () => {

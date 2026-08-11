@@ -8,7 +8,8 @@ import {
   getTabunganSkeleton,
   getSaldoSkeleton,
   getLaporanSkeleton,
-  getAkunSkeleton
+  getAkunSkeleton,
+  getAiSkeleton
 } from './components/skeleton.js';
 
 // --- Daftar rute yang DIKUNCI untuk user yang belum verifikasi email ---
@@ -68,6 +69,9 @@ export function showSkeleton(routePath) {
     case '/akun':
       container.innerHTML = getAkunSkeleton();
       break;
+    case '/ai':
+      container.innerHTML = getAiSkeleton();
+      break;
     case '/settings':
       container.innerHTML = getTableSkeleton();
       break;
@@ -96,13 +100,22 @@ export function handleRoute() {
   // Keamanan URL: Dapatkan rute yang aman & bersih
   const route = sanitizePath(window.location.pathname);
 
-  // Sembunyikan/tampilkan searchbar di mobile berdasarkan rute aktif
+  // Sembunyikan/tampilkan searchbar & FAM menu di mobile/ai berdasarkan rute aktif
   const searchBar = document.querySelector('.search-bar');
   if (searchBar) {
     if (route === '/dashboard' || route === '/transaksi') {
       searchBar.classList.remove('mobile-hidden');
     } else {
       searchBar.classList.add('mobile-hidden');
+    }
+  }
+
+  const famMenu = document.querySelector('.menu-tooltip-container');
+  if (famMenu) {
+    if (route === '/ai') {
+      famMenu.style.display = 'none';
+    } else {
+      famMenu.style.display = '';
     }
   }
 
@@ -181,6 +194,8 @@ function loadRoutePage(route) {
     import('./pages/laporan.js').then(module => module.renderLaporan());
   } else if (route === '/akun') {
     import('./pages/akun.js').then(module => module.renderAkun());
+  } else if (route === '/ai') {
+    import('./pages/ai.js').then(module => module.renderAiPage());
   } else if (route === '/settings') {
     import('./pages/settings.js').then(module => module.renderSettings());
   } else if (route === '/faq') {
