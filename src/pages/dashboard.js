@@ -2,6 +2,7 @@ import { store, formatRupiah, formatDate } from "../store.js";
 import { openAdjustBalanceModal } from "../components/modal.js";
 import { navigateTo } from "../router.js";
 import { initStickyHeader, escapeHtml, getCategoryIconUrl } from "../utils.js";
+import { getSmartAiInputHtml, initSmartAiInputEvents } from "../components/smartAiInput.js";
 
 let currentSavingIndex = 0;
 let savingInterval = null;
@@ -122,38 +123,41 @@ export function renderDashboard() {
   const timeParts = getFormattedTimeParts();
 
   container.innerHTML = `
-    <!-- Greeting Section -->
-    <div class="dashboard-greeting ${getDayPhase()}">
-      <div class="greeting-content">
-        <h1 class="greeting-title">${getGreeting()}, <span class="text-primary font-bold">${store.user?.name || "Tamu"}</span>! 👋</h1>
-        
-      </div>
-      
-      <!-- Unified Weather & Time Block -->
-      <div class="greeting-widget-container">
-        <!-- Premium Time & Day Block -->
-        <div class="greeting-time-block">
-          <p class="greeting-time-text"><span>${timeParts.time}</span><span class="greeting-time-sub-text">${timeParts.ampm}</span></p>
-          <p class="greeting-day-text">${getFormattedDayText()}</p>
-        </div>
-        
-        <!-- Animated Sun & Moon Object -->
-        <div class="greeting-weather-object ${getDayPhase()}">
-          <div class="weather-cloud front">
-            <span class="weather-left-front"></span>
-            <span class="weather-right-front"></span>
-          </div>
-          ${getWeatherIcon()}
-          <div class="weather-cloud back">
-            <span class="weather-left-back"></span>
-            <span class="weather-right-back"></span>
-          </div>
-        </div>
-      </div>
+    <!-- Greeting Section (Minimal & Simple) -->
+    <div class="dashboard-greeting-simple">
+      <h1 class="greeting-title-simple">${getGreeting()}, <span class="font-bold">${escapeHtml(store.user?.name || "Tamu")}</span>! 👋</h1>
+      <p class="greeting-date-simple">${getFormattedDayText()} &bull; ${timeParts.time} ${timeParts.ampm}</p>
     </div>
 
-    <!-- Top Cards -->
+    <!-- Top Cards (Total Saldo -> Pemasukan -> Pengeluaran) -->
     <div class="stats-cards">
+      <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
+        <div class="stat-header">
+          <div class="text-primary" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-fill ph-bank"></i></div>
+          ${
+            stats.hasAccounts
+              ? `
+          <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
+            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
+          </a>
+          `
+              : `
+          <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
+            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
+          </button>
+          `
+          }
+        </div>
+        <div class="stat-body">
+          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
+          <h2 class="stat-value text-main">${formatRupiah(stats.balance)}</h2>
+        </div>
+        <div class="stat-footer">
+          <div class="stat-line"><div class="stat-line-fill" style="width: 100%; background: var(--text-muted); opacity: 0.4;"></div></div>
+        </div>
+        <i class="ph-fill ph-bank stat-watermark"></i>
+      </div>
+
       <div class="stat-card">
         <div class="stat-header">
           <div class="text-green" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-up"></i></div>
@@ -182,33 +186,6 @@ export function renderDashboard() {
           <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
         </div>
         <i class="ph-fill ph-trend-down stat-watermark"></i>
-      </div>
-
-      <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
-        <div class="stat-header">
-          <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--text-main);"><i class="ph-fill ph-bank" style="font-size: 1.6rem;"></i></div>
-          ${
-            stats.hasAccounts
-              ? `
-          <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
-            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
-          </a>
-          `
-              : `
-          <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
-            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
-          </button>
-          `
-          }
-        </div>
-        <div class="stat-body">
-          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
-          <h2 class="stat-value text-main">${formatRupiah(stats.balance)}</h2>
-        </div>
-        <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill" style="width: 100%; background: var(--text-muted); opacity: 0.4;"></div></div>
-        </div>
-        <i class="ph-fill ph-bank stat-watermark"></i>
       </div>
     </div>
 
@@ -252,6 +229,7 @@ export function renderDashboard() {
             </tbody>
           </table>
         </div>
+        ${getSmartAiInputHtml()}
       </div>
 
       <div class="widgets-section">
@@ -320,6 +298,9 @@ export function renderDashboard() {
       }
     });
   }
+
+  // Init Smart AI Input Component
+  initSmartAiInputEvents(() => renderDashboard());
 
   // Aktifkan sticky header di mobile
   initStickyHeader();

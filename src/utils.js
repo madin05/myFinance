@@ -155,9 +155,14 @@ export function getCategoryIconUrl(kategori, type = null) {
     return '/assets/education.svg';
   }
 
+  // Check Lainnya / Other / General
+  if (k.includes('lain') || k.includes('other') || k.includes('umum') || k.includes('general') || k.includes('serba')) {
+    return '/assets/other.svg';
+  }
+
   // Default fallback berdasarkan type
   if (type === 'income') return '/assets/salary.svg';
-  return '/assets/shopping.svg';
+  return '/assets/other.svg';
 }
 
 /**

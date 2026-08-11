@@ -74,6 +74,25 @@ export function renderSettings() {
             Tampilan &amp; Kinerja
           </h4>
           <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <!-- Mode Tampilan / Tema -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 1rem;">
+              <div>
+                <p class="font-bold text-sm" style="margin: 0;">Tema Aplikasi</p>
+                <p class="text-muted text-xs" style="margin: 0;">Pilih mode tampilan terang, gelap, atau ikuti perangkat.</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" class="btn btn-outline ${localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && document.documentElement.getAttribute('data-theme') === 'light') ? 'active' : ''}" id="btn-theme-light" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px; gap: 4px;">
+                  <i class="ph ph-sun"></i> Terang
+                </button>
+                <button type="button" class="btn btn-outline ${localStorage.getItem('theme') === 'dark' ? 'active' : ''}" id="btn-theme-dark" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px; gap: 4px;">
+                  <i class="ph ph-moon"></i> Gelap
+                </button>
+                <button type="button" class="btn btn-outline ${localStorage.getItem('theme') === 'system' ? 'active' : ''}" id="btn-theme-sys" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px; gap: 4px;">
+                  <i class="ph ph-desktop-tower"></i> Otomatis
+                </button>
+              </div>
+            </div>
+
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <p class="font-bold text-sm" style="margin: 0;">Mode Hemat Kinerja</p>
@@ -107,6 +126,45 @@ export function renderSettings() {
   // Init custom select mata uang
   const currencySelect = document.getElementById('user-currency');
   if (currencySelect) initCustomSelect(currencySelect);
+
+  // Theme selection buttons
+  const btnLight = document.getElementById('btn-theme-light');
+  const btnDark = document.getElementById('btn-theme-dark');
+  const btnSys = document.getElementById('btn-theme-sys');
+
+  const updateThemeBtnState = (activeTheme) => {
+    btnLight?.classList.toggle('active', activeTheme === 'light');
+    btnDark?.classList.toggle('active', activeTheme === 'dark');
+    btnSys?.classList.toggle('active', activeTheme === 'system');
+  };
+
+  if (btnLight) {
+    btnLight.addEventListener('click', () => {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
+      updateThemeBtnState('light');
+      showToast('Mode Terang diaktifkan', 'info');
+    });
+  }
+
+  if (btnDark) {
+    btnDark.addEventListener('click', () => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+      updateThemeBtnState('dark');
+      showToast('Mode Gelap diaktifkan', 'info');
+    });
+  }
+
+  if (btnSys) {
+    btnSys.addEventListener('click', () => {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      localStorage.setItem('theme', 'system');
+      updateThemeBtnState('system');
+      showToast('Mode Otomatis diaktifkan', 'info');
+    });
+  }
 
   // Simpan preferensi keuangan
   const btnSave = document.getElementById('btn-save-financial-start');

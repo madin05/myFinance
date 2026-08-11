@@ -2,7 +2,76 @@
 import { auth } from '../firebase-config.js';
 import { store } from '../store.js';
 
+/**
+ * Formatter pesan error ramah pengguna (UI/UX).
+ * Mengubah string error teknikal/Prisma/DB/network menjadi pesan santai & actionable.
+ */
+export function formatErrorMessage(rawMessage) {
+  if (!rawMessage) return 'Ada sedikit kendala sistem nih, bre. Coba lagi beberapa saat ya!';
+
+  const msg = typeof rawMessage === 'string' ? rawMessage : (rawMessage.message || String(rawMessage));
+
+  // Log error teknikal asli di console agar tetap bisa dipantau pengembang
+  console.error('[App Error Detail]:', rawMessage);
+
+  // 1. Prisma / Database / Connection Timeout errors
+  if (
+    msg.includes('prisma') ||
+    msg.includes('Prisma') ||
+    msg.includes('connection pool') ||
+    msg.includes('Timed out') ||
+    msg.includes('invocation in') ||
+    msg.includes('database') ||
+    msg.includes('Postgres') ||
+    msg.includes('ECONNRESET') ||
+    msg.includes('ETIMEDOUT')
+  ) {
+    return 'Server sedang memproses koneksi. Coba muat ulang halaman atau klik sekali lagi ya, bre!';
+  }
+
+  // 2. Network / Offline errors
+  if (
+    msg.includes('Failed to fetch') ||
+    msg.includes('NetworkError') ||
+    msg.includes('Network request failed') ||
+    msg.includes('ERR_CONNECTION_REFUSED')
+  ) {
+    return 'Koneksi internet terputus atau server sedang offline. Cek jaringan kamu dulu ya, bre!';
+  }
+
+  // 3. Auth / Firebase errors
+  if (msg.includes('auth/wrong-password') || msg.includes('auth/invalid-credential')) {
+    return 'Email atau kata sandi kurang tepat. Coba periksa lagi ya!';
+  }
+  if (msg.includes('auth/user-not-found')) {
+    return 'Akun belum terdaftar. Yuk buat akun baru dulu!';
+  }
+  if (msg.includes('auth/email-already-in-use')) {
+    return 'Email ini sudah terdaftar. Silakan login atau pakai email lain ya!';
+  }
+
+  // 4. Client Runtime Errors (TypeError, ReferenceError, dsb.)
+  if (
+    msg.includes('TypeError') ||
+    msg.includes('ReferenceError') ||
+    msg.includes('SyntaxError') ||
+    msg.includes('Cannot read property') ||
+    msg.includes('is not a function')
+  ) {
+    return 'Ada kendala sistem ringan. Coba muat ulang halaman ya, bre!';
+  }
+
+  // 5. Raw JSON/Stack traces panjang
+  if (msg.length > 140 && (msg.includes('{') || msg.includes('at ') || msg.includes('\n'))) {
+    return 'Gagal memproses data. Coba ulangi tindakan kamu atau muat ulang halaman ya, bre!';
+  }
+
+  return msg;
+}
+
 export const showToast = (message, type = 'success', duration = 3000) => {
+  const displayMessage = (type === 'error' || type === 'danger') ? formatErrorMessage(message) : message;
+
   let container = document.querySelector('.toast-container');
   if (!container) {
     container = document.createElement('div');
@@ -13,7 +82,7 @@ export const showToast = (message, type = 'success', duration = 3000) => {
   // Anti-Spam: Remove duplicate toast or limit count
   const existingToasts = container.querySelectorAll('.toast');
   existingToasts.forEach(t => {
-    if (t.innerText.includes(message)) t.remove();
+    if (t.innerText.includes(displayMessage)) t.remove();
   });
   
   if (container.querySelectorAll('.toast').length >= 3) {
@@ -35,7 +104,7 @@ export const showToast = (message, type = 'success', duration = 3000) => {
     </div>
     <div class="toast-content">
       <div class="toast-title">${title}</div>
-      <div class="toast-message">${message}</div>
+      <div class="toast-message">${displayMessage}</div>
     </div>
     <button class="toast-close" onclick="this.parentElement.remove()">
       <i class="ph ph-x"></i>
@@ -130,6 +199,8 @@ const animateCloseAlert = (overlay, resolveValue, resolve) => {
 };
 
 export const showAlert = (title, message, type = 'info') => {
+  const displayMessage = type === 'error' ? formatErrorMessage(message) : message;
+
   return new Promise((resolve) => {
     document.querySelectorAll('.custom-alert-overlay').forEach(el => el.remove());
 
@@ -145,7 +216,7 @@ export const showAlert = (title, message, type = 'info') => {
           <i class="ph-fill ${icon}"></i>
         </div>
         <h3 style="margin-bottom: 0.75rem;">${title}</h3>
-        <p class="text-muted" style="margin-bottom: 2rem;">${message}</p>
+        <p class="text-muted" style="margin-bottom: 2rem;">${displayMessage}</p>
         <button class="btn btn-primary btn-full" class="btn-alert-ok">Oke</button>
       </div>
     `;

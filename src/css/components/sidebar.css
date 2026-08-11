@@ -233,7 +233,7 @@
 .sidebar-collapsed .logo-wrapper,
 .sidebar-collapsed .nav-item span,
 .sidebar-collapsed .sidebar-footer span {
-  display: none;
+  display: none !important;
 }
 
 .sidebar-collapsed .logo-container {

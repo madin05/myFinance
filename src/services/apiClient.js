@@ -28,7 +28,29 @@ export async function extractErrorMessage(res, defaultMsg) {
       detail = "";
     }
   }
-  return detail || `${defaultMsg} (HTTP ${res.status})`;
+  
+  const rawMsg = detail || defaultMsg || `Gagal memproses data (HTTP ${res.status})`;
+
+  // Filter out raw Prisma / Database / Connection stack traces
+  if (
+    rawMsg.includes('prisma') ||
+    rawMsg.includes('Prisma') ||
+    rawMsg.includes('connection pool') ||
+    rawMsg.includes('Timed out') ||
+    rawMsg.includes('invocation in') ||
+    rawMsg.includes('database') ||
+    rawMsg.includes('Postgres') ||
+    rawMsg.includes('ECONNRESET') ||
+    rawMsg.includes('ETIMEDOUT')
+  ) {
+    return 'Koneksi ke server sedang sibuk. Coba ulangi beberapa saat lagi ya, bre!';
+  }
+
+  if (rawMsg.length > 150 && (rawMsg.includes('{') || rawMsg.includes('at ') || rawMsg.includes('\n'))) {
+    return 'Ada sedikit kendala pada sistem. Coba muat ulang halaman atau ulangi lagi ya, bre!';
+  }
+
+  return rawMsg;
 }
 
 /**

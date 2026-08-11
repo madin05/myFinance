@@ -94,6 +94,14 @@ body {
 .text-sm {
   font-size: 0.875rem;
 }
+.text-xs {
+  font-size: 0.78rem !important;
+  line-height: 1.4;
+}
+.text-2xs {
+  font-size: 0.7rem !important;
+  line-height: 1.35;
+}
 .font-bold {
   font-weight: 700;
 }
@@ -392,14 +400,17 @@ body.layout-compact .section-header {
   left: 0;
   right: 0;
   height: 480px;
-  background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%);
   z-index: 0;
   border-bottom-left-radius: 2.5rem;
   border-bottom-right-radius: 2.5rem;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    background 0.3s ease;
   pointer-events: none;
+  overflow: hidden;
 }
 
 body.page-dashboard .dashboard-hero-bg {
@@ -407,8 +418,126 @@ body.page-dashboard .dashboard-hero-bg {
   visibility: visible;
 }
 
+/* Dark Mode: Harmonis dengan Theme Background Dark (#1A1333 ke #0B0716) */
 [data-theme="dark"] .dashboard-hero-bg {
-  background: linear-gradient(135deg, #4c1d95 0%, #2e1065 100%);
+  background: linear-gradient(135deg, #241846 0%, #171226 50%, #0b0716 100%);
+}
+
+/* --- Ornaments: Atmospheric Glowing Light Orbs --- */
+.hero-ornament-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.hero-ornament-glow.glow-1 {
+  width: 380px;
+  height: 380px;
+  top: 20px;
+  right: -50px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(56, 189, 248, 0.15) 50%,
+    transparent 75%
+  );
+  filter: blur(40px);
+}
+
+.hero-ornament-glow.glow-2 {
+  width: 300px;
+  height: 300px;
+  top: 160px;
+  left: -40px;
+  background: radial-gradient(
+    circle,
+    rgba(56, 189, 248, 0.35) 0%,
+    rgba(2, 132, 199, 0.15) 50%,
+    transparent 75%
+  );
+  filter: blur(45px);
+}
+
+/* --- Ornaments: Financial Character Line-Art Doodles --- */
+.hero-doodles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.hero-doodle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.doodle-char-growth {
+  top: 8%;
+  left: 6%;
+  transform: rotate(-4deg);
+}
+
+.doodle-char-saving {
+  top: 6%;
+  right: 8%;
+  transform: rotate(4deg);
+}
+
+/* --- Ornaments: Dot Matrix Grid --- */
+.hero-ornament-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.25) 1.2px,
+    transparent 1.2px
+  );
+  background-size: 24px 24px;
+  mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.85) 0%,
+    transparent 85%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.85) 0%,
+    transparent 85%
+  );
+  opacity: 0.6;
+}
+
+.hero-ornament-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* --- Dark Mode Ornaments Adjustments --- */
+[data-theme="dark"] .hero-ornament-glow.glow-1 {
+  background: radial-gradient(
+    circle,
+    rgba(157, 78, 221, 0.3) 0%,
+    rgba(123, 44, 191, 0.1) 50%,
+    transparent 75%
+  );
+}
+
+[data-theme="dark"] .hero-ornament-glow.glow-2 {
+  background: radial-gradient(
+    circle,
+    rgba(199, 125, 255, 0.2) 0%,
+    transparent 75%
+  );
+}
+
+[data-theme="dark"] .hero-circle.circle-lg,
+[data-theme="dark"] .hero-pill-shape {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Make sure header and content sit above the background */
@@ -440,30 +569,56 @@ body.page-dashboard .header:not(.scrolled) .search-bar input::placeholder {
 body.page-dashboard .header:not(.scrolled) .search-bar .search-icon {
   color: #ffffff;
 }
-body.page-dashboard .header:not(.scrolled) .header-actions .theme-toggle-group {
+body.page-dashboard
+  .header:not(.scrolled)
+  .header-actions
+  > .theme-toggle-group {
   background: rgba(255, 255, 255, 0.2) !important;
   border-color: rgba(255, 255, 255, 0.35) !important;
   backdrop-filter: blur(8px);
   box-shadow: none !important;
 }
-body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn,
-body.page-dashboard .header:not(.scrolled) .header-actions .theme-auto-btn,
-body.page-dashboard .header:not(.scrolled) .header-actions .themeToggle {
+body.page-dashboard
+  .header:not(.scrolled)
+  .header-actions
+  .header-btn-wrapper
+  .icon-btn,
+body.page-dashboard
+  .header:not(.scrolled)
+  .header-actions
+  > .theme-toggle-group
+  .theme-auto-btn,
+body.page-dashboard
+  .header:not(.scrolled)
+  .header-actions
+  > .theme-toggle-group
+  .themeToggle {
   color: #ffffff !important;
   background: transparent !important;
 }
-body.page-dashboard .header:not(.scrolled) .header-actions .icon-btn:hover,
 body.page-dashboard
   .header:not(.scrolled)
   .header-actions
+  .header-btn-wrapper
+  .icon-btn:hover,
+body.page-dashboard
+  .header:not(.scrolled)
+  .header-actions
+  > .theme-toggle-group
   .theme-auto-btn:hover,
-body.page-dashboard .header:not(.scrolled) .header-actions .themeToggle:hover {
+body.page-dashboard
+  .header:not(.scrolled)
+  .header-actions
+  > .theme-toggle-group
+  .themeToggle:hover {
   background-color: rgba(255, 255, 255, 0.2) !important;
   color: #ffffff !important;
+  border-radius: 100px;
 }
 body.page-dashboard
   .header:not(.scrolled)
   .header-actions
+  > .theme-toggle-group
   .theme-auto-btn.active {
   background: rgba(255, 255, 255, 0.3) !important;
   color: #ffffff !important;
@@ -471,6 +626,7 @@ body.page-dashboard
 body.page-dashboard
   .header:not(.scrolled)
   .header-actions
+  > .theme-toggle-group
   .st-sunMoonThemeToggleBtn
   svg {
   color: #ffffff !important;
@@ -478,12 +634,14 @@ body.page-dashboard
 body.page-dashboard
   .header:not(.scrolled)
   .header-actions
+  > .theme-toggle-group
   .st-sunMoonThemeToggleBtn
   svg
   .sunMoon,
 body.page-dashboard
   .header:not(.scrolled)
   .header-actions
+  > .theme-toggle-group
   .st-sunMoonThemeToggleBtn
   svg
   .sunRay {
