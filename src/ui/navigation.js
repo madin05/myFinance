@@ -82,20 +82,27 @@ export function initNavigation() {
     if (themeInput) {
       const newTheme = themeInput.checked ? 'dark' : 'light';
       applyTheme(newTheme);
+      if (e.target.closest('#profile-dropdown')) {
+        document.getElementById('profile-dropdown')?.classList.remove('active');
+      }
     } else {
       const themeRow = e.target.closest('#dropdown-theme-row');
       if (themeRow) {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        if (e.target.closest('#profile-dropdown')) {
+          document.getElementById('profile-dropdown')?.classList.remove('active');
+        }
       }
     }
 
     // Auto / System theme button
     if (e.target.closest('#btn-theme-auto, #btn-theme-auto-dropdown')) {
       applySystemTheme();
+      if (e.target.closest('#profile-dropdown')) {
+        document.getElementById('profile-dropdown')?.classList.remove('active');
+      }
     }
-
-
 
     // Trigger Product Tutorial from Sidebar
     if (e.target.closest('#btn-sidebar-tutorial')) {
@@ -110,7 +117,7 @@ export function initNavigation() {
     const pDrop = document.getElementById('profile-dropdown');
     const nDrop = document.getElementById('notif-dropdown');
 
-    if (pTrigger) {
+    if (pTrigger && !e.target.closest('#profile-dropdown')) {
       pDrop?.classList.toggle('active');
       nDrop?.classList.remove('active');
     } else if (nTrigger) {
@@ -121,14 +128,14 @@ export function initNavigation() {
       if (nDrop?.classList.contains('active')) {
         renderNotificationDropdown();
       }
-      
-      // Clear badge visually if preferred when clicked
-      // const badge = nTrigger.querySelector('.header-badge');
-      // if (badge) badge.style.display = 'none';
     } else {
-      // Clicked completely outside all dropdowns & triggers? Close everything.
-      if (pDrop && !e.target.closest('#profile-dropdown')) pDrop.classList.remove('active');
-      if (nDrop && !e.target.closest('#notif-trigger') && !e.target.closest('#notif-dropdown')) nDrop.classList.remove('active');
+      // Close profile dropdown when clicking items inside it or outside
+      if (pDrop && !e.target.closest('#user-profile-trigger')) {
+        pDrop.classList.remove('active');
+      }
+      if (nDrop && !e.target.closest('#notif-trigger') && !e.target.closest('#notif-dropdown')) {
+        nDrop.classList.remove('active');
+      }
     }
 
     if (e.target.closest('#btn-logout')) {

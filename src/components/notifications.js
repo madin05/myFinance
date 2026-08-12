@@ -69,8 +69,29 @@ export function formatErrorMessage(rawMessage) {
   return msg;
 }
 
-export const showToast = (message, type = 'success', duration = 3000) => {
-  const displayMessage = (type === 'error' || type === 'danger') ? formatErrorMessage(message) : message;
+export const showToast = (arg1, arg2 = 'success', arg3 = 4500, arg4 = null) => {
+  let title = 'Pemberitahuan !';
+  let displayMessage = '';
+  let type = 'success';
+  let duration = 4500;
+
+  // Determine signature: showToast(title, message, type, duration) vs showToast(message, type, duration)
+  if (typeof arg3 === 'string' || arg4 !== null) {
+    title = arg1 || 'Pemberitahuan !';
+    displayMessage = arg2 || '';
+    type = arg3 || 'success';
+    duration = typeof arg4 === 'number' ? arg4 : 4500;
+  } else {
+    displayMessage = arg1 || '';
+    type = typeof arg2 === 'string' ? arg2 : 'success';
+    duration = typeof arg3 === 'number' ? arg3 : 4500;
+    title = type === 'success' ? 'Berhasil !' :
+            (type === 'error' || type === 'danger') ? 'Oops, Gagal !' : 'Pemberitahuan !';
+  }
+
+  if (type === 'error' || type === 'danger') {
+    displayMessage = formatErrorMessage(displayMessage);
+  }
 
   let container = document.querySelector('.toast-container');
   if (!container) {
@@ -93,10 +114,7 @@ export const showToast = (message, type = 'success', duration = 3000) => {
   toast.className = `toast ${type}`;
   
   const icon = type === 'success' ? 'ph-check-circle' : 
-               type === 'error' ? 'ph-warning-circle' : 'ph-info';
-               
-  const title = type === 'success' ? 'Berhasil !' :
-                type === 'error' ? 'Oops, Gagal !' : 'Pemberitahuan !';
+               (type === 'error' || type === 'danger') ? 'ph-warning-circle' : 'ph-info';
 
   toast.innerHTML = `
     <div class="toast-icon-wrapper ${type}">
@@ -106,53 +124,86 @@ export const showToast = (message, type = 'success', duration = 3000) => {
       <div class="toast-title">${title}</div>
       <div class="toast-message">${displayMessage}</div>
     </div>
-    <button class="toast-close" onclick="this.parentElement.remove()">
+    <button class="toast-close" title="Tutup">
       <i class="ph ph-x"></i>
     </button>
   `;
 
+  const closeBtn = toast.querySelector('.toast-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toast.style.animation = 'none';
+      toast.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease';
+      toast.style.transform = 'translateX(120vw)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    });
+  }
+
   container.appendChild(toast);
 
-  // --- Swipe to Dismiss Logic ---
+  // --- Swipe Right / Up to Dismiss Logic ---
   let isDragging = false;
+  let startX = 0;
   let startY = 0;
+  let currentX = 0;
   let currentY = 0;
 
   const onStart = (e) => {
-    // Jangan drag kalau klik tombol close
     if (e.target.closest('.toast-close')) return;
     isDragging = true;
+    startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    toast.style.animation = 'none';
     toast.style.transition = 'none';
   };
 
   const onMove = (e) => {
     if (!isDragging) return;
+    const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const y = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    currentX = x - startX;
     currentY = y - startY;
     
-    // Only allow swiping UP
-    if (currentY < 0) {
-      toast.style.transform = `translateY(${currentY}px)`;
-      toast.style.opacity = 1 - (Math.abs(currentY) / 100);
+    const absX = Math.abs(currentX);
+    const absY = Math.abs(currentY);
+
+    // Support swiping RIGHT (currentX > 0) or UP (currentY < 0)
+    if (currentX > 0 || currentY < 0) {
+      if (absX >= absY && currentX > 0) {
+        toast.style.transform = `translateX(${currentX}px)`;
+        toast.style.opacity = `${Math.max(0.2, 1 - (currentX / 350))}`;
+      } else if (currentY < 0) {
+        toast.style.transform = `translateY(${currentY}px)`;
+        toast.style.opacity = `${Math.max(0.2, 1 - (absY / 150))}`;
+      }
     }
   };
 
   const onEnd = () => {
     if (!isDragging) return;
     isDragging = false;
-    toast.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+    toast.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease';
     
-    if (currentY < -50) {
-      // Dismiss
-      toast.style.transform = 'translateY(-150%)';
+    const absX = Math.abs(currentX);
+    const absY = Math.abs(currentY);
+
+    if (currentX > 40 || currentY < -40) {
+      // Dismiss Right or Up
+      if (absX >= absY && currentX > 40) {
+        toast.style.transform = 'translateX(120vw)';
+      } else {
+        toast.style.transform = 'translateY(-150%)';
+      }
       toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
+      setTimeout(() => toast.remove(), 250);
     } else {
       // Snap back
-      toast.style.transform = 'translateY(0)';
+      toast.style.transform = 'translateX(0)';
       toast.style.opacity = '1';
     }
+    currentX = 0;
     currentY = 0;
   };
 
@@ -164,22 +215,22 @@ export const showToast = (message, type = 'success', duration = 3000) => {
   window.addEventListener('touchend', onEnd);
 
   // Auto-remove timer
-  let autoRemove = setTimeout(() => {
-    if (toast.parentElement) {
-      toast.style.animation = 'toastOut 0.4s forwards';
-      setTimeout(() => toast.remove(), 400);
+  const dismissToast = () => {
+    if (toast.parentElement && !isDragging) {
+      toast.style.animation = 'none';
+      toast.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease';
+      toast.style.transform = 'translateX(120vw)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 350);
     }
-  }, duration);
+  };
+
+  let autoRemove = setTimeout(dismissToast, duration);
 
   // Pause timer on hover
   toast.onmouseenter = () => clearTimeout(autoRemove);
   toast.onmouseleave = () => {
-    autoRemove = setTimeout(() => {
-      if (toast.parentElement) {
-        toast.style.animation = 'toastOut 0.4s forwards';
-        setTimeout(() => toast.remove(), 400);
-      }
-    }, duration);
+    autoRemove = setTimeout(dismissToast, duration);
   };
 };
 

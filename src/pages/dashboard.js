@@ -242,7 +242,7 @@ export function renderDashboard() {
         </div>
 
         <div class="widget-card widget-primary">
-          <button class="btn-icon-absolute" id="btn-go-to-wishlist" data-tooltip="Tambah Wishlist"><i class="ph ph-plus"></i></button>
+          <button class="btn-icon-absolute" id="btn-go-to-wishlist"><i class="ph ph-plus"></i></button>
           <h3 class="text-white mb-xs">Target Wishlist</h3>
           <div id="saving-widget-content" style="transition: all 0.5s ease; min-height: 100px;">
             <!-- Content injected by cycling function -->
@@ -375,7 +375,9 @@ function updateSavingWidget() {
     return;
   }
 
-  if (store.savings.length === 0) {
+  const activeSavings = store.savings.filter((s) => !s.isDone);
+
+  if (activeSavings.length === 0) {
     container.innerHTML = `
       <div style="height: 105px; display: flex; flex-direction: column; justify-content: center;">
         <p class="text-white-dim mb-0" style="font-size: 0.875rem;">Belum ada wishlist. Mari buat target baru!</p>
@@ -384,7 +386,12 @@ function updateSavingWidget() {
     return;
   }
 
-  const saving = store.savings[currentSavingIndex];
+  // Guard: reset index if out of bounds after deletion/completion
+  if (currentSavingIndex >= activeSavings.length) {
+    currentSavingIndex = 0;
+  }
+
+  const saving = activeSavings[currentSavingIndex];
   const percent = Math.min((saving.current / saving.target) * 100, 100);
 
   container.style.opacity = "0";
@@ -419,5 +426,5 @@ function updateSavingWidget() {
     container.style.transform = "translateY(0)";
   }, 250);
 
-  currentSavingIndex = (currentSavingIndex + 1) % store.savings.length;
+  currentSavingIndex = (currentSavingIndex + 1) % activeSavings.length;
 }
