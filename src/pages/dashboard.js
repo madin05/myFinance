@@ -133,7 +133,7 @@ export function renderDashboard() {
     <div class="stats-cards">
       <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
         <div class="stat-header">
-          <div class="text-primary" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-fill ph-bank"></i></div>
+          <div class="stat-icon-wrapper text-primary"><i class="ph-fill ph-bank"></i></div>
           ${
             stats.hasAccounts
               ? `
@@ -155,12 +155,12 @@ export function renderDashboard() {
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill" style="width: 100%; background: var(--text-muted); opacity: 0.4;"></div></div>
         </div>
-        <i class="ph-fill ph-bank stat-watermark"></i>
+        <i class="ph ph-bank stat-watermark"></i>
       </div>
 
       <div class="stat-card">
         <div class="stat-header">
-          <div class="text-green" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-up"></i></div>
+          <div class="stat-icon-wrapper text-green"><i class="ph-bold ph-trend-up"></i></div>
           ${getBadge(stats.incomeDiff, "income")}
         </div>
         <div class="stat-body">
@@ -170,12 +170,12 @@ export function renderDashboard() {
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
         </div>
-        <i class="ph-fill ph-trend-up stat-watermark"></i>
+        <i class="ph ph-trend-up stat-watermark"></i>
       </div>
 
       <div class="stat-card">
         <div class="stat-header">
-          <div class="text-red" style="font-size: 1.4rem; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;"><i class="ph-bold ph-trend-down"></i></div>
+          <div class="stat-icon-wrapper text-red"><i class="ph-bold ph-trend-down"></i></div>
           ${getBadge(stats.expenseDiff, "expense")}
         </div>
         <div class="stat-body">
@@ -185,7 +185,7 @@ export function renderDashboard() {
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
         </div>
-        <i class="ph-fill ph-trend-down stat-watermark"></i>
+        <i class="ph ph-trend-down stat-watermark"></i>
       </div>
     </div>
 

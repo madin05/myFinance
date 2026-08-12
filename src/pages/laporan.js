@@ -1,5 +1,5 @@
 import { store, formatRupiah } from "../store.js";
-import { showLoading, hideLoading, getFinancialRange } from "../utils.js";
+import { showLoading, hideLoading, getFinancialRange, getCategoryIconUrl } from "../utils.js";
 import { exportService } from "../services/exportService.js";
 import { showToast } from "../components/notifications.js";
 
@@ -216,10 +216,11 @@ export function renderLaporan() {
           <i class="ph-fill ph-pie-chart" style="color: var(--primary);"></i>
           Analisis Pengeluaran
         </h4>
-        <div style="height: 250px; position: relative;">
+        <div style="height: 250px; position: relative;" id="categoryChartContainer">
           ${
             sortedCategories.length > 0
-              ? `<canvas id="categoryChart"></canvas>`
+              ? `<canvas id="categoryChart"></canvas>
+                 <div id="categoryChartCenter" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.85); pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: opacity 0.22s ease, transform 0.22s ease; opacity: 0; z-index: 5;"></div>`
               : renderEmptyChartState("Belum ada pengeluaran")
           }
         </div>
@@ -412,7 +413,7 @@ export function renderLaporan() {
     // 1. Category Doughnut Chart
     const categoryCtx = document.getElementById("categoryChart");
     if (categoryCtx && sortedCategories.length > 0) {
-      new Chart(categoryCtx, {
+      const catChart = new Chart(categoryCtx, {
         type: "doughnut",
         data: {
           labels: sortedCategories.map((c) => c[0]),
@@ -428,6 +429,35 @@ export function renderLaporan() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          onHover: (event, activeElements, chart) => {
+            const centerEl = document.getElementById("categoryChartCenter");
+            if (!centerEl) return;
+
+            if (activeElements && activeElements.length > 0) {
+              const index = activeElements[0].index;
+              const categoryName = sortedCategories[index][0];
+              const categoryTotal = sortedCategories[index][1];
+              const iconUrl = getCategoryIconUrl(categoryName);
+
+              if (chart.chartArea) {
+                const xCenter = (chart.chartArea.left + chart.chartArea.right) / 2;
+                const yCenter = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+
+                centerEl.style.left = `${xCenter}px`;
+                centerEl.style.top = `${yCenter}px`;
+                centerEl.style.opacity = "1";
+                centerEl.style.transform = "translate(-50%, -50%) scale(1)";
+                centerEl.innerHTML = `
+                  <img src="${iconUrl}" alt="${categoryName}" style="width: 30px; height: 30px; object-fit: contain; margin-bottom: 2px;" />
+                  <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); line-height: 1.2; max-width: 110px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${categoryName}</span>
+                  <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 1px;">${formatRupiah(categoryTotal)}</span>
+                `;
+              }
+            } else {
+              centerEl.style.opacity = "0";
+              centerEl.style.transform = "translate(-50%, -50%) scale(0.85)";
+            }
+          },
           layout: {
             padding: {
               top: 16,
@@ -437,6 +467,9 @@ export function renderLaporan() {
             },
           },
           plugins: {
+            tooltip: {
+              enabled: false,
+            },
             legend: {
               position: "bottom",
               labels: {
@@ -449,6 +482,14 @@ export function renderLaporan() {
           },
           cutout: "70%",
         },
+      });
+
+      categoryCtx.addEventListener("mouseleave", () => {
+        const centerEl = document.getElementById("categoryChartCenter");
+        if (centerEl) {
+          centerEl.style.opacity = "0";
+          centerEl.style.transform = "translate(-50%, -50%) scale(0.85)";
+        }
       });
     }
 
