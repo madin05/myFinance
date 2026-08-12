@@ -258,12 +258,12 @@ export function generateFinancialSummary(periodKey = "1_month") {
       </div>
 
       <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: var(--text-muted);">
-        ${topCat ? `📌 **Pengeluaran terbesar**: <span style="color:var(--text-main); font-weight:600;">${topCat}</span> (${formatRupiah(topAmount)})` : '📌 Belum ada transaksi pengeluaran dalam periode ini.'}
+        ${topCat ? `📌 <strong>Pengeluaran terbesar</strong>: <span style="color:var(--text-main); font-weight:600;">${topCat}</span> (${formatRupiah(topAmount)})` : '📌 Belum ada transaksi pengeluaran dalam periode ini.'}
       </p>
 
       <div id="ai-insights-box" style="margin-top: 0.5rem; background: var(--bg-color); padding: 0.6rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
         <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
-          💡 **Saran AI**: ${isHealthy ? `Keuanganmu positif Rp ${formatRupiah(netBalance)}. Bagus! Alokasikan 20% dari surplus ke target Wishlist milikmu.` : `Pengeluaran melebihi pemasukan dalam ${periodLabel}! Tekan pengeluaran di kategori ${topCat || 'terbesar'} agar arus kas kembali sehat.`}
+          💡 <strong>Saran AI</strong>: ${isHealthy ? `Keuanganmu positif <span style="color:var(--green); font-weight:600;">${formatRupiah(netBalance)}</span>. Bagus! Alokasikan 20% dari surplus ke target Wishlist milikmu.` : `Pengeluaran melebihi pemasukan dalam ${periodLabel}! Tekan pengeluaran di kategori ${topCat || 'terbesar'} agar arus kas kembali sehat.`}
         </p>
       </div>
     </div>

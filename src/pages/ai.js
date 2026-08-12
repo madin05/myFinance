@@ -610,22 +610,31 @@ function renderActiveChatMessages() {
  */
 function formatResponseMarkdown(text) {
   if (!text) return "";
-  let formatted = escapeHtml(text);
+  let formatted = escapeHtml(text.trim());
 
   // Bold **text**
   formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
-  // Lists starting with * or - or o
+  // Italic *text*
+  formatted = formatted.replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+  // Format inline or newline numbered items (e.g., "1. ", "2. ") with clean spacing and bold numbers
+  formatted = formatted.replace(/(?:\s+)(\d+)[\.\)]\s+/g, "<br/><br/><strong>$1.</strong> ");
+  formatted = formatted.replace(/^(?:\s*)(\d+)[\.\)]\s+/gm, "<strong>$1.</strong> ");
+
+  // Bullet lists starting with *, -, or •
   formatted = formatted.replace(
-    /(?:^|\n)[*•\-o]\s+(.*?)(?=\n|$)/g,
-    "\n<li>$1</li>",
+    /(?:^|\n)[*•\-]\s+(.*?)(?=\n|$)/g,
+    "<br/>• $1",
   );
-  if (formatted.includes("<li>")) {
-    formatted = formatted.replace(/(<li>.*?<\/li>)+/gs, "<ul>$&</ul>");
-  }
 
   // Paragraph breaks
   formatted = formatted.replace(/\n\n/g, "<br/><br/>");
+  formatted = formatted.replace(/\n/g, "<br/>");
+
+  // Remove trailing/leading excessive breaks
+  formatted = formatted.replace(/^(<br\s*\/?>)+/gi, "");
+
   return formatted;
 }
 
@@ -1014,8 +1023,8 @@ async function processUserChatMessage(userText) {
         }
       }
     }
-  }
 
-  saveSessions(sessions);
-  renderActiveChatMessages();
+    saveSessions(sessions);
+    renderActiveChatMessages();
+  }
 }

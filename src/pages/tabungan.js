@@ -157,7 +157,6 @@ export function renderTabungan() {
             <h4 class="wishlist-empty-title">Belum Ada Wishlist</h4>
             <p class="text-muted text-xs wishlist-empty-desc">Yuk, mulai buat target baru untuk tabungan impianmu hari ini!</p>
           </div>
-          <button class="btn btn-primary" id="btn-create-goal-empty" style="margin-top: 0.5rem;"><i class="ph ph-plus"></i> Buat Target</button>
         </div>
       `}
     </div>

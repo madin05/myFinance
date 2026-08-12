@@ -51,58 +51,44 @@
   font-size: 1.3rem;
   flex-shrink: 0;
   transition: transform 0.2s ease, background-color 0.2s ease;
+  background-color: var(--border-light, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border);
+  color: var(--text-main);
 }
 
-.stat-icon-wrapper.text-primary {
-  background-color: rgba(2, 132, 199, 0.12);
-  color: var(--primary, #0284c7) !important;
-}
-.stat-icon-wrapper.text-primary i {
-  color: var(--primary, #0284c7) !important;
-}
-
-.stat-icon-wrapper.text-green {
-  background-color: rgba(34, 197, 94, 0.12);
-  color: var(--green, #16a34a) !important;
-}
-.stat-icon-wrapper.text-green i {
-  color: var(--green, #16a34a) !important;
-}
-
+.stat-icon-wrapper.text-primary,
+.stat-icon-wrapper.text-green,
 .stat-icon-wrapper.text-red {
-  background-color: rgba(239, 68, 68, 0.12);
-  color: var(--red, #dc2626) !important;
+  background-color: var(--border-light, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border);
+  color: var(--text-main) !important;
 }
+
+.stat-icon-wrapper.text-primary i,
+.stat-icon-wrapper.text-green i,
 .stat-icon-wrapper.text-red i {
-  color: var(--red, #dc2626) !important;
+  color: var(--text-main) !important;
 }
 
-/* Dark mode stat icon wrappers */
+/* Dark mode stat icon wrappers (Neutral) */
 [data-theme="dark"] .stat-icon-wrapper.text-primary,
-.dark .stat-icon-wrapper.text-primary {
-  background-color: rgba(56, 189, 248, 0.18);
-}
-[data-theme="dark"] .stat-icon-wrapper.text-primary i,
-.dark .stat-icon-wrapper.text-primary i {
-  color: #38bdf8 !important;
-}
-
+.dark .stat-icon-wrapper.text-primary,
 [data-theme="dark"] .stat-icon-wrapper.text-green,
-.dark .stat-icon-wrapper.text-green {
-  background-color: rgba(34, 197, 94, 0.18);
-}
-[data-theme="dark"] .stat-icon-wrapper.text-green i,
-.dark .stat-icon-wrapper.text-green i {
-  color: #4ade80 !important;
-}
-
+.dark .stat-icon-wrapper.text-green,
 [data-theme="dark"] .stat-icon-wrapper.text-red,
 .dark .stat-icon-wrapper.text-red {
-  background-color: rgba(239, 68, 68, 0.18);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-main) !important;
 }
+
+[data-theme="dark"] .stat-icon-wrapper.text-primary i,
+.dark .stat-icon-wrapper.text-primary i,
+[data-theme="dark"] .stat-icon-wrapper.text-green i,
+.dark .stat-icon-wrapper.text-green i,
 [data-theme="dark"] .stat-icon-wrapper.text-red i,
 .dark .stat-icon-wrapper.text-red i {
-  color: #f87171 !important;
+  color: var(--text-main) !important;
 }
 
 .stat-watermark {

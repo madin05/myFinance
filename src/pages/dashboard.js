@@ -17,16 +17,10 @@ export function renderDashboard() {
     const isPositive = diff >= 0;
     const absDiff = Math.abs(diff).toFixed(1);
     const icon = isPositive ? "ph-caret-up" : "ph-caret-down";
-    // Income up = green(up), Income down = red(down)
-    // Expense up = red(down), Expense down = green(up)
+    // Income: positive = up (green), negative = down (red)
+    // Expense: always red badge (down)
     const badgeClass =
-      type === "income"
-        ? isPositive
-          ? "up"
-          : "down"
-        : isPositive
-          ? "down"
-          : "up";
+      type === "income" ? (isPositive ? "up" : "down") : "down";
     return `<div class="stat-badge ${badgeClass}"><i class="ph-bold ${icon}"></i> ${absDiff}%</div>`;
   };
 
@@ -165,7 +159,7 @@ export function renderDashboard() {
         </div>
         <div class="stat-body">
           <p class="stat-label">Pemasukan bulan ini</p>
-          <h2 class="stat-value">${formatRupiah(stats.income)}</h2>
+          <h2 class="stat-value text-green">${formatRupiah(stats.income)}</h2>
         </div>
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
@@ -180,7 +174,7 @@ export function renderDashboard() {
         </div>
         <div class="stat-body">
           <p class="stat-label">Pengeluaran bulan ini</p>
-          <h2 class="stat-value">${formatRupiah(stats.expense)}</h2>
+          <h2 class="stat-value text-red">${formatRupiah(stats.expense)}</h2>
         </div>
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
