@@ -28,7 +28,7 @@
   min-width: 0;
   max-width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.7);
-  animation: toastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   transition: transform 0.2s ease, opacity 0.2s ease;
   cursor: grab;
   user-select: none;
@@ -146,8 +146,8 @@ body.disable-animations .toast {
 }
 
 @keyframes toastOut {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-100%); opacity: 0; }
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(120%); opacity: 0; }
 }
 
 /* ===== MOBILE FIXES ===== */
