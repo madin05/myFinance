@@ -694,27 +694,65 @@ function bindChatActionButtons() {
       const raw = btn.getAttribute("data-tx");
       if (!raw) return;
       try {
-        const tx = JSON.parse(raw);
+        const txRaw = JSON.parse(raw);
         btn.disabled = true;
         btn.innerHTML = `<i class="ph ph-spinner spin"></i> Menyimpan...`;
-        await store.addTransaction(tx);
+
+        // Normalize payload: match the same format as modal.js
+        // - harga harus negatif untuk expense, positif untuk income
+        const normalizedHarga = txRaw.type === "expense"
+          ? -Math.abs(txRaw.harga)
+          : Math.abs(txRaw.harga);
+
+        const payload = {
+          tanggal: txRaw.tanggal || new Date().toISOString().split("T")[0],
+          kategori: txRaw.kategori || "Lain-lain",
+          metode: txRaw.metode || "Cash",
+          akun: txRaw.akun || "",
+          keterangan: txRaw.keterangan || txRaw.kategori || "Transaksi AI",
+          harga: normalizedHarga,
+          type: txRaw.type || "expense",
+        };
+
+        await store.addTransaction(payload);
+
+        // Mark this message as saved in localStorage session
+        try {
+          const sessions = loadSessions();
+          const session = sessions.find((s) => s.id === activeSessionId);
+          if (session) {
+            const msgEl = btn.closest("[data-msg-id]");
+            const msgId = msgEl?.getAttribute("data-msg-id");
+            if (msgId) {
+              const msg = session.messages.find((m) => m.id === msgId);
+              if (msg) msg.saved = true;
+            } else {
+              // Fallback: mark last transaction msg as saved
+              const txMsgs = session.messages.filter((m) => m.intent === "transaction" && m.data && !m.saved);
+              if (txMsgs.length > 0) txMsgs[txMsgs.length - 1].saved = true;
+            }
+            saveSessions(sessions);
+          }
+        } catch (_) { /* non-critical */ }
+
         btn.innerHTML = `<i class="ph ph-check"></i> Tersimpan`;
         showToast(
           "Berhasil!",
-          `Transaksi "${tx.keterangan}" (${formatRupiah(tx.harga)}) tersimpan.`,
+          `Transaksi "${payload.keterangan}" (${formatRupiah(Math.abs(payload.harga))}) tersimpan.`,
           "success",
         );
       } catch (err) {
         btn.disabled = false;
         btn.innerHTML = `<i class="ph-bold ph-plus"></i> Simpan Transaksi`;
         showToast(
-          "Gagal",
+          "Gagal Menyimpan",
           err.message || "Gagal menyimpan transaksi.",
           "error",
         );
       }
     });
   });
+
 
   document.querySelectorAll(".btn-save-chat-wishlist").forEach((btn) => {
     btn.addEventListener("click", async () => {

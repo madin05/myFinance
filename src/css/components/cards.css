@@ -41,12 +41,76 @@
   font-size: 1.25rem;
 }
 
+.stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.stat-icon-wrapper.text-primary {
+  background-color: rgba(2, 132, 199, 0.12);
+  color: var(--primary, #0284c7) !important;
+}
+.stat-icon-wrapper.text-primary i {
+  color: var(--primary, #0284c7) !important;
+}
+
+.stat-icon-wrapper.text-green {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: var(--green, #16a34a) !important;
+}
+.stat-icon-wrapper.text-green i {
+  color: var(--green, #16a34a) !important;
+}
+
+.stat-icon-wrapper.text-red {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: var(--red, #dc2626) !important;
+}
+.stat-icon-wrapper.text-red i {
+  color: var(--red, #dc2626) !important;
+}
+
+/* Dark mode stat icon wrappers */
+[data-theme="dark"] .stat-icon-wrapper.text-primary,
+.dark .stat-icon-wrapper.text-primary {
+  background-color: rgba(56, 189, 248, 0.18);
+}
+[data-theme="dark"] .stat-icon-wrapper.text-primary i,
+.dark .stat-icon-wrapper.text-primary i {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .stat-icon-wrapper.text-green,
+.dark .stat-icon-wrapper.text-green {
+  background-color: rgba(34, 197, 94, 0.18);
+}
+[data-theme="dark"] .stat-icon-wrapper.text-green i,
+.dark .stat-icon-wrapper.text-green i {
+  color: #4ade80 !important;
+}
+
+[data-theme="dark"] .stat-icon-wrapper.text-red,
+.dark .stat-icon-wrapper.text-red {
+  background-color: rgba(239, 68, 68, 0.18);
+}
+[data-theme="dark"] .stat-icon-wrapper.text-red i,
+.dark .stat-icon-wrapper.text-red i {
+  color: #f87171 !important;
+}
+
 .stat-watermark {
   position: absolute;
   right: -4px;
   bottom: -4px;
   font-size: 5.5rem;
-  opacity: 0.07;
+  opacity: 0.08;
   color: var(--text-main);
   transform: rotate(-15deg);
   z-index: 1;
@@ -54,9 +118,14 @@
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+[data-theme="dark"] .stat-watermark,
+.dark .stat-watermark {
+  opacity: 0.12;
+}
+
 .stat-card:hover .stat-watermark {
   transform: scale(1.1) rotate(-10deg);
-  opacity: 0.20 !important;
+  opacity: 0.18 !important;
 }
 
 .stat-badge {
