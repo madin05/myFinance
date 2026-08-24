@@ -324,8 +324,8 @@ function renderTableBody(container) {
   }).join('');
 
   const emptyMsg = `
-    <tr>
-      <td colspan="6" style="${isMobile ? 'display:block;' : ''}text-align: center; padding: 4rem 1.5rem;">
+    <tr class="empty-row">
+      <td colspan="6" class="empty-td" style="${isMobile ? 'display:block;' : ''}text-align: center; padding: 3rem 1.5rem;">
         <style>
           [data-theme="light"] .tx-illustration-dark { display: none !important; }
           [data-theme="dark"] .tx-illustration-light { display: none !important; }

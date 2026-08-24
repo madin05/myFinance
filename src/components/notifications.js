@@ -488,22 +488,28 @@ export const showVerificationModal = () => {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-      const res = await fetch(`${API_URL}/users/send-verification`, {
+      const res = await fetch(`${API_URL}/auth/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         credentials: 'include'
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal mengirim email.');
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim kode OTP.');
 
-      btn.textContent = 'Email Terkirim! ✓';
-      showToast('Tautan verifikasi telah dikirim ke email kamu.', 'success');
-      setTimeout(() => close(), 1500);
+      btn.textContent = 'Kode Terkirim! ✓';
+      close();
+      // Redirect ke halaman OTP input
+      const { renderLogin } = await import('../pages/login.js');
+      const loginView = document.getElementById('login-view');
+      const appLayout = document.getElementById('app-layout');
+      if (loginView) loginView.style.display = 'block';
+      if (appLayout) appLayout.style.display = 'none';
+      renderLogin('verify-otp', store.user?.email || '', { email: store.user?.email, token });
     } catch (err) {
       btn.disabled = false;
       btn.textContent = 'Coba Lagi';
-      showToast(err.message || 'Gagal mengirim email verifikasi.', 'error');
+      showToast(err.message || 'Gagal mengirim kode OTP.', 'error');
     }
   };
 };
@@ -588,22 +594,28 @@ export const showOptionalVerificationModal = () => {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-      const res = await fetch(`${API_URL}/users/send-verification`, {
+      const res = await fetch(`${API_URL}/auth/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         credentials: 'include'
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal mengirim email.');
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim kode OTP.');
 
-      btn.textContent = 'Email Terkirim! ✓';
-      showToast('Tautan verifikasi telah dikirim ke email kamu.', 'success');
-      setTimeout(() => close(), 1500);
+      btn.textContent = 'Kode Terkirim! ✓';
+      close();
+      // Redirect ke halaman OTP input
+      const { renderLogin } = await import('../pages/login.js');
+      const loginView = document.getElementById('login-view');
+      const appLayout = document.getElementById('app-layout');
+      if (loginView) loginView.style.display = 'block';
+      if (appLayout) appLayout.style.display = 'none';
+      renderLogin('verify-otp', store.user?.email || '', { email: store.user?.email, token });
     } catch (err) {
       btn.disabled = false;
       btn.textContent = 'Coba Lagi';
-      showToast(err.message || 'Gagal mengirim email verifikasi.', 'error');
+      showToast(err.message || 'Gagal mengirim kode OTP.', 'error');
     }
   };
 };

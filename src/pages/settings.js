@@ -2,6 +2,8 @@ import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelect } from '../components/customSelect.js';
+import { openEnable2FAModal, openConfirmPasswordModal } from '../components/modal.js';
+import { auth, EmailAuthProvider, reauthenticateWithCredential } from '../firebase-config.js';
 
 const SUPPORTED_CURRENCIES = ['IDR', 'USD', 'EUR', 'SGD', 'MYR', 'JPY'];
 
@@ -74,29 +76,10 @@ export function renderSettings() {
             Tampilan &amp; Kinerja
           </h4>
           <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-            <!-- Mode Tampilan / Tema -->
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px dashed var(--border); padding-bottom: 1rem;">
-              <div>
-                <p class="font-bold text-sm" style="margin: 0;">Tema Aplikasi</p>
-                <p class="text-muted text-xs" style="margin: 0;">Pilih mode tampilan terang, gelap, atau ikuti perangkat.</p>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" class="btn btn-outline ${localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && document.documentElement.getAttribute('data-theme') === 'light') ? 'active' : ''}" id="btn-theme-light" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px; gap: 4px;">
-                  <i class="ph ph-sun"></i> Terang
-                </button>
-                <button type="button" class="btn btn-outline ${localStorage.getItem('theme') === 'dark' ? 'active' : ''}" id="btn-theme-dark" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px; gap: 4px;">
-                  <i class="ph ph-moon"></i> Gelap
-                </button>
-                <button type="button" class="btn btn-outline ${localStorage.getItem('theme') === 'system' ? 'active' : ''}" id="btn-theme-sys" style="padding: 0.4rem 0.75rem; font-size: 0.78rem; border-radius: 8px; gap: 4px;">
-                  <i class="ph ph-desktop-tower"></i> Otomatis
-                </button>
-              </div>
-            </div>
-
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <p class="font-bold text-sm" style="margin: 0;">Mode Hemat Kinerja</p>
-                <p class="text-muted text-xs">Matikan semua animasi &amp; efek blur kaca.</p>
+                <p class="text-muted text-xs" style="margin: 0;">Matikan semua animasi &amp; efek blur kaca.</p>
               </div>
               <label class="switch">
                 <input type="checkbox" id="toggle-performance-mode"
@@ -104,18 +87,24 @@ export function renderSettings() {
                 <span class="slider round"></span>
               </label>
             </div>
+          </div>
+        </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border); padding-top: 1rem;">
-              <div>
-                <p class="font-bold text-sm" style="margin: 0;">Tata Letak Ringkas</p>
-                <p class="text-muted text-xs">Kurangi tinggi baris tabel &amp; padding kartu.</p>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="toggle-compact-mode"
-                  ${localStorage.getItem('layout-density') === 'compact' ? 'checked' : ''}>
-                <span class="slider round"></span>
-              </label>
+        <!-- Keamanan & Autentikasi 2-Langkah (2FA) -->
+        <div class="stat-card" style="padding: 1.5rem; grid-column: span 2;">
+          <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+            <i class="ph ph-shield-check" style="font-size: 1.4rem; color: var(--primary, #6366f1);"></i>
+            Keamanan &amp; Autentikasi 2-Langkah (2FA)
+          </h4>
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-hover, #f8fafc); padding: 1rem; border-radius: 8px;">
+            <div>
+              <p class="font-bold text-sm" style="margin: 0;">Autentikasi OTP Email (2FA)</p>
+              <p class="text-muted text-xs" style="margin: 4px 0 0;">Minta kode OTP 6-digit yang dikirim ke email setiap kali melakukan login.</p>
             </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-2fa-setting" ${user.is2FAEnabled || user.twoFactorEmailEnabled ? 'checked' : ''}>
+              <span class="slider round"></span>
+            </label>
           </div>
         </div>
 
@@ -126,45 +115,6 @@ export function renderSettings() {
   // Init custom select mata uang
   const currencySelect = document.getElementById('user-currency');
   if (currencySelect) initCustomSelect(currencySelect);
-
-  // Theme selection buttons
-  const btnLight = document.getElementById('btn-theme-light');
-  const btnDark = document.getElementById('btn-theme-dark');
-  const btnSys = document.getElementById('btn-theme-sys');
-
-  const updateThemeBtnState = (activeTheme) => {
-    btnLight?.classList.toggle('active', activeTheme === 'light');
-    btnDark?.classList.toggle('active', activeTheme === 'dark');
-    btnSys?.classList.toggle('active', activeTheme === 'system');
-  };
-
-  if (btnLight) {
-    btnLight.addEventListener('click', () => {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
-      updateThemeBtnState('light');
-      showToast('Mode Terang diaktifkan', 'info');
-    });
-  }
-
-  if (btnDark) {
-    btnDark.addEventListener('click', () => {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-      updateThemeBtnState('dark');
-      showToast('Mode Gelap diaktifkan', 'info');
-    });
-  }
-
-  if (btnSys) {
-    btnSys.addEventListener('click', () => {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      localStorage.setItem('theme', 'system');
-      updateThemeBtnState('system');
-      showToast('Mode Otomatis diaktifkan', 'info');
-    });
-  }
 
   // Simpan preferensi keuangan
   const btnSave = document.getElementById('btn-save-financial-start');
@@ -204,14 +154,103 @@ export function renderSettings() {
     });
   }
 
-  // Toggle Tata Letak Ringkas
-  const toggleCompact = document.getElementById('toggle-compact-mode');
-  if (toggleCompact) {
-    toggleCompact.addEventListener('change', (e) => {
+  // Toggle 2FA Setting
+  const toggle2FA = document.getElementById('toggle-2fa-setting');
+  if (toggle2FA) {
+    toggle2FA.addEventListener('change', (e) => {
       const isChecked = e.target.checked;
-      document.body.classList.toggle('layout-compact', isChecked);
-      localStorage.setItem('layout-density', isChecked ? 'compact' : 'cozy');
-      showToast(isChecked ? 'Tata letak ringkas diaktifkan.' : 'Tata letak nyaman diaktifkan.', isChecked ? 'info' : 'success');
+      checkVerification(async () => {
+        const userFirebase = auth.currentUser;
+        if (isChecked) {
+          toggle2FA.checked = false;
+          openEnable2FAModal(
+            () => {
+              toggle2FA.checked = true;
+            },
+            () => {
+              toggle2FA.checked = false;
+            }
+          );
+        } else {
+          const providerId = userFirebase?.providerData[0]?.providerId || "password";
+          if (providerId === "password") {
+            openConfirmPasswordModal(
+              async (password) => {
+                showLoading();
+                try {
+                  if (userFirebase) {
+                    const credential = EmailAuthProvider.credential(userFirebase.email, password);
+                    await reauthenticateWithCredential(userFirebase, credential);
+                  }
+                  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                  const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+                  
+                  const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
+                  const res = await fetch(`${API_URL}/auth/2fa/toggle`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${freshToken}`
+                    },
+                    body: JSON.stringify({ enabled: false, password })
+                  });
+
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || 'Gagal menonaktifkan 2FA.');
+
+                  hideLoading();
+                  toggle2FA.checked = false;
+                  if (store.user) {
+                    store.user.is2FAEnabled = false;
+                    store.user.twoFactorEmailEnabled = false;
+                    store.save();
+                  }
+                  showToast(data.message || 'Autentikasi 2FA berhasil dinonaktifkan.', 'success');
+                } catch (err) {
+                  hideLoading();
+                  toggle2FA.checked = true;
+                  showToast(err.message || 'Gagal menonaktifkan 2FA.', 'error');
+                }
+              },
+              () => {
+                toggle2FA.checked = true;
+              }
+            );
+          } else {
+            showLoading();
+            try {
+              const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+              const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+              
+              const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
+              const res = await fetch(`${API_URL}/auth/2fa/toggle`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${freshToken}`
+                },
+                body: JSON.stringify({ enabled: false })
+              });
+
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Gagal menonaktifkan 2FA.');
+
+              hideLoading();
+              toggle2FA.checked = false;
+              if (store.user) {
+                store.user.is2FAEnabled = false;
+                store.user.twoFactorEmailEnabled = false;
+                store.save();
+              }
+              showToast(data.message || 'Autentikasi 2FA berhasil dinonaktifkan.', 'success');
+            } catch (err) {
+              hideLoading();
+              toggle2FA.checked = true;
+              showToast(err.message || 'Gagal menonaktifkan 2FA.', 'error');
+            }
+          }
+        }
+      });
     });
   }
 }

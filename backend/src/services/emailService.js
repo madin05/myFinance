@@ -170,6 +170,107 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
 };
 
 /**
+ * Kirim email berisi 6-digit OTP code ke user.
+ * Dipakai saat registrasi akun baru (mengganti link verifikasi).
+ *
+ * @param {string} email - Email tujuan
+ * @param {string} otpCode - 6-digit OTP plaintext
+ * @returns {Promise<void>}
+ */
+exports.sendOtpVerificationEmail = async (email, otpCode) => {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
+  }
+
+  const transporter = getTransporter();
+
+  // Format OTP digits dengan spacing untuk tampilan premium
+  const digits = otpCode.split('').map(d =>
+    `<td style="width:48px;height:56px;background:#f1f5f9;border:2px solid #e2e8f0;border-radius:10px;text-align:center;vertical-align:middle;font-size:28px;font-weight:800;color:#1e293b;font-family:'Segoe UI',monospace;letter-spacing:0;">${d}</td>`
+  ).join('<td style="width:8px;"></td>');
+
+  const mailOptions = {
+    from: `"MyFinance" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: 'Kode Verifikasi Akun MyFinance Kamu 🔐',
+    html: `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kode Verifikasi OTP MyFinance</title>
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                
+                <!-- Header -->
+                <tr>
+                  <td style="background:linear-gradient(135deg,#6366f1,#7c3aed);padding:36px 40px;text-align:center;">
+                    <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
+                      💰 MyFinance
+                    </h1>
+                    <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">
+                      Verifikasi Akun Baru
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Body -->
+                <tr>
+                  <td style="padding:40px;">
+                    <h2 style="margin:0 0 12px;color:#1e293b;font-size:20px;font-weight:700;">
+                      Kode Verifikasi OTP 🔐
+                    </h2>
+                    <p style="margin:0 0 28px;color:#64748b;font-size:15px;line-height:1.6;">
+                      Masukkan kode 6-digit berikut di halaman verifikasi MyFinance untuk mengaktifkan akunmu.
+                    </p>
+                    
+                    <!-- OTP Code Display -->
+                    <table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">
+                      <tr>
+                        ${digits}
+                      </tr>
+                    </table>
+                    
+                    <div style="background:#f1f5f9;border-radius:10px;padding:16px;margin-bottom:24px;text-align:center;">
+                      <p style="margin:0;color:#64748b;font-size:13px;line-height:1.5;">
+                        Kode ini berlaku selama <strong style="color:#6366f1;">5 menit</strong>.<br>
+                        Jangan bagikan kode ini kepada siapapun.
+                      </p>
+                    </div>
+                    
+                    <p style="margin:0;color:#94a3b8;font-size:13px;line-height:1.6;">
+                      Jika kamu tidak mendaftar di MyFinance, abaikan email ini.
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+                    <p style="margin:0;color:#94a3b8;font-size:12px;">
+                      © 2026 MyFinance · Email ini dikirim otomatis, jangan dibalas.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`✅ OTP verification email sent to: ${email}`);
+};
+
+/**
  * Kirim email reset password ke user menggunakan Firebase Admin SDK + Nodemailer.
  *
  * @param {string} email - Email user yang akan direset passwordnya
@@ -499,4 +600,78 @@ exports.send2FADisabledSecurityEmail = async (email, ipAddress, userAgent, times
   await transporter.sendMail(mailOptions);
   console.log(`✅ 2FA deactivation security alert sent to: ${email}`);
 };
+
+/**
+ * Kirim email OTP 2FA saat login dengan detail IP & User-Agent.
+ */
+exports.send2FAOtpEmail = async (email, otpCode) => {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
+  }
+
+  const transporter = getTransporter();
+
+  const mailOptions = {
+    from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: `Kode OTP 2FA Login MyFinance: ${otpCode}`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kode OTP 2FA MyFinance</title>
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#0284c7,#0369a1);padding:32px 36px;text-align:center;">
+                    <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">
+                      Kode OTP 2FA
+                    </h1>
+                    <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:13px;">
+                      Verifikasi Keamanan Akses Masuk
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:36px;text-align:center;">
+                    <p style="margin:0 0 16px;color:#64748b;font-size:14px;line-height:1.6;">
+                      Gunakan 6-digit kode OTP berikut untuk menyelesaikan proses masuk ke akun MyFinance Anda:
+                    </p>
+
+                    <!-- Large OTP Box -->
+                    <div style="background:#f0f9ff;border:2px dashed #0284c7;border-radius:12px;padding:16px 24px;margin:16px 0;display:inline-block;letter-spacing:10px;font-size:32px;font-weight:800;color:#0369a1;font-family:monospace;">
+                      ${otpCode}
+                    </div>
+
+                    <p style="margin:16px 0 0;color:#ef4444;font-size:13px;font-weight:600;">
+                      Kode berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f8fafc;padding:16px 36px;border-top:1px solid #e2e8f0;text-align:center;">
+                    <p style="margin:0;color:#94a3b8;font-size:12px;">
+                      © 2026 MyFinance · Autentikasi 2-Langkah
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`✅ 2FA OTP email sent to: ${email}`);
+};
+
 

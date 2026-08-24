@@ -1,5 +1,5 @@
 import { store } from '../store.js';
-import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from '../firebase-config.js';
+import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken, sendEmailVerification, sendPasswordResetEmail, updateProfile } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert, showConfirm, showOptionalVerificationModal } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
@@ -12,6 +12,8 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   const isVerified = mode === 'email-verified';
   const isVerifiedError = mode === 'email-verified-error';
   const isResetConfirm = mode === 'reset-password-confirm';
+  const isVerifyOtp = mode === 'verify-otp';
+  const isVerify2FAOtp = mode === 'verify-2fa-otp';
 
   container.innerHTML = `
     <div class="login-container" id="login-parallax-container">
@@ -35,7 +37,46 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
               <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
             </div>
 
-            ${isVerified ? `
+            ${(isVerifyOtp || isVerify2FAOtp) ? `
+              <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 0.5rem 0;">
+                <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary, #6366f1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0;">
+                  <i class="${isVerify2FAOtp ? 'ph ph-shield-check' : 'ph ph-envelope-open'}"></i>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                  <h2 style="margin: 0; font-size: 1.3rem; text-align: center;">${isVerify2FAOtp ? 'Verifikasi 2-Langkah (2FA)' : 'Masukkan Kode OTP'}</h2>
+                  <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.55; margin: 0; text-align: center;">
+                    Kode OTP 6-digit telah dikirim ke<br>
+                    <strong style="color: var(--text-main);">${pendingEmail || extraData?.email || extraData?.emailMasked || ''}</strong>
+                  </p>
+                </div>
+
+                <form id="otp-form" style="width: 100%;">
+                  <div class="otp-input-group" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 1.25rem;">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="0" autocomplete="one-time-code" aria-label="Digit 1">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="1" aria-label="Digit 2">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="2" aria-label="Digit 3">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="3" aria-label="Digit 4">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="4" aria-label="Digit 5">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="5" aria-label="Digit 6">
+                  </div>
+
+                  <div id="otp-error-msg" style="color: #ef4444; font-size: 0.8rem; text-align: center; margin-bottom: 0.75rem; min-height: 1.2em;"></div>
+
+                  <button type="submit" id="btn-verify-otp" class="btn btn-primary btn-full" style="height: 48px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    ${isVerify2FAOtp ? 'Verifikasi 2FA' : 'Verifikasi Kode'}
+                  </button>
+                </form>
+
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;">
+                  <p id="otp-countdown-text" style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Kirim ulang kode dalam <strong id="otp-countdown-timer">60</strong> detik</p>
+                  <button id="btn-resend-otp" class="btn btn-outline btn-full" style="height: 42px; border-radius: 8px; font-size: 0.82rem;" disabled>
+                    Kirim Ulang Kode ${isVerify2FAOtp ? '2FA' : ''}
+                  </button>
+                  <a href="javascript:void(0)" id="btn-cancel-2fa" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; text-decoration: none;">Kembali ke Login</a>
+                </div>
+              </div>
+            ` : isVerified ? `
               <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 0.5rem 0;">
                 <!-- Success Icon Animated -->
                 <div class="email-verified-icon-wrapper">
@@ -196,8 +237,237 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
       </div>
     </div>
   `;
+  if (isVerifyOtp || isVerify2FAOtp) {
+    const cancelBtn = document.getElementById('btn-cancel-2fa');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => renderLogin('login');
+    }
 
-  if (isVerified) {
+    // ─── OTP Input Auto-Focus & Navigation ───
+    const otpInputs = document.querySelectorAll('.otp-input');
+    if (otpInputs.length) {
+      setTimeout(() => otpInputs[0]?.focus(), 100);
+
+      otpInputs.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/\D/g, '');
+          e.target.value = val.slice(0, 1);
+          if (val && idx < otpInputs.length - 1) {
+            otpInputs[idx + 1].focus();
+          }
+          // Clear error saat user mulai ketik
+          const errEl = document.getElementById('otp-error-msg');
+          if (errEl) errEl.textContent = '';
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+            otpInputs[idx - 1].focus();
+            otpInputs[idx - 1].value = '';
+          }
+        });
+
+        // Paste support: distribute digits across inputs
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+          pasted.split('').forEach((ch, i) => {
+            if (otpInputs[i]) otpInputs[i].value = ch;
+          });
+          const nextIdx = Math.min(pasted.length, otpInputs.length - 1);
+          otpInputs[nextIdx].focus();
+        });
+      });
+    }
+
+    // ─── OTP Form Submit ───
+    const otpForm = document.getElementById('otp-form');
+    if (otpForm) {
+      otpForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const otp = Array.from(otpInputs).map(i => i.value).join('');
+        const errEl = document.getElementById('otp-error-msg');
+
+        if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+          if (errEl) errEl.textContent = 'Masukkan 6 digit kode OTP.';
+          return;
+        }
+
+        const btn = document.getElementById('btn-verify-otp');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Memverifikasi...'; }
+
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+          if (isVerify2FAOtp) {
+            const preAuthToken = extraData?.preAuthToken;
+            if (!preAuthToken) throw new Error('Sesi 2FA tidak ditemukan. Silakan login kembali.');
+
+            const res = await fetch(`${API_URL}/auth/login-2fa/verify`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${preAuthToken}`
+              },
+              body: JSON.stringify({ otp })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Verifikasi 2FA gagal.');
+
+            // Login ke Firebase menggunakan Custom Token
+            const userCred = await signInWithCustomToken(auth, data.customToken);
+            const user = userCred.user;
+            const token = await user.getIdToken(true);
+
+            await store.setUser({
+              uid: user.uid,
+              name: user.displayName || user.email?.split('@')[0] || 'User MyFinance',
+              email: user.email,
+              avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+              token: token,
+              emailVerified: user.emailVerified,
+              provider: 'password'
+            });
+
+            window.isVerificationModalActive = false;
+            const loginView = document.getElementById('login-view');
+            const appLayout = document.getElementById('app-layout');
+            if (loginView) loginView.style.display = 'none';
+            if (appLayout) appLayout.style.display = 'flex';
+            navigateTo('/dashboard');
+
+            showToast('Verifikasi 2FA berhasil! Selamat datang kembali.', 'success');
+          } else {
+            const token = store.user?.token || extraData?.token;
+            if (!token) throw new Error('Sesi habis, silakan login ulang.');
+
+            const res = await fetch(`${API_URL}/auth/otp/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ otp })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Verifikasi OTP gagal.');
+
+            // ✅ OTP Valid — Update store & masuk ke Dashboard
+            if (store.user) {
+              store.user.emailVerified = true;
+              store.save();
+            }
+
+            // Reload Firebase user untuk sync emailVerified
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              try { await currentUser.reload(); } catch (e) {}
+            }
+
+            window.isVerificationModalActive = false;
+            const loginView = document.getElementById('login-view');
+            const appLayout = document.getElementById('app-layout');
+            if (loginView) loginView.style.display = 'none';
+            if (appLayout) appLayout.style.display = 'flex';
+            navigateTo('/dashboard');
+
+            showToast('Email berhasil diverifikasi! Selamat datang di MyFinance.', 'success');
+
+            // Trigger Onboarding Product Tour
+            setTimeout(() => {
+              import('../components/tutorial.js').then(m => m.startProductTutorial()).catch(() => {});
+            }, 600);
+          }
+        } catch (err) {
+          if (errEl) errEl.textContent = err.message;
+          if (btn) { btn.disabled = false; btn.innerHTML = isVerify2FAOtp ? 'Verifikasi 2FA' : 'Verifikasi Kode'; }
+          // Clear OTP inputs on error
+          otpInputs.forEach(i => { i.value = ''; });
+          otpInputs[0]?.focus();
+        }
+      };
+    }
+
+    // ─── Countdown Timer & Resend OTP ───
+    let countdown = 60;
+    const timerEl = document.getElementById('otp-countdown-timer');
+    const countdownTextEl = document.getElementById('otp-countdown-text');
+    const resendBtn = document.getElementById('btn-resend-otp');
+
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (timerEl) timerEl.textContent = countdown;
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        if (resendBtn) resendBtn.disabled = false;
+        if (countdownTextEl) countdownTextEl.style.display = 'none';
+      }
+    }, 1000);
+
+    if (resendBtn) {
+      resendBtn.onclick = async () => {
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Mengirim...';
+
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+          if (isVerify2FAOtp) {
+            const preAuthToken = extraData?.preAuthToken;
+            if (!preAuthToken) throw new Error('Sesi 2FA tidak ditemukan.');
+
+            const res = await fetch(`${API_URL}/auth/login-2fa/resend`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${preAuthToken}`
+              }
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gagal kirim ulang OTP 2FA.');
+
+            showToast('Kode OTP 2FA baru telah dikirim ke email Anda!', 'success');
+          } else {
+            const token = store.user?.token || extraData?.token;
+            if (!token) throw new Error('Sesi habis.');
+
+            const res = await fetch(`${API_URL}/auth/otp/send`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gagal kirim OTP.');
+
+            showToast('Kode OTP baru telah dikirim ke emailmu!', 'success');
+          }
+
+          resendBtn.textContent = 'Kode Terkirim! ✓';
+
+          // Reset countdown
+          countdown = 60;
+          if (countdownTextEl) countdownTextEl.style.display = '';
+          if (timerEl) timerEl.textContent = countdown;
+
+          const newInterval = setInterval(() => {
+            countdown--;
+            if (timerEl) timerEl.textContent = countdown;
+            if (countdown <= 0) {
+              clearInterval(newInterval);
+              if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = 'Kirim Ulang Kode'; }
+              if (countdownTextEl) countdownTextEl.style.display = 'none';
+            }
+          }, 1000);
+        } catch (err) {
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Coba Lagi';
+          showToast(err.message || 'Gagal mengirim ulang kode OTP.', 'error');
+        }
+      };
+    }
+  } else if (isVerified) {
     const goToLoginBtn = document.getElementById('btn-go-to-login');
     if (goToLoginBtn) {
       goToLoginBtn.onclick = async () => {
@@ -466,22 +736,8 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
           // Set displayName di Firebase Auth agar onAuthStateChanged baca nama yang benar
           await updateProfile(user, { displayName: name });
 
-          // Kirim email verifikasi via Backend API (Bypass Firebase Console sepenuhnya)
+          // Set user di store (belum verified)
           const token = await user.getIdToken(true);
-          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
-          
-          fetch(`${API_URL}/users/send-verification`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          }).catch(err => {
-            console.warn("Gagal trigger kirim email verifikasi backend:", err);
-          });
-
-          // Langsung set user dan masuk ke app — Soft/Lazy Verification
           await store.setUser({
             uid: user.uid,
             name: name,
@@ -490,12 +746,25 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             token: token,
             emailVerified: false,
             provider: 'password'
-          }, { name }); // pass name ke backend sync
+          }, { name });
 
-          window.isVerificationModalActive = true;
+          // Kirim OTP ke email via Backend API
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+          
+          fetch(`${API_URL}/auth/otp/send`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }).catch(err => {
+            console.warn('Gagal trigger kirim OTP backend:', err);
+          });
+
           hideLoading();
-          navigateTo('/dashboard');
-          showOptionalVerificationModal();
+          // Arahkan ke halaman input OTP (WAJIB verifikasi sebelum masuk Dashboard)
+          renderLogin('verify-otp', user.email, { email: user.email, token });
         } else {
           // Handle Login (with Demo Fallback)
           if (email === 'guest' && pass === 'guest123') {
@@ -517,13 +786,9 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
               body: JSON.stringify({ email, password: pass })
             }).then(r => r.json()).catch(() => null);
 
-            if (check2FARes && check2FARes.status === 'AWAITING_2FA') {
+            if (check2FARes && check2FARes.require2FA) {
               hideLoading();
-              showAlert(
-                'Verifikasi 2-Langkah (2FA)',
-                check2FARes.message || 'Magic Link 2FA telah dikirim ke email Anda. Silakan periksa kotak masuk/spam untuk melanjutkan login.',
-                'info'
-              );
+              renderLogin('verify-2fa-otp', check2FARes.emailMasked, { preAuthToken: check2FARes.preAuthToken, emailMasked: check2FARes.emailMasked });
               return;
             }
 
@@ -711,16 +976,16 @@ export function renderEmailVerificationBanner(firebaseUser) {
   banner.innerHTML = `
     <div class="evb-icon"><i class="ph ph-envelope-simple-warning"></i></div>
     <div class="evb-text">
-      <strong>Verifikasi emailmu</strong>
-      <span>Cek inbox atau spam untuk link verifikasi ke <em>${firebaseUser?.email || ''}</em></span>
+      <strong>Verifikasi emailmu dengan OTP</strong>
+      <span>Masukkan kode OTP yang dikirimkan ke <em>${firebaseUser?.email || ''}</em></span>
     </div>
     <div class="evb-actions">
-      <button id="evb-btn-resend" class="evb-btn-resend">Kirim Ulang</button>
+      <button id="evb-btn-resend" class="evb-btn-resend">Input OTP / Kirim Ulang</button>
       <button id="evb-btn-close" class="evb-btn-close" aria-label="Tutup"><i class="ph ph-x"></i></button>
     </div>
   `;
 
-  // Handler kirim ulang — pakai backend API (nodemailer + Gmail), bukan Firebase Client SDK
+  // Handler kirim ulang — pakai OTP endpoint & arahkan ke form OTP
   document.getElementById('evb-btn-resend').onclick = async () => {
     const btn = document.getElementById('evb-btn-resend');
     if (!btn) return;
@@ -734,7 +999,7 @@ export function renderEmailVerificationBanner(firebaseUser) {
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-      const res = await fetch(`${API_URL}/users/send-verification`, {
+      const res = await fetch(`${API_URL}/auth/otp/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -744,20 +1009,20 @@ export function renderEmailVerificationBanner(firebaseUser) {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal kirim email.');
+      if (!res.ok) throw new Error(data.error || 'Gagal kirim OTP.');
 
-      btn.textContent = 'Terkirim! ✓';
-      // Reset tombol setelah 45 detik
-      setTimeout(() => {
-        if (document.getElementById('evb-btn-resend')) {
-          btn.disabled = false;
-          btn.textContent = 'Kirim Ulang';
-        }
-      }, 45000);
+      btn.textContent = 'OTP Terkirim! ✓';
+      
+      // Sembunyikan layout utama dan tampilkan view OTP
+      const loginView = document.getElementById('login-view');
+      const appLayout = document.getElementById('app-layout');
+      if (loginView) loginView.style.display = 'block';
+      if (appLayout) appLayout.style.display = 'none';
+      renderLogin('verify-otp', firebaseUser?.email || store.user?.email || '', { email: firebaseUser?.email || store.user?.email, token });
     } catch (err) {
       btn.disabled = false;
       btn.textContent = 'Coba Lagi';
-      console.warn('Resend verification error:', err.message);
+      console.warn('Resend OTP error:', err.message);
     }
   };
 

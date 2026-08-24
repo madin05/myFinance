@@ -117,9 +117,19 @@ export function initNavigation() {
     const pDrop = document.getElementById('profile-dropdown');
     const nDrop = document.getElementById('notif-dropdown');
 
-    if (pTrigger && !e.target.closest('#profile-dropdown')) {
-      pDrop?.classList.toggle('active');
-      nDrop?.classList.remove('active');
+    if (pTrigger) {
+      if (!e.target.closest('#profile-dropdown')) {
+        // Klik avatar / area luar dropdown menu: toggle profile dropdown
+        pDrop?.classList.toggle('active');
+        nDrop?.classList.remove('active');
+      } else {
+        // Klik di dalam dropdown menu
+        const isThemeToggle = e.target.closest('.theme-toggle-group, .themeToggleInput, #themeToggleDropdown, .profile-dropdown-theme-wrapper');
+        const itemClicked = e.target.closest('a, button');
+        if (itemClicked && !isThemeToggle) {
+          pDrop?.classList.remove('active');
+        }
+      }
     } else if (nTrigger) {
       nDrop?.classList.toggle('active');
       pDrop?.classList.remove('active');
@@ -129,11 +139,9 @@ export function initNavigation() {
         renderNotificationDropdown();
       }
     } else {
-      // Close profile dropdown when clicking items inside it or outside
-      if (pDrop && !e.target.closest('#user-profile-trigger')) {
-        pDrop.classList.remove('active');
-      }
-      if (nDrop && !e.target.closest('#notif-trigger') && !e.target.closest('#notif-dropdown')) {
+      // Close dropdowns when clicking outside
+      pDrop?.classList.remove('active');
+      if (nDrop && !e.target.closest('#notif-dropdown')) {
         nDrop.classList.remove('active');
       }
     }

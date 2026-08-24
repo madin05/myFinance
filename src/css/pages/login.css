@@ -597,16 +597,58 @@
   }
 }
 
-@media (max-width: 480px) {
-  .login-container {
-    padding: 1.25rem 1rem;
+/* ── 9. OTP DIGIT INPUT MODULE STYLES ── */
+.otp-input-group {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.otp-input {
+  width: 46px;
+  height: 54px;
+  border: 1.5px solid rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-main);
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-align: center;
+  font-family: inherit;
+  border-radius: var(--radius-md, 8px);
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .otp-input {
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  background: rgba(21, 18, 27, 0.6);
+  color: #f8fafc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.otp-input:focus {
+  border-color: var(--primary, #6366f1);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), 0 4px 12px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .otp-input:focus {
+  border-color: #b56aff;
+  background: rgba(30, 24, 42, 0.95);
+  box-shadow: 0 0 0 3px rgba(181, 106, 255, 0.3), 0 4px 12px rgba(181, 106, 255, 0.2);
+}
+
+@media (max-width: 400px) {
+  .otp-input-group {
+    gap: 6px;
   }
-  .login-card {
-    padding: 1.75rem 1.25rem;
-  }
-  .evb-text span {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
+  .otp-input {
+    width: 38px;
+    height: 46px;
+    font-size: 1.2rem;
   }
 }
+

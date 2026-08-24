@@ -157,12 +157,12 @@ async function verify2FAToken(rawToken, req) {
   if (record.type === 'SETUP') {
     await prisma.user.update({
       where: { id: record.userId },
-      data: { is2FAEnabled: true }
+      data: { is2FAEnabled: true, twoFactorEmailEnabled: true }
     });
   } else if (record.type === 'DISABLE') {
     await prisma.user.update({
       where: { id: record.userId },
-      data: { is2FAEnabled: false }
+      data: { is2FAEnabled: false, twoFactorEmailEnabled: false }
     });
   }
 

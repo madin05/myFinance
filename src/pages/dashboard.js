@@ -211,15 +211,15 @@ export function renderDashboard() {
               ${
                 txHtml ||
                 `
-                <tr>
-                  <td colspan="5" style="text-align: center; padding: 3rem 1.5rem;">
+                <tr class="empty-row">
+                  <td colspan="5" class="empty-td" style="text-align: center; padding: 2rem 1.5rem;">
                     <style>
                       [data-theme="light"] .tx-illustration-dark { display: none !important; }
                       [data-theme="dark"] .tx-illustration-light { display: none !important; }
                     </style>
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
-                      <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 130px; height: 130px;" />
-                      <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 130px; height: 130px;" />
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
+                      <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 120px; height: 120px;" />
+                      <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 120px; height: 120px;" />
                       <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi</p>
                     </div>
                   </td>

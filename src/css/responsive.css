@@ -439,8 +439,8 @@
     gap: 10px;
   }
 
-  /* 3. Tiap row = card */
-  .transactions-table tr {
+  /* 3. Tiap row = card (kecuali empty row) */
+  .transactions-table tr:not(.empty-row) {
     width: 100% !important;
     padding: 0.9rem 1rem !important;
     border-radius: 16px !important;
@@ -455,10 +455,21 @@
   }
 
   /* Dark mode: bikin card lebih kontras dari bg gradient */
-  [data-theme="dark"] .transactions-table tr {
+  [data-theme="dark"] .transactions-table tr:not(.empty-row) {
     background: #1c1626 !important;
     border-color: #3d3548 !important;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Overrides untuk baris kosong (empty state) */
+  .transactions-table tr.empty-row,
+  .transactions-table tr:has(td[colspan]) {
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-height: auto !important;
   }
 
   /* 4. Reset semua td */
@@ -470,8 +481,17 @@
     display: block !important;
   }
 
-  /* 5. Tanggal (td:1) — hidden, tampil di baris meta bawah */
-  .transactions-table td:nth-child(1) {
+  .transactions-table td.empty-td,
+  .transactions-table td[colspan] {
+    display: block !important;
+    padding: 1.5rem 1rem !important;
+    width: 100% !important;
+    position: static !important;
+    text-align: center !important;
+  }
+
+  /* 5. Tanggal (td:1) — hidden untuk baris transaksi normal, tampil untuk empty state */
+  .transactions-table td:nth-child(1):not(.empty-td):not([colspan]) {
     display: none !important;
   }
 

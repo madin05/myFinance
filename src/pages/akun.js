@@ -12,6 +12,7 @@ import {
   openEditUsernameModal,
   openDeleteAccountModal,
   openConfirmPasswordModal,
+  openEnable2FAModal,
 } from "../components/modal.js";
 import { initCustomSelect } from "../components/customSelect.js";
 import {
@@ -324,22 +325,15 @@ export function renderAkun() {
       checkVerification(async () => {
         const userFirebase = auth.currentUser;
         if (isChecked) {
-          showLoading();
-          try {
-            const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
-            const res = await userService.toggle2FA(freshToken, true);
-            hideLoading();
-            e.target.checked = false;
-            showAlert(
-              "Konfirmasi Email 2FA",
-              res.message || "Tautan konfirmasi aktivasi 2FA telah dikirim ke email kamu. Silakan periksa inbox/spam.",
-              "info"
-            );
-          } catch (err) {
-            hideLoading();
-            e.target.checked = false;
-            showAlert("Gagal 2FA", err.message || "Gagal mengaktifkan 2FA.", "error");
-          }
+          e.target.checked = false;
+          openEnable2FAModal(
+            () => {
+              e.target.checked = true;
+            },
+            () => {
+              e.target.checked = false;
+            }
+          );
         } else {
           const providerId = userFirebase?.providerData[0]?.providerId || "password";
           if (providerId === "password") {
@@ -354,12 +348,16 @@ export function renderAkun() {
                   const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
                   const res = await userService.toggle2FA(freshToken, false, password);
                   hideLoading();
-                  // Tetapkan saklar ke ON sampai link verifikasi di email diklik
-                  e.target.checked = true;
+                  e.target.checked = false;
+                  if (store.user) {
+                    store.user.is2FAEnabled = false;
+                    store.user.twoFactorEmailEnabled = false;
+                    store.save();
+                  }
                   showAlert(
-                    "Konfirmasi Email Penonaktifan 2FA",
-                    res.message || "Tautan konfirmasi penonaktifan 2FA telah dikirim ke email kamu. Silakan periksa inbox/spam.",
-                    "info"
+                    "2FA Dinonaktifkan",
+                    res.message || "Autentikasi 2-Langkah (2FA OTP) telah dinonaktifkan.",
+                    "success"
                   );
                 } catch (err) {
                   hideLoading();
@@ -381,12 +379,16 @@ export function renderAkun() {
               const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
               const res = await userService.toggle2FA(freshToken, false);
               hideLoading();
-              // Tetapkan saklar ke ON sampai link verifikasi di email diklik
-              e.target.checked = true;
+              e.target.checked = false;
+              if (store.user) {
+                store.user.is2FAEnabled = false;
+                store.user.twoFactorEmailEnabled = false;
+                store.save();
+              }
               showAlert(
-                "Konfirmasi Email Penonaktifan 2FA",
-                res.message || "Tautan konfirmasi penonaktifan 2FA telah dikirim ke email kamu. Silakan periksa inbox/spam.",
-                "info"
+                "2FA Dinonaktifkan",
+                res.message || "Autentikasi 2-Langkah (2FA OTP) telah dinonaktifkan.",
+                "success"
               );
             } catch (err) {
               hideLoading();

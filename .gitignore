@@ -24,6 +24,9 @@ dist-ssr
 *.sw?
 
 backend/firebase-service-account.json
+backend/.env
+backend/.env.*
+!backend/.env.example
 .env
 .env.*
 !.env.example
