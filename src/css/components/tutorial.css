@@ -115,8 +115,9 @@ a.nav-item.tutorial-target-active {
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* FAB Plus Trigger (.fam-trigger) - Retains 100% Native Signature Primary Color */
-.fam-trigger.tutorial-target-active {
+/* FAB Plus Trigger (.fam-trigger & .bottom-nav-fab-btn) - Retains 100% Native Signature Primary Color */
+.fam-trigger.tutorial-target-active,
+.bottom-nav-fab-btn.tutorial-target-active {
   border-radius: 50% !important;
   background-color: var(--primary) !important;
   color: #ffffff !important;
@@ -124,7 +125,9 @@ a.nav-item.tutorial-target-active {
 }
 
 .fam-trigger.tutorial-target-active i,
-.fam-trigger.tutorial-target-active svg {
+.fam-trigger.tutorial-target-active svg,
+.bottom-nav-fab-btn.tutorial-target-active i,
+.bottom-nav-fab-btn.tutorial-target-active svg {
   color: #ffffff !important;
   fill: #ffffff !important;
 }

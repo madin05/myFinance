@@ -336,7 +336,15 @@ Input User: "${userText.replace(/"/g, '\\"')}"`;
     const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('Kosong dari Gemini.');
 
-    return JSON.parse(rawText);
+    try {
+      return JSON.parse(rawText);
+    } catch {
+      const match = rawText.match(/\{[\s\S]*\}/);
+      if (match) {
+        return JSON.parse(match[0]);
+      }
+      throw new Error('Format JSON dari Gemini tidak valid.');
+    }
   } catch (err) {
     console.warn('[GeminiService] Fallback ke parsing manual untuk input:', userText, err.message);
     return null;

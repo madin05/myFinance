@@ -127,7 +127,7 @@ export function renderDashboard() {
     <div class="stats-cards">
       <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
         <div class="stat-header">
-          <div class="stat-icon-wrapper text-primary"><i class="ph-fill ph-bank"></i></div>
+          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
           ${
             stats.hasAccounts
               ? `
@@ -143,7 +143,6 @@ export function renderDashboard() {
           }
         </div>
         <div class="stat-body">
-          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
           <h2 class="stat-value text-main">${formatRupiah(stats.balance)}</h2>
         </div>
         <div class="stat-footer">
@@ -152,35 +151,42 @@ export function renderDashboard() {
         <i class="ph ph-bank stat-watermark"></i>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon-wrapper text-green"><i class="ph-bold ph-trend-up"></i></div>
-          ${getBadge(stats.incomeDiff, "income")}
+      <div class="stats-cards-slider-container">
+        <div class="stat-card" id="card-pemasukan">
+          <div class="stat-header">
+            <p class="stat-label">Pemasukan bulan ini</p>
+            ${getBadge(stats.incomeDiff, "income")}
+          </div>
+          <div class="stat-body">
+            <h2 class="stat-value text-green">${formatRupiah(stats.income)}</h2>
+          </div>
+          <div class="stat-footer">
+            <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
+          </div>
+          <i class="ph ph-trend-up stat-watermark"></i>
         </div>
-        <div class="stat-body">
-          <p class="stat-label">Pemasukan bulan ini</p>
-          <h2 class="stat-value text-green">${formatRupiah(stats.income)}</h2>
-        </div>
-        <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
-        </div>
-        <i class="ph ph-trend-up stat-watermark"></i>
-      </div>
 
-      <div class="stat-card">
-        <div class="stat-header">
-          <div class="stat-icon-wrapper text-red"><i class="ph-bold ph-trend-down"></i></div>
-          ${getBadge(stats.expenseDiff, "expense")}
+        <div class="stat-card" id="card-pengeluaran">
+          <div class="stat-header">
+            <p class="stat-label">Pengeluaran bulan ini</p>
+            ${getBadge(stats.expenseDiff, "expense")}
+          </div>
+          <div class="stat-body">
+            <h2 class="stat-value text-red">${formatRupiah(stats.expense)}</h2>
+          </div>
+          <div class="stat-footer">
+            <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
+          </div>
+          <i class="ph ph-trend-down stat-watermark"></i>
         </div>
-        <div class="stat-body">
-          <p class="stat-label">Pengeluaran bulan ini</p>
-          <h2 class="stat-value text-red">${formatRupiah(stats.expense)}</h2>
-        </div>
-        <div class="stat-footer">
-          <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
-        </div>
-        <i class="ph ph-trend-down stat-watermark"></i>
       </div>
+    </div>
+
+    <!-- Slider Dots Indicator (Mobile Only) -->
+    <div class="slider-dots mobile-only" id="stats-slider-dots">
+      <span class="dot active" data-index="0"></span>
+      <span class="dot" data-index="1"></span>
+      <span class="dot" data-index="2"></span>
     </div>
 
     <!-- Bottom Section -->
@@ -298,6 +304,60 @@ export function renderDashboard() {
 
   // Aktifkan sticky header di mobile
   initStickyHeader();
+
+  // Init Slider Dots untuk Mobile Stats Cards
+  initStatsCardsSliderDots();
+}
+
+function initStatsCardsSliderDots() {
+  const slider = document.querySelector(".stats-cards");
+  const dotsContainer = document.getElementById("stats-slider-dots");
+  if (!slider || !dotsContainer) return;
+
+  const dots = dotsContainer.querySelectorAll(".dot");
+  const cards = [
+    document.getElementById("card-total-saldo"),
+    document.getElementById("card-pemasukan"),
+    document.getElementById("card-pengeluaran"),
+  ].filter(Boolean);
+
+  if (!dots.length || !cards.length) return;
+
+  const updateDots = () => {
+    const sliderRect = slider.getBoundingClientRect();
+    const sliderCenter = sliderRect.left + sliderRect.width / 2;
+    let activeIndex = 0;
+    let minDistance = Infinity;
+
+    cards.forEach((card, i) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(sliderCenter - cardCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        activeIndex = i;
+      }
+    });
+
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("active", i === activeIndex);
+    });
+  };
+
+  slider.addEventListener("scroll", updateDots, { passive: true });
+  updateDots();
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener("click", () => {
+      if (cards[i]) {
+        cards[i].scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    });
+  });
 }
 
 function renderBudgetWidget() {

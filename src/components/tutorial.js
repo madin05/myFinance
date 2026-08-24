@@ -11,122 +11,57 @@ export const TUTORIAL_TIMING = {
 };
 
 const TUTORIAL_STEPS = [
-  // --- STEP 1-4: DASHBOARD STATS & QUICK ADD ---
   {
-    target: 'label.fam-trigger',
+    target: 'label.fam-trigger, .bottom-nav-fab-btn',
     route: '/dashboard',
     title: 'Tambah Transaksi Instan',
-    desc: 'Klik tombol bulat melayang ini kapan saja untuk mencatat transaksi baru, scan struk, atau kalkulator.'
+    desc: 'Klik tombol bulat melayang ini kapan saja untuk mencatat transaksi baru, scan struk AI, atau kalkulator.'
   },
   {
-    target: '.stats-cards .stat-card:nth-child(1), .stat-card:nth-child(1)',
-    route: '/dashboard',
-    title: 'Total Pemasukan Anda',
-    desc: 'Pantau akumulasi total uang masuk dan tren pertumbuhan pemasukan Anda selama 4 minggu terakhir.'
-  },
-  {
-    target: '.stats-cards .stat-card:nth-child(2), .stat-card:nth-child(2)',
-    route: '/dashboard',
-    title: 'Total Pengeluaran Anda',
-    desc: 'Gunakan grafik ini untuk melihat tren pengeluaran mingguan Anda secara visual dan mendeteksi anomali.'
-  },
-  {
-    target: '.stats-cards .stat-card:nth-child(3), .stat-card:nth-child(3)',
+    target: '#card-total-saldo',
     route: '/dashboard',
     title: 'Ringkasan Saldo Saat Ini',
-    desc: 'Pantau akumulasi seluruh saldo kas, dompet digital, dan rekening aktif Anda secara real-time.'
+    desc: 'Pantau akumulasi seluruh saldo kas, dompet digital, dan rekening bank aktif Anda secara real-time.'
   },
-
-  // --- STEP 5-6: HALAMAN TRANSAKSI ---
   {
-    target: '#btn-tambah-page, .transactions-section .btn-primary',
-    route: '/transaksi',
+    target: '#card-pemasukan',
+    route: '/dashboard',
+    title: 'Total Pemasukan Bulan Ini',
+    desc: 'Lihat jumlah akumulasi uang masuk bulan ini beserta persentase perbandingannya.'
+  },
+  {
+    target: '#card-pengeluaran',
+    route: '/dashboard',
+    title: 'Total Pengeluaran Bulan Ini',
+    desc: 'Lihat jumlah akumulasi uang keluar bulan ini beserta grafik persentase penggunaan dana.'
+  },
+  {
+    target: '.transactions-section .table-container, .transactions-table',
+    route: '/dashboard',
     fallback: '.transactions-section',
-    title: 'Fitur Transaksi: Catat Baru',
-    desc: 'Di halaman Transaksi, gunakan tombol + Tambah ini untuk mencatat detail transaksi baru secara manual.'
+    title: 'Daftar Transaksi Terakhir',
+    desc: 'Daftar 4 transaksi terbaru yang Anda catat. Klik "Lihat Semua" untuk melihat seluruh riwayat lengkap.'
   },
   {
-    target: '#btn-filter-popover, .filter-btn',
-    route: '/transaksi',
-    fallback: '.transactions-section',
-    title: 'Filter & Pencarian Lanjutan',
-    desc: 'Saring daftar transaksi Anda berdasarkan kategori, kurun waktu bulan/tahun, tipe, atau besaran nominal.'
-  },
-
-  // --- STEP 7: HALAMAN ANGGARAN ---
-  {
-    target: '#btn-tambah-anggaran, .anggaran-section, .empty-state-btn',
-    route: '/anggaran',
-    fallback: '.main-content',
-    title: 'Kelola Limit Anggaran',
-    desc: 'Tetapkan batasan (limit) anggaran bulanan untuk tiap kategori agar pengeluaran Anda selalu terkontrol.'
-  },
-
-  // --- STEP 8: HALAMAN TABUNGAN / WISHLIST ---
-  {
-    target: '#btn-tambah-tabungan, .wishlist-grid, .tabungan-section',
-    route: '/tabungan',
-    fallback: '.main-content',
-    title: 'Wishlist & Target Tabungan',
-    desc: 'Rencanakan barang impian dan alokasikan dana tabungan secara berkala hingga target tercapai.'
-  },
-
-  // --- STEP 9: HALAMAN SALDO & REKENING ---
-  {
-    target: '#btn-add-account, .saldo-cards-grid, .saldo-section',
-    route: '/saldo',
-    fallback: '.main-content',
-    title: 'Kelola Rekening & Dompet',
-    desc: 'Kelola daftar rekening bank, dompet digital (e-wallet), dan kas tunai Anda secara akurat.'
-  },
-
-  // --- STEP 10-13: HALAMAN LAPORAN KEUANGAN ---
-  {
-    target: '.filter-tabs',
-    route: '/laporan',
-    fallback: '.section-header',
-    title: 'Filter Periode Laporan',
-    desc: 'Atur kurun waktu analisis laporan keuangan Anda: mingguan, bulanan, 3 bulanan, atau tahunan.'
+    target: '.ai-banner-card, .smart-ai-input-container, #smart-ai-input',
+    route: '/dashboard',
+    title: 'Asisten Keuangan Cerdas AI',
+    desc: 'Catat transaksi dengan bahasa sehari-hari (misal: "gajian 5jt hari ini cash") atau tanyakan analisis keuanganmu.'
   },
   {
-    target: '.download-group',
-    route: '/laporan',
-    fallback: '.section-header',
-    title: 'Ekspor PDF & Excel',
-    desc: 'Unduh laporan resmi seluruh rekap keuangan Anda ke dalam file PDF atau spreadsheet Excel.'
+    target: '.widgets-section .widget-card:first-child',
+    route: '/dashboard',
+    fallback: '.widgets-section',
+    title: 'Ringkasan Anggaran Bulan Ini',
+    desc: 'Pantau sisa limit anggaran bulanan per kategori agar pengeluaran Anda tidak kebablasan.'
   },
   {
-    target: '.visual-analysis',
-    route: '/laporan',
-    fallback: '.main-content',
-    title: 'Grafik Pengeluaran & Arus Kas',
-    desc: 'Visualisasi diagram lingkaran persentase pengeluaran per kategori dan grafik garis tren arus kas.'
+    target: '.widget-card.widget-primary',
+    route: '/dashboard',
+    fallback: '.widgets-section',
+    title: 'Target Wishlist & Tabungan',
+    desc: 'Pantau progres pencapaian barang impian dan tabungan Anda langsung dari dashboard.'
   },
-  {
-    target: '.bottom-grid .stat-card:first-child',
-    route: '/laporan',
-    fallback: '.bottom-grid',
-    title: 'Ringkasan Periode Laporan',
-    desc: 'Evaluasi total pengeluaran, total pemasukan, serta sisa saldo bersih pada periode pilihan Anda.'
-  },
-
-  // --- STEP 14-15: HALAMAN AKUN & PROFIL ---
-  {
-    target: '.profile-card',
-    route: '/akun',
-    fallback: '.main-content',
-    title: 'Kartu Informasi Profil',
-    desc: 'Lihat foto profil, username, email terdaftar, tanggal bergabung, dan status verifikasi akun Anda.'
-  },
-  {
-    target: '.account-grid > div:nth-child(2)',
-    route: '/akun',
-    fallback: '.main-content',
-    title: 'Akses Keamanan & Pengaturan Akun',
-    desc: 'Atur ulang kata sandi, aktifkan Autentikasi 2-Faktor, dan kelola keamanan akun Anda di sini.'
-  },
-
-  // --- STEP 16: PUSAT NOTIFIKASI ---
   {
     target: '#notif-trigger',
     route: '/dashboard',
@@ -165,11 +100,18 @@ function unlockUserScroll() {
   window.removeEventListener('keydown', preventScrollListener);
 }
 
-export function startProductTutorial(force = false) {
+export async function startProductTutorial(force = false) {
   const userId = store.user?.uid || 'guest';
   const key = `${TUTORIAL_STORAGE_KEY}_${userId}`;
 
   if (!force && localStorage.getItem(key)) return;
+
+  // Jika dipicu dari halaman lain (misal FAQ / Sidebar), pindah ke dashboard lebih dulu
+  const currentPath = window.location.pathname || '/dashboard';
+  if (currentPath !== '/dashboard' && currentPath !== '/') {
+    navigateTo('/dashboard');
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
 
   currentStepIndex = 0;
   createTutorialDOM();
@@ -261,6 +203,7 @@ function updateHighlightPosition() {
 
   const isCircle = (rawRadius.includes('50%') && rect.width < 120) || 
                    activeTargetNode.classList.contains('fam-trigger') ||
+                   activeTargetNode.classList.contains('bottom-nav-fab-btn') ||
                    activeTargetNode.classList.contains('icon-btn') ||
                    activeTargetNode.id === 'notif-trigger' ||
                    (rect.width < 90 && rect.height < 90 && Math.abs(rect.width - rect.height) < 12 && (parsedRadius >= 20 || rawRadius.includes('50%')));
@@ -306,12 +249,28 @@ function updateHighlightPosition() {
   }
 }
 
+function findVisibleTarget(selector) {
+  if (!selector) return null;
+  const parts = selector.split(',').map(s => s.trim());
+  for (const part of parts) {
+    const nodes = document.querySelectorAll(part);
+    for (const el of nodes) {
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      if (rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden') {
+        return el;
+      }
+    }
+  }
+  return null;
+}
+
 function renderStepHighlight(index) {
   const step = TUTORIAL_STEPS[index];
-  let targetNode = document.querySelector(step.target);
+  let targetNode = findVisibleTarget(step.target);
 
-  if (!targetNode && step.fallback) targetNode = document.querySelector(step.fallback);
-  if (!targetNode && step.target.includes('data-route')) targetNode = document.querySelector('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
+  if (!targetNode && step.fallback) targetNode = findVisibleTarget(step.fallback);
+  if (!targetNode && step.target?.includes('data-route')) targetNode = findVisibleTarget('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
   if (!targetNode) targetNode = document.querySelector('.main-content, #page-content');
 
   if (!targetNode) {

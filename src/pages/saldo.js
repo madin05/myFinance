@@ -86,7 +86,7 @@ export function renderSaldo() {
 
   const getLogo = (s) => s.logo || logoMap[s.name] || '';
 
-  const viewMode = localStorage.getItem('saldo-view-mode') || 'grid';
+  const viewMode = localStorage.getItem('saldo-view-mode') || 'rack';
 
   container.innerHTML = `
     <div class="saldo-section">
@@ -94,12 +94,15 @@ export function renderSaldo() {
         <div class="section-header-top">
           <div>
             <h3>Saldo Akun</h3>
-            <p class="text-muted" style="margin-top: 2px; font-size: 0.85rem;">Total: <strong style="color: var(--text);">${formatCurrency(totalSaldo)}</strong></p>
+            <p class="saldo-total-subtext">Total: <strong class="saldo-total-amount">${formatCurrency(totalSaldo)}</strong></p>
           </div>
           <div style="display: flex; gap: 0.75rem; align-items: center;">
-            <div class="view-toggle" style="display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2px;">
-              <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'grid' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'grid' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-fill ph-squares-four" style="font-size: 1.2rem;"></i></button>
-              <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" style="padding: 6px; border-radius: 6px; border: none; background: ${viewMode === 'list' ? 'var(--primary-light)' : 'transparent'}; color: ${viewMode === 'list' ? 'var(--primary)' : 'var(--text-muted)'}; cursor: pointer; transition: all 0.2s;"><i class="ph-bold ph-list" style="font-size: 1.2rem;"></i></button>
+            <div class="view-toggle">
+              <button class="btn-icon ${viewMode === 'rack' ? 'active' : ''}" id="btn-view-rack" title="Tampilan Rak Card">
+                <i class="ph-fill ph-stack" style="font-size: 1.15rem;"></i> Rak
+              </button>
+              <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" title="Tampilan Grid"><i class="ph-fill ph-squares-four" style="font-size: 1.15rem;"></i></button>
+              <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" title="Tampilan List"><i class="ph-bold ph-list" style="font-size: 1.15rem;"></i></button>
             </div>
             <button class="btn btn-primary" id="btn-add-saldo">
               <i class="ph ph-plus"></i> Tambah Saldo
@@ -108,23 +111,27 @@ export function renderSaldo() {
         </div>
       </div>
 
-      <div class="saldo-grid ${viewMode === 'list' ? 'list-mode' : ''}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="saldo-grid ${viewMode === 'grid' ? 'grid-mode' : ''} ${viewMode === 'list' ? 'list-mode' : ''} ${viewMode === 'rack' ? 'rack-mode' : ''}">
         ${saldos.length > 0 ? saldos.map((s, index) => {
           const brandColor = getBrandColor(s);
           return `
-          <div class="stat-card" style="padding: 1.5rem; border-radius: 20px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: visible;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-              <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
-                <div style="width: 44px; height: 44px; border-radius: 100px; background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 4px 16px color-mix(in srgb, ${brandColor} 25%, transparent); display: flex; align-items: center; justify-content: center; color: ${brandColor}; font-size: 1.35rem; flex-shrink: 0; transition: all 0.3s ease;">
-                  ${getLogo(s) ? `<img src="${getLogo(s)}" style="width: 26px; height: 26px; border-radius: 6px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
-                </div>
-                <div style="min-width: 0; flex: 1;">
-                  <h4 style="margin: 0; font-size: 0.98rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</h4>
-                  <span class="account-type-subtext" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; display: block; font-weight: 500;">${s.type}</span>
-                </div>
+          <div class="stat-card saldo-card-item" data-index="${index}" style="z-index: ${index + 1};">
+            <div class="saldo-card-content">
+              <div class="brand-icon-box" style="background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 2px 10px color-mix(in srgb, ${brandColor} 20%, transparent); color: ${brandColor};">
+                ${getLogo(s) ? `<img src="${getLogo(s)}" class="brand-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}
               </div>
-              <div class="kebab-wrapper" style="display:inline-block;">
-                <button class="kebab-trigger" data-id="${s.id}" title="Opsi lainnya" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.2rem;">
+
+              <div class="saldo-info-col">
+                <h4 class="account-name">${s.name}</h4>
+                <h3 class="saldo-value">${formatCurrency(s.balance)}</h3>
+              </div>
+
+              <div class="saldo-type-col">
+                <span class="account-type-badge">${s.type}</span>
+              </div>
+
+              <div class="kebab-wrapper">
+                <button class="kebab-trigger" data-id="${s.id}" title="Opsi lainnya">
                   <i class="ph-bold ph-dots-three"></i>
                 </button>
                 <div class="kebab-dropdown" data-kebab-for="${s.id}">
@@ -138,10 +145,6 @@ export function renderSaldo() {
                 </div>
               </div>
             </div>
-            <div>
-              <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 4px;">Saldo Saat Ini</p>
-              <h3 style="margin: 0; font-size: 1.3rem; color: var(--text);">${formatCurrency(s.balance)}</h3>
-            </div>
           </div>
         `;
         }).join('') : `
@@ -152,109 +155,6 @@ export function renderSaldo() {
         `}
       </div>
     </div>
-    <style>
-      .account-type-subtext {
-        color: var(--text-muted);
-        font-size: 0.72rem;
-        font-weight: 500;
-      }
-      .saldo-grid.list-mode {
-        grid-template-columns: 1fr !important;
-        gap: 0.75rem !important;
-      }
-      .saldo-grid.list-mode .stat-card {
-        flex-direction: row !important;
-        align-items: center !important;
-        padding: 0.85rem 1.25rem !important;
-        border-radius: 16px !important;
-        min-height: 72px;
-      }
-      .saldo-grid.list-mode .stat-card > div:first-child {
-        flex: 1;
-        min-width: 0;
-        margin-bottom: 0 !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-      }
-      .saldo-grid.list-mode .kebab-wrapper {
-        position: absolute;
-        right: 1.25rem;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      .saldo-grid.list-mode .stat-card > div:last-child {
-        text-align: right;
-        margin-right: 2.5rem;
-        flex-shrink: 0;
-      }
-      .saldo-grid.list-mode .stat-card > div:last-child p {
-        display: none;
-      }
-      .saldo-grid.list-mode .stat-card > div:last-child h3 {
-        font-size: 0.95rem !important;
-        font-weight: 700;
-        white-space: nowrap;
-      }
-
-      /* Mobile: Khusus mobile sembunyikan toggle & tampilkan list view secara konsisten */
-      @media (max-width: 768px) {
-        .saldo-section .view-toggle {
-          display: none !important;
-        }
-        .saldo-grid {
-          grid-template-columns: 1fr !important;
-          gap: 0.75rem !important;
-        }
-        .saldo-grid .stat-card {
-          flex-direction: row !important;
-          align-items: center !important;
-          padding: 0.85rem 1rem !important;
-          border-radius: 16px !important;
-          min-height: 72px;
-        }
-        .saldo-grid .stat-card > div:first-child {
-          flex: 1;
-          min-width: 0;
-          margin-bottom: 0 !important;
-          align-items: center !important;
-          justify-content: flex-start !important;
-        }
-        .saldo-grid .kebab-wrapper {
-          position: absolute;
-          right: 0.85rem;
-          top: 50%;
-          transform: translateY(-50%);
-        }
-        .saldo-grid .stat-card > div:last-child {
-          text-align: right;
-          margin-right: 2.2rem;
-          flex-shrink: 0;
-        }
-        .saldo-grid .stat-card > div:last-child p {
-          display: none;
-        }
-        .saldo-grid .stat-card > div:last-child h3 {
-          font-size: 0.88rem !important;
-          font-weight: 700;
-          white-space: nowrap;
-        }
-      }
-
-      @media (max-width: 500px) {
-        .saldo-grid .stat-card {
-          padding: 0.75rem 0.85rem !important;
-        }
-        .saldo-grid .stat-card > div:last-child h3 {
-          font-size: 0.85rem !important;
-        }
-        .saldo-grid .kebab-wrapper {
-          right: 0.65rem;
-        }
-        .saldo-grid .stat-card > div:last-child {
-          margin-right: 2rem;
-        }
-      }
-    </style>
   `;
 
   const openSaldoModal = (existingId = null) => {
@@ -431,27 +331,19 @@ export function renderSaldo() {
 
   document.getElementById('btn-add-saldo').onclick = () => openSaldoModal();
 
+  const rackBtn = document.getElementById('btn-view-rack');
   const gridBtn = document.getElementById('btn-view-grid');
   const listBtn = document.getElementById('btn-view-list');
   const gridContainer = document.querySelector('.saldo-grid');
 
-  gridBtn.onclick = () => {
-    localStorage.setItem('saldo-view-mode', 'grid');
-    gridContainer.classList.remove('list-mode');
-    gridBtn.style.background = 'var(--primary-light)';
-    gridBtn.style.color = 'var(--primary)';
-    listBtn.style.background = 'transparent';
-    listBtn.style.color = 'var(--text-muted)';
+  const setViewMode = (mode) => {
+    localStorage.setItem('saldo-view-mode', mode);
+    renderSaldo();
   };
 
-  listBtn.onclick = () => {
-    localStorage.setItem('saldo-view-mode', 'list');
-    gridContainer.classList.add('list-mode');
-    listBtn.style.background = 'var(--primary-light)';
-    listBtn.style.color = 'var(--primary)';
-    gridBtn.style.background = 'transparent';
-    gridBtn.style.color = 'var(--text-muted)';
-  };
+  if (rackBtn) rackBtn.onclick = () => setViewMode('rack');
+  if (gridBtn) gridBtn.onclick = () => setViewMode('grid');
+  if (listBtn) listBtn.onclick = () => setViewMode('list');
 
   cleanupKebabs();
   initKebabs(

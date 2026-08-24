@@ -5,6 +5,10 @@
   margin-bottom: 1.5rem;
 }
 
+.stats-cards-slider-container {
+  display: contents;
+}
+
 .stat-card {
   background-color: var(--card-bg);
   border-radius: var(--radius-xl);
@@ -24,11 +28,25 @@
 }
 
 .stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.25rem;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 0.75rem;
   z-index: 2;
+  min-height: 28px;
+}
+
+.stat-watermark {
+  position: absolute !important;
+  right: 8px !important;
+  bottom: 4px !important;
+  font-size: 4.2rem !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease !important;
+  line-height: 1 !important;
+  transform: rotate(-6deg) !important;
+  opacity: 0.22 !important;
 }
 
 .icon-box {
@@ -56,62 +74,198 @@
   color: var(--text-main);
 }
 
-.stat-icon-wrapper.text-primary,
-.stat-icon-wrapper.text-green,
-.stat-icon-wrapper.text-red {
-  background-color: var(--border-light, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--border);
-  color: var(--text-main) !important;
+/* Card Total Saldo — Vibrant Ocean Blue Gradient (Light Mode) */
+#card-total-saldo {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 25px -5px rgba(2, 132, 199, 0.35) !important;
 }
 
-.stat-icon-wrapper.text-primary i,
-.stat-icon-wrapper.text-green i,
-.stat-icon-wrapper.text-red i {
-  color: var(--text-main) !important;
+#card-total-saldo .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Dark mode stat icon wrappers (Neutral) */
-[data-theme="dark"] .stat-icon-wrapper.text-primary,
-.dark .stat-icon-wrapper.text-primary,
-[data-theme="dark"] .stat-icon-wrapper.text-green,
-.dark .stat-icon-wrapper.text-green,
-[data-theme="dark"] .stat-icon-wrapper.text-red,
-.dark .stat-icon-wrapper.text-red {
-  background-color: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border);
-  color: var(--text-main) !important;
+#card-total-saldo .stat-value {
+  color: #ffffff !important;
 }
 
-[data-theme="dark"] .stat-icon-wrapper.text-primary i,
-.dark .stat-icon-wrapper.text-primary i,
-[data-theme="dark"] .stat-icon-wrapper.text-green i,
-.dark .stat-icon-wrapper.text-green i,
-[data-theme="dark"] .stat-icon-wrapper.text-red i,
-.dark .stat-icon-wrapper.text-red i {
-  color: var(--text-main) !important;
+#card-total-saldo .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
 }
 
-.stat-watermark {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  font-size: 5.5rem;
-  opacity: 0.08;
-  color: var(--text-main);
-  transform: rotate(-15deg);
-  z-index: 1;
-  pointer-events: none;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+#card-total-saldo .stat-icon-wrapper i,
+#card-total-saldo i {
+  color: #ffffff !important;
 }
 
-[data-theme="dark"] .stat-watermark,
-.dark .stat-watermark {
-  opacity: 0.12;
+#card-total-saldo .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
 }
+
+/* Card Pemasukan (Saldo Masuk) — Vibrant Solid Green Gradient */
+#card-pemasukan {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.28) !important;
+}
+
+#card-pemasukan .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-pemasukan .stat-value {
+  color: #ffffff !important;
+}
+
+#card-pemasukan .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-pemasukan .stat-icon-wrapper i {
+  color: #ffffff !important;
+}
+
+#card-pemasukan .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+#card-pemasukan .stat-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Card Pengeluaran (Duit Keluar) — Vibrant Solid Red Gradient */
+#card-pengeluaran {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.28) !important;
+}
+
+#card-pengeluaran .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-pengeluaran .stat-value {
+  color: #ffffff !important;
+}
+
+#card-pengeluaran .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-pengeluaran .stat-icon-wrapper i {
+  color: #ffffff !important;
+}
+
+#card-pengeluaran .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+#card-pengeluaran .stat-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] #card-total-saldo,
+.dark #card-total-saldo {
+  background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #9d4edd 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 24px rgba(76, 29, 149, 0.45) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-value {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper i,
+[data-theme="dark"] #card-total-saldo i {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.2 !important;
+}
+
+[data-theme="dark"] #card-pemasukan,
+.dark #card-pemasukan {
+  background: linear-gradient(135deg, #064e3b 0%, #047857 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(6, 78, 59, 0.6) !important;
+}
+
+[data-theme="dark"] #card-pengeluaran,
+.dark #card-pengeluaran {
+  background: linear-gradient(135deg, #710e2b 0%, #be123c 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(113, 14, 43, 0.6) !important;
+}
+
+/* Dark Mode Icon Wrappers */
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper,
+.dark #card-total-saldo .stat-icon-wrapper {
+  background-color: #292454;
+  border: 1px solid #5247A3;
+  color: #A5B4FC !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper i,
+.dark #card-total-saldo .stat-icon-wrapper i {
+  color: #A5B4FC !important;
+}
+
+[data-theme="dark"] #card-pemasukan .stat-icon-wrapper,
+.dark #card-pemasukan .stat-icon-wrapper {
+  background-color: #104232;
+  border: 1px solid #1D7A5C;
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] #card-pemasukan .stat-icon-wrapper i,
+.dark #card-pemasukan .stat-icon-wrapper i {
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] #card-pengeluaran .stat-icon-wrapper,
+.dark #card-pengeluaran .stat-icon-wrapper {
+  background-color: #4C1926;
+  border: 1px solid #8A253E;
+  color: #F87171 !important;
+}
+
+[data-theme="dark"] #card-pengeluaran .stat-icon-wrapper i,
+.dark #card-pengeluaran .stat-icon-wrapper i {
+  color: #F87171 !important;
+}
+
+/* Dark Mode Watermarks */
+[data-theme="dark"] #card-total-saldo .stat-watermark, .dark #card-total-saldo .stat-watermark { color: var(--primary, #818CF8); opacity: 0.22; }
+[data-theme="dark"] #card-pemasukan .stat-watermark, .dark #card-pemasukan .stat-watermark { color: #ffffff; opacity: 0.24; }
+[data-theme="dark"] #card-pengeluaran .stat-watermark, .dark #card-pengeluaran .stat-watermark { color: #ffffff; opacity: 0.24; }
 
 .stat-card:hover .stat-watermark {
-  transform: scale(1.1) rotate(-10deg);
-  opacity: 0.18 !important;
+  transform: scale(1.12) rotate(-10deg) !important;
+  opacity: 0.38 !important;
 }
 
 .stat-badge {
@@ -132,10 +286,11 @@
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  margin-bottom: 0.25rem;
-  font-weight: 500;
+  margin-bottom: 0;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .stat-value {
