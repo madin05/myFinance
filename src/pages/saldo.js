@@ -86,7 +86,8 @@ export function renderSaldo() {
 
   const getLogo = (s) => s.logo || logoMap[s.name] || '';
 
-  const viewMode = localStorage.getItem('saldo-view-mode') || 'rack';
+  let viewMode = localStorage.getItem('saldo-view-mode') || 'grid';
+  if (viewMode === 'rack') viewMode = 'grid';
 
   container.innerHTML = `
     <div class="saldo-section">
@@ -98,11 +99,8 @@ export function renderSaldo() {
           </div>
           <div style="display: flex; gap: 0.75rem; align-items: center;">
             <div class="view-toggle">
-              <button class="btn-icon ${viewMode === 'rack' ? 'active' : ''}" id="btn-view-rack" title="Tampilan Rak Card">
-                <i class="ph-fill ph-stack" style="font-size: 1.15rem;"></i> Rak
-              </button>
-              <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" title="Tampilan Grid"><i class="ph-fill ph-squares-four" style="font-size: 1.15rem;"></i></button>
-              <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" title="Tampilan List"><i class="ph-bold ph-list" style="font-size: 1.15rem;"></i></button>
+              <button class="btn-icon ${viewMode === 'grid' ? 'active' : ''}" id="btn-view-grid" title="Tampilan Grid"><i class="ph-fill ph-squares-four" style="font-size: 1.15rem;"></i> Grid</button>
+              <button class="btn-icon ${viewMode === 'list' ? 'active' : ''}" id="btn-view-list" title="Tampilan List"><i class="ph-bold ph-list" style="font-size: 1.15rem;"></i> List</button>
             </div>
             <button class="btn btn-primary" id="btn-add-saldo">
               <i class="ph ph-plus"></i> Tambah Saldo
@@ -331,17 +329,14 @@ export function renderSaldo() {
 
   document.getElementById('btn-add-saldo').onclick = () => openSaldoModal();
 
-  const rackBtn = document.getElementById('btn-view-rack');
   const gridBtn = document.getElementById('btn-view-grid');
   const listBtn = document.getElementById('btn-view-list');
-  const gridContainer = document.querySelector('.saldo-grid');
 
   const setViewMode = (mode) => {
     localStorage.setItem('saldo-view-mode', mode);
     renderSaldo();
   };
 
-  if (rackBtn) rackBtn.onclick = () => setViewMode('rack');
   if (gridBtn) gridBtn.onclick = () => setViewMode('grid');
   if (listBtn) listBtn.onclick = () => setViewMode('list');
 

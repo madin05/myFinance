@@ -146,44 +146,11 @@
   color: var(--text);
 }
 
-/* --- GRID VIEW MODE --- */
-.saldo-grid.grid-mode {
+/* --- DEFAULT & GRID VIEW MODE --- */
+.saldo-grid, .saldo-grid.grid-mode {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.25rem;
-}
-
-/* --- RAK (STACKED CARD DECK) VIEW MODE --- */
-.saldo-grid.rack-mode {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  max-width: 580px;
-  margin: 1.25rem auto 0 auto;
-  padding-bottom: 2rem;
-}
-
-.saldo-grid.rack-mode .stat-card {
-  border-radius: 16px 16px 0 0;
-  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--border);
-  transition: none;
-  background-color: var(--card-bg, #ffffff);
-  padding: 0.95rem 1.15rem;
-  min-height: 68px;
-}
-
-.saldo-grid.rack-mode .stat-card:last-child {
-  border-radius: 16px 16px 14px 14px;
-}
-
-.saldo-grid.rack-mode .stat-card:not(:first-child) {
-  margin-top: -0.7rem;
-}
-
-.saldo-grid.rack-mode .stat-card:hover {
-  transform: none;
-  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* --- LIST VIEW MODE --- */
