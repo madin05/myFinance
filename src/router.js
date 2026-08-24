@@ -88,8 +88,10 @@ export function handleRoute() {
   const container = document.getElementById('page-content');
   const modalContainer = document.getElementById('modal-container');
   
-  // Bersihkan modal yang mungkin masih terbuka
+  // Bersihkan modal dan dropdown yang mungkin masih terbuka saat pindah halaman
   if (modalContainer) modalContainer.innerHTML = '';
+  document.getElementById('profile-dropdown')?.classList.remove('active');
+  document.getElementById('notif-dropdown')?.classList.remove('active');
 
   // Reset scroll ke atas halaman setiap kali pindah rute
   window.scrollTo(0, 0);

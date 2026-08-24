@@ -18,7 +18,8 @@ model User {
   currency          String           @default("IDR")
   financialStartDay Int              @default(1)
   balanceOffset     Float            @default(0)
-  is2FAEnabled      Boolean          @default(false)
+  is2FAEnabled          Boolean          @default(false)
+  twoFactorEmailEnabled Boolean          @default(false)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   transactions      Transaction[]
@@ -26,6 +27,7 @@ model User {
   budgets           Budget[]
   accounts          Account[]
   twoFactorTokens   TwoFactorToken[]
+  otpVerifications  OtpVerification[]
 }
 
 model Transaction {
@@ -95,4 +97,26 @@ model TwoFactorToken {
   createdAt DateTime @default(now())
 
   @@index([tokenHash])
+}
+
+enum OtpType {
+  REGISTRATION
+  LOGIN_2FA
+  ENABLE_2FA
+  PASSWORD_RESET
+  TRANSACTION_APPROVAL
+}
+
+model OtpVerification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpHash   String
+  type      OtpType  @default(LOGIN_2FA)
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, type, isUsed])
 }

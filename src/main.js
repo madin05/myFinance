@@ -334,6 +334,14 @@ export async function checkAuth() {
         store.setUser(userData);
       }
 
+      if (needsVerification) {
+        // Enforce mandatory OTP verification before accessing app layout
+        loginView.style.display = 'block';
+        appLayout.style.display = 'none';
+        renderLogin('verify-otp', user.email, { email: user.email, token });
+        return;
+      }
+
       // Switch display layout and render page content instantly
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
@@ -341,15 +349,9 @@ export async function checkAuth() {
       handleRoute();
       store.updateUI();
 
-      if (needsVerification) {
-        if (!window.isVerificationModalActive && !document.getElementById('optional-verif-modal-overlay')) {
-          renderEmailVerificationBanner(user);
-        }
-      } else {
-        const banner = document.getElementById('email-verify-banner');
-        if (banner) banner.style.display = 'none';
-        import('./components/tutorial.js').then(m => m.startProductTutorial());
-      }
+      const banner = document.getElementById('email-verify-banner');
+      if (banner) banner.style.display = 'none';
+      import('./components/tutorial.js').then(m => m.startProductTutorial());
       
       const currentPath = window.location.pathname;
       const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
@@ -458,6 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const href = link.getAttribute('href');
       if (href && href.startsWith('/')) {
         e.preventDefault();
+        document.getElementById('profile-dropdown')?.classList.remove('active');
+        document.getElementById('notif-dropdown')?.classList.remove('active');
         navigateTo(href);
       }
     }
