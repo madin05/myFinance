@@ -91,6 +91,9 @@ export function renderAiPage() {
         <!-- Drawer Header -->
         <div class="ai-history-panel-header">
           <div class="ai-history-brand">
+            <div class="ai-history-sparkle-icon">
+              <img src="/assets/technical-support.svg" alt="Anya AI" class="ai-avatar-icon">
+            </div>
             <span class="ai-history-brand-title">Anya</span>
           </div>
           <button type="button" class="ai-icon-btn mobile-only" id="btn-close-history-mobile" title="Tutup Menu">
@@ -493,7 +496,7 @@ function renderActiveChatMessages() {
     container.innerHTML = `
       <div class="ai-welcome-hero">
         <div class="ai-welcome-sparkle-avatar">
-          <i class="ph-bold ph-robot"></i>
+          <img src="/assets/technical-support.svg" alt="Anya AI" class="ai-avatar-icon">
         </div>
         <h3 class="ai-welcome-title">Halo, ${escapeHtml(store.user?.name || "Pengguna")}! 👋</h3>
         <p class="ai-welcome-subtitle">
@@ -567,7 +570,7 @@ function renderActiveChatMessages() {
       return `
       <div class="ai-msg-row assistant" data-msg-id="${msg.id}">
         <div class="ai-msg-sparkle-avatar">
-          <i class="ph-bold ph-robot"></i>
+          <img src="/assets/technical-support.svg" alt="Anya AI" class="ai-avatar-icon">
         </div>
         <div class="ai-msg-content-wrapper">
           <div class="ai-msg-bubble">
@@ -648,29 +651,34 @@ function scrollToBottom() {
 function renderTransactionCardInChat(tx, saved = false) {
   const isIncome = tx.type === "income";
   const badgeClass = isIncome ? "badge-green" : "badge-red";
+  const amountClass = isIncome ? "income" : "expense";
   const sign = isIncome ? "+" : "-";
 
   return `
     <div class="ai-action-card">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span class="badge-soft ${badgeClass}" style="font-size: 0.72rem;">
-            ${isIncome ? "📈 Pemasukan" : "📉 Pengeluaran"}
-          </span>
-          <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">${escapeHtml(tx.kategori)}</span>
-        </div>
-        <strong style="font-size: 0.95rem; color: ${isIncome ? "var(--green)" : "var(--red)"}">
+      <div class="ai-action-card-top">
+        <span class="badge-soft ${badgeClass} ai-action-card-badge">
+          ${isIncome ? "Pemasukan" : "Pengeluaran"}
+        </span>
+        <strong class="ai-action-card-amount ${amountClass}">
           ${sign} ${formatRupiah(tx.harga)}
         </strong>
       </div>
-      <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap;">
-        <span><i class="ph ph-credit-card"></i> ${escapeHtml(tx.metode || "Cash")}</span>
-        <span>·</span>
-        <span>${escapeHtml(tx.keterangan)}</span>
-        ${tx.tanggal ? `<span>·</span><span><i class="ph ph-calendar"></i> ${tx.tanggal}</span>` : ""}
+      <h4 class="ai-action-card-title">${escapeHtml(tx.kategori)}</h4>
+      <div class="ai-action-card-details">
+        <div class="ai-card-detail-line">
+          <i class="ph ph-credit-card"></i>
+          <span>${escapeHtml(tx.metode || "Cash")}</span>
+          ${tx.keterangan ? `<span class="ai-card-dot">·</span><span>${escapeHtml(tx.keterangan)}</span>` : ""}
+        </div>
+        ${tx.tanggal ? `
+        <div class="ai-card-detail-line">
+          <i class="ph ph-calendar"></i>
+          <span>${tx.tanggal}</span>
+        </div>` : ""}
       </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
-        <button type="button" class="btn btn-primary btn-save-chat-tx" data-tx='${JSON.stringify(tx).replace(/'/g, "&apos;")}' ${saved ? "disabled" : ""} style="padding: 0.35rem 0.85rem; font-size: 0.75rem; border-radius: var(--radius-md);">
+      <div class="ai-action-card-footer">
+        <button type="button" class="btn btn-primary ai-action-card-btn btn-save-chat-tx" data-tx='${JSON.stringify(tx).replace(/'/g, "&apos;")}' ${saved ? "disabled" : ""}>
           ${saved ? `<i class="ph ph-check"></i> Tersimpan` : `<i class="ph-bold ph-plus"></i> Simpan Transaksi`}
         </button>
       </div>
@@ -681,15 +689,13 @@ function renderTransactionCardInChat(tx, saved = false) {
 function renderWishlistCardInChat(wishlist, saved = false) {
   return `
     <div class="ai-action-card">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span class="badge-soft badge-purple" style="font-size: 0.72rem;">⭐ Target Wishlist</span>
-          <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">${escapeHtml(wishlist.name)}</span>
-        </div>
-        <strong style="font-size: 0.95rem; color: var(--primary);">${formatRupiah(wishlist.target)}</strong>
+      <div class="ai-action-card-top">
+        <span class="badge-soft badge-purple ai-action-card-badge">⭐ Target Wishlist</span>
+        <strong class="ai-action-card-amount purple">${formatRupiah(wishlist.target)}</strong>
       </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
-        <button type="button" class="btn btn-primary btn-save-chat-wishlist" data-wishlist='${JSON.stringify(wishlist).replace(/'/g, "&apos;")}' ${saved ? "disabled" : ""} style="padding: 0.35rem 0.85rem; font-size: 0.75rem; border-radius: var(--radius-md);">
+      <h4 class="ai-action-card-title">${escapeHtml(wishlist.name)}</h4>
+      <div class="ai-action-card-footer">
+        <button type="button" class="btn btn-primary ai-action-card-btn btn-save-chat-wishlist" data-wishlist='${JSON.stringify(wishlist).replace(/'/g, "&apos;")}' ${saved ? "disabled" : ""}>
           ${saved ? `<i class="ph ph-check"></i> Tersimpan` : `<i class="ph-bold ph-plus"></i> Simpan ke Wishlist`}
         </button>
       </div>
@@ -904,7 +910,7 @@ async function processUserChatMessage(userText) {
     typingEl.className = "ai-msg-row assistant";
     typingEl.innerHTML = `
       <div class="ai-msg-sparkle-avatar">
-        <i class="ph-bold ph-robot"></i>
+        <img src="/assets/technical-support.svg" alt="Anya AI" class="ai-avatar-icon">
       </div>
       <div class="ai-msg-bubble" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem;">
         <i class="ph ph-spinner spin" style="font-size: 1.1rem; color: var(--primary);"></i>
@@ -925,36 +931,65 @@ async function processUserChatMessage(userText) {
   sessions = loadSessions();
   session = sessions.find((s) => s.id === activeSessionId) || session;
 
-  if (aiResult && aiResult.intent === "transaction" && aiResult.data) {
-    session.messages.push({
-      id: `msg_${Date.now()}_a`,
-      sender: "assistant",
-      text:
-        aiResult.message || `Saya menemukan rincian transaksi dari pesan kamu:`,
-      intent: "transaction",
-      data: aiResult.data,
-      time: nowTime,
-    });
-  } else if (aiResult && aiResult.intent === "wishlist" && aiResult.data) {
-    session.messages.push({
-      id: `msg_${Date.now()}_a`,
-      sender: "assistant",
-      text:
-        aiResult.message || `Target wishlist berhasil dibuat dari pesan kamu:`,
-      intent: "wishlist",
-      data: aiResult.data,
-      time: nowTime,
-    });
-  } else if (aiResult && aiResult.intent === "summary_request") {
-    session.messages.push({
-      id: `msg_${Date.now()}_a`,
-      sender: "assistant",
-      text: aiResult.message || `Berikut ringkasan analisis keuangan kamu:`,
-      intent: "summary_request",
-      period: aiResult.period || "1_month",
-      time: nowTime,
-    });
-  } else {
+  // Process Gemini response and persist/render
+  if (aiResult && aiResult.intent) {
+    // Transaction intent
+    if (aiResult.intent === "transaction" && aiResult.data) {
+      session.messages.push({
+        id: `msg_${Date.now()}_a`,
+        sender: "assistant",
+        text: aiResult.message || "Saya menemukan rincian transaksi dari pesan kamu:",
+        intent: "transaction",
+        data: aiResult.data,
+        time: nowTime,
+      });
+      saveSessions(sessions);
+      renderActiveChatMessages();
+      return;
+    }
+    // Wishlist intent
+    if (aiResult.intent === "wishlist" && aiResult.data) {
+      session.messages.push({
+        id: `msg_${Date.now()}_a`,
+        sender: "assistant",
+        text: aiResult.message || "Target wishlist berhasil dibuat dari pesan kamu:",
+        intent: "wishlist",
+        data: aiResult.data,
+        time: nowTime,
+      });
+      saveSessions(sessions);
+      renderActiveChatMessages();
+      return;
+    }
+    // Summary request intent
+    if (aiResult.intent === "summary_request") {
+      session.messages.push({
+        id: `msg_${Date.now()}_a`,
+        sender: "assistant",
+        text: aiResult.message || "Berikut ringkasan analisis keuangan kamu:",
+        intent: "summary_request",
+        period: aiResult.period || "1_month",
+        time: nowTime,
+      });
+      saveSessions(sessions);
+      renderActiveChatMessages();
+      return;
+    }
+    // Unknown / chat intent – show message
+    if (aiResult.intent === "unknown" || aiResult.intent === "chat") {
+      session.messages.push({
+        id: `msg_${Date.now()}_a`,
+        sender: "assistant",
+        text: aiResult.message || "Saya di sini untuk membantu!",
+        intent: "text",
+        time: nowTime,
+      });
+      saveSessions(sessions);
+      renderActiveChatMessages();
+      return;
+    }
+  }
+  // Fallback to local heuristics when Gemini didn't provide a usable intent
     // Check fallback local heuristics
     const lower = userText.toLowerCase();
 
@@ -1026,5 +1061,4 @@ async function processUserChatMessage(userText) {
 
     saveSessions(sessions);
     renderActiveChatMessages();
-  }
 }

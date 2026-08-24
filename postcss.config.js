@@ -1,7 +1,6 @@
 export default {
   plugins: {
     autoprefixer: {
-      // Target browsers yang butuh vendor prefix, terutama mobile Safari & Chrome
       overrideBrowserslist: [
         'last 2 Chrome versions',
         'last 2 Safari versions',

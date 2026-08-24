@@ -48,24 +48,49 @@
 
 .widget-primary {
   background-color: transparent !important;
-  background: linear-gradient(135deg, #82bfe8 0%, #0a6ca1 100%) !important;
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%) !important;
   border: none !important;
-  box-shadow: 0 12px 24px -10px rgba(3, 105, 161, 0.3) !important;
-  color: var(--white);
+  box-shadow: 0 12px 24px -10px rgba(2, 132, 199, 0.35) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .widget-primary {
   background-color: transparent !important;
-  background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%) !important;
+  background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #9d4edd 100%) !important;
   border: none !important;
-  box-shadow: 0 12px 24px -10px rgba(124, 58, 237, 0.3) !important;
+  box-shadow: 0 12px 24px -10px rgba(76, 29, 149, 0.45) !important;
+  color: #ffffff !important;
 }
 
 .widget-primary h3, 
+.widget-primary h4,
 .widget-primary p,
+.widget-primary span,
+.widget-primary div,
+.widget-primary i,
 .widget-primary .stat-label,
-.widget-primary .stat-value {
-  color: var(--white);
+.widget-primary .stat-value,
+.widget-primary .text-white,
+[data-theme="dark"] .widget-primary h3, 
+[data-theme="dark"] .widget-primary h4,
+[data-theme="dark"] .widget-primary p,
+[data-theme="dark"] .widget-primary span,
+[data-theme="dark"] .widget-primary div,
+[data-theme="dark"] .widget-primary i,
+[data-theme="dark"] .widget-primary .stat-label,
+[data-theme="dark"] .widget-primary .stat-value,
+[data-theme="dark"] .widget-primary .text-white {
+  color: #ffffff !important;
+}
+
+.widget-primary .btn-icon-absolute {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.widget-primary .btn-icon-absolute:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 /* Toggle Switch Component */
