@@ -166,63 +166,6 @@
         </div>
         <!-- Header -->
         <header class="header">
-          <!-- Far Left Corner: Profile Avatar & Dropdown -->
-          <div class="user-profile" id="user-profile-trigger">
-            <div class="avatar-wrapper skeleton skeleton-circle" style="width: 44px; height: 44px; position: relative;">
-              <img id="user-avatar" src="" alt="User" referrerpolicy="no-referrer" style="opacity: 0; transition: opacity 0.3s; width: 100%; height: 100%; border-radius: 50%;" />
-              <div class="status-indicator" id="network-status" title="Menghubungkan..."></div>
-            </div>
-            <div class="profile-dropdown" id="profile-dropdown">
-              <div class="dropdown-header">
-                <p class="user-name skeleton skeleton-text" id="nav-user-name"></p>
-                <p class="user-email text-sm text-muted skeleton skeleton-text" id="nav-user-email"></p>
-              </div>
-              <div class="dropdown-divider"></div>
-              <a href="/akun" class="dropdown-item">
-                <i class="ph ph-user"></i> Profil Saya
-              </a>
-              <a href="/settings" class="dropdown-item">
-                <i class="ph ph-gear"></i> Pengaturan
-              </a>
-              <a href="/laporan" class="dropdown-item">
-                <i class="ph ph-chart-bar"></i> Laporan
-              </a>
-              <a href="/faq" class="dropdown-item">
-                <i class="ph ph-question"></i> Bantuan
-              </a>
-              <div class="dropdown-divider profile-dropdown-theme-wrapper"></div>
-              <div class="dropdown-item profile-dropdown-theme-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; cursor: default; user-select: none;">
-                <div class="theme-toggle-group" style="display: flex !important; margin: 0 auto;">
-                  <button class="theme-auto-btn" id="btn-theme-auto-dropdown" title="Tema Otomatis (Ikut Perangkat)">
-                    <i class="ph ph-desktop-tower"></i>
-                  </button>
-                  <label for="themeToggleDropdown" class="themeToggle st-sunMoonThemeToggleBtn" title="Ganti Tema">
-                    <input type="checkbox" id="themeToggleDropdown" class="themeToggleInput" aria-label="Beralih Tema" />
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" stroke="none">
-                      <mask id="moon-mask-dropdown">
-                        <rect x="0" y="0" width="20" height="20" fill="white"></rect>
-                        <circle cx="11" cy="3" r="8" fill="black"></circle>
-                      </mask>
-                      <circle class="sunMoon" cx="10" cy="10" r="8" mask="url(#moon-mask-dropdown)"></circle>
-                      <g>
-                        <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
-                        <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
-                        <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
-                        <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
-                        <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
-                        <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
-                      </g>
-                    </svg>
-                  </label>
-                </div>
-              </div>
-              <div class="dropdown-divider"></div>
-              <button class="dropdown-item text-red" id="btn-logout">
-                <i class="ph ph-sign-out"></i> Logout
-              </button>
-            </div>
-          </div>
-
           <div class="search-bar">
             <i class="ph ph-magnifying-glass search-icon"></i>
             <input type="text" id="global-search" placeholder="Cari transaksi..." />
@@ -265,6 +208,63 @@
                   <div style="padding: 2rem 1rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">Memuat notifikasi...</div>
                 </div>
                 <a href="/notifikasi" class="view-all-btn" style="text-decoration: none;">Lihat Semua Notifikasi</a>
+              </div>
+            </div>
+
+            <!-- Profile Avatar & Dropdown -->
+            <div class="user-profile" id="user-profile-trigger">
+              <div class="avatar-wrapper skeleton skeleton-circle" style="width: 44px; height: 44px; position: relative;">
+                <img id="user-avatar" src="" alt="User" referrerpolicy="no-referrer" style="opacity: 0; transition: opacity 0.3s; width: 100%; height: 100%; border-radius: 50%;" />
+                <div class="status-indicator" id="network-status" title="Menghubungkan..."></div>
+              </div>
+              <div class="profile-dropdown" id="profile-dropdown">
+                <div class="dropdown-header">
+                  <p class="user-name skeleton skeleton-text" id="nav-user-name"></p>
+                  <p class="user-email text-sm text-muted skeleton skeleton-text" id="nav-user-email"></p>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a href="/akun" class="dropdown-item">
+                  <i class="ph ph-user"></i> Profil Saya
+                </a>
+                <a href="/settings" class="dropdown-item">
+                  <i class="ph ph-gear"></i> Pengaturan
+                </a>
+                <a href="/laporan" class="dropdown-item">
+                  <i class="ph ph-chart-bar"></i> Laporan
+                </a>
+                <a href="/faq" class="dropdown-item">
+                  <i class="ph ph-question"></i> Bantuan
+                </a>
+                <div class="dropdown-divider profile-dropdown-theme-wrapper"></div>
+                <div class="dropdown-item profile-dropdown-theme-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; cursor: default; user-select: none;">
+                  <div class="theme-toggle-group" style="display: flex !important; margin: 0 auto;">
+                    <button class="theme-auto-btn" id="btn-theme-auto-dropdown" title="Tema Otomatis (Ikut Perangkat)">
+                      <i class="ph ph-desktop-tower"></i>
+                    </button>
+                    <label for="themeToggleDropdown" class="themeToggle st-sunMoonThemeToggleBtn" title="Ganti Tema">
+                      <input type="checkbox" id="themeToggleDropdown" class="themeToggleInput" aria-label="Beralih Tema" />
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" stroke="none">
+                        <mask id="moon-mask-dropdown">
+                          <rect x="0" y="0" width="20" height="20" fill="white"></rect>
+                          <circle cx="11" cy="3" r="8" fill="black"></circle>
+                        </mask>
+                        <circle class="sunMoon" cx="10" cy="10" r="8" mask="url(#moon-mask-dropdown)"></circle>
+                        <g>
+                          <circle class="sunRay sunRay1" cx="18" cy="10" r="1.5"></circle>
+                          <circle class="sunRay sunRay2" cx="14" cy="16.928" r="1.5"></circle>
+                          <circle class="sunRay sunRay3" cx="6" cy="16.928" r="1.5"></circle>
+                          <circle class="sunRay sunRay4" cx="2" cy="10" r="1.5"></circle>
+                          <circle class="sunRay sunRay5" cx="6" cy="3.1718" r="1.5"></circle>
+                          <circle class="sunRay sunRay6" cx="14" cy="3.1718" r="1.5"></circle>
+                        </g>
+                      </svg>
+                    </label>
+                  </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item text-red" id="btn-logout">
+                  <i class="ph ph-sign-out"></i> Logout
+                </button>
               </div>
             </div>
           </div>
