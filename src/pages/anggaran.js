@@ -13,19 +13,25 @@ export function renderAnggaran() {
   
   const currentMonth = currentViewDate.getMonth();
   const currentYear = currentViewDate.getFullYear();
-  const periodKey = currentViewDate.toISOString().slice(0, 7); // Format "YYYY-MM"
+  const periodKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
   
   const spendingByCategory = {};
   store.transactions.forEach(tx => {
     const d = new Date(tx.tanggal);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear && tx.type === 'expense') {
-      spendingByCategory[tx.kategori] = (spendingByCategory[tx.kategori] || 0) + Math.abs(tx.harga);
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear && (tx.type === 'expense' || !tx.type)) {
+      const amount = Math.abs(Number(tx.harga !== undefined ? tx.harga : tx.amount || 0));
+      const catKey = (tx.kategori || tx.category || 'Lainnya').trim().toLowerCase();
+      spendingByCategory[catKey] = (spendingByCategory[catKey] || 0) + amount;
     }
   });
 
-  // Gabungkan dengan data budget dari store
-  const budgetList = store.budgets.map(b => {
-    const spent = spendingByCategory[b.category] || 0;
+  // Filter budgets for the current selected period (or unassigned period)
+  const periodBudgets = store.budgets.filter(b => !b.period || b.period === periodKey);
+
+  // Map spending to budget list with case-insensitive category matching
+  const budgetList = periodBudgets.map(b => {
+    const catKey = (b.category || '').trim().toLowerCase();
+    const spent = spendingByCategory[catKey] || 0;
     const percent = b.amount > 0 ? (spent / b.amount) * 100 : 0;
     return { ...b, spent, percent };
   });
@@ -35,19 +41,19 @@ export function renderAnggaran() {
   
   container.innerHTML = `
     <div class="transactions-section">
-      <div class="section-header">
+      <div class="section-header anggaran-header">
         <div>
-          <h3>Anggaran Bulanan</h3>
+          <h3 style="margin:0;">Anggaran Bulanan</h3>
         </div>
-        <div class="section-header-controls" style="display: flex; align-items: center; gap: 12px;">
-          <div class="month-selector" style="display: flex; align-items: center; gap: 12px;">
-            <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+        <div class="section-header-controls anggaran-controls" style="display: flex; align-items: center; gap: 12px;">
+          <div class="month-selector" style="display: flex; align-items: center; gap: 8px;">
+            <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px; cursor: pointer;">
               <i class="ph ph-caret-left"></i>
             </button>
-            <span class="font-bold" style="min-width: 120px; text-align: center; color: var(--primary);">
+            <span class="font-bold month-label" style="min-width: 130px; text-align: center; color: var(--primary); font-size: 0.95rem;">
               ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
             </span>
-            <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px;">
+            <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px; cursor: pointer;">
               <i class="ph ph-caret-right"></i>
             </button>
           </div>
@@ -108,7 +114,7 @@ export function renderAnggaran() {
             `).join('') : `
               <tr><td colspan="6" style="text-align:center; padding: 3rem; color: var(--text-muted);">
                 <i class="ph ph-chart-pie-slice" style="font-size: 2.5rem; display:block; margin-bottom:0.75rem; opacity:0.5;"></i>
-                Belum ada anggaran. Klik "Atur Anggaran" untuk mulai.
+                Belum ada anggaran nih
               </td></tr>
             `}
           </tbody>

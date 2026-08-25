@@ -280,11 +280,11 @@ function renderTableBody(container) {
       // .transactions-table tr di responsive.css supaya tidak double border.
       return `
         <tr class="tx-mobile-card" data-id="${tx.id}">
-          <td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;">
+          <td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;text-align:left!important;">
             <div style="position:relative;">
               <!-- Baris 1: Badge + Harga -->
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span class="badge-soft ${badgeClass}" style="font-size:0.68rem; padding:2px 9px;">
+                <span class="badge-soft ${badgeClass}" style="font-size:0.62rem; padding:2px 7px; border-radius:6px;">
                   <img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" />
                   <span>${tx.kategori}</span>
                 </span>

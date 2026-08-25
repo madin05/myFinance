@@ -77,6 +77,8 @@ let cardEl = null;
 let keydownHandler = null;
 let activeTargetNode = null;
 let rafPositionId = null;
+let storeUpdateHandler = null;
+let isStepTransitioning = false;
 
 const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 
@@ -114,6 +116,7 @@ export async function startProductTutorial(force = false) {
   }
 
   currentStepIndex = 0;
+  isStepTransitioning = false;
   createTutorialDOM();
   showStep(0);
 
@@ -134,6 +137,17 @@ function createTutorialDOM() {
 
   window.addEventListener('resize', updateHighlightPosition, { passive: true });
   window.addEventListener('scroll', updateHighlightPosition, { passive: true });
+
+  storeUpdateHandler = () => {
+    if (document.body.classList.contains('tutorial-active')) {
+      setTimeout(() => {
+        if (document.body.classList.contains('tutorial-active')) {
+          renderStepHighlight(currentStepIndex);
+        }
+      }, 60);
+    }
+  };
+  window.addEventListener('store-updated', storeUpdateHandler);
 
   overlayEl = document.createElement('div');
   overlayEl.className = 'tutorial-overlay-container';
@@ -180,23 +194,56 @@ function showStep(index) {
     return;
   }
 
+  isStepTransitioning = true;
   restoreActiveTarget();
   currentStepIndex = index;
   const step = TUTORIAL_STEPS[index];
 
+  const finishTransition = () => {
+    isStepTransitioning = false;
+  };
+
   if (step.route && window.location.pathname !== step.route) {
     navigateTo(step.route);
-    setTimeout(() => { renderStepHighlight(index); }, TUTORIAL_TIMING.ROUTE_CHANGE_DELAY);
+    setTimeout(() => {
+      renderStepHighlight(index);
+      finishTransition();
+    }, TUTORIAL_TIMING.ROUTE_CHANGE_DELAY);
     return;
   }
 
   renderStepHighlight(index);
+  setTimeout(finishTransition, 80);
 }
 
 function updateHighlightPosition() {
-  if (!activeTargetNode || !overlayEl || !spotlightEl) return;
+  if (!overlayEl || !spotlightEl) return;
+
+  const step = TUTORIAL_STEPS[currentStepIndex];
+
+  // Re-query target node if activeTargetNode is missing or detached from DOM (e.g. store-updated re-render)
+  if (!activeTargetNode || !activeTargetNode.isConnected) {
+    if (step) {
+      let targetNode = findVisibleTarget(step.target);
+      if (!targetNode && step.fallback) targetNode = findVisibleTarget(step.fallback);
+      if (!targetNode && step.target?.includes('data-route')) targetNode = findVisibleTarget('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
+      if (!targetNode) targetNode = document.querySelector('.main-content, #page-content');
+
+      if (targetNode) {
+        if (activeTargetNode) activeTargetNode.classList.remove('tutorial-target-active');
+        activeTargetNode = targetNode;
+        activeTargetNode.classList.add('tutorial-target-active');
+      } else {
+        return;
+      }
+    } else {
+      return;
+    }
+  }
 
   const rect = activeTargetNode.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return;
+
   const computedStyle = window.getComputedStyle(activeTargetNode);
   const rawRadius = computedStyle.borderRadius || '12px';
   const parsedRadius = parseFloat(rawRadius) || 12;
@@ -267,6 +314,8 @@ function findVisibleTarget(selector) {
 
 function renderStepHighlight(index) {
   const step = TUTORIAL_STEPS[index];
+  if (!step) return;
+
   let targetNode = findVisibleTarget(step.target);
 
   if (!targetNode && step.fallback) targetNode = findVisibleTarget(step.fallback);
@@ -281,21 +330,51 @@ function renderStepHighlight(index) {
 
   activeTargetNode = targetNode;
   targetNode.classList.add('tutorial-target-active');
-  targetNode.scrollIntoView({ behavior: 'auto', block: 'center' });
 
-  renderTooltipCard(index, targetNode.getBoundingClientRect());
+  // Scroll target node into view only if not already sufficiently visible in viewport, using block: 'nearest' to avoid layout shifts or empty bottom space
+  const rectBefore = targetNode.getBoundingClientRect();
+  const vHeight = window.innerHeight || document.documentElement.clientHeight;
+  const vWidth = window.innerWidth || document.documentElement.clientWidth;
+  const isTargetVisible = (
+    rectBefore.top >= 40 &&
+    rectBefore.bottom <= vHeight - 40 &&
+    rectBefore.left >= 0 &&
+    rectBefore.right <= vWidth
+  );
 
-  updateHighlightPosition();
-  const startTime = performance.now();
-  function syncLoop(now) {
-    updateHighlightPosition();
-    if (now - startTime < TUTORIAL_TIMING.SYNC_FRAME_DURATION) {
-      rafPositionId = requestAnimationFrame(syncLoop);
-    } else {
-      rafPositionId = null;
-    }
+  if (!isTargetVisible) {
+    targetNode.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
   }
-  rafPositionId = requestAnimationFrame(syncLoop);
+
+  // Use requestAnimationFrame to ensure scroll and layout settled before measuring BoundingClientRect
+  requestAnimationFrame(() => {
+    if (!activeTargetNode || !activeTargetNode.isConnected) return;
+
+    // Additional scroll check for horizontally swipable parent container (e.g. .stats-cards on mobile)
+    const scrollParent = activeTargetNode.closest('.stats-cards');
+    if (scrollParent) {
+      const cardRect = activeTargetNode.getBoundingClientRect();
+      const parentRect = scrollParent.getBoundingClientRect();
+      if (cardRect.left < parentRect.left || cardRect.right > parentRect.right) {
+        scrollParent.scrollLeft += (cardRect.left + cardRect.width / 2) - (parentRect.left + parentRect.width / 2);
+      }
+    }
+
+    const rect = activeTargetNode.getBoundingClientRect();
+    renderTooltipCard(index, rect);
+    updateHighlightPosition();
+
+    const startTime = performance.now();
+    function syncLoop(now) {
+      updateHighlightPosition();
+      if (now - startTime < TUTORIAL_TIMING.SYNC_FRAME_DURATION) {
+        rafPositionId = requestAnimationFrame(syncLoop);
+      } else {
+        rafPositionId = null;
+      }
+    }
+    rafPositionId = requestAnimationFrame(syncLoop);
+  });
 }
 
 function renderTooltipCard(index, targetRect) {
@@ -336,23 +415,32 @@ function renderTooltipCard(index, targetRect) {
     </div>
   `;
 
-  positionCard(targetRect);
-
   document.getElementById('tut-btn-skip')?.addEventListener('click', () => endTutorial(true));
   document.getElementById('tut-btn-prev')?.addEventListener('click', prevStep);
   document.getElementById('tut-btn-next')?.addEventListener('click', nextStep);
 
   cardEl.classList.add('active');
+
+  // Position card after browser microtask so offsetHeight is accurate
+  requestAnimationFrame(() => {
+    if (activeTargetNode && activeTargetNode.isConnected) {
+      positionCard(activeTargetNode.getBoundingClientRect());
+    } else {
+      positionCard(targetRect);
+    }
+  });
 }
 
 function positionCard(targetRect) {
+  if (!cardEl || !targetRect) return;
   const isMobile = window.innerWidth <= 768;
   const maxCardW = isMobile ? 310 : 360;
   const cardWidth = Math.min(window.innerWidth - 32, maxCardW);
   const cardHeight = cardEl.offsetHeight || (isMobile ? 160 : 210);
-  const margin = isMobile ? 12 : 18;
+  const margin = isMobile ? 14 : 20;
 
   let top, left;
+  let placement = 'bottom';
   const spaceAbove = targetRect.top;
   const spaceBelow = window.innerHeight - targetRect.bottom;
   const spaceLeft = targetRect.left;
@@ -361,28 +449,78 @@ function positionCard(targetRect) {
   if (spaceAbove >= cardHeight + margin && (targetRect.top > window.innerHeight * 0.55 || spaceBelow < cardHeight + margin)) {
     top = targetRect.top - cardHeight - margin;
     left = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
-  } else if (spaceRight >= cardWidth + margin) {
+    placement = 'top';
+  } else if (!isMobile && spaceRight >= cardWidth + margin) {
     left = targetRect.right + margin;
     top = targetRect.top;
-  } else if (spaceLeft >= cardWidth + margin) {
+    placement = 'right';
+  } else if (!isMobile && spaceLeft >= cardWidth + margin) {
     left = targetRect.left - cardWidth - margin;
     top = targetRect.top;
+    placement = 'left';
   } else {
     top = targetRect.bottom + margin;
     left = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
+    placement = 'bottom';
   }
 
-  if (left < margin) left = margin;
-  if (left + cardWidth > window.innerWidth - margin) left = window.innerWidth - cardWidth - margin;
-  if (top < margin) top = margin;
-  if (top + cardHeight > window.innerHeight - margin) top = window.innerHeight - cardHeight - margin;
+  if (left < 12) left = 12;
+  if (left + cardWidth > window.innerWidth - 12) left = window.innerWidth - cardWidth - 12;
+  if (top < 12) top = 12;
+  if (top + cardHeight > window.innerHeight - 12) top = window.innerHeight - cardHeight - 12;
 
   cardEl.style.top = `${top}px`;
   cardEl.style.left = `${left}px`;
+
+  // Dynamic Chat Bubble Arrow positioning pointing at target center
+  let arrowEl = document.getElementById('tutorial-card-arrow');
+  if (!arrowEl) {
+    arrowEl = document.createElement('div');
+    arrowEl.id = 'tutorial-card-arrow';
+    cardEl.appendChild(arrowEl);
+  }
+
+  arrowEl.className = 'tutorial-card-arrow';
+  arrowEl.style.left = '';
+  arrowEl.style.right = '';
+  arrowEl.style.top = '';
+  arrowEl.style.bottom = '';
+
+  const targetCenterX = targetRect.left + (targetRect.width / 2);
+  const targetCenterY = targetRect.top + (targetRect.height / 2);
+
+  if (placement === 'top') {
+    arrowEl.classList.add('arrow-bottom');
+    let arrowLeft = targetCenterX - left - 7;
+    arrowLeft = Math.max(20, Math.min(cardWidth - 34, arrowLeft));
+    arrowEl.style.left = `${arrowLeft}px`;
+  } else if (placement === 'bottom') {
+    arrowEl.classList.add('arrow-top');
+    let arrowLeft = targetCenterX - left - 7;
+    arrowLeft = Math.max(20, Math.min(cardWidth - 34, arrowLeft));
+    arrowEl.style.left = `${arrowLeft}px`;
+  } else if (placement === 'right') {
+    arrowEl.classList.add('arrow-left');
+    let arrowTop = targetCenterY - top - 7;
+    arrowTop = Math.max(16, Math.min(cardHeight - 30, arrowTop));
+    arrowEl.style.top = `${arrowTop}px`;
+  } else if (placement === 'left') {
+    arrowEl.classList.add('arrow-right');
+    let arrowTop = targetCenterY - top - 7;
+    arrowTop = Math.max(16, Math.min(cardHeight - 30, arrowTop));
+    arrowEl.style.top = `${arrowTop}px`;
+  }
 }
 
-function nextStep() { showStep(currentStepIndex + 1); }
-function prevStep() { showStep(currentStepIndex - 1); }
+function nextStep() {
+  if (isStepTransitioning) return;
+  showStep(currentStepIndex + 1);
+}
+
+function prevStep() {
+  if (isStepTransitioning) return;
+  showStep(currentStepIndex - 1);
+}
 
 function endTutorial(isSkip = false) {
   const userId = store.user?.uid || 'guest';
@@ -414,6 +552,11 @@ function cleanupTutorialDOM() {
   window.removeEventListener('resize', updateHighlightPosition);
   window.removeEventListener('scroll', updateHighlightPosition);
 
+  if (storeUpdateHandler) {
+    window.removeEventListener('store-updated', storeUpdateHandler);
+    storeUpdateHandler = null;
+  }
+
   if (overlayEl?.parentNode) overlayEl.parentNode.removeChild(overlayEl);
   if (spotlightEl?.parentNode) spotlightEl.parentNode.removeChild(spotlightEl);
   if (cardEl?.parentNode) cardEl.parentNode.removeChild(cardEl);
@@ -421,3 +564,4 @@ function cleanupTutorialDOM() {
   spotlightEl = null;
   cardEl = null;
 }
+
