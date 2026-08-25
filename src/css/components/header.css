@@ -57,11 +57,15 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  justify-content: flex-end;
+  gap: 1.15rem;
+  margin-left: auto;
 }
 
 .user-profile {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .user-profile img {
@@ -73,10 +77,12 @@
   border: 2px solid var(--border);
   padding: 2px;
   background-color: var(--white);
+  transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .user-profile img:hover {
   border-color: var(--primary);
+  transform: scale(1.03);
 }
 
 [data-theme="dark"] .user-profile img {
@@ -134,33 +140,34 @@
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 12px);
-  right: 0;
-  left: auto !important;
+  left: 0;
+  right: auto !important;
   width: 240px;
   background: var(--card-bg) !important;
   background-color: var(--card-bg) !important;
   opacity: 1 !important;
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border);
   padding: 0.5rem;
   z-index: 1200;
   display: none;
-  transform-origin: top right;
-  animation: dropdownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top left;
+  animation: dropdownIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: visible !important;
 }
 
 [data-theme="dark"] .profile-dropdown {
-  box-shadow: 0 10px 26px -4px rgba(0, 0, 0, 0.25), 0 2px 8px -2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.35), 0 2px 8px -2px rgba(0, 0, 0, 0.2);
 }
 
-/* Speech Bubble / Callout Arrow */
+/* Speech Bubble / Callout Arrow centered right under the profile avatar */
 .profile-dropdown::before {
   content: '';
   position: absolute;
   top: -6px;
-  right: 18px;
+  left: 17px;
+  right: auto;
   width: 10px;
   height: 10px;
   background: var(--card-bg);
@@ -318,7 +325,8 @@
 .header-dropdown {
   position: absolute;
   top: calc(100% + 12px);
-  right: -10px;
+  right: 0;
+  left: auto !important;
   width: 320px;
   background: var(--card-bg) !important;
   background-color: var(--card-bg) !important;
@@ -443,7 +451,22 @@
     position: relative;
   }
 
-  .profile-dropdown,
+  .profile-dropdown {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    left: 0 !important;
+    right: auto !important;
+    width: 260px !important;
+    max-width: calc(100vw - 2rem) !important;
+    background: var(--card-bg) !important;
+    background-color: var(--card-bg) !important;
+    opacity: 1 !important;
+    z-index: 2000 !important;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid var(--border) !important;
+    transform-origin: top left !important;
+  }
+
   .header-dropdown {
     position: absolute !important;
     top: calc(100% + 10px) !important;
@@ -457,6 +480,7 @@
     z-index: 2000 !important;
     box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.03) !important;
     border: 1px solid var(--border) !important;
+    transform-origin: top right !important;
   }
 
   [data-theme="dark"] .profile-dropdown,

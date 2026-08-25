@@ -349,14 +349,16 @@ export const showConfirm = (title, message) => {
     
     overlay.innerHTML = `
       <div class="custom-alert-card" style="text-align: left;">
-        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
-          <i class="ph-fill ph-question" style="font-size: 1.5rem;"></i>
-          ${title}
-        </h3>
-        <p class="text-muted" style="margin-bottom: 2.5rem;">${message}</p>
-        <div style="display: flex; gap: 1rem;">
-          <button class="btn btn-outline" style="flex: 1; justify-content: center;" id="btn-confirm-cancel">Batal</button>
-          <button class="btn btn-primary" style="flex: 1; justify-content: center;" id="btn-confirm-yes">Ya, Lanjut</button>
+        <div>
+          <h3 style="margin-bottom: 0.85rem; display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main);">
+            <i class="ph-fill ph-question" style="font-size: 1.4rem; color: var(--primary);"></i>
+            ${title}
+          </h3>
+          <p class="text-muted" style="margin-bottom: 1.75rem; font-size: 0.9rem; line-height: 1.55;">${message}</p>
+        </div>
+        <div style="display: flex; gap: 0.85rem; margin-top: auto;">
+          <button class="btn btn-outline" style="flex: 1; justify-content: center; height: 48px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;" id="btn-confirm-cancel">Batal</button>
+          <button class="btn btn-primary" style="flex: 1; justify-content: center; height: 48px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;" id="btn-confirm-yes">Ya, Lanjut</button>
         </div>
       </div>
     `;

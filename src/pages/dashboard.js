@@ -115,6 +115,8 @@ export function renderDashboard() {
   };
 
   const timeParts = getFormattedTimeParts();
+  const isSaldoHidden = localStorage.getItem("myfinance_hide_saldo") === "true";
+  const displayBalanceText = isSaldoHidden ? "Rp ••••••••" : formatRupiah(stats.balance);
 
   container.innerHTML = `
     <!-- Greeting Section (Minimal & Simple) -->
@@ -126,8 +128,13 @@ export function renderDashboard() {
     <!-- Top Cards (Total Saldo -> Pemasukan -> Pengeluaran) -->
     <div class="stats-cards">
       <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
-        <div class="stat-header">
-          <p class="stat-label">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
+        <div class="stat-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <p class="stat-label" style="margin:0;">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
+            <button id="btn-toggle-hide-saldo" title="${isSaldoHidden ? 'Tampilkan Saldo' : 'Sembunyikan Saldo'}" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
+              <i class="ph ${isSaldoHidden ? 'ph-eye-slash' : 'ph-eye'}" style="font-size:1.05rem;"></i>
+            </button>
+          </div>
           ${
             stats.hasAccounts
               ? `
@@ -143,7 +150,7 @@ export function renderDashboard() {
           }
         </div>
         <div class="stat-body">
-          <h2 class="stat-value text-main">${formatRupiah(stats.balance)}</h2>
+          <h2 class="stat-value text-main">${displayBalanceText}</h2>
         </div>
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill" style="width: 100%; background: var(--text-muted); opacity: 0.4;"></div></div>
@@ -193,25 +200,25 @@ export function renderDashboard() {
     <div class="dashboard-quick-access">
       <a href="/ai" class="quick-access-card" data-route="/ai">
         <div class="quick-access-icon icon-ai">
-          <i class="ph ph-sparkle"></i>
+          <img src="/assets/asistenai.svg" class="quick-access-img" alt="Asisten AI" />
         </div>
         <span class="quick-access-title">Asisten AI</span>
       </a>
       <a href="/anggaran" class="quick-access-card" data-route="/anggaran">
         <div class="quick-access-icon icon-anggaran">
-          <i class="ph ph-chart-pie-slice"></i>
+          <img src="/assets/anggaran.svg" class="quick-access-img" alt="Anggaran" />
         </div>
         <span class="quick-access-title">Anggaran</span>
       </a>
       <a href="/tabungan" class="quick-access-card" data-route="/tabungan">
         <div class="quick-access-icon icon-wishlist">
-          <i class="ph ph-heart"></i>
+          <img src="/assets/wishlist.svg" class="quick-access-img" alt="Wishlist" />
         </div>
         <span class="quick-access-title">Wishlist</span>
       </a>
       <a href="/laporan" class="quick-access-card" data-route="/laporan">
         <div class="quick-access-icon icon-laporan">
-          <i class="ph ph-chart-bar"></i>
+          <img src="/assets/laporan.svg" class="quick-access-img" alt="Laporan" />
         </div>
         <span class="quick-access-title">Laporan</span>
       </a>
@@ -221,7 +228,7 @@ export function renderDashboard() {
     <div class="bottom-grid">
       <div class="transactions-section">
         <div class="section-header row-header">
-          <h3>Transaksi Terakhir</h3>
+          <h3>Transaksi Terbaru</h3>
           <a href="/transaksi" class="link">Lihat Semua</a>
         </div>
         <div class="table-container">
@@ -322,11 +329,23 @@ export function renderDashboard() {
     });
   }
 
+  // Toggle sembunyikan / tampilkan Total Saldo
+  const btnToggleHideSaldo = document.getElementById("btn-toggle-hide-saldo");
+  if (btnToggleHideSaldo) {
+    btnToggleHideSaldo.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const currentHidden = localStorage.getItem("myfinance_hide_saldo") === "true";
+      localStorage.setItem("myfinance_hide_saldo", String(!currentHidden));
+      renderDashboard();
+    });
+  }
+
   // Touch/Click seluruh card Total Saldo
   const cardTotalSaldo = document.getElementById("card-total-saldo");
   if (cardTotalSaldo) {
     cardTotalSaldo.addEventListener("click", (e) => {
-      if (e.target.closest('#btn-adjust-balance') || e.target.closest('#btn-goto-saldo')) return;
+      if (e.target.closest('#btn-adjust-balance') || e.target.closest('#btn-goto-saldo') || e.target.closest('#btn-toggle-hide-saldo')) return;
       if (stats.hasAccounts) {
         navigateTo("/saldo");
       } else {

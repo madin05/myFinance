@@ -240,6 +240,7 @@ function bindAiPageEvents() {
   const openDrawer = () => {
     document.getElementById("ai-history-panel")?.classList.add("mobile-active");
     drawerBackdrop?.classList.add("mobile-active");
+    document.body.style.overflow = "hidden";
   };
 
   const closeDrawer = () => {
@@ -247,6 +248,7 @@ function bindAiPageEvents() {
       .getElementById("ai-history-panel")
       ?.classList.remove("mobile-active");
     drawerBackdrop?.classList.remove("mobile-active");
+    document.body.style.overflow = "";
   };
 
   const startNewChat = () => {
@@ -422,12 +424,7 @@ function renderHistorySidebar() {
       activeSessionId = item.getAttribute("data-id");
       renderHistorySidebar();
       renderActiveChatMessages();
-      document
-        .getElementById("ai-history-panel")
-        ?.classList.remove("mobile-active");
-      document
-        .getElementById("ai-drawer-backdrop")
-        ?.classList.remove("mobile-active");
+      closeDrawer();
     });
   });
 

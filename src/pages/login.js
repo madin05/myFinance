@@ -1,12 +1,17 @@
 import { store } from '../store.js';
-import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken, sendEmailVerification, sendPasswordResetEmail, updateProfile } from '../firebase-config.js';
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
-import { showToast, showAlert, showConfirm, showOptionalVerificationModal } from '../components/notifications.js';
+import { showToast, showAlert } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
+import { getLoginLayoutHtml } from '../auth/loginTemplates.js';
+import { initLoginAnimations } from '../auth/loginAnimations.js';
+
+export { renderEmailVerificationBanner } from '../auth/emailVerificationBanner.js';
 
 export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   const container = document.getElementById('login-view');
   if (!container) return;
+
   const isReg = mode === 'register';
   const isForgot = mode === 'forgot-password';
   const isVerified = mode === 'email-verified';
@@ -15,228 +20,8 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   const isVerifyOtp = mode === 'verify-otp';
   const isVerify2FAOtp = mode === 'verify-2fa-otp';
 
-  container.innerHTML = `
-    <div class="login-container" id="login-parallax-container">
-      
-      <!-- BACKGROUND GLOWS -->
-      <div class="glow-layer-1" style="position: absolute; left: -10%; top: -10%; width: 650px; height: 650px; border-radius: 50%; filter: blur(70px); pointer-events: none;"></div>
-      <div class="glow-layer-2" style="position: absolute; right: -10%; bottom: -10%; width: 650px; height: 650px; border-radius: 50%; filter: blur(70px); pointer-events: none;"></div>
+  container.innerHTML = getLoginLayoutHtml(mode, pendingEmail, extraData);
 
-      <!-- DYNAMIC DRIFTING CLOUDS CONTAINER -->
-      <div id="login-cloud-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;"></div>
-
-      <!-- MAIN SPLIT LAYOUT CONTAINER -->
-      <div class="login-layout">
-        
-        <!-- FORM CARD SECTION (LEFT SIDE) -->
-        <div class="login-card-wrapper">
-          <div class="login-card">
-            <!-- BRAND LOGO HEADER -->
-            <div class="logo-icon">
-              <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
-              <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
-            </div>
-
-            ${(isVerifyOtp || isVerify2FAOtp) ? `
-              <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 0.5rem 0;">
-                <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary, #6366f1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0;">
-                  <i class="${isVerify2FAOtp ? 'ph ph-shield-check' : 'ph ph-envelope-open'}"></i>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 0.35rem;">
-                  <h2 style="margin: 0; font-size: 1.3rem; text-align: center;">${isVerify2FAOtp ? 'Verifikasi 2-Langkah (2FA)' : 'Masukkan Kode OTP'}</h2>
-                  <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.55; margin: 0; text-align: center;">
-                    Kode OTP 6-digit telah dikirim ke<br>
-                    <strong style="color: var(--text-main);">${pendingEmail || extraData?.email || extraData?.emailMasked || ''}</strong>
-                  </p>
-                </div>
-
-                <form id="otp-form" style="width: 100%;">
-                  <div class="otp-input-group" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 1.25rem;">
-                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="0" autocomplete="one-time-code" aria-label="Digit 1">
-                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="1" aria-label="Digit 2">
-                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="2" aria-label="Digit 3">
-                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="3" aria-label="Digit 4">
-                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="4" aria-label="Digit 5">
-                    <input type="text" inputmode="numeric" maxlength="1" class="otp-input" data-otp-index="5" aria-label="Digit 6">
-                  </div>
-
-                  <div id="otp-error-msg" style="color: #ef4444; font-size: 0.8rem; text-align: center; margin-bottom: 0.75rem; min-height: 1.2em;"></div>
-
-                  <button type="submit" id="btn-verify-otp" class="btn btn-primary btn-full" style="height: 48px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    ${isVerify2FAOtp ? 'Verifikasi 2FA' : 'Verifikasi Kode'}
-                  </button>
-                </form>
-
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%;">
-                  <p id="otp-countdown-text" style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Kirim ulang kode dalam <strong id="otp-countdown-timer">60</strong> detik</p>
-                  <button id="btn-resend-otp" class="btn btn-outline btn-full" style="height: 42px; border-radius: 8px; font-size: 0.82rem;" disabled>
-                    Kirim Ulang Kode ${isVerify2FAOtp ? '2FA' : ''}
-                  </button>
-                  <a href="javascript:void(0)" id="btn-cancel-2fa" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; text-decoration: none;">Kembali ke Login</a>
-                </div>
-              </div>
-            ` : isVerified ? `
-              <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 0.5rem 0;">
-                <!-- Success Icon Animated -->
-                <div class="email-verified-icon-wrapper">
-                  <div class="email-verified-icon-ring"></div>
-                  <div class="email-verified-icon-ring email-verified-icon-ring-2"></div>
-                  <div class="email-verified-checkmark">
-                    <svg viewBox="0 0 52 52" width="40" height="40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="14 27 22 35 38 19"/>
-                    </svg>
-                  </div>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <h2 style="margin: 0; font-size: 1.4rem; text-align: center;">Email Terverifikasi!</h2>
-                  <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0; text-align: center;">
-                    Akunmu sudah aktif dan siap digunakan.<br>
-                    <strong style="color: var(--text-main);">Selamat bergabung di MyFinance!</strong>
-                  </p>
-                </div>
-
-                <button id="btn-go-to-login" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                  <i class="ph ph-house"></i>
-                  Lanjut ke Dashboard
-                </button>
-              </div>
-            ` : isVerifiedError ? `
-              <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 0.5rem 0;">
-                <!-- Error Icon -->
-                <div style="background: rgba(239, 68, 68, 0.12); color: #ef4444; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
-                  <i class="ph ph-warning-circle"></i>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <h2 style="margin: 0; font-size: 1.3rem; text-align: center;">Tautan Tidak Valid</h2>
-                  <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin: 0; text-align: center;">
-                    Tautan verifikasi sudah kedaluwarsa atau sudah pernah digunakan. Silakan minta tautan baru.
-                  </p>
-                </div>
-
-                <button id="btn-request-new-link" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-                  Minta Tautan Baru
-                </button>
-                <a href="javascript:void(0)" id="btn-back-to-login-from-error" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem;">
-                  Kembali ke Login
-                </a>
-              </div>
-            ` : isForgot ? `
-              <h2 style="text-align: center; margin-bottom: 0.5rem;">Reset Kata Sandi</h2>
-              <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.85rem; line-height: 1.5;">
-                Masukkan email Anda di bawah untuk menerima tautan reset kata sandi.
-              </p>
-              
-              <form id="forgot-form">
-                <div class="nebula-input">
-                  <input type="email" id="forgot-email" class="input" placeholder=" " required>
-                  <label class="user-label">Email</label>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full mt-md" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-                  Kirim Tautan Reset
-                </button>
-              </form>
-
-              <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-                <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--primary); font-weight: 700; text-decoration: none;">
-                  Kembali ke Login
-                </a>
-              </p>
-            ` : isResetConfirm ? `
-              <h2 style="text-align: center; margin-bottom: 0.5rem;">Buat Kata Sandi Baru</h2>
-              <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.75rem; font-size: 0.88rem;">
-                Silakan masukkan kata sandi baru untuk akun Anda.
-              </p>
-              
-              <form id="confirm-reset-form">
-                <div class="nebula-input">
-                  <input type="password" id="reset-new-password" class="input" placeholder=" " required style="padding-right: 45px;">
-                  <label class="user-label">Kata Sandi Baru</label>
-                  <i class="ph ph-eye toggle-password" id="toggle-reset-password" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); z-index: 5;"></i>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-                  Simpan Kata Sandi Baru
-                </button>
-              </form>
-
-              <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-                <a href="javascript:void(0)" id="btn-back-to-login-from-reset" style="color: var(--primary); font-weight: 700; text-decoration: none;">
-                  Kembali ke Login
-                </a>
-              </p>
-            ` : `
-              <h2 style="text-align: center; margin-bottom: 0.35rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang!'}</h2>
-              <p style="text-align: center; color: var(--text-muted); margin-bottom: 1rem; font-size: 0.88rem;">
-                ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas, instan & aman.'}
-              </p>
-              
-              <form id="auth-form">
-                ${isReg ? `
-                  <div class="nebula-input">
-                    <input type="text" id="reg-name" class="input" placeholder=" " required>
-                    <label class="user-label">Nama Lengkap</label>
-                  </div>
-                ` : ''}
-                <div class="nebula-input">
-                  <input type="text" id="email" class="input" placeholder=" " required>
-                  <label class="user-label">Username / Email</label>
-                </div>
-                <div class="nebula-input ${!isReg ? 'has-forgot-link' : ''}">
-                  <input type="password" id="password" class="input" placeholder=" " required style="padding-right: 45px;">
-                  <label class="user-label">Password</label>
-                  ${!isReg ? `<a href="javascript:void(0)" id="btn-forgot-password" class="nebula-forgot-link">Lupa Password?</a>` : ''}
-                  <button type="button" id="btn-toggle-password" class="nebula-toggle-btn">
-                    <i class="ph ph-eye"></i>
-                  </button>
-                </div>
-                ${isReg ? `
-                  <div class="nebula-input">
-                    <input type="password" id="confirm-password" class="input" placeholder=" " required style="padding-right: 45px;">
-                    <label class="user-label">Konfirmasi Password</label>
-                    <button type="button" id="btn-toggle-confirm-password" class="nebula-toggle-btn">
-                      <i class="ph ph-eye"></i>
-                    </button>
-                  </div>
-                ` : ''}
-                <button type="submit" class="btn btn-primary btn-full mt-md">
-                  ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
-                </button>
-              </form>
-
-              <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
-                ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
-                <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
-                  ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
-                </a>
-              </p>
-
-              <div style="margin: 1rem 0; display: flex; align-items: center; gap: 1rem;">
-                <div style="flex: 1; height: 1px; background: var(--border);"></div>
-                <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
-                <div style="flex: 1; height: 1px; background: var(--border);"></div>
-              </div>
-
-              <button id="btn-google-login" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px;">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-                <span>Masuk dengan Google</span>
-              </button>
-            `}
-          </div>
-        </div>
-
-        <!-- HERO ILLUSTRATION SHOWCASE (RIGHT SIDE) -->
-        <div class="login-hero-section">
-          <div class="hero-img-wrapper">
-            <div class="hero-img-backdrop-glow"></div>
-            <img src="/assets/animated-saving.svg" class="hero-animated-svg" alt="Kelola Tabungan MyFinance">
-          </div>
-        </div>
-
-      </div>
-    </div>
-  `;
   if (isVerifyOtp || isVerify2FAOtp) {
     const cancelBtn = document.getElementById('btn-cancel-2fa');
     if (cancelBtn) {
@@ -255,7 +40,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
           if (val && idx < otpInputs.length - 1) {
             otpInputs[idx + 1].focus();
           }
-          // Clear error saat user mulai ketik
           const errEl = document.getElementById('otp-error-msg');
           if (errEl) errEl.textContent = '';
         });
@@ -267,7 +51,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
           }
         });
 
-        // Paste support: distribute digits across inputs
         input.addEventListener('paste', (e) => {
           e.preventDefault();
           const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
@@ -316,7 +99,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Verifikasi 2FA gagal.');
 
-            // Login ke Firebase menggunakan Custom Token
             const userCred = await signInWithCustomToken(auth, data.customToken);
             const user = userCred.user;
             const token = await user.getIdToken(true);
@@ -352,13 +134,11 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Verifikasi OTP gagal.');
 
-            // ✅ OTP Valid — Update store & masuk ke Dashboard
             if (store.user) {
               store.user.emailVerified = true;
               store.save();
             }
 
-            // Reload Firebase user untuk sync emailVerified
             const currentUser = auth.currentUser;
             if (currentUser) {
               try { await currentUser.reload(); } catch (e) {}
@@ -373,7 +153,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
 
             showToast('Email berhasil diverifikasi! Selamat datang di MyFinance.', 'success');
 
-            // Trigger Onboarding Product Tour
             setTimeout(() => {
               import('../components/tutorial.js').then(m => m.startProductTutorial()).catch(() => {});
             }, 600);
@@ -381,7 +160,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
         } catch (err) {
           if (errEl) errEl.textContent = err.message;
           if (btn) { btn.disabled = false; btn.innerHTML = isVerify2FAOtp ? 'Verifikasi 2FA' : 'Verifikasi Kode'; }
-          // Clear OTP inputs on error
           otpInputs.forEach(i => { i.value = ''; });
           otpInputs[0]?.focus();
         }
@@ -446,7 +224,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
 
           resendBtn.textContent = 'Kode Terkirim! ✓';
 
-          // Reset countdown
           countdown = 60;
           if (countdownTextEl) countdownTextEl.style.display = '';
           if (timerEl) timerEl.textContent = countdown;
@@ -471,7 +248,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
     const goToLoginBtn = document.getElementById('btn-go-to-login');
     if (goToLoginBtn) {
       goToLoginBtn.onclick = async () => {
-        // Bersihkan query params dari URL
         window.history.replaceState(null, '', '/dashboard');
         
         const currentUser = auth.currentUser;
@@ -489,7 +265,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             hideLoading();
           }
 
-          // Direct langsung ke Dashboard tanpa lewat Halaman Login lagi!
           const loginView = document.getElementById('login-view');
           const appLayout = document.getElementById('app-layout');
           if (loginView) loginView.style.display = 'none';
@@ -718,11 +493,9 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
       showLoading();
       try {
         if (isReg) {
-          // Handle Register
           const name = document.getElementById('reg-name').value;
           const confirmPass = document.getElementById('confirm-password').value;
 
-          // Validasi kecocokan sandi
           if (pass !== confirmPass) {
             showToast('Password dan Konfirmasi Password tidak cocok!', 'warning');
             hideLoading();
@@ -733,10 +506,9 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
           const result = await createUserWithEmailAndPassword(auth, email, pass);
           const user = result.user;
 
-          // Set displayName di Firebase Auth agar onAuthStateChanged baca nama yang benar
+          const { updateProfile } = await import('../firebase-config.js');
           await updateProfile(user, { displayName: name });
 
-          // Set user di store (belum verified)
           const token = await user.getIdToken(true);
           await store.setUser({
             uid: user.uid,
@@ -748,7 +520,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             provider: 'password'
           }, { name });
 
-          // Kirim OTP ke email via Backend API
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
           const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
           
@@ -763,10 +534,8 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
           });
 
           hideLoading();
-          // Arahkan ke halaman input OTP (WAJIB verifikasi sebelum masuk Dashboard)
           renderLogin('verify-otp', user.email, { email: user.email, token });
         } else {
-          // Handle Login (with Demo Fallback)
           if (email === 'guest' && pass === 'guest123') {
             store.setUser({ 
               name: 'Guest User', 
@@ -777,7 +546,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             });
             navigateTo('/dashboard');
           } else {
-            // Check 2FA Status via Backend API
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
             const check2FARes = await fetch(`${API_URL}/auth/2fa/check`, {
@@ -816,7 +584,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
         console.error("Auth Error:", error);
         let msg = error.message;
         if (error.code === 'auth/operation-not-allowed') {
-          msg = 'Metode masuk dengan Email & Password belum diaktifkan di Firebase Console Anda. Silakan aktifkan terlebih dahulu di menu: Authentication -> Sign-in method -> Email/Password.';
+          msg = 'Metode masuk dengan Email & Password belum diaktifkan di Firebase Console Anda.';
         } else if (error.code === 'auth/email-already-in-use') {
           msg = 'Alamat email ini sudah terdaftar. Silakan gunakan email lain atau langsung masuk ke akun Anda.';
         } else if (error.code === 'auth/invalid-email') {
@@ -826,7 +594,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
         } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
           msg = 'Email atau kata sandi yang Anda masukkan salah. Silakan periksa kembali.';
         } else if (error.code === 'auth/too-many-requests') {
-          msg = 'Terlalu banyak percobaan masuk yang gagal. Akses diblokir sementara, silakan coba beberapa saat lagi.';
+          msg = 'Terlalu banyak percobaan masuk yang gagal. Akses diblokir sementara.';
         } else if (error.code === 'auth/network-request-failed') {
           msg = 'Koneksi jaringan gagal. Harap periksa koneksi internet Anda.';
         }
@@ -837,199 +605,6 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
     };
   }
 
-  // List of cute finance quotes for click interactions
-  const quotes = [
-    "Yuk hemat bareng aku!",
-    "Sssst, kurangi jajan kopi ya!",
-    "Tabunganmu aman bersamaku!",
-    "Gajian sebentar lagi datang!",
-    "Ayo raih wishlist impianmu!",
-    "Kelola uang lebih cerdas!",
-    "Yuk catat pengeluaranmu!",
-    "Don't worry, be hemat!"
-  ];
-
-  // Quotes khusus si Babi Terbang
-  const pigQuotes = [
-    "Celengan babi terbang siap meluncur!",
-    "Oink oink! Tabung uangmu di sini!",
-    "Sayapku kepak-kepak demi masa depanmu!",
-    "Aku terbang karena beban tabunganmu ringan!",
-    "Oink! Siap terbang raih mimpimu!",
-    "Koin masuk, hatiku senang!"
-  ];
-
-  // Helper function to handle mascot click interactions
-  const initMascotInteraction = (mascotId, bubbleId, customQuotes = null) => {
-    const mascot = document.getElementById(mascotId);
-    const bubble = document.getElementById(bubbleId);
-    const quoteList = customQuotes || quotes;
-
-    if (mascot && bubble) {
-      mascot.onclick = (e) => {
-        e.stopPropagation(); // Prevent parallax reset
-
-        // Trigger Spin Animation
-        mascot.classList.add('mascot-spin');
-        setTimeout(() => {
-          mascot.classList.remove('mascot-spin');
-        }, 600);
-
-        // Pick a random quote
-        const randomQuote = quoteList[Math.floor(Math.random() * quoteList.length)];
-        bubble.textContent = randomQuote;
-        
-        // Show Bubble
-        bubble.classList.add('active');
-
-        // Hide Bubble after 3.5 seconds
-        if (mascot.bubbleTimeout) clearTimeout(mascot.bubbleTimeout);
-        mascot.bubbleTimeout = setTimeout(() => {
-          bubble.classList.remove('active');
-        }, 3500);
-      };
-    }
-  };
-
-  // Initialize click interactions for all 4 interactive elements
-  initMascotInteraction('mascot-pig', 'bubble-pig', pigQuotes);
-  initMascotInteraction('mascot-robot', 'bubble-robot');
-  initMascotInteraction('item-coin-small', 'bubble-coin-small');
-  initMascotInteraction('item-wallet', 'bubble-wallet');
-
-  // Mouse movement parallax telah dinonaktifkan agar tampilan login tetap statis dan stabil
-
-  // Dynamic Cloud Generator (Desktop Only)
-  const cloudContainer = document.getElementById('login-cloud-container');
-  if (cloudContainer && window.innerWidth > 991) {
-    const cloudCount = 6;
-    let cloudHTML = '';
-
-    for (let i = 0; i < cloudCount; i++) {
-      // Determine random sizes: small, normal, large
-      const sizeIndex = Math.floor(Math.random() * 3); // 0, 1, 2
-      let width, height, opacity, speedMult;
-      
-      if (sizeIndex === 0) {
-        // Small
-        width = Math.floor(Math.random() * 30) + 45; // 45px - 75px
-        height = Math.floor(width * 0.6);
-        opacity = 0.25;
-        speedMult = 1.35; // Flows faster
-      } else if (sizeIndex === 1) {
-        // Normal
-        width = Math.floor(Math.random() * 40) + 80; // 80px - 120px
-        height = Math.floor(width * 0.6);
-        opacity = 0.35;
-        speedMult = 1.0;
-      } else {
-        // Large
-        width = Math.floor(Math.random() * 50) + 130; // 130px - 180px
-        height = Math.floor(width * 0.6);
-        opacity = 0.45;
-        speedMult = 0.72; // Flows slower
-      }
-
-      const top = Math.floor(Math.random() * 75) + 8; // Spread between 8% and 83% top
-      const duration = Math.floor((Math.random() * 35 + 45) / speedMult); // 45s - 80s adjusted by speed multiplier
-      const delay = -Math.floor(Math.random() * duration); // Negative delay for instant pre-spawn!
-
-      // Drifting direction starting from screen corners (left-to-right or right-to-left)
-      const directionClass = Math.random() > 0.5 ? 'cloud-drift-left-to-right' : 'cloud-drift-right-to-left';
-
-      cloudHTML += `
-        <div class="cloud-ornament" style="
-          top: ${top}%;
-          animation: ${directionClass} ${duration}s linear infinite;
-          animation-delay: ${delay}s;
-          opacity: ${opacity};
-          position: absolute;
-          pointer-events: none;
-        ">
-          <svg viewBox="0 0 100 60" width="${width}" height="${height}">
-            <path d="M20,45 A15,15 0 0,1 30,20 A20,20 0 0,1 70,20 A15,15 0 0,1 80,45 Z" fill="currentColor" />
-          </svg>
-        </div>
-      `;
-    }
-    cloudContainer.innerHTML = cloudHTML;
-  }
+  // Initialize mascot & cloud animations
+  initLoginAnimations();
 }
-
-/**
- * Menampilkan banner verifikasi email di dalam app.
- * Dipanggil dari main.js saat user login/register dengan email yang belum diverifikasi.
- * @param {import('firebase/auth').User} firebaseUser - Firebase Auth user object
- */
-export function renderEmailVerificationBanner(firebaseUser) {
-  const banner = document.getElementById('email-verify-banner');
-  if (!banner) return;
-
-  // Jangan tampilkan banner jika pop-up modal verifikasi sedang/akan aktif
-  if (window.isVerificationModalActive || document.getElementById('optional-verif-modal-overlay')) {
-    banner.style.display = 'none';
-    return;
-  }
-
-  // Tampilkan banner dengan animasi slide-down
-  banner.style.display = 'flex';
-  banner.innerHTML = `
-    <div class="evb-icon"><i class="ph ph-envelope-simple-warning"></i></div>
-    <div class="evb-text">
-      <strong>Verifikasi emailmu dengan OTP</strong>
-      <span>Masukkan kode OTP yang dikirimkan ke <em>${firebaseUser?.email || ''}</em></span>
-    </div>
-    <div class="evb-actions">
-      <button id="evb-btn-resend" class="evb-btn-resend">Input OTP / Kirim Ulang</button>
-      <button id="evb-btn-close" class="evb-btn-close" aria-label="Tutup"><i class="ph ph-x"></i></button>
-    </div>
-  `;
-
-  // Handler kirim ulang — pakai OTP endpoint & arahkan ke form OTP
-  document.getElementById('evb-btn-resend').onclick = async () => {
-    const btn = document.getElementById('evb-btn-resend');
-    if (!btn) return;
-    btn.disabled = true;
-    btn.textContent = 'Mengirim...';
-
-    try {
-      const token = store.user?.token;
-      if (!token) throw new Error('Token tidak ditemukan, silakan login ulang.');
-
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
-
-      const res = await fetch(`${API_URL}/auth/otp/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal kirim OTP.');
-
-      btn.textContent = 'OTP Terkirim! ✓';
-      
-      // Sembunyikan layout utama dan tampilkan view OTP
-      const loginView = document.getElementById('login-view');
-      const appLayout = document.getElementById('app-layout');
-      if (loginView) loginView.style.display = 'block';
-      if (appLayout) appLayout.style.display = 'none';
-      renderLogin('verify-otp', firebaseUser?.email || store.user?.email || '', { email: firebaseUser?.email || store.user?.email, token });
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Coba Lagi';
-      console.warn('Resend OTP error:', err.message);
-    }
-  };
-
-  // Handler dismiss banner
-  document.getElementById('evb-btn-close').onclick = () => {
-    banner.style.animation = 'evb-slide-up 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards';
-    setTimeout(() => { banner.style.display = 'none'; banner.style.animation = ''; }, 380);
-  };
-}
-
