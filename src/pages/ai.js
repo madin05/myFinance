@@ -210,6 +210,13 @@ export function renderAiPage() {
   renderActiveChatMessages();
 }
 
+function closeAiDrawer() {
+  document.getElementById("ai-history-panel")?.classList.remove("mobile-active");
+  const drawerBackdrop = document.getElementById("ai-drawer-backdrop");
+  if (drawerBackdrop) drawerBackdrop.classList.remove("mobile-active");
+  document.body.style.overflow = "";
+}
+
 function createNewSessionObject(title = "Percakapan Baru") {
   return {
     id: `session_${Date.now()}`,
@@ -243,21 +250,13 @@ function bindAiPageEvents() {
     document.body.style.overflow = "hidden";
   };
 
-  const closeDrawer = () => {
-    document
-      .getElementById("ai-history-panel")
-      ?.classList.remove("mobile-active");
-    drawerBackdrop?.classList.remove("mobile-active");
-    document.body.style.overflow = "";
-  };
-
   const startNewChat = () => {
     const sessions = loadSessions();
     const newSess = createNewSessionObject("Percakapan Baru");
     sessions.unshift(newSess);
     activeSessionId = newSess.id;
     saveSessions(sessions);
-    closeDrawer();
+    closeAiDrawer();
     renderHistorySidebar();
     renderActiveChatMessages();
     if (inputEl) inputEl.focus();
@@ -268,8 +267,8 @@ function bindAiPageEvents() {
     newChatBtnSidebar.addEventListener("click", startNewChat);
 
   if (toggleHistoryBtn) toggleHistoryBtn.addEventListener("click", openDrawer);
-  if (closeHistoryBtn) closeHistoryBtn.addEventListener("click", closeDrawer);
-  if (drawerBackdrop) drawerBackdrop.addEventListener("click", closeDrawer);
+  if (closeHistoryBtn) closeHistoryBtn.addEventListener("click", closeAiDrawer);
+  if (drawerBackdrop) drawerBackdrop.addEventListener("click", closeAiDrawer);
 
   document.addEventListener("click", () => {
     if (plusMenu) plusMenu.style.display = "none";
@@ -424,7 +423,7 @@ function renderHistorySidebar() {
       activeSessionId = item.getAttribute("data-id");
       renderHistorySidebar();
       renderActiveChatMessages();
-      closeDrawer();
+      closeAiDrawer();
     });
   });
 
