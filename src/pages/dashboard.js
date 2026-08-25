@@ -189,6 +189,34 @@ export function renderDashboard() {
       <span class="dot" data-index="2"></span>
     </div>
 
+    <!-- Quick Access Feature Navigation Grid (Migrated from Sidebar) -->
+    <div class="dashboard-quick-access">
+      <a href="/ai" class="quick-access-card" data-route="/ai">
+        <div class="quick-access-icon icon-ai">
+          <i class="ph ph-sparkle"></i>
+        </div>
+        <span class="quick-access-title">Asisten AI</span>
+      </a>
+      <a href="/anggaran" class="quick-access-card" data-route="/anggaran">
+        <div class="quick-access-icon icon-anggaran">
+          <i class="ph ph-chart-pie-slice"></i>
+        </div>
+        <span class="quick-access-title">Anggaran</span>
+      </a>
+      <a href="/tabungan" class="quick-access-card" data-route="/tabungan">
+        <div class="quick-access-icon icon-wishlist">
+          <i class="ph ph-heart"></i>
+        </div>
+        <span class="quick-access-title">Wishlist</span>
+      </a>
+      <a href="/laporan" class="quick-access-card" data-route="/laporan">
+        <div class="quick-access-icon icon-laporan">
+          <i class="ph ph-chart-bar"></i>
+        </div>
+        <span class="quick-access-title">Laporan</span>
+      </a>
+    </div>
+
     <!-- Bottom Section -->
     <div class="bottom-grid">
       <div class="transactions-section">
@@ -259,6 +287,14 @@ export function renderDashboard() {
   savingInterval = setInterval(updateSavingWidget, 4000);
 
   // Event Listeners
+  container.querySelectorAll(".quick-access-card").forEach((card) => {
+    card.addEventListener("click", (e) => {
+      e.preventDefault();
+      const route = card.getAttribute("data-route");
+      if (route) navigateTo(route);
+    });
+  });
+
   document.getElementById("btn-manage-budget").addEventListener("click", () => {
     navigateTo("/anggaran");
   });

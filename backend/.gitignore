@@ -8,3 +8,4 @@ firebase-service-account.json
 *.key
 
 /generated/prisma
+.agents/

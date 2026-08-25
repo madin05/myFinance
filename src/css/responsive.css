@@ -114,6 +114,8 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-left: auto !important;
+    order: 2 !important;
   }
 
   .icon-btn,
@@ -462,8 +464,7 @@
   }
 
   /* Overrides untuk baris kosong (empty state) */
-  .transactions-table tr.empty-row,
-  .transactions-table tr:has(td[colspan]) {
+  .transactions-table tr.empty-row {
     display: block !important;
     background: transparent !important;
     border: none !important;
@@ -482,12 +483,17 @@
   }
 
   .transactions-table td.empty-td,
-  .transactions-table td[colspan] {
+  .transactions-table tr.empty-row td {
     display: block !important;
     padding: 1.5rem 1rem !important;
     width: 100% !important;
     position: static !important;
     text-align: center !important;
+  }
+
+  .tx-mobile-card td,
+  .tx-mobile-card div {
+    text-align: left !important;
   }
 
   /* 5. Tanggal (td:1) — hidden untuk baris transaksi normal, tampil untuk empty state */
@@ -537,18 +543,20 @@
   }
 
   .transactions-table .badge-soft {
-    padding: 2px 9px !important;
-    font-size: 0.68rem !important;
-    border-radius: 8px !important;
+    padding: 2px 7px !important;
+    font-size: 0.62rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 4px !important;
+    gap: 3.5px !important;
+    line-height: 1.2 !important;
   }
 
   .tx-cat-icon {
     display: inline-block !important;
-    width: 18px !important;
-    height: 18px !important;
+    width: 14px !important;
+    height: 14px !important;
     object-fit: contain !important;
     vertical-align: middle !important;
     flex-shrink: 0 !important;
@@ -912,5 +920,38 @@
 
   .dashboard-container.sidebar-collapsed .sidebar-footer .btn {
     margin-bottom: 0.75rem;
+  }
+}
+
+/* =========================================================
+   Anggaran Page Responsive Overrides
+   ========================================================= */
+@media (max-width: 768px) {
+  .anggaran-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.85rem !important;
+  }
+
+  .anggaran-controls {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 0.75rem !important;
+  }
+
+  .month-selector {
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  .month-label {
+    min-width: 110px !important;
+    font-size: 0.88rem !important;
+  }
+
+  .table-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 }
