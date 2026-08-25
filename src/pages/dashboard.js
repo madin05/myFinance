@@ -200,7 +200,7 @@ export function renderDashboard() {
     <div class="dashboard-quick-access">
       <a href="/ai" class="quick-access-card" data-route="/ai">
         <div class="quick-access-icon icon-ai">
-          <img src="/assets/asistenai.svg" class="quick-access-img" alt="Asisten AI" />
+          <img src="/assets/technical-support.svg" class="quick-access-img" alt="Asisten AI" />
         </div>
         <span class="quick-access-title">Asisten AI</span>
       </a>

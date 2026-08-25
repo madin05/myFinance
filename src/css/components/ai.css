@@ -268,16 +268,17 @@
 }
 
 .ai-history-sparkle-icon {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--border-light, #f3f4f6);
-  border: 1px solid var(--border, #e5e7eb);
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .ai-history-sparkle-icon .ai-avatar-icon {
@@ -765,14 +766,14 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--border-light, #f3f4f6);
-  border: 1px solid var(--border, #e5e7eb);
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
   overflow: hidden;
 }
 
