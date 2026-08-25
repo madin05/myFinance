@@ -610,10 +610,14 @@
     font-size: 1.05rem !important;
   }
 
-  .modal-content p,
-  .custom-alert-card p {
+  .modal-content p {
     font-size: 0.8rem !important;
     margin-bottom: 1.25rem !important;
+  }
+
+  .custom-alert-card p {
+    font-size: 0.875rem !important;
+    margin-bottom: 1.75rem !important;
   }
 
   .icon-box {

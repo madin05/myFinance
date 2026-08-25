@@ -29,71 +29,84 @@
 .dashboard-quick-access {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin: 1.35rem 0 1.65rem 0;
+  gap: 0.5rem;
+  margin: 1.25rem 0 1.5rem 0;
   width: 100%;
-}
-
-.quick-access-card {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg, 16px);
-  padding: 1rem 0.75rem;
+  padding: 1rem 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.quick-access-card {
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 0.5rem 0.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s ease;
+  box-shadow: none;
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .quick-access-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
-  border-color: var(--primary);
+  transform: translateY(-2px);
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .quick-access-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quick-access-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
   transition: transform 0.2s ease;
 }
 
 .quick-access-card:hover .quick-access-icon {
   transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Icon specific accent themes */
+/* Icon specific accent themes (Soft light pastel background for icon) */
 .icon-ai {
-  background: rgba(124, 58, 237, 0.12);
+  background: #F3E8FF;
   color: #7c3aed;
 }
 
 .icon-anggaran {
-  background: rgba(16, 185, 129, 0.12);
+  background: #E6F4EA;
   color: #10b981;
 }
 
 .icon-wishlist {
-  background: rgba(236, 72, 153, 0.12);
+  background: #FCE8E6;
   color: #ec4899;
 }
 
 .icon-laporan {
-  background: rgba(14, 165, 233, 0.12);
+  background: #E8F0FE;
   color: #0ea5e9;
 }
 
 .icon-bantuan {
-  background: rgba(245, 158, 11, 0.12);
+  background: #FEF3C7;
   color: #f59e0b;
 }
 
@@ -105,8 +118,34 @@
   white-space: nowrap;
 }
 
-[data-theme="dark"] .quick-access-card {
+[data-theme="dark"] .dashboard-quick-access {
+  background: #1C1626;
+  border-color: #3D3548;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .quick-access-card {
+  box-shadow: none;
+}
+
+[data-theme="dark"] .icon-ai {
+  background: rgba(147, 51, 234, 0.2);
+}
+
+[data-theme="dark"] .icon-anggaran {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="dark"] .icon-wishlist {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+[data-theme="dark"] .icon-laporan {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="dark"] .icon-bantuan {
+  background: rgba(245, 158, 11, 0.2);
 }
 
 /* Hide Quick Access Grid on Desktop since Desktop has the Sidebar */
