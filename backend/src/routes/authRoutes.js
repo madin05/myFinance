@@ -15,6 +15,8 @@ router.post('/login-2fa/verify', preAuthMiddleware, limit2FAVerify, authControll
 router.post('/login-2fa/resend', preAuthMiddleware, limit2FASend, authController.resend2FAOtp);
 router.post('/2fa/enable-request', authMiddleware, limit2FASend, authController.requestEnable2FA);
 router.post('/2fa/enable-confirm', preAuthMiddleware, limit2FAVerify, authController.confirmEnable2FA);
+router.post('/2fa/disable-request', authMiddleware, limit2FASend, authController.requestDisable2FA);
+router.post('/2fa/disable-confirm', preAuthMiddleware, limit2FAVerify, authController.confirmDisable2FA);
 router.get('/2fa/verify', limit2FAVerify, authController.verify2FAMagicLink);
 router.post('/2fa/toggle', authMiddleware, authController.toggle2FA);
 

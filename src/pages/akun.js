@@ -13,6 +13,7 @@ import {
   openDeleteAccountModal,
   openConfirmPasswordModal,
   openEnable2FAModal,
+  openDisable2FAModal,
 } from "../components/modal/index.js";
 import { initCustomSelect } from "../components/customSelect.js";
 import {
@@ -335,6 +336,7 @@ export function renderAkun() {
             }
           );
         } else {
+          e.target.checked = true;
           const providerId = userFirebase?.providerData[0]?.providerId || "password";
           if (providerId === "password") {
             openConfirmPasswordModal(
@@ -345,19 +347,15 @@ export function renderAkun() {
                     const credential = EmailAuthProvider.credential(userFirebase.email, password);
                     await reauthenticateWithCredential(userFirebase, credential);
                   }
-                  const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
-                  const res = await userService.toggle2FA(freshToken, false, password);
                   hideLoading();
-                  e.target.checked = false;
-                  if (store.user) {
-                    store.user.is2FAEnabled = false;
-                    store.user.twoFactorEmailEnabled = false;
-                    store.save();
-                  }
-                  showAlert(
-                    "2FA Dinonaktifkan",
-                    res.message || "Autentikasi 2-Langkah telah dinonaktifkan.",
-                    "success"
+                  openDisable2FAModal(
+                    () => {
+                      e.target.checked = false;
+                    },
+                    () => {
+                      e.target.checked = true;
+                    },
+                    password
                   );
                 } catch (err) {
                   hideLoading();
@@ -374,27 +372,14 @@ export function renderAkun() {
               }
             );
           } else {
-            showLoading();
-            try {
-              const freshToken = userFirebase ? await userFirebase.getIdToken(true) : store.user?.token;
-              const res = await userService.toggle2FA(freshToken, false);
-              hideLoading();
-              e.target.checked = false;
-              if (store.user) {
-                store.user.is2FAEnabled = false;
-                store.user.twoFactorEmailEnabled = false;
-                store.save();
+            openDisable2FAModal(
+              () => {
+                e.target.checked = false;
+              },
+              () => {
+                e.target.checked = true;
               }
-              showAlert(
-                "2FA Dinonaktifkan",
-                res.message || "Autentikasi 2-Langkah telah dinonaktifkan.",
-                "success"
-              );
-            } catch (err) {
-              hideLoading();
-              e.target.checked = true;
-              showAlert("Gagal Menonaktifkan 2FA", err.message || "Gagal meminta penonaktifan 2FA.", "error");
-            }
+            );
           }
         }
       });
