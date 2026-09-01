@@ -19,3 +19,4 @@ export { openDetailTransactionModal } from './detailTransactionModal.js';
 export { openConfirmPasswordModal } from './confirmPasswordModal.js';
 export { openQuickActionSheet } from './quickActionSheet.js';
 export { openEnable2FAModal } from './enable2FAModal.js';
+export { openDisable2FAModal } from './disable2FAModal.js';

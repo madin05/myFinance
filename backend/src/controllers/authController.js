@@ -413,7 +413,122 @@ exports.confirmEnable2FA = async (req, res) => {
 };
 
 /**
- * Toggle / Disable 2FA Handler (Konfirmasi Password untuk Menonaktifkan)
+ * Request Deactivation of 2FA: Generates DISABLE_2FA OTP & preAuthToken.
+ * User must verify OTP before 2FA status is changed to disabled in DB.
+ */
+exports.requestDisable2FA = async (req, res) => {
+  try {
+    const firebaseUid = req.user?.uid;
+    const { password } = req.body || {};
+    const { withRetry } = require('../services/db');
+
+    if (!firebaseUid) {
+      return res.status(401).json({ error: 'Otentikasi diperlukan.' });
+    }
+
+    const user = await withRetry(() => prisma.user.findUnique({
+      where: { firebaseUid }
+    }));
+
+    if (!user) {
+      return res.status(404).json({ error: 'User tidak ditemukan.' });
+    }
+
+    if (!user.is2FAEnabled && !user.twoFactorEmailEnabled) {
+      return res.status(400).json({ error: 'Autentikasi 2-Langkah belum aktif untuk akun ini.' });
+    }
+
+    // Verifikasi Password jika user menggunakan akun lokal password
+    if (user.password && password) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Password yang Anda masukkan salah.' });
+      }
+    }
+
+    // Generate OTP DISABLE_2FA & Pre-Auth JWT
+    const { otpCode, expiresAt } = await generateOtp(user.id, 'DISABLE_2FA');
+    const { JWT_SECRET } = require('../services/twoFactorService');
+
+    const preAuthToken = jwt.sign(
+      { userId: user.id, email: user.email, stage: 'DISABLE_2FA_PENDING' },
+      JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    send2FAOtpEmail(user.email, otpCode).catch(err => {
+      console.error('Background Disable 2FA OTP Send Error:', err.message);
+    });
+
+    res.json({
+      success: true,
+      status: 'OTP_SENT',
+      preAuthToken,
+      expiresAt,
+      message: `Kode verifikasi 6-digit untuk menonaktifkan 2FA telah dikirim ke email ${maskEmail(user.email)}.`
+    });
+  } catch (error) {
+    console.error('Request Disable 2FA Server Error:', error);
+    res.status(500).json({ error: 'Gagal meminta penonaktifan 2FA.' });
+  }
+};
+
+/**
+ * Confirm Deactivation of 2FA: Validates DISABLE_2FA OTP & sets is2FAEnabled=false in DB.
+ */
+exports.confirmDisable2FA = async (req, res) => {
+  try {
+    const userId = req.preAuth?.userId;
+    const { otp } = req.body;
+    const { withRetry } = require('../services/db');
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Sesi 2FA tidak valid.' });
+    }
+
+    if (!otp) {
+      return res.status(400).json({ error: 'Kode OTP 6-digit wajib diisi.' });
+    }
+
+    // Verifikasi OTP bertipe DISABLE_2FA
+    await verifyOtp(userId, otp, 'DISABLE_2FA');
+
+    // Update status 2FA di database secara resmi
+    const user = await withRetry(() => prisma.user.update({
+      where: { id: userId },
+      data: { is2FAEnabled: false, twoFactorEmailEnabled: false }
+    }));
+
+    // Kirim notifikasi keamanan penonaktifan
+    const { send2FADisabledSecurityEmail } = require('../services/emailService');
+    const { getDeviceIp } = require('../services/twoFactorService');
+    const ipAddress = getDeviceIp(req);
+    const userAgent = req.headers['user-agent'];
+
+    send2FADisabledSecurityEmail(user.email, ipAddress, userAgent, new Date()).catch(err => {
+      console.error('Background 2FA Deactivation Security Email Error:', err.message);
+    });
+
+    res.json({
+      success: true,
+      status: 'DISABLED',
+      is2FAEnabled: false,
+      message: 'Autentikasi 2-Langkah berhasil dinonaktifkan.',
+      user: {
+        id: user.id,
+        email: user.email,
+        is2FAEnabled: false
+      }
+    });
+  } catch (error) {
+    console.error('Confirm Disable 2FA Error:', error.message);
+    const statusCode = error.statusCode || 400;
+    res.status(statusCode).json({ error: error.message || 'Gagal mengonfirmasi penonaktifan 2FA.' });
+  }
+};
+
+/**
+ * Toggle / Disable 2FA Handler (Legacy Direct Toggle)
  */
 exports.toggle2FA = async (req, res) => {
   try {

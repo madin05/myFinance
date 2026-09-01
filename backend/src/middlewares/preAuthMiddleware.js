@@ -27,7 +27,8 @@ module.exports = function preAuthMiddleware(req, res, next) {
 
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    if ((decoded.stage !== '2FA_PENDING' && decoded.stage !== 'ENABLE_2FA_PENDING') || !decoded.userId) {
+    const allowedStages = ['2FA_PENDING', 'ENABLE_2FA_PENDING', 'DISABLE_2FA_PENDING'];
+    if (!allowedStages.includes(decoded.stage) || !decoded.userId) {
       return res.status(401).json({
         error: 'Tahap autentikasi 2FA tidak valid.'
       });
