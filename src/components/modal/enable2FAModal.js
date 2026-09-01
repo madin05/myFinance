@@ -66,7 +66,15 @@ export function openEnable2FAModal(onSuccess, onCancel) {
     method: 'POST',
     headers: getAuthHeaders(token)
   })
-  .then(res => res.json().then(data => ({ ok: res.ok, data })))
+  .then(async (res) => {
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = { error: 'Sistem sedang bermasalah. Coba lagi nanti ya!' };
+    }
+    return { ok: res.ok, data };
+  })
   .then(({ ok, data }) => {
     hideLoading();
     if (!ok) {
@@ -132,13 +140,12 @@ export function openEnable2FAModal(onSuccess, onCancel) {
       submitBtn.textContent = 'Memverifikasi...';
 
       try {
-        const verifyRes = await fetch(`${API_URL}/auth/2fa/enable-confirm`, {
-          method: 'POST',
-          headers: getAuthHeaders(preAuthToken),
-          body: JSON.stringify({ otp: otpCode })
-        });
-
-        const verifyData = await verifyRes.json();
+        let verifyData;
+        try {
+          verifyData = await verifyRes.json();
+        } catch {
+          verifyData = { error: 'Sistem sedang bermasalah. Coba lagi nanti ya!' };
+        }
         if (!verifyRes.ok) throw new Error(verifyData.error || 'Verifikasi OTP gagal.');
 
         if (store.user) {
