@@ -52,8 +52,12 @@
 
 /* --- SALDO CARD CONTENT HORIZONTAL LAYOUT & CORNER RADIUS --- */
 .saldo-card-item {
-  border-radius: 18px !important;
+  border-radius: 18px 18px 0 0 !important;
   overflow: hidden;
+}
+
+.saldo-card-item:last-child {
+  border-radius: 18px !important;
 }
 
 .saldo-card-content {
@@ -166,12 +170,16 @@
 }
 
 .saldo-grid.list-mode .stat-card {
-  border-radius: 18px !important;
+  border-radius: 18px 18px 0 0 !important;
   padding: 0.85rem 1.15rem;
 }
 
 .saldo-grid.list-mode .stat-card:not(:first-child) {
   margin-top: -1.15rem !important;
+}
+
+.saldo-grid.list-mode .stat-card:last-child {
+  border-radius: 18px !important;
 }
 
 /* --- MOBILE RESPONSIVE OVERRIDES --- */
@@ -206,7 +214,7 @@
   }
 
   .saldo-grid .stat-card:not(:first-child) {
-    margin-top: -1.55rem !important;
+    margin-top: -1.4rem !important;
   }
 
   .saldo-card-item .account-name {
