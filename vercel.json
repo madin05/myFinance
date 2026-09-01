@@ -2,10 +2,6 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/src/app.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
@@ -13,8 +9,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "backend/src/app.js"
+      "source": "/api/:path*",
+      "destination": "https://formed-spread-gave-execute.trycloudflare.com/api/:path*"
     },
     {
       "source": "/((?!api).*)",

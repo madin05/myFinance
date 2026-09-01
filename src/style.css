@@ -12,7 +12,15 @@
 @import './css/components/modal.css';
 @import './css/components/dialogs.css';
 @import './css/components/kebab-menu.css';
+@import './css/components/custom-select.css';
+@import './css/components/tutorial.css';
+@import './css/components/bottom-nav.css';
 @import './css/pages/login.css';
+@import './css/pages/error404.css';
+@import './css/pages/faq.css';
+@import './css/pages/tabungan.css';
+@import './css/pages/saldo.css';
+@import './css/components/ai.css';
 @import './css/responsive.css';
 
 /* Custom Styles (After Imports) */

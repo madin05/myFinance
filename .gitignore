@@ -1,3 +1,23 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+
+# Firebase & Cloud Credentials
+*firebase-service-account*.json
+*service-account*.json
+*credentials*.json
+*secret*.json
+backend/firebase-service-account.json
+backend/.env
+backend/.env.*
+
 # Logs
 logs
 *.log
@@ -7,12 +27,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies & Build Outputs
 node_modules
 dist
 dist-ssr
-*.local
+build
 
-# Editor directories and files
+# Editor & OS files
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -23,7 +44,4 @@ dist-ssr
 *.sln
 *.sw?
 
-backend/firebase-service-account.json
-.env
-.env.*
 archive/

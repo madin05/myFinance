@@ -1,17 +1,45 @@
-import { store, formatDate } from '../store.js';
-import { showLoading, hideLoading } from '../utils.js';
-import { navigateTo } from '../router.js';
-import { showToast, showAlert, showConfirm } from '../components/notifications.js';
-import { openEditUsernameModal, openDeleteAccountModal } from '../components/modal.js';
-import { initCustomSelect } from '../components/customSelect.js';
-import { auth, EmailAuthProvider, reauthenticateWithCredential } from '../firebase-config.js';
+import { store, formatDate } from "../store.js";
+import { userService } from "../services/userService.js";
+import { showLoading, hideLoading } from "../utils.js";
+import { navigateTo } from "../router.js";
+import {
+  showToast,
+  showAlert,
+  showConfirm,
+  checkVerification,
+} from "../components/notifications.js";
+import {
+  openEditUsernameModal,
+  openDeleteAccountModal,
+  openConfirmPasswordModal,
+  openEnable2FAModal,
+  openDisable2FAModal,
+} from "../components/modal/index.js";
+import { initCustomSelect } from "../components/customSelect.js";
+import {
+  auth,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  sendEmailVerification,
+} from "../firebase-config.js";
 
 export function renderAkun() {
-  const container = document.getElementById('page-content');
+  const container = document.getElementById("page-content");
+  if (!container) return;
   const user = store.user;
-  
+  const firebaseUser = auth.currentUser;
+  const isVerified = firebaseUser ? firebaseUser.emailVerified : (user?.emailVerified ?? false);
+
+  const hasCustomAvatar = Boolean(
+    user.avatar &&
+    !user.avatar.includes('ui-avatars.com') &&
+    !user.avatar.includes('api.dicebear.com')
+  );
+
   // Format join date dari data riil
-  const joinDate = user.createdAt ? formatDate(user.createdAt) : '12 Maret 2024';
+  const joinDate = user.createdAt
+    ? formatDate(user.createdAt)
+    : "12 Maret 2024";
 
   container.innerHTML = `
     <div class="account-settings">
@@ -27,150 +55,71 @@ export function renderAkun() {
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
           <div class="stat-card profile-card" style="padding: 2.5rem 1.5rem; text-align: center;">
             <div class="avatar-wrapper" style="position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; cursor: pointer;" id="btn-preview-pp">
-               <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&background=7C3AED&color=fff&bold=true'}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); border: 4px solid var(--white);">
-              <label for="avatar-upload" class="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--white);" onclick="event.stopPropagation()">
+               <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); border: 4px solid var(--white);">
+              <label for="avatar-upload" class="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: var(--text-main); color: var(--card-bg); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--card-bg);" onclick="event.stopPropagation()" title="Ubah Foto Profil">
                 <i class="ph ph-camera"></i>
               </label>
               <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
             </div>
             <h3 style="margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              @${user.name || 'user'}
+              @${user.name || "user"}
               <button class="icon-btn" id="btn-edit-username" style="width: 28px; height: 28px; font-size: 0.8rem; background: var(--bg-color); border-radius: 50%;" title="Ubah Username">
                 <i class="ph ph-pencil-simple"></i>
               </button>
             </h3>
             <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">${user.email}</p>
-            <div class="account-badge" style="background: var(--primary-light); color: var(--primary); padding: 6px 16px; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">
-              VERIFIED USER
-            </div>
-          </div>
-
-          <div class="stat-card" style="padding: 1.5rem;">
-            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-gear" style="color: var(--primary);"></i>
-              Preferensi Keuangan
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="text-xs text-muted mb-xs block" style="display: block; margin-bottom: 4px;">Tanggal Mulai Periode (Gajian)</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                  <input type="number" id="financial-start-day" class="form-control" min="1" max="31" value="${user.financialStartDay || 1}" style="width: 80px; height: 38px;">
-                  <span class="text-xs text-muted">Tiap bulan</span>
-                </div>
-              </div>
-
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="text-xs text-muted mb-xs block" style="display: block; margin-bottom: 4px;">Mata Uang Default</label>
-                <select id="user-currency" class="form-control" style="height: 38px; font-size: 0.85rem; padding: 0 10px;">
-                  <option value="IDR" ${user.currency === 'IDR' || !user.currency ? 'selected' : ''}>IDR - Rupiah</option>
-                  <option value="USD" ${user.currency === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
-                  <option value="EUR" ${user.currency === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
-                  <option value="SGD" ${user.currency === 'SGD' ? 'selected' : ''}>SGD - Singapore Dollar</option>
-                  <option value="MYR" ${user.currency === 'MYR' ? 'selected' : ''}>MYR - Malaysian Ringgit</option>
-                  <option value="JPY" ${user.currency === 'JPY' ? 'selected' : ''}>JPY - Japanese Yen</option>
-                </select>
-              </div>
-
-              <div style="border-top: 1px dashed var(--border); pt-md: 1rem; margin-top: 0.5rem; padding-top: 1rem;">
-                <p class="text-xs text-muted mb-md">Laporan & Anggaran akan mengikuti siklus dan mata uang ini.</p>
-                <button class="btn btn-primary btn-full" id="btn-save-financial-start" style="height: 38px; font-size: 0.8rem; border-radius: 8px;">Simpan Perubahan</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card" style="padding: 1.5rem;">
-            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-monitor" style="color: var(--primary);"></i>
-              Tampilan & Kinerja
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            
+            <!-- Metadata Informasi Akun -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.25rem 0.5rem; margin-bottom: ${!isVerified ? '1.5rem' : '0'}; text-align: left;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <p class="font-bold text-sm" style="margin: 0;">Mode Hemat Kinerja</p>
-                  <p class="text-muted text-xs">Matikan semua animasi & efek blur kaca.</p>
-                </div>
-                <label class="switch">
-                  <input type="checkbox" id="toggle-performance-mode" ${localStorage.getItem('disable-animations') === 'true' ? 'checked' : ''}>
-                  <span class="slider round"></span>
-                </label>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border); padding-top: 1rem;">
-                <div>
-                  <p class="font-bold text-sm" style="margin: 0;">Tata Letak Ringkas</p>
-                  <p class="text-muted text-xs">Kurangi tinggi baris tabel & padding kartu.</p>
-                </div>
-                <label class="switch">
-                  <input type="checkbox" id="toggle-compact-mode" ${localStorage.getItem('layout-density') === 'compact' ? 'checked' : ''}>
-                  <span class="slider round"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card" style="padding: 1.5rem;">
-            <h4 style="margin-bottom: 1.25rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-info" style="color: var(--primary);"></i>
-              Informasi Akun
-            </h4>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <div style="display: flex; justify-content: space-between;">
                 <span class="text-muted text-sm">Join Date</span>
-                <span class="font-bold text-sm">${joinDate}</span>
+                <span class="font-bold text-sm" style="color: var(--text-main);">${joinDate}</span>
               </div>
-              <div style="display: flex; justify-content: space-between;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="text-muted text-sm">Status Akun</span>
-                <span class="text-green text-sm font-bold">Aktif</span>
+                <span class="${isVerified ? 'text-green' : 'text-amber'} text-sm font-bold">${isVerified ? 'Aktif' : 'Belum Verifikasi'}</span>
               </div>
             </div>
+
+            ${!isVerified ? `
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem; width: 100%;">
+                <div class="account-badge" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); padding: 6px 16px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="ph-bold ph-warning-circle" style="font-size: 0.9rem;"></i> BELUM VERIFIKASI
+                </div>
+                <button id="btn-resend-verification" class="btn btn-outline btn-sm" style="font-size: 0.78rem; padding: 8px 16px; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; width: 100%; justify-content: center;">
+                  <i class="ph ph-paper-plane-tilt"></i> Kirim Ulang Email Verifikasi
+                </button>
+              </div>
+            ` : ''}
           </div>
         </div>
 
         <!-- Section 2: Security & Identity Form -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
           <div class="stat-card" style="padding: 2rem;">
             <h4 style="margin-bottom: 1.5rem; font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-shield-check" style="color: var(--primary);"></i>
-              Pusat Keamanan
+              <i class="ph ph-shield-check" style="font-size: 1.4rem;"></i>
+              Akses Keamanan
             </h4>
             
-            ${user.provider === 'password' ? `
-            <!-- Change Password Dropdown -->
-            <details class="password-details" style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-              <summary style="list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.875rem; color: var(--text-main); padding: 0.5rem 0;">
+            <!-- Change Password Link -->
+            <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+              <a href="#" id="btn-change-password" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 0.875rem; color: var(--text-main); padding: 0.5rem 0; text-decoration: none;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <i class="ph-fill ph-key" style="color: var(--primary); font-size: 1.1rem;"></i>
-                  Ubah Password
+                  Ganti Password
                 </div>
-                <i class="ph ph-caret-down caret-icon" style="transition: transform 0.3s; font-size: 1rem;"></i>
-              </summary>
-              
-              <form id="form-change-password" style="margin-top: 1.5rem;">
-                <div class="form-group" style="margin-bottom: 1rem;">
-                  <input type="password" id="old-password" placeholder="Password Lama" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;" required>
-                  <input type="password" id="new-password" placeholder="Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 0.75rem;" required>
-                  <input type="password" id="confirm-password" placeholder="Konfirmasi Password Baru" class="form-control" style="height: 48px; border-radius: 12px; margin-bottom: 1rem;" required>
-                  <button type="submit" class="btn btn-primary btn-full" style="height: 48px; font-size: 0.9rem; border-radius: 12px;">
-                    Update Password
-                  </button>
-                </div>
-              </form>
-            </details>
-            ` : `
-            <div style="margin-bottom: 2rem; padding: 1rem; border-radius: 12px; background: var(--bg-color); color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 10px; align-items: center; border: 1px solid var(--border);">
-              <i class="ph ph-google-logo" style="font-size: 1.2rem; color: var(--primary);"></i>
-              <span>Anda masuk via Google Auth. Pengaturan kata sandi dikelola langsung oleh Google.</span>
+                <i class="ph ph-arrow-square-out" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+              </a>
             </div>
-            `}
 
             <!-- 2FA Toggle -->
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <p class="font-bold text-sm" style="margin: 0;">Autentikasi 2 Faktor (2FA)</p>
-                <p class="text-muted text-xs">Amankan akun dengan kode OTP.</p>
+                <p class="text-muted text-xs" style="font-size: 0.76rem !important; margin-top: 3px; margin-bottom: 0;">Tambah keamanan akunmu, yuk aktifin 2FA!</p>
               </div>
               <label class="switch">
-                <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? 'checked' : ''}>
+                <input type="checkbox" id="toggle-2fa" ${user.is2FAEnabled ? "checked" : ""}>
                 <span class="slider round"></span>
               </label>
             </div>
@@ -178,11 +127,10 @@ export function renderAkun() {
 
           <!-- Danger Zone -->
           <div class="stat-card" style="padding: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.02);">
-            <h4 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
-              <i class="ph-fill ph-warning-octagon"></i>
-              Zona Bahaya
+            <h4 style="margin-bottom: 0.35rem; font-size: 1rem; color: var(--red); display: flex; align-items: center; gap: 10px;">
+              Hapus Akun
             </h4>
-            <p class="text-muted text-xs" style="margin-bottom: 1.5rem;">Tindakan ini tidak dapat dibatalkan. Semua data finansial Anda akan dihapus permanen.</p>
+            <p class="text-muted text-xs" style="font-size: 0.76rem !important; margin-bottom: 1.25rem; line-height: 1.45;">Hati-hati, tindakan ini gak bisa dibatalkan. Seluruh data finansialmu bakal dihapus permanen.</p>
             <button class="btn" style="background: var(--red); color: white; width: 100%; border-radius: 12px; height: 48px; font-weight: 600; gap: 10px;" id="btn-delete-account">
               <i class="ph-bold ph-trash"></i>
               Hapus Akun & Data
@@ -194,285 +142,405 @@ export function renderAkun() {
     </div>
 
     <!-- Lightbox Modal -->
-    <div id="pp-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center;">
+    <div id="pp-preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 1.25rem;">
       <div style="position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);" id="pp-modal-close"></div>
-      <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + user.name}" id="full-pp-preview" style="position: relative; width: min(400px, 85vw); height: min(400px, 85vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
+      <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="full-pp-preview" style="position: relative; width: min(360px, 80vw); height: min(360px, 80vw); border-radius: 50%; object-fit: cover; border: 4px solid var(--white); box-shadow: var(--shadow-xl);">
+      ${hasCustomAvatar ? `
+        <button id="btn-delete-avatar-modal" class="btn" style="position: relative; z-index: 2; background: #ef4444; color: white; border-radius: 100px; padding: 10px 24px; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; border: none; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); cursor: pointer;">
+          <i class="ph-bold ph-trash"></i> Hapus Foto Profil
+        </button>
+      ` : ''}
     </div>
-
-    <style>
-      .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-      .switch input { opacity: 0; width: 0; height: 0; }
-      .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
-      .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-      input:checked + .slider { background-color: var(--primary); }
-      input:checked + .slider:before { transform: translateX(20px); }
-
-      .password-details summary::-webkit-details-marker { display: none; }
-      .password-details[open] .caret-icon { transform: rotate(180deg); }
-    </style>
   `;
 
   // --- Initialize Custom UI Elements ---
-  const currencySelect = document.getElementById('user-currency');
+  const currencySelect = document.getElementById("user-currency");
   if (currencySelect) {
     initCustomSelect(currencySelect);
   }
 
   // --- Handlers ---
-  
-  document.getElementById('btn-preview-pp').onclick = () => {
-    document.getElementById('pp-preview-modal').style.display = 'flex';
-  };
-  document.getElementById('pp-modal-close').onclick = () => {
-    document.getElementById('pp-preview-modal').style.display = 'none';
-  };
-  
-  document.getElementById('btn-save-financial-start').onclick = async () => {
-    const newDay = document.getElementById('financial-start-day').value;
-    const newCurrency = document.getElementById('user-currency').value;
-    
-    showLoading();
-    try {
-      await store.updateProfile({ 
-        financialStartDay: parseInt(newDay),
-        currency: newCurrency
-      });
-      showToast('Berhasil diperbaharui!', 'success');
-      
-      // Refresh UI to update currency symbols
-      renderAkun();
-    } catch (err) {
-      showAlert('Gagal', err.message, 'error');
-    } finally {
-      hideLoading();
-    }
-  };
 
-  document.getElementById('btn-edit-username').onclick = () => {
-    openEditUsernameModal(user.name, async (newName) => {
+  const btnPreviewPp = document.getElementById("btn-preview-pp");
+  if (btnPreviewPp) {
+    btnPreviewPp.onclick = () => {
+      const modal = document.getElementById("pp-preview-modal");
+      if (modal) modal.style.display = "flex";
+    };
+  }
+
+  const ppModalClose = document.getElementById("pp-modal-close");
+  if (ppModalClose) {
+    ppModalClose.onclick = () => {
+      const modal = document.getElementById("pp-preview-modal");
+      if (modal) modal.style.display = "none";
+    };
+  }
+
+  // Kirim Ulang Email Verifikasi Handler
+  const btnResendVerif = document.getElementById("btn-resend-verification");
+  if (btnResendVerif) {
+    btnResendVerif.onclick = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        showToast("Pengguna tidak ditemukan. Silakan login ulang.", "error");
+        return;
+      }
       showLoading();
       try {
-        await store.updateProfile({ name: newName });
-        renderAkun(); // Re-render to reflect changes
-        showToast('Nama pengguna berhasil diperbarui.', 'success');
-      } catch (err) {
-        showAlert('Gagal', err.message, 'error');
-      } finally {
+        const actionCodeSettings = {
+          url: `${window.location.origin}/#login?verified=true`,
+          handleCodeInApp: true
+        };
+        await sendEmailVerification(currentUser, actionCodeSettings);
         hideLoading();
-      }
-    });
-  };
-
-  document.getElementById('btn-delete-account').onclick = () => {
-    const userFirebase = auth.currentUser;
-    if (!userFirebase) {
-      showAlert('Sesi Habis', 'Silakan login ulang untuk melanjutkan.', 'error');
-      return;
-    }
-
-    const providerId = userFirebase.providerData[0]?.providerId || 'password';
-
-    openDeleteAccountModal(providerId, async (passwordOrNull) => {
-      showLoading();
-      try {
-        // 1. Re-auth jika pakai password lokal
-        if (providerId === 'password' && passwordOrNull) {
-          const credential = EmailAuthProvider.credential(userFirebase.email, passwordOrNull);
-          await reauthenticateWithCredential(userFirebase, credential);
-        }
-
-        // 2. Hapus data dari Postgres via backend
-        await store.deleteAccountRemote();
-
-        // 3. Hapus user dari Firebase Auth
-        await userFirebase.delete();
-
-        hideLoading();
-        showToast('Akun telah dihapus secara permanen.', 'success');
-
-        setTimeout(() => {
-          navigateTo('/login');
-          window.location.reload();
-        }, 2000);
+        showAlert("Email Verifikasi Terkirim", `Tautan verifikasi telah dikirim ke email Anda (${currentUser.email}). Silakan periksa inbox atau folder spam Anda.`, "success");
       } catch (err) {
         hideLoading();
-        if (err.code === 'auth/wrong-password') {
-          showAlert('Gagal', 'Password yang Anda masukkan salah.', 'error');
-        } else if (err.code === 'auth/requires-recent-login') {
-          showAlert('Sesi Kedaluwarsa', 'Silakan logout dan login kembali sebelum menghapus akun demi keamanan.', 'warning');
+        console.error("Gagal mengirim email verifikasi:", err);
+        if (err.code === "auth/too-many-requests") {
+          showToast("Permintaan terlalu sering. Harap tunggu beberapa saat.", "warning");
         } else {
-          showAlert('Gagal Hapus Akun', err.message, 'error');
+          showToast("Gagal mengirim email verifikasi: " + err.message, "error");
         }
-      }
-    });
-  };
-
-  const toggle2FA = document.getElementById('toggle-2fa');
-  toggle2FA.onchange = async (e) => {
-    const isChecked = e.target.checked;
-    
-    if (isChecked) {
-      // Logic Setup 2FA
-      const code = prompt('Keamanan Berlapis: Masukkan kode OTP yang dikirim ke email kamu (Mock: 123456)');
-      
-      if (code === '123456') {
-        showLoading();
-        const success = await store.update2FAStatus(true);
-        hideLoading();
-        if (success) {
-          showToast('2FA Aktif! Akun Anda sekarang lebih aman.', 'success');
-        } else {
-          e.target.checked = false;
-          showToast('Gagal update status 2FA.', 'error');
-        }
-      } else {
-        e.target.checked = false;
-        if (code !== null) showToast('Kode OTP tidak valid.', 'error');
-      }
-    } else {
-      // Deactivate 2FA
-      showLoading();
-      await store.update2FAStatus(false);
-      hideLoading();
-      showToast('2FA dinonaktifkan.', 'info');
-    }
-  };
-
-  // --- Handlers for Customization & Performance ---
-  const togglePerformance = document.getElementById('toggle-performance-mode');
-  if (togglePerformance) {
-    togglePerformance.onchange = (e) => {
-      const isChecked = e.target.checked;
-      if (isChecked) {
-        document.body.classList.add('disable-animations');
-        localStorage.setItem('disable-animations', 'true');
-        showToast('Mode Hemat Kinerja diaktifkan.', 'info');
-      } else {
-        document.body.classList.remove('disable-animations');
-        localStorage.setItem('disable-animations', 'false');
-        showToast('Animasi & efek visual diaktifkan.', 'success');
       }
     };
   }
 
-  const toggleCompact = document.getElementById('toggle-compact-mode');
-  if (toggleCompact) {
-    toggleCompact.onchange = (e) => {
-      const isChecked = e.target.checked;
-      if (isChecked) {
-        document.body.classList.add('layout-compact');
-        localStorage.setItem('layout-density', 'compact');
-        showToast('Tata letak ringkas diaktifkan.', 'info');
-      } else {
-        document.body.classList.remove('layout-compact');
-        localStorage.setItem('layout-density', 'cozy');
-        showToast('Tata letak nyaman diaktifkan.', 'success');
+  const btnSaveFin = document.getElementById("btn-save-financial-start");
+  if (btnSaveFin) {
+    btnSaveFin.onclick = async () => {
+      const newDay = document.getElementById("financial-start-day").value;
+      const newCurrency = document.getElementById("user-currency").value;
+
+      showLoading();
+      try {
+        await store.updateProfile({
+          financialStartDay: parseInt(newDay),
+          currency: newCurrency,
+        });
+        showToast("Berhasil diperbaharui!", "success");
+
+        // Refresh UI to update currency symbols
+        renderAkun();
+      } catch (err) {
+        showAlert("Gagal", err.message, "error");
+      } finally {
+        hideLoading();
       }
+    };
+  }
+
+  const btnEditUsername = document.getElementById("btn-edit-username");
+  if (btnEditUsername) {
+    btnEditUsername.onclick = () => {
+      checkVerification(() => {
+        openEditUsernameModal(user.name, async (newName) => {
+          showLoading();
+          try {
+            await store.updateProfile({ name: newName });
+            renderAkun(); // Re-render to reflect changes
+            showToast("Nama pengguna berhasil diperbarui.", "success");
+          } catch (err) {
+            showAlert("Gagal", err.message, "error");
+          } finally {
+            hideLoading();
+          }
+        });
+      });
+    };
+  }
+
+  const btnDeleteAccount = document.getElementById("btn-delete-account");
+  if (btnDeleteAccount) {
+    btnDeleteAccount.onclick = () => {
+      checkVerification(() => {
+        const userFirebase = auth.currentUser;
+        if (!userFirebase) {
+          showAlert(
+            "Sesi Habis",
+            "Silakan login ulang untuk melanjutkan.",
+            "error",
+          );
+          return;
+        }
+
+        openDeleteAccountModal({
+          email: user.email,
+          onRequestOtp: async () => {
+            const token = await userFirebase.getIdToken();
+            await userService.requestDeleteAccountOtp(token);
+          },
+          onVerifyOtp: async (otpCode) => {
+            showLoading();
+            try {
+              const token = await userFirebase.getIdToken();
+              // 1. Verifikasi OTP & Hapus data pengguna di PostgreSQL DB
+              await userService.confirmDeleteAccount(token, otpCode);
+
+              // 2. Hapus user di Firebase Auth (jika belum expired)
+              try {
+                await userFirebase.delete();
+              } catch (fbErr) {
+                console.warn("Firebase user delete warning:", fbErr.message);
+              }
+
+              // 3. Reset local store & redirect ke login
+              store.setUser(null);
+              hideLoading();
+              showToast("Akun Anda telah berhasil dihapus secara permanen.", "success");
+
+              setTimeout(() => {
+                window.location.href = '/login';
+              }, 300);
+            } catch (err) {
+              hideLoading();
+              throw err;
+            }
+          }
+        });
+      });
+    };
+  }
+
+  const toggle2FA = document.getElementById("toggle-2fa");
+  if (toggle2FA) {
+    toggle2FA.checked = Boolean(store.user?.is2FAEnabled);
+
+    const sync2FAToggleState = () => {
+      const el = document.getElementById("toggle-2fa");
+      if (el && store.user) {
+        el.checked = Boolean(store.user.is2FAEnabled);
+      }
+    };
+    window.addEventListener("store-updated", sync2FAToggleState);
+
+    toggle2FA.onchange = async (e) => {
+      const isChecked = e.target.checked;
+      checkVerification(async () => {
+        const userFirebase = auth.currentUser;
+        if (isChecked) {
+          e.target.checked = false;
+          openEnable2FAModal(
+            () => {
+              e.target.checked = true;
+            },
+            () => {
+              e.target.checked = false;
+            }
+          );
+        } else {
+          e.target.checked = true;
+          const providerId = userFirebase?.providerData[0]?.providerId || "password";
+          if (providerId === "password") {
+            openConfirmPasswordModal(
+              async (password) => {
+                showLoading();
+                try {
+                  if (userFirebase) {
+                    const credential = EmailAuthProvider.credential(userFirebase.email, password);
+                    await reauthenticateWithCredential(userFirebase, credential);
+                  }
+                  hideLoading();
+                  openDisable2FAModal(
+                    () => {
+                      e.target.checked = false;
+                    },
+                    () => {
+                      e.target.checked = true;
+                    },
+                    password
+                  );
+                } catch (err) {
+                  hideLoading();
+                  e.target.checked = true;
+                  let msg = err.message || "Password salah atau gagal meminta penonaktifan 2FA.";
+                  if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+                    msg = "Password yang kamu masukkan salah! Silakan coba lagi.";
+                  }
+                  showAlert("Gagal Menonaktifkan 2FA", msg, "error");
+                }
+              },
+              () => {
+                e.target.checked = true;
+              }
+            );
+          } else {
+            openDisable2FAModal(
+              () => {
+                e.target.checked = false;
+              },
+              () => {
+                e.target.checked = true;
+              }
+            );
+          }
+        }
+      });
     };
   }
 
   // Avatar handling logic with compression & optimistic UI
-  const avatarUpload = document.getElementById('avatar-upload');
-  avatarUpload.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const avatarUpload = document.getElementById("avatar-upload");
+  if (avatarUpload) {
+    avatarUpload.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    // Validasi tipe file
-    if (!file.type.startsWith('image/')) {
-      return showAlert('Error', 'Berkas harus berupa gambar.', 'error');
-    }
+      checkVerification(async () => {
+        // Validasi tipe file
+        if (!file.type.startsWith("image/")) {
+          return showAlert("Error", "Berkas harus berupa gambar.", "error");
+        }
 
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const img = new Image();
-        img.onload = async () => {
-          // Kompresi Gambar (Cepat)
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 600;
-          const MAX_HEIGHT = 600;
-          let width = img.width;
-          let height = img.height;
+        try {
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const img = new Image();
+            img.onload = async () => {
+              // Kompresi Gambar (Cepat)
+              const canvas = document.createElement("canvas");
+              const MAX_WIDTH = 600;
+              const MAX_HEIGHT = 600;
+              let width = img.width;
+              let height = img.height;
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
 
-          // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
-          store.user.avatar = compressedBase64;
-          store.updateUI();
-          
-          const modal = document.getElementById('pp-preview-modal');
-          if (modal) modal.style.display = 'none';
+              const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
 
-          // 2. BACKGROUND SYNC: Kirim ke server diem-diem
-          try {
-            await store.updateProfile({ avatar: compressedBase64 });
-            showToast('Foto profil diperbaharui!', 'success');
-          } catch (err) {
-            showToast('Gagal sinkron, tapi profil lokal aman.', 'warning');
-          }
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      showAlert('Gagal', 'Ada masalah pas baca file gambar.', 'error');
-    }
-  };
+              // 1. OPTIMISTIC UI: Ganti gambar & tutup modal SEKARANG JUGA
+              store.user.avatar = compressedBase64;
+              store.updateUI();
 
-  // Change Password Handler
-  const changePassForm = document.getElementById('form-change-password');
-  if (changePassForm) {
-    changePassForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const oldPass = document.getElementById('old-password').value;
-      const newPass = document.getElementById('new-password').value;
-      const confirmPass = document.getElementById('confirm-password').value;
+              const modal = document.getElementById("pp-preview-modal");
+              if (modal) modal.style.display = "none";
 
-      // 1. Frontend Validation
-      if (newPass.length < 6) {
-        return showAlert('Validasi Gagal', 'Kata sandi baru minimal 6 karakter.', 'warning');
-      }
-      if (newPass !== confirmPass) {
-        return showAlert('Validasi Gagal', 'Konfirmasi kata sandi baru tidak sesuai.', 'warning');
-      }
+              // 2. BACKGROUND SYNC: Kirim ke server diem-diem
+              try {
+                await store.updateProfile({ avatar: compressedBase64 });
+                showToast("Foto profil diperbaharui!", "success");
+              } catch (err) {
+                showToast("Gagal sinkron, tapi profil lokal aman.", "warning");
+              }
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        } catch (err) {
+          showAlert("Gagal", "Ada masalah pas baca file gambar.", "error");
+        }
+      });
+    };
+  }
 
-      const confirmed = await showConfirm('Konfirmasi Ubah Kata Sandi', 'Kata sandi Anda akan diganti dan Anda akan otomatis keluar. Lanjutkan?');
-      if (!confirmed) return;
-
+  // Delete Profile Picture Handler
+  const handleDeleteAvatar = () => {
+    checkVerification(async () => {
       showLoading();
       try {
-        // 2. Call Store (Backend verification happens here)
-        await store.changePassword(oldPass, newPass);
-        
+        const modal = document.getElementById("pp-preview-modal");
+        if (modal) modal.style.display = "none";
+
+        await store.updateProfile({ avatar: null });
         hideLoading();
-        showToast('Password berhasil diubah, silakan login ulang', 'success');
-        
-        // 3. Auto Logout & Redirect
-        setTimeout(async () => {
-          await store.logout();
-          window.location.href = '/login';
-        }, 2000);
-        
+        showToast("Foto profil telah dihapus. Kembali ke avatar bawaan.", "info");
+        renderAkun();
       } catch (err) {
         hideLoading();
-        showAlert('Gagal Ubah Password', err.message, 'error');
+        showAlert("Gagal", "Gagal menghapus foto profil: " + err.message, "error");
       }
+    });
+  };
+
+  const btnDeleteAvatar = document.getElementById("btn-delete-avatar");
+  if (btnDeleteAvatar) btnDeleteAvatar.onclick = handleDeleteAvatar;
+
+  const btnDeleteAvatarModal = document.getElementById("btn-delete-avatar-modal");
+  if (btnDeleteAvatarModal) btnDeleteAvatarModal.onclick = handleDeleteAvatar;
+
+  // Change Password Handler
+  const btnChangePassword = document.getElementById("btn-change-password");
+  if (btnChangePassword) {
+    btnChangePassword.onclick = async (e) => {
+      e.preventDefault();
+      checkVerification(async () => {
+        const isGoogle = user.provider && user.provider.includes("google");
+
+        if (isGoogle) {
+          // Open Google Accounts password page in new tab
+          window.open(
+            "https://myaccount.google.com/signinoptions/password",
+            "_blank",
+          );
+        } else {
+          // Trigger password reset email via Firebase Auth / Backend for email/password users
+          const confirmed = await showConfirm(
+            "Ubah Kata Sandi",
+            "Tautan untuk menyetel ulang kata sandi akan dikirim ke email Anda (" +
+              user.email +
+              "). Lanjutkan?",
+          );
+          if (!confirmed) return;
+
+          showLoading();
+          try {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+            const res = await fetch(`${API_URL}/auth/reset-password`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: user.email })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
+
+            hideLoading();
+
+            showToast(
+              `Tautan reset password telah dikirim ke ${user.email}!`,
+              "success",
+            );
+
+            // Identify email provider for quick access
+            const emailDomain = user.email.split("@")[1] || "";
+            let mailUrl = "https://mail.google.com/";
+            if (emailDomain.includes("yahoo")) {
+              mailUrl = "https://mail.yahoo.com/";
+            } else if (
+              emailDomain.includes("outlook") ||
+              emailDomain.includes("hotmail") ||
+              emailDomain.includes("live")
+            ) {
+              mailUrl = "https://outlook.live.com/";
+            }
+
+            // Open mail client in new tab
+            window.open(mailUrl, "_blank");
+          } catch (err) {
+            hideLoading();
+            showAlert("Gagal", err.message, "error");
+          }
+        }
+      });
     };
   }
 }
+

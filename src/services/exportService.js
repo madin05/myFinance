@@ -123,20 +123,21 @@ export const exportService = {
     const txData = transactions.map(tx => [
       new Date(tx.tanggal).toLocaleDateString('id-ID'),
       tx.kategori,
-      tx.metode,
+      tx.account || tx.metode || '-',
+      tx.keterangan || '-',
       tx.type === 'income' ? 'Masuk' : 'Keluar',
-      formatRupiah(tx.harga)
+      tx.type === 'income' ? formatRupiah(Math.abs(tx.harga)) : `-${formatRupiah(Math.abs(tx.harga))}`
     ]);
 
     autoTable(doc, {
       startY: tableStartY + 5,
-      head: [['Tanggal', 'Kategori', 'Metode', 'Tipe', 'Nominal']],
+      head: [['Tanggal', 'Kategori', 'Metode', 'Keterangan', 'Tipe', 'Nominal']],
       body: txData,
       theme: 'grid',
       headStyles: { fillColor: [71, 85, 105] },
       styles: { fontSize: 8 },
       columnStyles: {
-        4: { halign: 'right' }
+        5: { halign: 'right' }
       }
     });
 

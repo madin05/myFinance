@@ -62,14 +62,26 @@ export function initCustomSelect(selectEl, onChange) {
     const isOpen = wrapper.classList.contains('open');
     
     // Close all other custom selects first
-    document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+      w.classList.remove('open');
+      const card = w.closest('.stat-card');
+      if (card) card.style.zIndex = '';
+    });
     
-    if (!isOpen) wrapper.classList.add('open');
+    if (!isOpen) {
+      wrapper.classList.add('open');
+      const card = wrapper.closest('.stat-card');
+      if (card) card.style.zIndex = '100';
+    }
   };
   
   // Close when clicking outside
   document.addEventListener('click', () => {
-    wrapper.classList.remove('open');
+    document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+      w.classList.remove('open');
+      const card = w.closest('.stat-card');
+      if (card) card.style.zIndex = '';
+    });
   });
   
   selectEl.setAttribute('data-custom-select-init', 'true');

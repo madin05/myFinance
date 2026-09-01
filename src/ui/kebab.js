@@ -53,7 +53,6 @@ async function positionDropdown(trigger, dropdown) {
   dropdown.dataset.placement = placement;
 }
 
-/** Close the currently open kebab dropdown */
 export function closeAllKebabs() {
   if (_autoUpdateCleanup) {
     _autoUpdateCleanup();
@@ -65,6 +64,9 @@ export function closeAllKebabs() {
   }
   if (_activeTrigger) {
     _activeTrigger.classList.remove('active');
+    // Remove z-index boost from the parent card
+    const card = _activeTrigger.closest('.stat-card') || _activeTrigger.closest('tr') || _activeTrigger.closest('.wishlist-item');
+    if (card) card.style.zIndex = '';
     _activeTrigger = null;
   }
 }
@@ -75,8 +77,9 @@ export function closeAllKebabs() {
  * @param {HTMLElement} container   — scoped parent (e.g. tbody, page-content)
  * @param {Function} onEdit(id)     — callback for edit action
  * @param {Function} onDelete(id)   — callback for delete action
+ * @param {Function} onView(id)     — callback for view action
  */
-export function initKebabs(container, onEdit, onDelete) {
+export function initKebabs(container, onEdit, onDelete, onView) {
   // Reset listener lama agar tidak numpuk
   if (_docClickHandler) {
     document.removeEventListener('click', _docClickHandler);
@@ -102,24 +105,41 @@ export function initKebabs(container, onEdit, onDelete) {
       const dropdown = container.querySelector(
         `.kebab-dropdown[data-kebab-for="${id}"]`
       );
-      if (!dropdown) return;
+      // Jika dropdown sudah dipindah ke body sebelumnya, cari di body
+      const actualDropdown = dropdown || document.querySelector(`.kebab-dropdown[data-kebab-for="${id}"]`);
+      if (!actualDropdown) return;
 
-      const isOpen = dropdown.classList.contains('open');
+      const isOpen = actualDropdown.classList.contains('open');
 
       // Tutup dropdown lain dulu
       closeAllKebabs();
 
       if (!isOpen) {
-        dropdown.classList.add('open');
+        // Pindahkan dropdown ke body agar tidak terkena overflow: hidden dari parent (seperti stat-card)
+        if (actualDropdown.parentElement !== document.body) {
+          // Simpan referensi parent aslinya untuk cleanup jika diperlukan (meski tidak wajib karena id unik)
+          document.body.appendChild(actualDropdown);
+        }
+
+        actualDropdown.classList.add('open');
         trigger.classList.add('active');
-        _activeDropdown = dropdown;
+        _activeDropdown = actualDropdown;
         _activeTrigger = trigger;
 
         // autoUpdate: re-position saat scroll / resize / layout shift
-        _autoUpdateCleanup = autoUpdate(trigger, dropdown, () => {
-          positionDropdown(trigger, dropdown);
+        _autoUpdateCleanup = autoUpdate(trigger, actualDropdown, () => {
+          positionDropdown(trigger, actualDropdown);
         });
       }
+    });
+  });
+
+  // View button
+  container.querySelectorAll('.kebab-view').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAllKebabs();
+      onView && onView(btn.dataset.id);
     });
   });
 
@@ -142,14 +162,14 @@ export function initKebabs(container, onEdit, onDelete) {
   });
 }
 
-/**
- * Cleanup: tutup semua kebab yang terbuka dan reset listener.
- * Panggil ini sebelum re-render halaman.
- */
 export function cleanupKebabs() {
   closeAllKebabs();
   if (_docClickHandler) {
     document.removeEventListener('click', _docClickHandler);
     _docClickHandler = null;
   }
+  // Remove any orphaned dropdowns that were moved to body
+  document.querySelectorAll('body > .kebab-dropdown').forEach(dropdown => {
+    dropdown.remove();
+  });
 }

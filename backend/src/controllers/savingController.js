@@ -1,24 +1,57 @@
 const prisma = require('../services/db');
+const { withRetry } = require('../services/db');
 
 async function getAuthedUser(req) {
-  const { uid } = req.user || {};
+  const { uid, name, email } = req.user || {};
   if (!uid) throw new Error('UID tidak ditemukan dari token');
-  const user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
-  if (!user) {
-    const err = new Error('User belum terdaftar di Postgres');
-    err.statusCode = 404;
-    throw err;
-  }
-  return user;
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  return withRetry(async () => {
+    let user = await prisma.user.findUnique({ where: { firebaseUid: uid } });
+    if (!user && cleanEmail) {
+      user = await prisma.user.findFirst({
+        where: { email: { equals: cleanEmail, mode: 'insensitive' } }
+      });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { firebaseUid: uid }
+        }).catch(() => null) || user;
+      }
+    }
+    if (!user) {
+      try {
+        const safeEmail = cleanEmail || `user_${uid.slice(0, 10)}@myfinance.local`;
+        user = await prisma.user.create({
+          data: { firebaseUid: uid, name: name || 'User', email: safeEmail, currency: 'IDR' }
+        });
+      } catch {
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { firebaseUid: uid },
+              ...(cleanEmail ? [{ email: { equals: cleanEmail, mode: 'insensitive' } }] : [])
+            ]
+          }
+        });
+      }
+    }
+    if (!user) {
+      const err = new Error('User belum terdaftar di Postgres');
+      err.statusCode = 404;
+      throw err;
+    }
+    return user;
+  });
 }
 
 exports.getAllSavings = async (req, res) => {
   try {
     const user = await getAuthedUser(req);
-    const savings = await prisma.saving.findMany({
+    const savings = await withRetry(() => prisma.saving.findMany({
       where: { userId: user.id },
       orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }]
-    });
+    }));
     res.json(savings);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
@@ -88,6 +121,10 @@ exports.updateSaving = async (req, res) => {
       data.currentAmount = cur;
     }
 
+    if (req.body.isDone !== undefined) {
+      data.isDone = Boolean(req.body.isDone);
+    }
+
     const saving = await prisma.saving.update({
       where: { id },
       data
@@ -128,18 +165,18 @@ exports.reorderSavings = async (req, res) => {
 
     const existing = await prisma.saving.findMany({ where: { userId: user.id }, select: { id: true } });
     const existingSet = new Set(existing.map(s => s.id));
-    for (const id of ids) {
-      if (!existingSet.has(id)) return res.status(400).json({ error: `Saving id ${id} tidak valid untuk user ini` });
-    }
+    const validIds = ids.filter(id => existingSet.has(id));
 
-    await prisma.$transaction(
-      ids.map((id, idx) =>
-        prisma.saving.update({
-          where: { id },
-          data: { orderIndex: idx }
-        })
-      )
-    );
+    if (validIds.length > 0) {
+      await prisma.$transaction(
+        validIds.map((id, idx) =>
+          prisma.saving.update({
+            where: { id },
+            data: { orderIndex: idx }
+          })
+        )
+      );
+    }
 
     const savings = await prisma.saving.findMany({
       where: { userId: user.id },
