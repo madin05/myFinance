@@ -159,7 +159,7 @@ export function renderDashboard() {
       </div>
 
       <div class="stats-cards-slider-container">
-        <div class="stat-card" id="card-pemasukan">
+        <div class="stat-card" id="card-pemasukan" style="cursor: pointer;" title="Lihat Laporan Pemasukan">
           <div class="stat-header">
             <p class="stat-label">Pemasukan bulan ini</p>
             ${getBadge(stats.incomeDiff, "income")}
@@ -173,7 +173,7 @@ export function renderDashboard() {
           <i class="ph ph-trend-up stat-watermark"></i>
         </div>
 
-        <div class="stat-card" id="card-pengeluaran">
+        <div class="stat-card" id="card-pengeluaran" style="cursor: pointer;" title="Lihat Laporan Pengeluaran">
           <div class="stat-header">
             <p class="stat-label">Pengeluaran bulan ini</p>
             ${getBadge(stats.expenseDiff, "expense")}
@@ -351,6 +351,21 @@ export function renderDashboard() {
       } else {
         openAdjustBalanceModal(stats.balance, () => renderDashboard());
       }
+    });
+  }
+
+  // Touch/Click card Pemasukan & Pengeluaran -> Navigasi ke Halaman Laporan
+  const cardPemasukan = document.getElementById("card-pemasukan");
+  if (cardPemasukan) {
+    cardPemasukan.addEventListener("click", () => {
+      navigateTo("/laporan");
+    });
+  }
+
+  const cardPengeluaran = document.getElementById("card-pengeluaran");
+  if (cardPengeluaran) {
+    cardPengeluaran.addEventListener("click", () => {
+      navigateTo("/laporan");
     });
   }
 

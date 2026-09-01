@@ -63,7 +63,7 @@ export function formatErrorMessage(rawMessage) {
 
   // 5. Raw JSON/Stack traces panjang
   if (msg.length > 140 && (msg.includes('{') || msg.includes('at ') || msg.includes('\n'))) {
-    return 'Gagal memproses data. Coba ulangi tindakan kamu atau muat ulang halaman ya, bre!';
+    return 'Gagal memproses data. Coba ulangi tindakan kamu atau muat ulang halaman ya!';
   }
 
   return msg;
@@ -447,9 +447,9 @@ export const showVerificationModal = () => {
 
   overlay.innerHTML = `
     <div class="custom-alert-card" style="text-align: center;">
-      <div style="margin: 0 auto 1rem; display: flex; justify-content: center; align-items: center;">
-        <img src="/assets/asset_notif_light.svg" class="verif-notif-img-light" alt="Verifikasi Email" style="width: 160px; height: auto; max-height: 160px; object-fit: contain;" />
-        <img src="/assets/asset_notif_dark.svg" class="verif-notif-img-dark" alt="Verifikasi Email" style="width: 160px; height: auto; max-height: 160px; object-fit: contain;" />
+      <div style="margin: 0 auto 1rem; display: flex; justify-content: center; align-items: center; min-height: 150px; width: 100%;">
+        <img src="/assets/asset_notif_light.svg" class="verif-notif-img-light" alt="Verifikasi Email" decoding="sync" fetchpriority="high" style="width: 150px; height: 150px; object-fit: contain;" />
+        <img src="/assets/asset_notif_dark.svg" class="verif-notif-img-dark" alt="Verifikasi Email" decoding="sync" fetchpriority="high" style="width: 150px; height: 150px; object-fit: contain;" />
       </div>
       <h3 style="margin-bottom: 0.75rem; font-size: 1.25rem; color: var(--text-main);">Verifikasi Email Diperlukan</h3>
       <p class="text-muted" style="font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.75rem;">
@@ -531,9 +531,9 @@ export const showOptionalVerificationModal = () => {
         <i class="ph ph-x"></i>
       </button>
 
-      <div style="margin: 0 auto 1rem; display: flex; justify-content: center; align-items: center;">
-        <img src="/assets/asset_notif_light.svg" class="verif-notif-img-light" alt="Verifikasi Email" style="width: 150px; height: auto; max-height: 150px; object-fit: contain;" />
-        <img src="/assets/asset_notif_dark.svg" class="verif-notif-img-dark" alt="Verifikasi Email" style="width: 150px; height: auto; max-height: 150px; object-fit: contain;" />
+      <div style="margin: 0 auto 1rem; display: flex; justify-content: center; align-items: center; min-height: 150px; width: 100%;">
+        <img src="/assets/asset_notif_light.svg" class="verif-notif-img-light" alt="Verifikasi Email" decoding="sync" fetchpriority="high" style="width: 150px; height: 150px; object-fit: contain;" />
+        <img src="/assets/asset_notif_dark.svg" class="verif-notif-img-dark" alt="Verifikasi Email" decoding="sync" fetchpriority="high" style="width: 150px; height: 150px; object-fit: contain;" />
       </div>
 
       <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem; color: var(--text-main);">Verifikasi Akunmu</h3>

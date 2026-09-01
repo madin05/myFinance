@@ -121,6 +121,12 @@
   color: var(--text-main);
 }
 
+.filter-btn.active-filter {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
 .filter-popover {
   position: absolute;
   top: calc(100% + 12px);

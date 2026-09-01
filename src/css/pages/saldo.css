@@ -200,12 +200,16 @@
     flex-direction: row;
     align-items: center;
     padding: 0.85rem 1rem;
-    border-radius: 18px !important;
+    border-radius: 18px 18px 0 0 !important;
     box-shadow: 0 -5px 16px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     min-height: 68px;
     transform: none;
     transition: none;
+  }
+
+  .saldo-grid .stat-card:last-child {
+    border-radius: 18px !important;
   }
 
   .saldo-grid .stat-card:hover {
@@ -214,7 +218,7 @@
   }
 
   .saldo-grid .stat-card:not(:first-child) {
-    margin-top: -1.4rem !important;
+    margin-top: -2.3rem !important;
   }
 
   .saldo-card-item .account-name {

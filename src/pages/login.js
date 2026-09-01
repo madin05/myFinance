@@ -136,6 +136,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
 
             if (store.user) {
               store.user.emailVerified = true;
+              store.user.isNewUser = true;
               store.save();
             }
 
@@ -517,7 +518,8 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
             token: token,
             emailVerified: false,
-            provider: 'password'
+            provider: 'password',
+            isNewUser: true
           }, { name });
 
           const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 html,
 body {
   font-family: var(--font-main);
@@ -13,6 +17,10 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip; /* clip prevents horizontal scroll without breaking position: sticky */
+}
+
+body.modal-open {
+  overflow: hidden !important;
 }
 
 /* ================================
@@ -221,8 +229,8 @@ body.dark .ph-fill.ph-monitor {
   padding: 1.25rem 1.5rem;
   width: calc(100% - var(--sidebar-width));
   transition:
-    margin-left 0.3s ease,
-    width 0.3s ease;
+    margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   /* NOTE: overflow-x intentionally NOT set here.
      Setting overflow-x: hidden on a positioned ancestor

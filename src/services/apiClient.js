@@ -3,13 +3,20 @@ import { auth } from "../firebase-config.js";
 import { store } from "../store.js";
 
 const hostname = window.location.hostname;
-const isLocalhost =
+const isIpOrLocalhost =
   hostname === "localhost" ||
   hostname === "127.0.0.1" ||
   hostname.startsWith("192.168.") ||
-  hostname.startsWith("110.168."); // Supaya bisa diakses via IP LAN di HP
+  hostname.startsWith("10.") ||
+  hostname.startsWith("172.") ||
+  hostname.startsWith("110.168.");
 
-export const API_URL = import.meta.env.VITE_API_URL || (isLocalhost ? `http://${hostname}:5000/api` : "/api");
+// When accessing via LAN IP from HP, use http://<LAN_IP>:5000/api so API calls route to Laptop backend
+const envApiUrl = import.meta.env.VITE_API_URL;
+export const API_URL =
+  (isIpOrLocalhost && hostname !== "localhost" && hostname !== "127.0.0.1")
+    ? `http://${hostname}:5000/api`
+    : (envApiUrl || (isIpOrLocalhost ? `http://${hostname}:5000/api` : "/api"));
 
 export function getAuthHeaders(token, isJson = true) {
   const headers = {};

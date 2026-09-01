@@ -332,6 +332,7 @@ export async function checkAuth() {
           provider: user.providerData[0]?.providerId || 'unknown'
         };
         store.setUser(userData);
+        store.sync();
       }
 
       if (needsVerification) {
@@ -351,7 +352,6 @@ export async function checkAuth() {
 
       const banner = document.getElementById('email-verify-banner');
       if (banner) banner.style.display = 'none';
-      import('./components/tutorial.js').then(m => m.startProductTutorial());
       
       const currentPath = window.location.pathname;
       const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
@@ -402,7 +402,21 @@ export async function checkAuth() {
 
 // --- INITIALIZATION ---
 
+function preloadSvgAssets() {
+  const assets = [
+    '/assets/asset_notif_light.svg',
+    '/assets/asset_notif_dark.svg',
+    '/assets/warning_delete_light.svg',
+    '/assets/warning_delete_dark.svg'
+  ];
+  assets.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  preloadSvgAssets();
   hideLoading();
   initNavigation();
   initCustomSelects();
@@ -474,47 +488,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 5. Scroll Lock Observer (Locks background scrolling/sliding when any modal or mobile sidebar is open)
+  // 5. Scroll Lock Observer (Locks background scrolling smoothly when any modal or mobile sidebar is open)
   const scrollLockObserver = new MutationObserver(() => {
-    const hasActiveModal = document.querySelector('.modal-overlay') || 
-                           document.querySelector('.modal-card') || 
-                           document.querySelector('.detail-tx-overlay') || 
-                           document.querySelector('.custom-alert-overlay') ||
-                           document.querySelector('.sidebar.mobile-active') ||
-                           document.querySelector('.sidebar-overlay.active');
-    const mainContent = document.querySelector('.main-content');
-    const appLayout = document.getElementById('app-layout');
+    const hasActiveModal = Boolean(
+      document.querySelector('.modal-overlay.active') || 
+      document.querySelector('.modal-card.active') || 
+      document.querySelector('.detail-tx-overlay.active') || 
+      document.querySelector('.custom-alert-overlay.active') ||
+      document.querySelector('.sidebar.mobile-active') ||
+      document.querySelector('.sidebar-overlay.active')
+    );
 
-    if (hasActiveModal) {
-      document.body.style.setProperty('overflow', 'hidden', 'important');
-      document.body.style.setProperty('height', '100vh', 'important');
-      document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-      document.documentElement.style.setProperty('height', '100vh', 'important');
-      if (mainContent) {
-        mainContent.style.setProperty('overflow-x', 'hidden', 'important');
-        mainContent.style.setProperty('overflow-y', 'hidden', 'important');
-        mainContent.style.setProperty('max-height', '100vh', 'important');
-      }
-      if (appLayout) {
-        appLayout.style.setProperty('overflow-x', 'hidden', 'important');
-        appLayout.style.setProperty('overflow-y', 'hidden', 'important');
-        appLayout.style.setProperty('max-height', '100vh', 'important');
-      }
-    } else {
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('height');
-      document.documentElement.style.removeProperty('overflow');
-      document.documentElement.style.removeProperty('height');
-      if (mainContent) {
-        mainContent.style.removeProperty('overflow-x');
-        mainContent.style.removeProperty('overflow-y');
-        mainContent.style.removeProperty('max-height');
-      }
-      if (appLayout) {
-        appLayout.style.removeProperty('overflow-x');
-        appLayout.style.removeProperty('overflow-y');
-        appLayout.style.removeProperty('max-height');
-      }
+    const isLocked = document.body.classList.contains('modal-open');
+
+    if (hasActiveModal && !isLocked) {
+      document.body.classList.add('modal-open');
+    } else if (!hasActiveModal && isLocked) {
+      document.body.classList.remove('modal-open');
     }
   });
   scrollLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });

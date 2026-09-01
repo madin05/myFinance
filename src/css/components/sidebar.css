@@ -8,9 +8,11 @@
   position: fixed;
   height: 100vh;
   z-index: 1100;
-  transition: width 0.3s ease, box-shadow 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
   white-space: nowrap;
-  overflow: visible !important;
+  overflow: hidden !important;
 }
 
 /* Shadow halus untuk Sidebar pada Light Mode */
@@ -98,6 +100,11 @@
 .icon-wishlist {
   background: #FCE8E6;
   color: #ec4899;
+}
+
+.icon-wishlist .quick-access-img,
+img[src*="wishlist.svg"] {
+  transform: translateX(2.5px);
 }
 
 .icon-laporan {
@@ -400,13 +407,35 @@
 /* --- SIDEBAR COLLAPSED STATE --- */
 .sidebar-collapsed .sidebar {
   width: var(--sidebar-collapsed-width);
-  padding: 2rem 1rem;
+  padding: 1.75rem 0.85rem;
+}
+
+.logo-wrapper,
+.logo-text,
+.nav-item span,
+.sidebar-footer span,
+.nav-dropdown-arrow {
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              margin 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  max-width: 180px;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sidebar-collapsed .logo-wrapper,
+.sidebar-collapsed .logo-text,
 .sidebar-collapsed .nav-item span,
-.sidebar-collapsed .sidebar-footer span {
-  display: none !important;
+.sidebar-collapsed .sidebar-footer span,
+.sidebar-collapsed .nav-dropdown-arrow {
+  opacity: 0 !important;
+  max-width: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 .sidebar-collapsed .logo-container {

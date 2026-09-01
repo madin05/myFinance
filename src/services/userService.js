@@ -69,6 +69,27 @@ export const userService = {
     return true;
   },
 
+  async requestDeleteAccountOtp(token) {
+    const res = await apiFetch(`${API_URL}/users/delete-request`, {
+      method: "POST",
+      headers: getAuthHeaders(token),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal mengirim OTP hapus akun");
+    return data;
+  },
+
+  async confirmDeleteAccount(token, otp) {
+    const res = await apiFetch(`${API_URL}/users/delete-confirm`, {
+      method: "POST",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify({ otp }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Gagal memproses penghapusan akun");
+    return data;
+  },
+
   async createSession(idToken) {
     return apiFetch(`${API_URL}/auth/session`, {
       method: "POST",

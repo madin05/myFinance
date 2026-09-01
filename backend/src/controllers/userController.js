@@ -135,6 +135,69 @@ exports.updatePassword = async (req, res) => {
   }
 };
 
+exports.requestDeleteOtp = async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const user = await withRetry(() =>
+      prisma.user.findUnique({ where: { firebaseUid: uid } })
+    );
+
+    if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
+
+    const { generateOtp } = require('../services/otpService');
+    const { sendDeleteAccountOtpEmail } = require('../services/emailService');
+
+    const { otpCode, expiresAt } = await generateOtp(user.id, 'DELETE_ACCOUNT');
+
+    // Kirim respon HTTP 200 instan (non-blocking)
+    res.json({
+      success: true,
+      message: 'Kode OTP Hapus Akun berhasil dikirim ke email!',
+      expiresAt
+    });
+
+    // Kirim email OTP di background
+    sendDeleteAccountOtpEmail(user.email, otpCode).catch(err => {
+      console.error('Background Delete Account OTP Send Error:', err.message);
+    });
+  } catch (error) {
+    console.error('Request Delete OTP Error:', error.message);
+    res.status(500).json({ error: 'Gagal mengirim kode OTP hapus akun. Silakan coba lagi.' });
+  }
+};
+
+exports.confirmDeleteAccount = async (req, res) => {
+  try {
+    const { uid } = req.user;
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ error: 'Kode OTP 6-digit wajib diisi.' });
+    }
+
+    const user = await withRetry(() =>
+      prisma.user.findUnique({ where: { firebaseUid: uid } })
+    );
+
+    if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
+
+    const { verifyOtp } = require('../services/otpService');
+    // Verifikasi OTP bertipe DELETE_ACCOUNT
+    await verifyOtp(user.id, otp, 'DELETE_ACCOUNT');
+
+    // Hapus data dari Postgres
+    await withRetry(() =>
+      prisma.user.delete({ where: { id: user.id } })
+    );
+
+    res.json({ success: true, message: 'Akun dan seluruh data finansial berhasil dihapus permanen.' });
+  } catch (error) {
+    console.error('Confirm Delete Account Error:', error.message);
+    const statusCode = error.statusCode || 400;
+    res.status(statusCode).json({ error: error.message || 'Gagal memproses penghapusan akun.' });
+  }
+};
+
 exports.deleteAccount = async (req, res) => {
   try {
     const { uid } = req.user;

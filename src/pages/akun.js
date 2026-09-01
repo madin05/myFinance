@@ -265,43 +265,37 @@ export function renderAkun() {
           return;
         }
 
-        const providerId = userFirebase.providerData[0]?.providerId || "password";
+        openDeleteAccountModal({
+          email: user.email,
+          onRequestOtp: async () => {
+            const token = await userFirebase.getIdToken();
+            await userService.requestDeleteAccountOtp(token);
+          },
+          onVerifyOtp: async (otpCode) => {
+            showLoading();
+            try {
+              const token = await userFirebase.getIdToken();
+              // 1. Verifikasi OTP & Hapus data pengguna di PostgreSQL DB
+              await userService.confirmDeleteAccount(token, otpCode);
 
-        openDeleteAccountModal(providerId, async (passwordOrNull) => {
-          showLoading();
-          try {
-            // 1. Re-auth jika pakai password lokal
-            if (providerId === "password" && passwordOrNull) {
-              const credential = EmailAuthProvider.credential(
-                userFirebase.email,
-                passwordOrNull,
-              );
-              await reauthenticateWithCredential(userFirebase, credential);
-            }
+              // 2. Hapus user di Firebase Auth (jika belum expired)
+              try {
+                await userFirebase.delete();
+              } catch (fbErr) {
+                console.warn("Firebase user delete warning:", fbErr.message);
+              }
 
-            // 2. Hapus data dari Postgres via backend
-            await store.deleteAccountRemote();
+              // 3. Reset local store & redirect ke login
+              store.setUser(null);
+              hideLoading();
+              showToast("Akun Anda telah berhasil dihapus secara permanen.", "success");
 
-            // 3. Hapus user dari Firebase Auth
-            await userFirebase.delete();
-
-            showToast("Akun telah dihapus secara permanen.", "success");
-
-            setTimeout(() => {
-              window.location.href = '/login';
-            }, 300);
-          } catch (err) {
-            hideLoading();
-            if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-              showAlert("Gagal Hapus Akun", "Password yang kamu masukkan salah! Coba ingat-ingat lagi.", "error");
-            } else if (err.code === "auth/requires-recent-login") {
-              showAlert(
-                "Sesi Kedaluwarsa",
-                "Silakan logout dan login kembali sebelum menghapus akun demi keamanan.",
-                "warning",
-              );
-            } else {
-              showAlert("Gagal Hapus Akun", err.message, "error");
+              setTimeout(() => {
+                window.location.href = '/login';
+              }, 300);
+            } catch (err) {
+              hideLoading();
+              throw err;
             }
           }
         });

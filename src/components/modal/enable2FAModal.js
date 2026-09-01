@@ -16,7 +16,7 @@ import { getContainer, bindModalEvents } from './modalCore.js';
 
 /** Generates the repeated OTP input HTML (6 digits) */
 function buildOtpInputsHtml() {
-  const style = 'width: 44px; height: 52px; text-align: center; font-size: 1.3rem; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--bg-color); color: var(--text-main);';
+  const style = 'width: 100%; max-width: 44px; height: 48px; text-align: center; font-size: 1.25rem; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--border); background: var(--card-bg); color: var(--text-main); box-sizing: border-box;';
   return Array.from({ length: 6 }, () =>
     `<input type="text" class="otp-box-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required style="${style}" />`
   ).join('\n');
@@ -87,35 +87,40 @@ export function openEnable2FAModal(onSuccess, onCancel) {
 
     container.innerHTML = `
       <div class="modal-overlay" id="enable-2fa-overlay">
-        <div class="modal-content" style="max-width: 440px; text-align: center;">
-          <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
-            <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(2, 132, 199, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-              <i class="ph-bold ph-shield-check" style="font-size: 28px; color: var(--primary);"></i>
-            </div>
+        <div class="modal-content" style="max-width: 440px;">
+          <div class="modal-header" style="display: flex; justify-content: center; align-items: center; text-align: center; border-bottom: 1px solid var(--border); padding: 1.25rem 1.5rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+              <i class="ph-bold ph-shield-check" style="font-size: 1.35rem; color: var(--primary);"></i>
+              Verifikasi Aktivasi 2FA
+            </h3>
           </div>
-          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Verifikasi Aktivasi 2FA</h3>
-          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem; padding: 0 10px;">
-            ${data.message || 'Kami mengirimkan 6-digit kode verifikasi ke email Anda untuk mengonfirmasi pengaktifan 2FA.'}
-          </p>
+          <div class="modal-body" style="padding: 1.25rem; text-align: center;">
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+              ${data.message || 'Kami mengirimkan 6-digit kode verifikasi ke email Anda untuk mengonfirmasi pengaktifan 2FA.'}
+            </p>
 
-          <form id="form-enable-2fa-otp">
-            <div class="otp-grid" style="display: flex; gap: 8px; justify-content: center; margin-bottom: 1.25rem;">
-              ${buildOtpInputsHtml()}
-            </div>
+            <form id="form-enable-2fa-otp">
+              <div class="otp-grid" style="display: flex; gap: 6px; justify-content: center; margin-bottom: 1.25rem; width: 100%;">
+                ${buildOtpInputsHtml()}
+              </div>
 
-            <p id="enable-2fa-error" style="color: var(--red); font-size: 0.82rem; margin-bottom: 1rem; display: none; font-weight: 600;"></p>
+              <p id="enable-2fa-error" style="color: var(--red); font-size: 0.82rem; margin-bottom: 1rem; display: none; font-weight: 600;"></p>
 
-            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
-              <button type="button" class="btn btn-outline" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 600;" id="btn-cancel-enable-2fa">Batal</button>
-              <button type="submit" class="btn btn-primary" style="flex: 1; height: 46px; border-radius: 12px; font-weight: 600;" id="btn-submit-enable-2fa">Aktifkan 2FA</button>
-            </div>
-          </form>
+              <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                <button type="button" class="btn btn-outline" style="flex: 1; height: 44px; border-radius: 10px; font-weight: 600;" id="btn-cancel-enable-2fa">Batal</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1; height: 44px; border-radius: 10px; font-weight: 600;" id="btn-submit-enable-2fa">Aktifkan 2FA</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     `;
 
     const closeModal = bindModalEvents(container, 'enable-2fa-overlay', ['btn-cancel-enable-2fa'], () => {
       if (onCancel) onCancel();
+    });
+    requestAnimationFrame(() => {
+      document.getElementById('enable-2fa-overlay')?.classList.add('active');
     });
 
     const form = document.getElementById('form-enable-2fa-otp');

@@ -42,7 +42,7 @@ export function openQuickActionSheet() {
 
           <div class="quick-action-item" role="button" tabindex="0" id="qa-calculator">
             <div class="qa-icon"><i class="ph-fill ph-calculator"></i></div>
-            <div class="qa-info"><h4>Kalkulator Finansial</h4></div>
+            <div class="qa-info"><h4>Kalkulator</h4></div>
             <i class="ph ph-caret-right qa-arrow"></i>
           </div>
         </div>
