@@ -196,7 +196,7 @@ export function renderTransaksi() {
   renderTableBody(container);
 
   document.getElementById('btn-tambah-page').addEventListener('click', () => {
-    import('../components/modal.js').then(module => {
+    import('../components/modal/index.js').then(module => {
       module.openAddTransactionModal(() => renderTransaksi());
     });
   });
@@ -348,14 +348,14 @@ function renderTableBody(container) {
     (id) => {
       const txToEdit = store.getTransactionById(Number(id));
       if (txToEdit) {
-        import('../components/modal.js').then(module => {
+        import('../components/modal/index.js').then(module => {
           module.openAddTransactionModal(() => renderTransaksi(), txToEdit);
         });
       }
     },
     // onDelete
     (id) => {
-      import('../components/modal.js').then(module => {
+      import('../components/modal/index.js').then(module => {
         module.openConfirmModal(
           'Hapus Transaksi?',
           'Data yang dihapus tidak dapat dikembalikan.',
@@ -377,7 +377,7 @@ function renderTableBody(container) {
     (id) => {
       const txToView = store.getTransactionById(Number(id));
       if (txToView) {
-        import('../components/modal.js').then(module => {
+        import('../components/modal/index.js').then(module => {
           module.openDetailTransactionModal(txToView);
         });
       }

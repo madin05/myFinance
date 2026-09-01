@@ -2,7 +2,7 @@ import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelect } from '../components/customSelect.js';
-import { openEnable2FAModal, openConfirmPasswordModal } from '../components/modal.js';
+import { openEnable2FAModal, openConfirmPasswordModal } from '../components/modal/index.js';
 import { auth, EmailAuthProvider, reauthenticateWithCredential } from '../firebase-config.js';
 
 const SUPPORTED_CURRENCIES = ['IDR', 'USD', 'EUR', 'SGD', 'MYR', 'JPY'];

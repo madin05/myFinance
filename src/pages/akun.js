@@ -13,7 +13,7 @@ import {
   openDeleteAccountModal,
   openConfirmPasswordModal,
   openEnable2FAModal,
-} from "../components/modal.js";
+} from "../components/modal/index.js";
 import { initCustomSelect } from "../components/customSelect.js";
 import {
   auth,

@@ -6,7 +6,6 @@ export const CATEGORY_COLOR_MAP = {
   "Makanan & Minuman": "#F97316",
   "Transportasi": "#3B82F6",
   "Belanja": "#EC4899",
-  "Tagihan & Utilitas": "#06B6D4",
   "Tagihan": "#06B6D4",
   "Hiburan": "#8B5CF6",
   "Kesehatan": "#10B981",

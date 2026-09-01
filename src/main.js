@@ -2,7 +2,7 @@ import { store } from './store.js';
 import { auth, onAuthStateChanged, onIdTokenChanged, getRedirectResult, applyActionCode } from './firebase-config.js';
 import { userService } from './services/userService.js';
 import { renderLogin, renderEmailVerificationBanner } from './pages/login.js';
-import { openAddTransactionModal, openQuickActionSheet } from './components/modal.js';
+import { openAddTransactionModal, openQuickActionSheet } from './components/modal/index.js';
 import { openCalculator } from './components/calculator.js';
 import { openScanReceiptModal } from './components/scanReceipt.js';
 import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';

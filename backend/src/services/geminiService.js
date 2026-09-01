@@ -1,7 +1,7 @@
 // src/services/geminiService.js
 // Service untuk extract data struk via Gemini API (REST, no SDK)
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-1.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const PROMPT_TEMPLATE = (todayISO) => `Kamu adalah AI yang tugasnya mengekstrak data dari foto struk belanja Indonesia.
@@ -68,27 +68,51 @@ async function extractReceiptData(imageBase64, mimeType = 'image/jpeg') {
     }
   };
 
-  // Timeout 20 detik biar gak hang lama-lama
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20_000);
+  /**
+   * Helper: kirim 1x request ke Gemini dengan timeout.
+   * Timeout dinaikkan ke 40 detik untuk handle cold-start Gemini
+   * (request pertama ke model seringkali butuh 25-35 detik).
+   */
+  const attemptFetch = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 40_000);
+    try {
+      const res = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      return res;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        const e = new Error('Timeout: Gemini API tidak respons dalam 40 detik. Coba lagi sebentar.');
+        e.statusCode = 504;
+        throw e;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
 
+  // Auto-retry 1x jika timeout atau Gemini 5xx error (cold start fix)
   let response;
   try {
-    response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      const e = new Error('Timeout: Gemini API tidak respons dalam 20 detik.');
-      e.statusCode = 504;
-      throw e;
+    response = await attemptFetch();
+    // Retry sekali kalau Gemini server error (5xx) — bukan client error (4xx)
+    if (response.status >= 500) {
+      console.warn(`[geminiService] Gemini ${response.status} pada attempt pertama, auto-retry...`);
+      response = await attemptFetch();
     }
-    throw err;
-  } finally {
-    clearTimeout(timeoutId);
+  } catch (err) {
+    // Kalau attempt pertama timeout, langsung retry 1x
+    if (err.statusCode === 504) {
+      console.warn('[geminiService] Timeout attempt pertama, auto-retry...');
+      response = await attemptFetch();
+    } else {
+      throw err;
+    }
   }
 
   if (!response.ok) {
@@ -231,7 +255,7 @@ CONTOH INPUT SANTAI & CARA KAMU MEMAHAMI:
 - "kmaren beli bakso 15rb" → Transaksi, kemarin, Makanan & Minuman, Rp15.000, Cash
 - "tdi pgi bensin pertalite 52k" → Transaksi, hari ini, Transportasi, Rp52.000, Cash
 - "senin lalu gajian 5jt transfer bca" → Transaksi income, Senin lalu, Gaji & Pendapatan, Rp5.000.000, Transfer Bank
-- "3 hari lalu bayar wifi 350rb" → Transaksi, 3 hari lalu, Tagihan & Tagihan, Rp350.000, Cash
+- "3 hari lalu bayar wifi 350rb" → Transaksi, 3 hari lalu, Tagihan, Rp350.000, Cash
 - "tgl 5 beli baju di tokped 200rb" → Transaksi, tanggal 5 bulan ini, Belanja, Rp200.000, E-Wallet
 - "mau nabung laptop gaming 15jt" → Wishlist
 - "ringkasin keuangan 3 bulan" → Summary request
@@ -251,7 +275,7 @@ ATURAN KATEGORI (pilih TEPAT SATU):
 - "Makanan & Minuman" → makan, minum, kopi, bakso, nasi, resto, warung, starbucks, kfc, mcd, goFood
 - "Transportasi" → bensin, solar, pertamax, pertalite, parkir, tol, gojek, grab, angkot, bus, kereta, pesawat
 - "Belanja" → baju, sepatu, tas, tokopedia, shopee, lazada, mall, olshop, skincare
-- "Tagihan & Tagihan" → listrik, air, wifi, pulsa, kuota, token PLN, indihome, iuran, sewa, kos
+- "Tagihan" → listrik, air, wifi, pulsa, kuota, token PLN, indihome, iuran, sewa, kos
 - "Gaji & Pendapatan" → gaji, gajian, payroll, thr, bonus, honor, freelance, proyek, dividen, jual
 - "Investasi & Tabungan" → investasi, saham, crypto, reksadana, nabung (tanpa target barang), deposito
 - "Kesehatan" → obat, dokter, apotek, rumah sakit, rs, klinik, gym, vitamin

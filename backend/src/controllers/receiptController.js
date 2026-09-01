@@ -47,9 +47,8 @@ exports.scanReceipt = async (req, res) => {
     });
   } catch (err) {
     console.error('[scanReceipt] Error:', err.message);
-    const status = err.statusCode || 500;
-    return res.status(status).json({
-      error: err.message || 'Gagal memproses struk.'
+    return res.status(500).json({
+      error: 'Sistem sedang bermasalah. Coba lagi nanti ya!'
     });
   }
 };

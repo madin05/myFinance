@@ -71,7 +71,7 @@ export function parseNaturalLanguageTx(text) {
   } else if (lower.includes("belanja") || lower.includes("baju") || lower.includes("sepatu") || lower.includes("tokopedia") || lower.includes("shopee") || lower.includes("mall")) {
     kategori = "Belanja";
   } else if (lower.includes("listrik") || lower.includes("air") || lower.includes("wifi") || lower.includes("pulsa") || lower.includes("tagihan") || lower.includes("token")) {
-    kategori = "Tagihan & Tagihan";
+    kategori = "Tagihan";
   } else if (lower.includes("investasi") || lower.includes("saham") || lower.includes("crypto") || lower.includes("reksadana")) {
     kategori = "Investasi & Tabungan";
   } else if (lower.includes("obat") || lower.includes("dokter") || lower.includes("sehat") || lower.includes("rs") || lower.includes("gym")) {
@@ -283,7 +283,7 @@ export function getSmartAiInputHtml() {
         </div>
         <div class="ai-banner-content">
           <h3 class="ai-banner-title">Yuk cobain fitur kami</h3>
-          <p class="ai-banner-desc">Tambah transaksi, wishlist, analisis keuangan kamu dan tips untuk kamu dengan Anya</p>
+          <p class="ai-banner-desc">Tambah transaksi, wishlist, analisis keuangan kamu dan tips untuk kamu dengan AI</p>
           <button type="button" class="ai-banner-btn" id="btn-start-ai-chat">
             <span>Mulai percakapan</span>
             <svg

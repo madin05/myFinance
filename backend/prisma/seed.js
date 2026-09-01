@@ -40,11 +40,11 @@ const INCOME_ITEMS = [
 ];
 
 const EXPENSE_ITEMS = [
-  { description: 'Makan Siang Resto',     category: 'Makanan',     method: 'Cash',          account: 'Dompet Tunai', amount: () => rand(25_000, 75_000) },
-  { description: 'Kopi Kekinian Daily',  category: 'Makanan',     method: 'GoPay',         account: 'GoPay',        amount: () => rand(28_000, 60_000) },
-  { description: 'Belanja Bulanan Supermarket', category: 'Makanan', method: 'GoPay',     account: 'GoPay',        amount: () => rand(250_000, 650_000) },
-  { description: 'Makan Malam Seafood',  category: 'Makanan',     method: 'Cash',          account: 'Dompet Tunai', amount: () => rand(120_000, 350_000) },
-  { description: 'GrabFood Delivery',    category: 'Makanan',     method: 'OVO',           account: 'GoPay',        amount: () => rand(40_000, 110_000) },
+  { description: 'Makan Siang Resto',     category: 'Makanan & Minuman',     method: 'Cash',          account: 'Dompet Tunai', amount: () => rand(25_000, 75_000) },
+  { description: 'Kopi Kekinian Daily',  category: 'Makanan & Minuman',     method: 'GoPay',         account: 'GoPay',        amount: () => rand(28_000, 60_000) },
+  { description: 'Belanja Bulanan Supermarket', category: 'Makanan & Minuman', method: 'GoPay',     account: 'GoPay',        amount: () => rand(250_000, 650_000) },
+  { description: 'Makan Malam Seafood',  category: 'Makanan & Minuman',     method: 'Cash',          account: 'Dompet Tunai', amount: () => rand(120_000, 350_000) },
+  { description: 'GrabFood Delivery',    category: 'Makanan & Minuman',     method: 'OVO',           account: 'GoPay',        amount: () => rand(40_000, 110_000) },
   { description: 'Token Listrik PLN',    category: 'Tagihan',     method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(150_000, 450_000) },
   { description: 'Tagihan WiFi Indihome', category: 'Tagihan',    method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(320_000, 480_000) },
   { description: 'Langganan Netflix 4K', category: 'Tagihan',     method: 'Kartu Kredit',  account: 'Bank BCA',     amount: () => rand(186_000, 186_000) },
@@ -63,7 +63,7 @@ const EXPENSE_ITEMS = [
 ];
 
 const BUDGETS_SEED = [
-  { category: 'Makanan',      amount: 2_500_000 },
+  { category: 'Makanan & Minuman', amount: 2_500_000 },
   { category: 'Transportasi', amount: 1_000_000 },
   { category: 'Hiburan',      amount: 800_000 },
   { category: 'Belanja',      amount: 1_200_000 },
