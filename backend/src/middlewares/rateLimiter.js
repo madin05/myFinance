@@ -15,7 +15,7 @@ function limit2FASend(req, res, next) {
   const maxRequests = 3;
 
   const record = sendAttempts.get(ip) || { count: 0, resetTime: now + windowMs };
-
+  
   if (now > record.resetTime) {
     record.count = 0;
     record.resetTime = now + windowMs;

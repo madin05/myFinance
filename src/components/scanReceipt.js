@@ -3,8 +3,8 @@
 // → setelah dapat data, buka modal Add Transaction dengan prefill.
 
 import { store } from '../store.js';
-import { showToast } from './notifications.js';
-import { openAddTransactionModal, bindModalEvents } from './modal.js';
+import { showToast, isUserVerified } from './notifications.js';
+import { openAddTransactionModal, bindModalEvents } from './modal/index.js';
 
 const MAX_DIMENSION = 1280;     // Resize max sisi panjang (px)
 const JPEG_QUALITY = 0.7;        // Kualitas JPEG (0-1)
@@ -173,36 +173,60 @@ export function openScanReceiptModal() {
     showStep('loading');
     try {
       const data = await store.scanReceipt(compressed.base64, compressed.mimeType);
-      // Sukses → close modal scan, buka modal Add Tx dengan prefill
-      closeModal();
-      showToast('Berhasil!', 'Data struk berhasil diekstrak. Tinggal review & simpan.', 'success');
-      openAddTransactionModal(
-        () => {
-          // Refresh halaman aktif kalau di transaksi/dashboard
-          const path = window.location.pathname || '/dashboard';
-          if (path === '/dashboard' || path === '/transaksi') {
-            window.dispatchEvent(new CustomEvent('routechange'));
-          }
-        },
-        null,
-        {
-          tanggal: data.tanggal,
-          kategori: data.kategori_saran,
-          metode: data.metode_pembayaran,
-          keterangan: data.merchant
-            ? `${data.merchant}${data.ringkasan_item ? ' - ' + data.ringkasan_item : ''}`
-            : data.ringkasan_item,
-          harga: data.total,
-          type: 'expense'
+
+      // Cek verifikasi email sebelum buka modal transaksi
+      // Jika belum verified, tampilkan pesan jelas (bukan silent block)
+      if (!isUserVerified()) {
+        showStep('preview');
+        showToast(
+          'Verifikasi Email Diperlukan',
+          'Struk berhasil dipindai, tapi kamu harus verifikasi email dulu untuk menambah transaksi.',
+          'error'
+        );
+        return;
+      }
+
+      // Siapkan prefill data dari hasil scan
+      const prefillData = {
+        tanggal: data.tanggal,
+        kategori: data.kategori_saran,
+        metode: data.metode_pembayaran,
+        keterangan: data.merchant
+          ? `${data.merchant}${data.ringkasan_item ? ' - ' + data.ringkasan_item : ''}`
+          : data.ringkasan_item,
+        harga: data.total,
+        type: 'expense'
+      };
+
+      const onRefresh = () => {
+        const path = window.location.pathname || '/dashboard';
+        if (path === '/dashboard' || path === '/transaksi') {
+          window.dispatchEvent(new CustomEvent('routechange'));
         }
-      );
+      };
+
+      // Sukses → close modal scan, LALU buka modal Add Tx setelah animasi close selesai (280ms)
+      // Menggunakan onDismiss callback agar modal-container sudah bersih sebelum di-render ulang
+      showToast('Berhasil!', 'Data struk berhasil diekstrak. Tinggal review & simpan.', 'success');
+      closeModal();
+      // openAddTransactionModal dipanggil di onDismiss — lihat bindModalEvents di bawah
+      pendingPrefill = { prefillData, onRefresh };
     } catch (err) {
-      const msg = err?.message || 'Gagal scan struk.';
+      const msg = err?.message || 'Sistem sedang bermasalah. Coba lagi nanti ya, bre!';
       showToast('Gagal Scan', msg, 'error');
       showStep('preview');
     }
   });
 
-  closeModal = bindModalEvents(container, 'scan-modal-overlay', []);
+  let pendingPrefill = null;
+
+  closeModal = bindModalEvents(container, 'scan-modal-overlay', [], () => {
+    // onDismiss: dipanggil setelah animasi close (280ms) selesai & container sudah bersih
+    if (pendingPrefill) {
+      const { prefillData, onRefresh } = pendingPrefill;
+      pendingPrefill = null;
+      openAddTransactionModal(onRefresh, null, prefillData);
+    }
+  });
   showStep('pick');
 }

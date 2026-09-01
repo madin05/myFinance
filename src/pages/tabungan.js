@@ -279,7 +279,7 @@ export function renderTabungan() {
     },
     (id) => {
       checkVerification(() => {
-        import('../components/modal.js').then(module => {
+        import('../components/modal/index.js').then(module => {
           module.openConfirmModal('Hapus Wishlist?', 'Yakin mau hapus target ini?', () => {
             store.removeSaving(Number(id))
               .then(() => {

@@ -57,21 +57,27 @@ export const transactionService = {
         body: JSON.stringify({ image: base64, mimeType }),
       });
     } catch {
-      throw new Error("Gagal terhubung ke server. Cek koneksi internet kamu.");
+      throw new Error("Sistem sedang bermasalah. Coba lagi nanti ya, bre!");
     }
 
     let json;
     try {
       json = await res.json();
     } catch {
-      throw new Error("Server merespons tidak valid.");
+      throw new Error("Sistem sedang bermasalah. Coba lagi nanti ya, bre!");
     }
 
     if (!res.ok) {
-      throw new Error(json?.error || `Server error (${res.status})`);
+      if (res.status === 422 && json?.error) {
+        throw new Error(json.error);
+      }
+      if (res.status === 413) {
+        throw new Error("Ukuran gambar terlalu besar. Maksimal 4MB.");
+      }
+      throw new Error("Sistem sedang bermasalah. Coba lagi nanti ya, bre!");
     }
     if (!json?.success || !json?.data) {
-      throw new Error("Hasil scan tidak lengkap.");
+      throw new Error("Sistem sedang bermasalah. Coba lagi nanti ya, bre!");
     }
 
     return json.data;

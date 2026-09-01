@@ -1,5 +1,5 @@
 import { store, formatRupiah, formatDate } from "../store.js";
-import { openAdjustBalanceModal } from "../components/modal.js";
+import { openAdjustBalanceModal } from "../components/modal/index.js";
 import { navigateTo } from "../router.js";
 import { initStickyHeader, escapeHtml, getCategoryIconUrl } from "../utils.js";
 import { getSmartAiInputHtml, initSmartAiInputEvents } from "../components/smartAiInput.js";

@@ -3,7 +3,7 @@ import { showLoading, hideLoading } from '../utils.js';
 import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
-import { animateCloseModal, bindModalEvents } from '../components/modal.js';
+import { animateCloseModal, bindModalEvents } from '../components/modal/index.js';
 
 let currentViewDate = new Date();
 

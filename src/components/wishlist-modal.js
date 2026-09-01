@@ -2,7 +2,7 @@ import { store } from '../store.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { initCustomSelects } from '../ui/select.js';
 import { showToast } from './notifications.js';
-import { animateCloseModal, bindModalEvents } from './modal.js';
+import { animateCloseModal, bindModalEvents } from './modal/index.js';
 
 export function openAddWishlistModal(onSuccess, editData = null) {
   const container = document.getElementById('modal-container');
