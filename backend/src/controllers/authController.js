@@ -398,7 +398,7 @@ exports.confirmEnable2FA = async (req, res) => {
       success: true,
       status: 'ENABLED',
       is2FAEnabled: true,
-      message: 'Autentikasi 2-Langkah (2FA OTP) berhasil diaktifkan!',
+      message: 'Autentikasi 2-Langkah berhasil diaktifkan!',
       user: {
         id: user.id,
         email: user.email,
@@ -460,7 +460,7 @@ exports.toggle2FA = async (req, res) => {
     return res.json({
       status: 'DISABLED',
       is2FAEnabled: false,
-      message: 'Autentikasi 2-Langkah (2FA OTP) berhasil dinonaktifkan.'
+      message: 'Autentikasi 2-Langkah berhasil dinonaktifkan.'
     });
   } catch (error) {
     console.error('Toggle 2FA Server Error:', error);
