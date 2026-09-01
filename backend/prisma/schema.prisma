@@ -106,6 +106,7 @@ enum OtpType {
   DISABLE_2FA
   PASSWORD_RESET
   TRANSACTION_APPROVAL
+  DELETE_ACCOUNT
 }
 
 model OtpVerification {

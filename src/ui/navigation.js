@@ -49,6 +49,11 @@ export function initNavigation() {
     if (e.target.closest('#btn-toggle-sidebar')) {
       layout.classList.toggle('sidebar-collapsed');
       localStorage.setItem('sidebar-collapsed', layout.classList.contains('sidebar-collapsed'));
+
+      // Dispatch window resize event during & post-transition to re-align responsive widgets cleanly
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 320);
     }
 
     // Handle Animated Hamburger Checkboxes (Sync State)
@@ -193,21 +198,18 @@ export function initNavigation() {
     dropList.innerHTML = latest.map(n => {
       let iconClass = 'ph-fill ph-bell';
       let color = 'var(--primary)';
-      let bgColor = 'rgba(79, 70, 229, 0.1)';
       
       if (n.source === 'Anggaran') { 
         iconClass = 'ph-fill ph-warning-circle'; 
         color = '#ef4444'; 
-        bgColor = 'rgba(239, 68, 68, 0.1)'; 
       } else if (n.source === 'Wishlist') { 
         iconClass = 'ph-fill ph-sparkle'; 
         color = '#ec4899'; 
-        bgColor = 'rgba(236, 72, 153, 0.1)'; 
       }
 
       return `
         <div class="notif-item" data-id="${n.id}" data-route="${n.route || ''}" style="opacity: ${n.read ? '0.6' : '1'}">
-          <div class="notif-icon" style="background: ${bgColor}; color: ${color};">
+          <div class="notif-icon" style="background: transparent; color: ${color};">
             <i class="${iconClass}"></i>
           </div>
           <div class="notif-content">

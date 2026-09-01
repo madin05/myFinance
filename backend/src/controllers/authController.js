@@ -13,6 +13,51 @@ function maskEmail(email) {
   return `${name.substring(0, 2)}***@${domain}`;
 }
 
+async function getOrCreateDbUser(reqUser) {
+  if (!reqUser || !reqUser.uid) return null;
+  const firebaseUid = reqUser.uid;
+  const email = reqUser.email ? reqUser.email.trim().toLowerCase() : null;
+  const name = reqUser.name || reqUser.displayName || 'User MyFinance';
+  const { withRetry } = require('../services/db');
+
+  let user = await withRetry(() => prisma.user.findUnique({
+    where: { firebaseUid }
+  }));
+
+  if (!user && email) {
+    user = await withRetry(() => prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } }
+    }));
+    if (user) {
+      try {
+        user = await withRetry(() => prisma.user.update({
+          where: { id: user.id },
+          data: { firebaseUid }
+        }));
+      } catch (e) {
+        console.warn('Relink update warning in 2FA:', e.message);
+      }
+    }
+  }
+
+  if (!user) {
+    const userEmail = email || `${firebaseUid}@myfinance.app`;
+    try {
+      user = await withRetry(() => prisma.user.create({
+        data: {
+          firebaseUid,
+          email: userEmail,
+          name: name
+        }
+      }));
+    } catch (e) {
+      console.error('Failed auto-creating user in 2FA:', e.message);
+    }
+  }
+
+  return user;
+}
+
 exports.createSession = async (req, res) => {
   const { idToken } = req.body;
 
@@ -322,16 +367,11 @@ exports.verify2FAMagicLink = async (req, res) => {
  */
 exports.requestEnable2FA = async (req, res) => {
   try {
-    const firebaseUid = req.user?.uid;
-    const { withRetry } = require('../services/db');
-
-    if (!firebaseUid) {
+    if (!req.user?.uid) {
       return res.status(401).json({ error: 'Otentikasi diperlukan.' });
     }
 
-    const user = await withRetry(() => prisma.user.findUnique({
-      where: { firebaseUid }
-    }));
+    const user = await getOrCreateDbUser(req.user);
 
     if (!user) {
       return res.status(404).json({ error: 'User tidak ditemukan.' });
@@ -418,17 +458,13 @@ exports.confirmEnable2FA = async (req, res) => {
  */
 exports.requestDisable2FA = async (req, res) => {
   try {
-    const firebaseUid = req.user?.uid;
     const { password } = req.body || {};
-    const { withRetry } = require('../services/db');
 
-    if (!firebaseUid) {
+    if (!req.user?.uid) {
       return res.status(401).json({ error: 'Otentikasi diperlukan.' });
     }
 
-    const user = await withRetry(() => prisma.user.findUnique({
-      where: { firebaseUid }
-    }));
+    const user = await getOrCreateDbUser(req.user);
 
     if (!user) {
       return res.status(404).json({ error: 'User tidak ditemukan.' });

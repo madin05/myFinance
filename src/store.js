@@ -63,13 +63,7 @@ export const store = {
       }
 
       if (Array.isArray(dbTxs)) {
-        if (dbTxs.length > 0) {
-          this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
-        } else if (this.transactions.length > 0) {
-          this.syncTransactionsToDB();
-        } else {
-          this.transactions = [];
-        }
+        this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
       }
 
       if (Array.isArray(dbBudgets)) {
@@ -77,21 +71,11 @@ export const store = {
       }
 
       if (Array.isArray(dbSavings)) {
-        if (dbSavings.length > 0) {
-          this.savings = dbSavings.map(_mapSavingData);
-        } else if (this.savings.length > 0) {
-          this.syncSavingsToDB();
-        } else {
-          this.savings = [];
-        }
+        this.savings = dbSavings.map(_mapSavingData);
       }
 
       if (Array.isArray(dbAccounts)) {
-        if (dbAccounts.length > 0) {
-          this.saldos = dbAccounts.map(_mapAccountData);
-        } else if (this.saldos.length > 0) {
-          this.syncSaldosToDB();
-        }
+        this.saldos = dbAccounts.map(_mapAccountData);
       }
     } catch (err) {
       console.error("Sync Error:", err);

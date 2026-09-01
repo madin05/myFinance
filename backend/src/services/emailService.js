@@ -674,4 +674,78 @@ exports.send2FAOtpEmail = async (email, otpCode) => {
   console.log(`✅ 2FA OTP email sent to: ${email}`);
 };
 
+/**
+ * Kirim email OTP 6-digit untuk konfirmasi Hapus Akun.
+ */
+exports.sendDeleteAccountOtpEmail = async (email, otpCode) => {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('GMAIL_USER atau GMAIL_APP_PASSWORD belum dikonfigurasi di .env');
+  }
+
+  const transporter = getTransporter();
+
+  const mailOptions = {
+    from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: `Kode OTP Hapus Akun MyFinance: ${otpCode}`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kode OTP Hapus Akun MyFinance</title>
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#ef4444,#dc2626);padding:32px 36px;text-align:center;">
+                    <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">
+                      Peringatan Hapus Akun
+                    </h1>
+                    <p style="margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:13px;">
+                      Konfirmasi Penghapusan Data Permanen
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:36px;text-align:center;">
+                    <p style="margin:0 0 16px;color:#64748b;font-size:14px;line-height:1.6;">
+                      Gunakan 6-digit kode OTP berikut untuk mengonfirmasi penghapusan akun MyFinance Anda:
+                    </p>
+
+                    <!-- Large OTP Box -->
+                    <div style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px 24px;margin:16px 0;display:inline-block;letter-spacing:10px;font-size:32px;font-weight:800;color:#dc2626;font-family:monospace;">
+                      ${otpCode}
+                    </div>
+
+                    <p style="margin:16px 0 0;color:#ef4444;font-size:13px;font-weight:600;">
+                      Kode ini berlaku selama 5 menit. Jika Anda tidak pernah meminta penghapusan akun, segera ubah kata sandi Anda.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#f8fafc;padding:16px 36px;border-top:1px solid #e2e8f0;text-align:center;">
+                    <p style="margin:0;color:#94a3b8;font-size:12px;">
+                      © 2026 MyFinance · Sistem Keamanan Akun
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`✅ Delete Account OTP email sent to: ${email}`);
+};
+
+
 

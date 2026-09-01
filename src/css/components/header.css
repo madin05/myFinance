@@ -390,14 +390,14 @@
 }
 
 .notif-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
+  background: transparent !important;
 }
 
 .notif-content {

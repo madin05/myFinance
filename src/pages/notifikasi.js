@@ -28,7 +28,7 @@ export function renderNotifikasi() {
     let html = `
       <div class="page-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h1 class="page-title" style="font-size: 1.5rem; margin: 0;">Pusat Notifikasi</h1>
+          <h1 class="page-title" style="font-size: 1.5rem; margin: 0;">Notifikasi</h1>
         </div>
         
         <div style="display: flex; align-items: center; gap: 0.75rem;">

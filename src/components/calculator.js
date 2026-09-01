@@ -1,4 +1,5 @@
 import { formatRupiah } from '../store.js';
+import { bindModalEvents } from './modal/modalCore.js';
 
 // State management
 const state = {
@@ -44,63 +45,81 @@ export function openCalculator() {
   const modalContainer = document.getElementById('modal-container');
   if (!modalContainer) return;
 
-  const calcCard = document.createElement('div');
-  calcCard.className = 'modal-card';
-  calcCard.id = 'calc-card';
-  calcCard.style.cssText = 'position: fixed; top: 150px; right: 40px; width: 340px; height: 510px; min-width: 300px; min-height: 460px; max-width: 600px; max-height: 850px; padding: 1.5rem; border-radius: var(--radius-xl); background: var(--card-bg); box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 2000; user-select: none; overflow: hidden; display: flex; flex-direction: column;';
+  const isMobile = window.innerWidth <= 768;
 
-  calcCard.innerHTML = `
-    <div id="calc-drag-handle" style="margin: -0.75rem -0.75rem 1.25rem -0.75rem; padding: 0.75rem 0.75rem 0.25rem 0.75rem; cursor: move; user-select: none; display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0;">
-      <div style="width: 42px; height: 5px; background: var(--border); border-radius: 10px; margin: 0 auto; opacity: 0.6; pointer-events: none;"></div>
-      <div style="display: flex; justify-content: space-between; align-items: center; pointer-events: none;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
-          <i class="ph-fill ph-calculator" style="font-size: 1.5rem;"></i>
-          <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; color: var(--text-main);">Kalkulator</h3>
+  const overlayEl = document.createElement('div');
+  overlayEl.className = 'modal-overlay';
+  overlayEl.id = 'calc-overlay';
+  if (!isMobile) {
+    overlayEl.style.cssText = 'background: transparent !important; pointer-events: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;';
+  }
+
+  const cardStyle = isMobile
+    ? 'position: fixed; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 100vw; height: auto; max-height: 90vh; padding: 1rem 1.5rem 2rem; border-radius: 28px 28px 0 0; background: var(--card-bg); box-shadow: 0 -10px 40px rgba(0,0,0,0.35); border-top: 1px solid var(--border); border-left: none; border-right: none; border-bottom: none; z-index: 2500; user-select: none; overflow: hidden; display: flex; flex-direction: column; pointer-events: auto;'
+    : 'position: fixed; top: 150px; right: 40px; width: 340px; height: 510px; min-width: 300px; min-height: 460px; max-width: 600px; max-height: 850px; padding: 1.5rem; border-radius: var(--radius-xl); background: var(--card-bg); box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 2000; user-select: none; overflow: hidden; display: flex; flex-direction: column; pointer-events: auto;';
+
+  overlayEl.innerHTML = `
+    <div class="modal-card" id="calc-card" style="${cardStyle}">
+      <div id="calc-drag-handle" style="margin: -0.75rem -0.75rem 1.25rem -0.75rem; padding: 0.75rem 0.75rem 0.25rem 0.75rem; cursor: move; user-select: none; display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0;">
+        <div style="width: 42px; height: 5px; background: var(--border); border-radius: 10px; margin: 0 auto; opacity: 0.6; pointer-events: none;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; pointer-events: none;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
+            <i class="ph-fill ph-calculator" style="font-size: 1.5rem;"></i>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; color: var(--text-main);">Kalkulator</h3>
+          </div>
+          <button class="icon-btn" id="btn-close-calc" style="background: var(--border-light); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; pointer-events: auto;"><i class="ph ph-x"></i></button>
         </div>
-        <button class="icon-btn" id="btn-close-calc" style="background: var(--border-light); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; pointer-events: auto;"><i class="ph ph-x"></i></button>
       </div>
-    </div>
 
-    <div style="background: var(--bg-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border-light); text-align: right; min-height: 85px; display: flex; flex-direction: column; justify-content: space-between; word-break: break-all; flex-shrink: 0; position: relative;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-        <div id="calc-history" style="font-size: 0.8rem; color: var(--text-muted); min-height: 1.2rem; letter-spacing: 0.05em; text-align: left; flex: 1;"></div>
-        <button id="btn-copy-calc" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; border-radius: 6px;" title="Copy (Ctrl+C)" onmouseover="this.style.color='var(--primary)'; this.style.background='var(--border-light)';" onmouseout="this.style.color='var(--text-muted)'; this.style.background='none';">
-          <i class="ph ph-copy" style="font-size: 1.1rem;"></i>
-        </button>
+      <div style="background: var(--bg-color); border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; border: 1px solid var(--border-light); text-align: right; min-height: 85px; display: flex; flex-direction: column; justify-content: space-between; word-break: break-all; flex-shrink: 0; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+          <div id="calc-history" style="font-size: 0.8rem; color: var(--text-muted); min-height: 1.2rem; letter-spacing: 0.05em; text-align: left; flex: 1;"></div>
+          <button id="btn-copy-calc" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; border-radius: 6px;" title="Copy (Ctrl+C)" onmouseover="this.style.color='var(--primary)'; this.style.background='var(--border-light)';" onmouseout="this.style.color='var(--text-muted)'; this.style.background='none';">
+            <i class="ph ph-copy" style="font-size: 1.1rem;"></i>
+          </button>
+        </div>
+        <div id="calc-display" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.1; margin-top: 4px;">0</div>
       </div>
-      <div id="calc-display" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.1; margin-top: 4px;">0</div>
-    </div>
 
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); gap: 0.75rem; flex: 1;">
-      ${BUTTONS.map(b => `<button class="btn-calc ${b.class}" data-val="${b.val}" style="${b.style || ''}">${b.label}</button>`).join('')}
-    </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); gap: 0.75rem; flex: 1;">
+        ${BUTTONS.map(b => `<button class="btn-calc ${b.class}" data-val="${b.val}" style="${b.style || ''}">${b.label}</button>`).join('')}
+      </div>
 
-    <div id="calc-resize-handle" style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; cursor: se-resize; display: flex; align-items: flex-end; justify-content: flex-end; padding: 6px; z-index: 2001; -webkit-tap-highlight-color: transparent;">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="opacity: 0.6; pointer-events: none;">
-        <path d="M10 2L2 10M10 6L6 10M10 9L9 10" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </div>
+      <div id="calc-resize-handle" style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; cursor: se-resize; display: flex; align-items: flex-end; justify-content: flex-end; padding: 6px; z-index: 2001; -webkit-tap-highlight-color: transparent;">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="opacity: 0.6; pointer-events: none;">
+          <path d="M10 2L2 10M10 6L6 10M10 9L9 10" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
 
-    <style>
-      .btn-calc {
-        height: 100%; width: 100%; border: none; background: var(--border-light);
-        color: var(--text-main); font-size: clamp(0.95rem, 0.85rem + 0.8vh, 1.45rem);
-        font-weight: 500; border-radius: 12px; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
-      }
-      .btn-calc:hover { transform: scale(1.03); filter: brightness(0.95); }
-      .btn-calc:active { transform: scale(0.97); }
-      [data-theme="dark"] .btn-calc { background: rgba(255, 255, 255, 0.05); }
-      [data-theme="dark"] .btn-calc:hover { background: rgba(255, 255, 255, 0.1); }
-    </style>
+      <style>
+        .btn-calc {
+          height: 100%; width: 100%; border: none; background: var(--border-light);
+          color: var(--text-main); font-size: clamp(0.95rem, 0.85rem + 0.8vh, 1.45rem);
+          font-weight: 500; border-radius: 12px; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
+        }
+        .btn-calc:hover { transform: scale(1.03); filter: brightness(0.95); }
+        .btn-calc:active { transform: scale(0.97); }
+        [data-theme="dark"] .btn-calc { background: rgba(255, 255, 255, 0.05); }
+        [data-theme="dark"] .btn-calc:hover { background: rgba(255, 255, 255, 0.1); }
+      </style>
+    </div>
   `;
 
-  modalContainer.appendChild(calcCard);
+  modalContainer.appendChild(overlayEl);
+
+  const calcCard = document.getElementById('calc-card');
 
   resetState();
   updateDisplay();
 
-  document.getElementById('btn-close-calc').onclick = closeCalculator;
+  bindModalEvents(modalContainer, 'calc-overlay', ['btn-close-calc'], closeCalculator);
+
+  requestAnimationFrame(() => {
+    overlayEl.classList.add('active');
+    calcCard?.classList.add('active');
+  });
+
   calcCard.querySelectorAll('.btn-calc').forEach(btn => {
     btn.onclick = () => handleButton(btn.getAttribute('data-val'));
   });
@@ -116,15 +135,26 @@ export function openCalculator() {
 
 export function closeCalculator() {
   state.isOpen = false;
+  const calcOverlay = document.getElementById('calc-overlay');
   const calcCard = document.getElementById('calc-card');
-  if (calcCard) {
-    calcCard.classList.add('closing');
-    setTimeout(() => {
-      calcCard.remove();
-    }, 210);
-  } else {
-    document.getElementById('calc-card')?.remove();
+
+  if (calcOverlay) {
+    calcOverlay.classList.remove('active');
+    calcOverlay.classList.add('closing');
   }
+  if (calcCard) {
+    calcCard.classList.remove('active');
+    calcCard.classList.add('closing');
+  }
+
+  setTimeout(() => {
+    calcOverlay?.remove();
+    const modalContainer = document.getElementById('modal-container');
+    if (modalContainer && modalContainer.children.length === 0) {
+      modalContainer.innerHTML = '';
+    }
+  }, 250);
+
   window.removeEventListener('keydown', handleKeyboard);
   window.removeEventListener('paste', handlePaste);
   window.removeEventListener('copy', handleCopy);
@@ -145,7 +175,7 @@ function getPointerPos(e) {
 }
 
 function makeDraggable(el, handle) {
-  if (!handle) return;
+  if (!handle || window.innerWidth <= 768) return;
   let startX = 0, startY = 0;
 
   const onStart = (e) => {
@@ -189,7 +219,7 @@ function makeDraggable(el, handle) {
 }
 
 function makeResizable(el, handle) {
-  if (!handle) return;
+  if (!handle || window.innerWidth <= 768) return;
 
   const onStart = (e) => {
     e.preventDefault();

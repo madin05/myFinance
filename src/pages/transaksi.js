@@ -4,6 +4,21 @@ import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 import { initStickyHeader, getCategoryIconUrl } from '../utils.js';
 import { showToast } from '../components/notifications.js';
 
+const KATEGORI_LIST = [
+  'Makanan & Minuman',
+  'Transportasi',
+  'Belanja',
+  'Tagihan',
+  'Hiburan',
+  'Kesehatan',
+  'Pendidikan',
+  'Investasi & Tabungan',
+  'Gaji & Pendapatan',
+  'Lain-lain'
+];
+
+const METODE_LIST = ['Cash', 'E-Wallet', 'Bank Transfer', 'Kartu Kredit'];
+
 let filterState = {
   type: 'all',
   month: 'all',
@@ -20,10 +35,26 @@ export function renderTransaksi() {
   if (!container) return;
   
   const uniqueYears = [...new Set(store.transactions.map(tx => new Date(tx.tanggal).getFullYear()))].sort((a,b) => b-a);
-  const uniqueKategori = [...new Set(store.transactions.map(tx => tx.kategori))].sort();
-  const uniqueMetode = [...new Set(store.transactions.map(tx => tx.metode))].sort();
+  
+  // Pastikan semua kategori standar tersedia di dropdown filter
+  const allKategori = [...new Set([
+    ...KATEGORI_LIST,
+    ...store.transactions.map(tx => tx.kategori).filter(Boolean)
+  ])].sort((a, b) => a.localeCompare(b, 'id'));
+
+  const allMetode = [...new Set([
+    ...METODE_LIST,
+    ...store.transactions.map(tx => tx.metode).filter(Boolean)
+  ])].sort((a, b) => a.localeCompare(b, 'id'));
   
   const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+  const hasActiveFilter = filterState.type !== 'all' || 
+    filterState.month !== 'all' || 
+    filterState.year !== 'all' || 
+    filterState.kategori !== 'all' || 
+    filterState.metode !== 'all' || 
+    filterState.priceValue !== '';
 
   container.innerHTML = `
     <div class="transactions-section">
@@ -32,94 +63,104 @@ export function renderTransaksi() {
           <h3>Daftar Transaksi</h3>
           <div style="display: flex; gap: 0.75rem; align-items: center;">
             <div style="position: relative;" id="filter-container">
-              <button class="btn filter-btn" id="btn-filter-popover" title="Filter Transaksi">
+              <button class="btn filter-btn ${hasActiveFilter ? 'active-filter' : ''}" id="btn-filter-popover" title="Filter Transaksi">
                 <i class="ph ph-funnel"></i>
               </button>
               
               <div class="filter-popover" id="filter-popover" style="display: none;">
-              <!-- Tipe Section -->
-              <div class="popover-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                Tipe Transaksi
-                <button class="mobile-only icon-btn" id="close-filter-mobile" style="width: 32px; height: 32px; margin-top: -8px;">
-                  <i class="ph ph-x"></i>
-                </button>
-              </div>
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
-                <button class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Semua</button>
-                <button class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Masuk</button>
-                <button class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Keluar</button>
-                <button class="popover-item ${filterState.type === 'transfer' ? 'active' : ''}" data-type="transfer" style="flex: 1; min-width: 60px; padding: 10px; font-size: 0.85rem; justify-content: center;">Transfer</button>
-              </div>
+                <!-- Header Popover -->
+                <div class="popover-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 2px;">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+                    <i class="ph ph-funnel" style="color: var(--primary);"></i> Filter Transaksi
+                  </span>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" id="btn-reset-filter" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
+                      Reset
+                    </button>
+                    <button type="button" class="mobile-only icon-btn" id="close-filter-mobile" style="width: 28px; height: 28px; min-width: 28px; padding: 0;">
+                      <i class="ph ph-x"></i>
+                    </button>
+                  </div>
+                </div>
 
-              <!-- Waktu Section -->
-              <div class="popover-header">Waktu</div>
-              <div class="form-row" style="gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div class="form-group" style="margin-bottom: 0; flex: 1.2;">
-                  <select class="form-control" id="filter-month" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                    <option value="all" ${filterState.month === 'all' ? 'selected' : ''}>Bulan</option>
-                    ${monthNames.map((m, i) => `<option value="${i}" ${filterState.month == i ? 'selected' : ''}>${m}</option>`).join('')}
-                  </select>
+                <!-- Tipe Section -->
+                <div class="popover-header" style="padding-left: 0;">Tipe Transaksi</div>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                  <button type="button" class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Semua</button>
+                  <button type="button" class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Masuk</button>
+                  <button type="button" class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Keluar</button>
+                  <button type="button" class="popover-item ${filterState.type === 'transfer' ? 'active' : ''}" data-type="transfer" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Transfer</button>
                 </div>
-                <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                  <select class="form-control" id="filter-year" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                    <option value="all" ${filterState.year === 'all' ? 'selected' : ''}>Tahun</option>
-                    ${uniqueYears.map(y => `<option value="${y}" ${filterState.year == y ? 'selected' : ''}>${y}</option>`).join('')}
-                  </select>
-                </div>
-              </div>
 
-              <!-- Kategori & Metode Section -->
-              <div class="popover-header">Kategori & Metode</div>
-              <div class="form-row" style="gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                  <select class="form-control" id="filter-kategori" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                    <option value="all" ${filterState.kategori === 'all' ? 'selected' : ''}>Semua Kategori</option>
-                    ${uniqueKategori.map(k => `<option value="${k}" ${filterState.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
-                  </select>
+                <!-- Waktu Section -->
+                <div class="popover-header" style="padding-left: 0;">Waktu</div>
+                <div class="form-row" style="gap: 0.75rem; margin-bottom: 1.25rem;">
+                  <div class="form-group" style="margin-bottom: 0; flex: 1.2;">
+                    <select class="form-control" id="filter-month" style="padding: 10px; font-size: 0.85rem; height: 42px;">
+                      <option value="all" ${filterState.month === 'all' ? 'selected' : ''}>Bulan</option>
+                      ${monthNames.map((m, i) => `<option value="${i}" ${filterState.month == i ? 'selected' : ''}>${m}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                    <select class="form-control" id="filter-year" style="padding: 10px; font-size: 0.85rem; height: 42px;">
+                      <option value="all" ${filterState.year === 'all' ? 'selected' : ''}>Tahun</option>
+                      ${uniqueYears.map(y => `<option value="${y}" ${filterState.year == y ? 'selected' : ''}>${y}</option>`).join('')}
+                    </select>
+                  </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                  <select class="form-control" id="filter-metode" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                    <option value="all" ${filterState.metode === 'all' ? 'selected' : ''}>Semua Metode</option>
-                    ${uniqueMetode.map(m => `<option value="${m}" ${filterState.metode === m ? 'selected' : ''}>${m}</option>`).join('')}
-                  </select>
-                </div>
-              </div>
 
-              <!-- Harga Section -->
-              <div class="popover-header">Nominal</div>
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <select class="form-control" id="filter-price-operator" style="width: 80px; padding: 10px; font-size: 0.85rem; height: 42px; flex-shrink: 0;">
-                  <option value="gt" ${filterState.priceOperator === 'gt' ? 'selected' : ''}>&ge;</option>
-                  <option value="lt" ${filterState.priceOperator === 'lt' ? 'selected' : ''}>&le;</option>
-                </select>
-                <input type="text" class="form-control" id="filter-price-value" placeholder="Nominal..." style="padding: 10px; font-size: 0.85rem; height: 42px;" value="${filterState.priceValue ? new Intl.NumberFormat('id-ID').format(filterState.priceValue) : ''}">
+                <!-- Kategori & Metode Section -->
+                <div class="popover-header" style="padding-left: 0;">Kategori & Metode</div>
+                <div class="form-row" style="gap: 0.75rem; margin-bottom: 1.25rem;">
+                  <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                    <select class="form-control" id="filter-kategori" style="padding: 10px; font-size: 0.85rem; height: 42px;">
+                      <option value="all" ${filterState.kategori === 'all' ? 'selected' : ''}>Semua Kategori</option>
+                      ${allKategori.map(k => `<option value="${k}" ${filterState.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                    <select class="form-control" id="filter-metode" style="padding: 10px; font-size: 0.85rem; height: 42px;">
+                      <option value="all" ${filterState.metode === 'all' ? 'selected' : ''}>Semua Metode</option>
+                      ${allMetode.map(m => `<option value="${m}" ${filterState.metode === m ? 'selected' : ''}>${m}</option>`).join('')}
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Harga Section -->
+                <div class="popover-header" style="padding-left: 0;">Nominal</div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <select class="form-control" id="filter-price-operator" style="width: 80px; padding: 10px; font-size: 0.85rem; height: 42px; flex-shrink: 0;">
+                    <option value="gt" ${filterState.priceOperator === 'gt' ? 'selected' : ''}>&ge;</option>
+                    <option value="lt" ${filterState.priceOperator === 'lt' ? 'selected' : ''}>&le;</option>
+                  </select>
+                  <input type="text" class="form-control" id="filter-price-value" placeholder="Nominal..." style="padding: 10px; font-size: 0.85rem; height: 42px;" value="${filterState.priceValue ? new Intl.NumberFormat('id-ID').format(filterState.priceValue) : ''}">
+                </div>
               </div>
             </div>
+            <button class="btn btn-primary" id="btn-tambah-page"><i class="ph ph-plus"></i> Tambah</button>
           </div>
-          <button class="btn btn-primary" id="btn-tambah-page"><i class="ph ph-plus"></i> Tambah</button>
         </div>
       </div>
-    </div>
-      
-    <div class="table-container">
-        <table class="transactions-table">
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Kategori</th>
-              <th>Metode</th>
-              <th>Keterangan</th>
-              <th class="text-right">Harga</th>
-              <th class="text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tx-table-body">
-            <!-- Table rows will be rendered here -->
-          </tbody>
-        </table>
+        
+      <div class="table-container">
+          <table class="transactions-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Kategori</th>
+                <th>Metode</th>
+                <th>Keterangan</th>
+                <th class="text-right">Harga</th>
+                <th class="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tx-table-body">
+              <!-- Table rows will be rendered here -->
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  `;
+    `;
 
   const popoverBtn = container.querySelector('#btn-filter-popover');
   const popover = container.querySelector('#filter-popover');
@@ -140,6 +181,23 @@ export function renderTransaksi() {
   if (closeFilterMobile) {
     closeFilterMobile.onclick = () => {
       popover.style.display = 'none';
+    };
+  }
+
+  const resetBtn = container.querySelector('#btn-reset-filter');
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      filterState = {
+        type: 'all',
+        month: 'all',
+        year: 'all',
+        priceOperator: 'gt',
+        priceValue: '',
+        kategori: 'all',
+        metode: 'all',
+        searchQuery: filterState.searchQuery
+      };
+      renderTransaksi();
     };
   }
 
@@ -226,7 +284,9 @@ function renderTableBody(container) {
     const matchType = filterState.type === 'all' || tx.type === filterState.type;
     const matchMonth = filterState.month === 'all' || txDate.getMonth() == filterState.month;
     const matchYear = filterState.year === 'all' || txDate.getFullYear() == filterState.year;
-    const matchKategori = filterState.kategori === 'all' || (tx.kategori || '').includes(filterState.kategori);
+    const matchKategori = filterState.kategori === 'all' || 
+      (tx.kategori || '').toLowerCase().trim() === filterState.kategori.toLowerCase().trim() ||
+      (tx.kategori || '').toLowerCase().includes(filterState.kategori.toLowerCase());
     const matchMetode = filterState.metode === 'all' || tx.metode === filterState.metode;
     const matchSearch = !filterState.searchQuery || (tx.keterangan || '').toLowerCase().includes(filterState.searchQuery);
     

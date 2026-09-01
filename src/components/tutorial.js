@@ -1,74 +1,17 @@
 // src/components/tutorial.js
 import { store } from '../store.js';
 import { navigateTo } from '../router.js';
+import { TUTORIAL_STORAGE_KEY, TUTORIAL_TIMING, TUTORIAL_STEPS } from './tutorial/tutorialSteps.js';
+import { calculateHighlightGeometry, calculateCardPosition } from './tutorial/tutorialPositioning.js';
+import {
+  lockUserScroll,
+  unlockUserScroll,
+  findTutorialTarget,
+  createTutorialElements,
+  cleanupTutorialElements
+} from './tutorial/tutorialDom.js';
 
-const TUTORIAL_STORAGE_KEY = 'myfinance_tutorial_completed';
-
-export const TUTORIAL_TIMING = {
-  ROUTE_CHANGE_DELAY: 120,
-  SYNC_FRAME_DURATION: 400,
-  EXIT_CLEANUP_DELAY: 350,
-};
-
-const TUTORIAL_STEPS = [
-  {
-    target: 'label.fam-trigger, .bottom-nav-fab-btn',
-    route: '/dashboard',
-    title: 'Tambah Transaksi Instan',
-    desc: 'Klik tombol bulat melayang ini kapan saja untuk mencatat transaksi baru, scan struk AI, atau kalkulator.'
-  },
-  {
-    target: '#card-total-saldo',
-    route: '/dashboard',
-    title: 'Ringkasan Saldo Saat Ini',
-    desc: 'Pantau akumulasi seluruh saldo kas, dompet digital, dan rekening bank aktif Anda secara real-time.'
-  },
-  {
-    target: '#card-pemasukan',
-    route: '/dashboard',
-    title: 'Total Pemasukan Bulan Ini',
-    desc: 'Lihat jumlah akumulasi uang masuk bulan ini beserta persentase perbandingannya.'
-  },
-  {
-    target: '#card-pengeluaran',
-    route: '/dashboard',
-    title: 'Total Pengeluaran Bulan Ini',
-    desc: 'Lihat jumlah akumulasi uang keluar bulan ini beserta grafik persentase penggunaan dana.'
-  },
-  {
-    target: '.transactions-section .table-container, .transactions-table',
-    route: '/dashboard',
-    fallback: '.transactions-section',
-    title: 'Daftar Transaksi Terakhir',
-    desc: 'Daftar 4 transaksi terbaru yang Anda catat. Klik "Lihat Semua" untuk melihat seluruh riwayat lengkap.'
-  },
-  {
-    target: '.ai-banner-card, .smart-ai-input-container, #smart-ai-input',
-    route: '/dashboard',
-    title: 'Asisten Keuangan Cerdas AI',
-    desc: 'Catat transaksi dengan bahasa sehari-hari (misal: "gajian 5jt hari ini cash") atau tanyakan analisis keuanganmu.'
-  },
-  {
-    target: '.widgets-section .widget-card:first-child',
-    route: '/dashboard',
-    fallback: '.widgets-section',
-    title: 'Ringkasan Anggaran Bulan Ini',
-    desc: 'Pantau sisa limit anggaran bulanan per kategori agar pengeluaran Anda tidak kebablasan.'
-  },
-  {
-    target: '.widget-card.widget-primary',
-    route: '/dashboard',
-    fallback: '.widgets-section',
-    title: 'Target Wishlist & Tabungan',
-    desc: 'Pantau progres pencapaian barang impian dan tabungan Anda langsung dari dashboard.'
-  },
-  {
-    target: '#notif-trigger',
-    route: '/dashboard',
-    title: 'Pusat Notifikasi',
-    desc: 'Dapatkan peringatan otomatis saat pengeluaran mendekati atau melampaui limit anggaran.'
-  }
-];
+export { TUTORIAL_TIMING };
 
 let currentStepIndex = 0;
 let overlayEl = null;
@@ -80,35 +23,34 @@ let rafPositionId = null;
 let storeUpdateHandler = null;
 let isStepTransitioning = false;
 
-const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
-
-function preventScrollListener(e) {
-  if (e.type === 'keydown' && SCROLL_KEYS.has(e.key)) {
-    e.preventDefault();
-  } else if (e.type === 'wheel' || e.type === 'touchmove') {
-    e.preventDefault();
-  }
-}
-
-function lockUserScroll() {
-  window.addEventListener('wheel', preventScrollListener, { passive: false });
-  window.addEventListener('touchmove', preventScrollListener, { passive: false });
-  window.addEventListener('keydown', preventScrollListener, { passive: false });
-}
-
-function unlockUserScroll() {
-  window.removeEventListener('wheel', preventScrollListener);
-  window.removeEventListener('touchmove', preventScrollListener);
-  window.removeEventListener('keydown', preventScrollListener);
-}
+import { auth } from '../firebase-config.js';
 
 export async function startProductTutorial(force = false) {
-  const userId = store.user?.uid || 'guest';
-  const key = `${TUTORIAL_STORAGE_KEY}_${userId}`;
+  const userId = store.user?.uid || auth.currentUser?.uid;
+  if (!userId && !force) return;
 
-  if (!force && localStorage.getItem(key)) return;
+  const key = `${TUTORIAL_STORAGE_KEY}_${userId || 'guest'}`;
 
-  // Jika dipicu dari halaman lain (misal FAQ / Sidebar), pindah ke dashboard lebih dulu
+  if (!force) {
+    // 1. Check if already completed in localStorage for this user
+    if (localStorage.getItem(key)) return;
+
+    // 2. Tutorial is strictly for BRAND NEW registered users.
+    // If user has existing financial data or is not explicitly a new registration, skip tutorial.
+    const hasExistingData = Boolean(
+      (store.transactions && store.transactions.length > 0) ||
+      (store.saldos && store.saldos.length > 0) ||
+      (store.wishlists && store.wishlists.length > 0) ||
+      (store.budgets && store.budgets.length > 0)
+    );
+
+    if (hasExistingData || !store.user?.isNewUser) {
+      localStorage.setItem(key, 'true');
+      return;
+    }
+  }
+
+  // Jump to dashboard if tutorial is triggered from another view (e.g., FAQ / Sidebar)
   const currentPath = window.location.pathname || '/dashboard';
   if (currentPath !== '/dashboard' && currentPath !== '/') {
     navigateTo('/dashboard');
@@ -149,32 +91,10 @@ function createTutorialDOM() {
   };
   window.addEventListener('store-updated', storeUpdateHandler);
 
-  overlayEl = document.createElement('div');
-  overlayEl.className = 'tutorial-overlay-container';
-  overlayEl.innerHTML = `
-    <svg class="tutorial-svg-bg" width="100%" height="100%">
-      <defs>
-        <mask id="tutorial-mask-cutout">
-          <rect x="0" y="0" width="100%" height="100%" fill="white" />
-          <rect id="tutorial-mask-hole" x="0" y="0" width="0" height="0" rx="14" ry="14" fill="black" />
-        </mask>
-      </defs>
-      <rect x="0" y="0" width="100%" height="100%" fill="rgba(8, 10, 20, 0.82)" mask="url(#tutorial-mask-cutout)" />
-    </svg>
-  `;
-  document.body.appendChild(overlayEl);
-
-  spotlightEl = document.createElement('div');
-  spotlightEl.className = 'tutorial-spotlight';
-  document.body.appendChild(spotlightEl);
-
-  cardEl = document.createElement('div');
-  cardEl.className = 'tutorial-card';
-  document.body.appendChild(cardEl);
-
-  requestAnimationFrame(() => {
-    overlayEl?.classList.add('active');
-  });
+  const els = createTutorialElements();
+  overlayEl = els.overlayEl;
+  spotlightEl = els.spotlightEl;
+  cardEl = els.cardEl;
 }
 
 function restoreActiveTarget() {
@@ -220,22 +140,15 @@ function updateHighlightPosition() {
   if (!overlayEl || !spotlightEl) return;
 
   const step = TUTORIAL_STEPS[currentStepIndex];
+  if (!step) return;
 
-  // Re-query target node if activeTargetNode is missing or detached from DOM (e.g. store-updated re-render)
+  // Re-query target node if activeTargetNode is missing or detached from DOM
   if (!activeTargetNode || !activeTargetNode.isConnected) {
-    if (step) {
-      let targetNode = findVisibleTarget(step.target);
-      if (!targetNode && step.fallback) targetNode = findVisibleTarget(step.fallback);
-      if (!targetNode && step.target?.includes('data-route')) targetNode = findVisibleTarget('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
-      if (!targetNode) targetNode = document.querySelector('.main-content, #page-content');
-
-      if (targetNode) {
-        if (activeTargetNode) activeTargetNode.classList.remove('tutorial-target-active');
-        activeTargetNode = targetNode;
-        activeTargetNode.classList.add('tutorial-target-active');
-      } else {
-        return;
-      }
+    const targetNode = findTutorialTarget(step);
+    if (targetNode) {
+      if (activeTargetNode) activeTargetNode.classList.remove('tutorial-target-active');
+      activeTargetNode = targetNode;
+      activeTargetNode.classList.add('tutorial-target-active');
     } else {
       return;
     }
@@ -244,36 +157,10 @@ function updateHighlightPosition() {
   const rect = activeTargetNode.getBoundingClientRect();
   if (rect.width === 0 && rect.height === 0) return;
 
-  const computedStyle = window.getComputedStyle(activeTargetNode);
-  const rawRadius = computedStyle.borderRadius || '12px';
-  const parsedRadius = parseFloat(rawRadius) || 12;
+  const geo = calculateHighlightGeometry(activeTargetNode, rect);
+  if (!geo) return;
 
-  const isCircle = (rawRadius.includes('50%') && rect.width < 120) || 
-                   activeTargetNode.classList.contains('fam-trigger') ||
-                   activeTargetNode.classList.contains('bottom-nav-fab-btn') ||
-                   activeTargetNode.classList.contains('icon-btn') ||
-                   activeTargetNode.id === 'notif-trigger' ||
-                   (rect.width < 90 && rect.height < 90 && Math.abs(rect.width - rect.height) < 12 && (parsedRadius >= 20 || rawRadius.includes('50%')));
-
-  const isPill = (rawRadius.includes('100px') || rawRadius.includes('999')) && rect.width > rect.height * 1.4;
-
-  const padding = 4;
-  const holeX = Math.max(0, rect.left - padding);
-  const holeY = Math.max(0, rect.top - padding);
-  const holeW = rect.width + (padding * 2);
-  const holeH = rect.height + (padding * 2);
-
-  let rxVal, spotBorderRadius;
-  if (isCircle) {
-    rxVal = `${holeW / 2}`;
-    spotBorderRadius = '50%';
-  } else if (isPill) {
-    rxVal = `${holeH / 2}`;
-    spotBorderRadius = '100px';
-  } else {
-    rxVal = `${Math.min(parsedRadius + padding, 24)}`;
-    spotBorderRadius = `${rxVal}px`;
-  }
+  const { holeX, holeY, holeW, holeH, rxVal, spotBorderRadius } = geo;
 
   const maskHole = document.getElementById('tutorial-mask-hole');
   if (maskHole) {
@@ -296,31 +183,11 @@ function updateHighlightPosition() {
   }
 }
 
-function findVisibleTarget(selector) {
-  if (!selector) return null;
-  const parts = selector.split(',').map(s => s.trim());
-  for (const part of parts) {
-    const nodes = document.querySelectorAll(part);
-    for (const el of nodes) {
-      const rect = el.getBoundingClientRect();
-      const style = window.getComputedStyle(el);
-      if (rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden') {
-        return el;
-      }
-    }
-  }
-  return null;
-}
-
 function renderStepHighlight(index) {
   const step = TUTORIAL_STEPS[index];
   if (!step) return;
 
-  let targetNode = findVisibleTarget(step.target);
-
-  if (!targetNode && step.fallback) targetNode = findVisibleTarget(step.fallback);
-  if (!targetNode && step.target?.includes('data-route')) targetNode = findVisibleTarget('#btn-open-sidebar-mobile, .hamburger, .sidebar-nav');
-  if (!targetNode) targetNode = document.querySelector('.main-content, #page-content');
+  const targetNode = findTutorialTarget(step);
 
   if (!targetNode) {
     if (index < TUTORIAL_STEPS.length - 1) showStep(index + 1);
@@ -331,7 +198,7 @@ function renderStepHighlight(index) {
   activeTargetNode = targetNode;
   targetNode.classList.add('tutorial-target-active');
 
-  // Scroll target node into view only if not already sufficiently visible in viewport, using block: 'nearest' to avoid layout shifts or empty bottom space
+  // Scroll target node into view only if not already sufficiently visible in viewport
   const rectBefore = targetNode.getBoundingClientRect();
   const vHeight = window.innerHeight || document.documentElement.clientHeight;
   const vWidth = window.innerWidth || document.documentElement.clientWidth;
@@ -433,44 +300,12 @@ function renderTooltipCard(index, targetRect) {
 
 function positionCard(targetRect) {
   if (!cardEl || !targetRect) return;
-  const isMobile = window.innerWidth <= 768;
-  const maxCardW = isMobile ? 310 : 360;
-  const cardWidth = Math.min(window.innerWidth - 32, maxCardW);
-  const cardHeight = cardEl.offsetHeight || (isMobile ? 160 : 210);
-  const margin = isMobile ? 14 : 20;
 
-  let top, left;
-  let placement = 'bottom';
-  const spaceAbove = targetRect.top;
-  const spaceBelow = window.innerHeight - targetRect.bottom;
-  const spaceLeft = targetRect.left;
-  const spaceRight = window.innerWidth - targetRect.right;
+  const pos = calculateCardPosition(targetRect, cardEl);
+  if (!pos) return;
 
-  if (spaceAbove >= cardHeight + margin && (targetRect.top > window.innerHeight * 0.55 || spaceBelow < cardHeight + margin)) {
-    top = targetRect.top - cardHeight - margin;
-    left = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
-    placement = 'top';
-  } else if (!isMobile && spaceRight >= cardWidth + margin) {
-    left = targetRect.right + margin;
-    top = targetRect.top;
-    placement = 'right';
-  } else if (!isMobile && spaceLeft >= cardWidth + margin) {
-    left = targetRect.left - cardWidth - margin;
-    top = targetRect.top;
-    placement = 'left';
-  } else {
-    top = targetRect.bottom + margin;
-    left = targetRect.left + (targetRect.width / 2) - (cardWidth / 2);
-    placement = 'bottom';
-  }
-
-  if (left < 12) left = 12;
-  if (left + cardWidth > window.innerWidth - 12) left = window.innerWidth - cardWidth - 12;
-  if (top < 12) top = 12;
-  if (top + cardHeight > window.innerHeight - 12) top = window.innerHeight - cardHeight - 12;
-
-  cardEl.style.top = `${top}px`;
-  cardEl.style.left = `${left}px`;
+  cardEl.style.top = `${pos.top}px`;
+  cardEl.style.left = `${pos.left}px`;
 
   // Dynamic Chat Bubble Arrow positioning pointing at target center
   let arrowEl = document.getElementById('tutorial-card-arrow');
@@ -486,8 +321,7 @@ function positionCard(targetRect) {
   arrowEl.style.top = '';
   arrowEl.style.bottom = '';
 
-  const targetCenterX = targetRect.left + (targetRect.width / 2);
-  const targetCenterY = targetRect.top + (targetRect.height / 2);
+  const { placement, targetCenterX, targetCenterY, left, top, cardWidth, cardHeight } = pos;
 
   if (placement === 'top') {
     arrowEl.classList.add('arrow-bottom');
@@ -523,9 +357,14 @@ function prevStep() {
 }
 
 function endTutorial(isSkip = false) {
-  const userId = store.user?.uid || 'guest';
+  const userId = store.user?.uid || auth.currentUser?.uid || 'guest';
   const key = `${TUTORIAL_STORAGE_KEY}_${userId}`;
   localStorage.setItem(key, 'true');
+
+  if (store.user && store.user.isNewUser) {
+    store.user.isNewUser = false;
+    store.save();
+  }
 
   restoreActiveTarget();
   unlockUserScroll();
@@ -557,11 +396,8 @@ function cleanupTutorialDOM() {
     storeUpdateHandler = null;
   }
 
-  if (overlayEl?.parentNode) overlayEl.parentNode.removeChild(overlayEl);
-  if (spotlightEl?.parentNode) spotlightEl.parentNode.removeChild(spotlightEl);
-  if (cardEl?.parentNode) cardEl.parentNode.removeChild(cardEl);
+  cleanupTutorialElements(overlayEl, spotlightEl, cardEl);
   overlayEl = null;
   spotlightEl = null;
   cardEl = null;
 }
-
