@@ -356,7 +356,7 @@ export function renderAkun() {
                   }
                   showAlert(
                     "2FA Dinonaktifkan",
-                    res.message || "Autentikasi 2-Langkah (2FA OTP) telah dinonaktifkan.",
+                    res.message || "Autentikasi 2-Langkah telah dinonaktifkan.",
                     "success"
                   );
                 } catch (err) {
@@ -387,7 +387,7 @@ export function renderAkun() {
               }
               showAlert(
                 "2FA Dinonaktifkan",
-                res.message || "Autentikasi 2-Langkah (2FA OTP) telah dinonaktifkan.",
+                res.message || "Autentikasi 2-Langkah telah dinonaktifkan.",
                 "success"
               );
             } catch (err) {
