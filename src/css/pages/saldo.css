@@ -52,14 +52,8 @@
 
 /* --- SALDO CARD CONTENT HORIZONTAL LAYOUT & CORNER RADIUS --- */
 .saldo-card-item {
-  border-top-left-radius: 16px !important;
-  border-top-right-radius: 16px !important;
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-}
-
-.saldo-card-item:last-child {
-  border-radius: 16px !important;
+  border-radius: 18px !important;
+  overflow: hidden;
 }
 
 .saldo-card-content {
@@ -172,16 +166,12 @@
 }
 
 .saldo-grid.list-mode .stat-card {
-  border-radius: 16px 16px 0 0 !important;
+  border-radius: 18px !important;
   padding: 0.75rem 1.15rem;
 }
 
 .saldo-grid.list-mode .stat-card:not(:first-child) {
-  margin-top: -.65rem !important;
-}
-
-.saldo-grid.list-mode .stat-card:last-child {
-  border-radius: 16px !important;
+  margin-top: -1.85rem !important;
 }
 
 /* --- MOBILE RESPONSIVE OVERRIDES --- */
@@ -202,25 +192,21 @@
     flex-direction: row;
     align-items: center;
     padding: 0.85rem 1rem;
-    border-radius: 16px 16px 0 0 !important;
-    box-shadow: 0 -7px 18px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-radius: 18px !important;
+    box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid var(--border);
-    min-height: 68px;
+    min-height: 64px;
     transform: none;
     transition: none;
   }
 
-  .saldo-grid .stat-card:last-child {
-    border-radius: 16px !important;
-  }
-
   .saldo-grid .stat-card:hover {
     transform: none;
-    box-shadow: 0 -7px 18px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   .saldo-grid .stat-card:not(:first-child) {
-    margin-top: -1.35rem !important;
+    margin-top: -2.35rem !important;
   }
 
   .saldo-card-item .account-name {
