@@ -140,6 +140,12 @@ export function openEnable2FAModal(onSuccess, onCancel) {
       submitBtn.textContent = 'Memverifikasi...';
 
       try {
+        const verifyRes = await fetch(`${API_URL}/auth/2fa/enable-confirm`, {
+          method: 'POST',
+          headers: getAuthHeaders(preAuthToken),
+          body: JSON.stringify({ otp: otpCode })
+        });
+
         let verifyData;
         try {
           verifyData = await verifyRes.json();
