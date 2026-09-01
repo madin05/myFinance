@@ -1,0 +1,1 @@
+bro fix atau sesuaikan commitan lama gw yang ada kredential yang dulu pernahkepublish digithub dong bis ga kalo iya lakukan dari commit awalmhingga terkniin, dan update security dan gitignoe yag ada  

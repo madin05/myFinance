@@ -75,7 +75,7 @@
   color: var(--white);
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,17 +107,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
-  background-color: var(--white);
-  border: 1px solid var(--border-light);
+  font-size: 1.2rem;
+  background-color: var(--bg-color);
+  border: none;
+  outline: none;
+  box-shadow: none;
   color: var(--text-muted);
+  transition: all 0.2s ease;
 }
 
-.filter-btn.btn-primary {
-  background-color: var(--primary);
-  color: var(--white);
-  box-shadow: 0 4px 15px rgba(63, 54, 229, 0.2);
-  border-color: var(--primary);
+.filter-btn:hover {
+  background-color: var(--border);
+  color: var(--text-main);
+}
+
+.filter-btn.active-filter {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .filter-popover {
@@ -481,65 +488,123 @@
   position: absolute;
 }
 
+/* --- UNIFIED NEUTRAL TOOLTIP DESIGN SYSTEM WITH CARET ARROWS --- */
+
+/* 1. Tooltip Top (Default [data-tooltip]) */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #0f172a;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 100004;
+}
+
 [data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: 100%;
+  bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%) translateY(-10px);
-  background-color: var(--white);
-  color: var(--text-main);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.7rem;
+  transform: translateX(-50%) translateY(-6px);
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
-  z-index: 1100;
-  border: 1px solid var(--border);
+  z-index: 100003;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-2px);
 }
 
 [data-tooltip]:hover::after {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(-8px);
+  transform: translateX(-50%) translateY(-2px);
 }
 
-/* Tooltip Right (for Sidebar) */
+/* 2. Tooltip Right (for Sidebar) */
 [data-tooltip-right] {
   position: relative;
+}
+
+[data-tooltip-right]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 3px);
+  transform: translateY(-50%) translateX(6px);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 6px solid #0f172a;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 100004;
 }
 
 [data-tooltip-right]::after {
   content: attr(data-tooltip-right);
   position: absolute;
   top: 50%;
-  left: calc(100% + 5px);
-  transform: translateY(-50%) translateX(10px);
-  background-color: var(--primary);
-  color: var(--white);
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 0.8rem;
+  left: calc(100% + 8px);
+  transform: translateY(-50%) translateX(6px);
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
-  z-index: 9999;
-  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 100003;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+[data-tooltip-right]:hover::before,
 [data-tooltip-right]:hover::after {
   opacity: 1;
   visibility: visible;
-  transform: translateY(-50%) translateX(15px);
+  transform: translateY(-50%) translateX(2px);
+}
+
+/* Tooltip sidebar HANYA aktif saat sidebar terlipat (collapsed). Saat sidebar terbuka (expanded), tooltip disembunyikan */
+.dashboard-container:not(.sidebar-collapsed) .sidebar [data-tooltip-right]::before,
+.dashboard-container:not(.sidebar-collapsed) .sidebar [data-tooltip-right]::after,
+.sidebar:not(.collapsed) [data-tooltip-right]::before,
+.sidebar:not(.collapsed) [data-tooltip-right]::after {
+  display: none !important;
 }
 
 /* Disable tooltips on mobile/tablet */
@@ -560,7 +625,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1500;
+  z-index: 99999;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   overflow: visible !important; /* PENTING: Biar gak kepotong pas mekar */
@@ -576,7 +641,7 @@
   justify-content: center;
   border-radius: 50%;
   font-size: 1.25rem;
-  z-index: 1502;
+  z-index: 100001;
   position: absolute;
   transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   cursor: pointer;
@@ -599,7 +664,7 @@
   transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Kurva ultra smooth */
   transition-delay: calc(0.08s * var(--i)); /* Efek staggered yang lebih berasa */
   transform: scale(0) rotate(-90deg); /* Putaran lebih kalem */
-  z-index: 1501;
+  z-index: 100000;
   pointer-events: none;
 }
 
@@ -608,19 +673,28 @@
   pointer-events: auto;
 }
 
-/* Item 1: Diagonal Kiri-Atas (Wishlist) */
+/* === FAM 4-Button Layout: equal 30° spacing pada radius 95px ===
+   Slot 1 (90°): Add Tx · Slot 0 (120°): Wishlist · Slot 3 (150°): Scan · Slot 2 (180°): Kalkulator
+   Distance antar tombol: ~49px (gap ~5px karena tombol 44px) */
+
+/* Item 1: Atas (Tambah Transaksi - --i: 0 / Wishlist) - 120° */
 #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
-  transform: scale(1) rotate(0deg) translateX(-53px) translateY(-53px);
+  transform: scale(1) rotate(0deg) translateX(-48px) translateY(-82px);
 }
 
-/* Item 2: Lurus ke Atas (Tambah Transaksi) */
+/* Item 2: Lurus ke Atas (Tambah Transaksi) - 90° */
 #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-  transform: scale(1) rotate(0deg) translateY(-75px);
+  transform: scale(1) rotate(0deg) translateY(-95px);
 }
 
-/* Item 3: Lurus ke Kiri (Kalkulator) */
+/* Item 3: Lurus ke Kiri (Kalkulator) - 180° */
 #fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
-  transform: scale(1) rotate(0deg) translateX(-75px);
+  transform: scale(1) rotate(0deg) translateX(-95px);
+}
+
+/* Item 4: Diagonal Kiri (Scan Struk) - 150° */
+#fam-toggle:checked ~ .fam-item[style*="--i: 3"] {
+  transform: scale(1) rotate(0deg) translateX(-82px) translateY(-48px);
 }
 
 .fam-anchor {
@@ -649,61 +723,105 @@
 .bg-pink { background-color: #ec4899; }
 
 /* Tooltip Left for FAM */
+[data-tooltip-left]::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 3px);
+  transform: translateY(-50%) translateX(-6px);
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid #0f172a;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 100004;
+}
+
 [data-tooltip-left]::after {
   content: attr(data-tooltip-left);
   position: absolute;
   top: 50%;
-  right: calc(100% + 12px);
-  transform: translateY(-50%) translateX(10px);
-  background-color: var(--card-bg);
-  backdrop-filter: blur(8px);
-  color: var(--text-main);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  right: calc(100% + 8px);
+  transform: translateY(-50%) translateX(-6px);
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
   white-space: nowrap;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 100003;
 }
 
-.fam-anchor:hover::after {
+.fam-anchor:hover[data-tooltip-left]::before,
+.fam-anchor:hover[data-tooltip-left]::after {
   opacity: 1;
   visibility: visible;
-  transform: translateY(-50%) translateX(0);
+  transform: translateY(-50%) translateX(-2px);
+}
+
+/* Pastikan fam-item yang sedang di-hover paint di atas siblings,
+   biar tooltip-nya gak ke-cover sama tombol lain yang lebih dekat */
+.fam-item:hover {
+  z-index: 100002 !important;
 }
 
 /* Tooltip Top for FAM */
+[data-tooltip-top]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #0f172a;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 100004;
+}
+
 [data-tooltip-top]::after {
   content: attr(data-tooltip-top);
   position: absolute;
-  bottom: calc(100% + 12px);
+  bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  background-color: var(--card-bg);
-  backdrop-filter: blur(8px);
-  color: var(--text-main);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
+  transform: translateX(-50%) translateY(-6px);
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
   white-space: nowrap;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 100003;
 }
 
+.fam-anchor:hover[data-tooltip-top]::before,
 .fam-anchor:hover[data-tooltip-top]::after {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(-2px);
 }
 
 /* --- MOBILE OPTIMIZATIONS --- */
@@ -731,12 +849,20 @@
     transform: scale(1) rotate(0deg) translateX(-45px) translateY(-45px);
   }
 
+  #fam-toggle:checked ~ .fam-item[style*="--i: 0"] {
+    transform: scale(1) rotate(0deg) translateX(-43px) translateY(-74px);
+  }
+
   #fam-toggle:checked ~ .fam-item[style*="--i: 1"] {
-    transform: scale(1) rotate(0deg) translateY(-65px);
+    transform: scale(1) rotate(0deg) translateY(-85px);
   }
 
   #fam-toggle:checked ~ .fam-item[style*="--i: 2"] {
-    transform: scale(1) rotate(0deg) translateX(-65px);
+    transform: scale(1) rotate(0deg) translateX(-85px);
+  }
+
+  #fam-toggle:checked ~ .fam-item[style*="--i: 3"] {
+    transform: scale(1) rotate(0deg) translateX(-74px) translateY(-43px);
   }
 
   .fam-anchor:hover {

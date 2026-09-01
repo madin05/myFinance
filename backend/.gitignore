@@ -1,5 +1,19 @@
 node_modules
-# Keep environment variables out of version control
-.env
 
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Service account & credentials
+firebase-service-account.json
+*service-account*.json
+*credentials*.json
+*secret*.json
+
+# Generated & Agent files
 /generated/prisma
+.agents/

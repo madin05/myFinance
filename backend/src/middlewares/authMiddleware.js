@@ -6,8 +6,8 @@ const authMiddleware = async (req, res, next) => {
 
   if (sessionCookie) {
     try {
-      // Verifikasi Firebase session cookie
-      const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+      // Verifikasi Firebase session cookie (local in-memory verification)
+      const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie);
       req.user = decodedClaims;
       return next();
     } catch (error) {

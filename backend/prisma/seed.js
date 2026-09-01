@@ -1,166 +1,150 @@
 /**
- * myFinance — Database Seed Script
- * Run: node prisma/seed.js <firebaseUid>
- * Example: node prisma/seed.js abc123xyz
- *
- * This seeds a specific user with rich dummy data:
- * - 60 transactions (income + expense) across last 6 months
- * - 6 budgets for current month
- * - 5 wishlists (savings goals)
+ * myFinance — Database Seed Script for Local Development
+ * Run: node prisma/seed.js [firebaseUid]
+ * 
+ * If no firebaseUid is provided, it will automatically seed ALL registered users in local DB.
  */
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
-const FIREBASE_UID = process.argv[2];
-
-if (!FIREBASE_UID) {
-  console.error('\n❌ Usage: node prisma/seed.js <firebaseUid>\n');
-  process.exit(1);
-}
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[rand(0, arr.length - 1)];
 
-/** Returns a random date within the last N months */
 function randomDateInLastMonths(monthsBack) {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
   return new Date(start.getTime() + Math.random() * (now.getTime() - start.getTime()));
 }
 
-/** Format period string like "2025-04" */
 function periodOf(date) {
   const d = new Date(date);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-// ─── SEED DATA ───────────────────────────────────────────────────────────────
+const ACCOUNTS_SEED = [
+  { name: 'Bank BCA',    type: 'Bank',     balance: 15_450_000, logo: '/assets/banks/bca.svg',    orderIndex: 0 },
+  { name: 'Bank Mandiri',type: 'Bank',     balance: 8_200_000,  logo: '/assets/banks/mandiri.svg',orderIndex: 1 },
+  { name: 'GoPay',       type: 'E-Wallet', balance: 750_000,    logo: '/assets/banks/gopay.svg',  orderIndex: 2 },
+  { name: 'DANA',        type: 'E-Wallet', balance: 450_000,    logo: '/assets/banks/dana.svg',   orderIndex: 3 },
+  { name: 'Dompet Tunai',type: 'Cash',     balance: 350_000,    logo: '/assets/banks/cash.svg',   orderIndex: 4 },
+];
+
 const INCOME_ITEMS = [
-  { description: 'Gaji Bulanan',         category: 'Pendapatan',  method: 'Transfer Bank', amount: () => rand(5_000_000, 12_000_000) },
-  { description: 'Freelance Design',     category: 'Pendapatan',  method: 'Transfer Bank', amount: () => rand(500_000, 3_000_000) },
-  { description: 'Bonus Kinerja',        category: 'Pendapatan',  method: 'Transfer Bank', amount: () => rand(1_000_000, 5_000_000) },
-  { description: 'Dividen Investasi',    category: 'Pendapatan',  method: 'Transfer Bank', amount: () => rand(200_000, 800_000) },
-  { description: 'Penjualan Barang',     category: 'Pendapatan',  method: 'Dana',          amount: () => rand(100_000, 500_000) },
-  { description: 'Cashback GoPay',       category: 'Pendapatan',  method: 'GoPay',         amount: () => rand(10_000, 50_000) },
+  { description: 'Gaji Bulanan Utama',    category: 'Pendapatan', method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(7_000_000, 12_000_000) },
+  { description: 'Project Freelance UI', category: 'Pendapatan', method: 'Transfer Bank', account: 'Bank Mandiri', amount: () => rand(1_500_000, 4_000_000) },
+  { description: 'Bonus Kinerja Q2',     category: 'Pendapatan', method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(2_000_000, 5_000_000) },
+  { description: 'Dividen Saham BBCA',   category: 'Pendapatan', method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(300_000, 1_200_000) },
+  { description: 'Penjualan Gadget Bekas',category: 'Pendapatan', method: 'Dana',          account: 'DANA',         amount: () => rand(250_000, 850_000) },
+  { description: 'Cashback Promo GoPay', category: 'Pendapatan', method: 'GoPay',         account: 'GoPay',        amount: () => rand(15_000, 75_000) },
 ];
 
 const EXPENSE_ITEMS = [
-  { description: 'Makan Siang Warteg',   category: 'Makanan',     method: 'Cash',          amount: () => rand(15_000, 35_000) },
-  { description: 'Kopi Kekinian',        category: 'Makanan',     method: 'GoPay',         amount: () => rand(25_000, 65_000) },
-  { description: 'Belanja Groceries',    category: 'Makanan',     method: 'GoPay',         amount: () => rand(150_000, 400_000) },
-  { description: 'Makan Malam Keluarga', category: 'Makanan',     method: 'Cash',          amount: () => rand(80_000, 250_000) },
-  { description: 'Grab Food',            category: 'Makanan',     method: 'OVO',           amount: () => rand(30_000, 80_000) },
-  { description: 'Token Listrik',        category: 'Tagihan',     method: 'Transfer Bank', amount: () => rand(100_000, 300_000) },
-  { description: 'Tagihan Internet',     category: 'Tagihan',     method: 'Transfer Bank', amount: () => rand(200_000, 400_000) },
-  { description: 'Langganan Netflix',    category: 'Tagihan',     method: 'Kartu Kredit',  amount: () => rand(54_000, 185_000) },
-  { description: 'Spotify Premium',      category: 'Hiburan',     method: 'Dana',          amount: () => rand(19_990, 54_990) },
-  { description: 'Grab Car',             category: 'Transportasi', method: 'OVO',          amount: () => rand(15_000, 80_000) },
-  { description: 'Bensin Motor',         category: 'Transportasi', method: 'Cash',         amount: () => rand(20_000, 60_000) },
-  { description: 'Parkir Mall',          category: 'Transportasi', method: 'Cash',         amount: () => rand(5_000, 20_000) },
-  { description: 'Baju Baru',            category: 'Belanja',     method: 'Kartu Kredit',  amount: () => rand(150_000, 800_000) },
-  { description: 'Skincare Routine',     category: 'Belanja',     method: 'OVO',           amount: () => rand(100_000, 500_000) },
-  { description: 'Buku Programming',     category: 'Pendidikan',  method: 'Transfer Bank', amount: () => rand(80_000, 250_000) },
-  { description: 'Kursus Online',        category: 'Pendidikan',  method: 'Kartu Kredit',  amount: () => rand(150_000, 1_200_000) },
-  { description: 'Gym Member',           category: 'Kesehatan',   method: 'Transfer Bank', amount: () => rand(150_000, 400_000) },
-  { description: 'Vitamin & Suplemen',   category: 'Kesehatan',   method: 'Dana',          amount: () => rand(50_000, 200_000) },
-  { description: 'Main Game Steam',      category: 'Hiburan',     method: 'Kartu Kredit',  amount: () => rand(30_000, 300_000) },
-  { description: 'Nonton Bioskop',       category: 'Hiburan',     method: 'OVO',           amount: () => rand(45_000, 120_000) },
+  { description: 'Makan Siang Resto',     category: 'Makanan & Minuman',     method: 'Cash',          account: 'Dompet Tunai', amount: () => rand(25_000, 75_000) },
+  { description: 'Kopi Kekinian Daily',  category: 'Makanan & Minuman',     method: 'GoPay',         account: 'GoPay',        amount: () => rand(28_000, 60_000) },
+  { description: 'Belanja Bulanan Supermarket', category: 'Makanan & Minuman', method: 'GoPay',     account: 'GoPay',        amount: () => rand(250_000, 650_000) },
+  { description: 'Makan Malam Seafood',  category: 'Makanan & Minuman',     method: 'Cash',          account: 'Dompet Tunai', amount: () => rand(120_000, 350_000) },
+  { description: 'GrabFood Delivery',    category: 'Makanan & Minuman',     method: 'OVO',           account: 'GoPay',        amount: () => rand(40_000, 110_000) },
+  { description: 'Token Listrik PLN',    category: 'Tagihan',     method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(150_000, 450_000) },
+  { description: 'Tagihan WiFi Indihome', category: 'Tagihan',    method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(320_000, 480_000) },
+  { description: 'Langganan Netflix 4K', category: 'Tagihan',     method: 'Kartu Kredit',  account: 'Bank BCA',     amount: () => rand(186_000, 186_000) },
+  { description: 'Spotify Family Plan',  category: 'Hiburan',     method: 'Dana',          account: 'DANA',         amount: () => rand(54_900, 86_900) },
+  { description: 'GrabCar ke Kantor',    category: 'Transportasi', method: 'GoPay',        account: 'GoPay',        amount: () => rand(25_000, 85_000) },
+  { description: 'Isi Bensin Pertamax',  category: 'Transportasi', method: 'Cash',         account: 'Dompet Tunai', amount: () => rand(50_000, 150_000) },
+  { description: 'Parkir Mall & Gedung', category: 'Transportasi', method: 'Cash',         account: 'Dompet Tunai', amount: () => rand(10_000, 30_000) },
+  { description: 'Baju & Sepatu Baru',   category: 'Belanja',     method: 'Kartu Kredit',  account: 'Bank BCA',     amount: () => rand(250_000, 1_200_000) },
+  { description: 'Skincare & Bodycare',  category: 'Belanja',     method: 'Dana',          account: 'DANA',         amount: () => rand(150_000, 600_000) },
+  { description: 'Buku O\'Reilly Programming', category: 'Pendidikan', method: 'Transfer Bank', account: 'Bank Mandiri', amount: () => rand(120_000, 350_000) },
+  { description: 'Langganan Course Udemy',category: 'Pendidikan', method: 'Transfer Bank', account: 'Bank Mandiri', amount: () => rand(150_000, 500_000) },
+  { description: 'Keanggotaan Gym',      category: 'Kesehatan',   method: 'Transfer Bank', account: 'Bank BCA',     amount: () => rand(250_000, 500_000) },
+  { description: 'Vitamin C & Multivitamin', category: 'Kesehatan', method: 'Dana',        account: 'DANA',         amount: () => rand(75_000, 250_000) },
+  { description: 'Beli Game Steam Sale', category: 'Hiburan',     method: 'Dana',          account: 'DANA',         amount: () => rand(60_000, 450_000) },
+  { description: 'Tiket Nonton XXI IMAX', category: 'Hiburan',    method: 'GoPay',         account: 'GoPay',        amount: () => rand(75_000, 180_000) },
 ];
 
 const BUDGETS_SEED = [
-  { category: 'Makanan',      amount: 1_500_000 },
-  { category: 'Transportasi', amount: 500_000 },
-  { category: 'Hiburan',      amount: 400_000 },
-  { category: 'Belanja',      amount: 800_000 },
-  { category: 'Tagihan',      amount: 600_000 },
-  { category: 'Kesehatan',    amount: 300_000 },
+  { category: 'Makanan & Minuman', amount: 2_500_000 },
+  { category: 'Transportasi', amount: 1_000_000 },
+  { category: 'Hiburan',      amount: 800_000 },
+  { category: 'Belanja',      amount: 1_200_000 },
+  { category: 'Tagihan',      amount: 1_000_000 },
+  { category: 'Kesehatan',    amount: 500_000 },
 ];
 
 const SAVINGS_SEED = [
-  { name: 'Dana Darurat',         targetAmount: 30_000_000, currentAmount: 8_500_000,  icon: '🛡️',  color: '#3B82F6', orderIndex: 0 },
-  { name: 'Liburan ke Jepang',    targetAmount: 25_000_000, currentAmount: 4_200_000,  icon: '✈️',  color: '#F97316', orderIndex: 1 },
-  { name: 'MacBook Pro M4',       targetAmount: 30_000_000, currentAmount: 12_000_000, icon: '💻',  color: '#8B5CF6', orderIndex: 2 },
-  { name: 'DP Rumah',             targetAmount: 100_000_000, currentAmount: 22_000_000, icon: '🏠', color: '#10B981', orderIndex: 3 },
-  { name: 'Motor Baru',           targetAmount: 25_000_000, currentAmount: 7_800_000,  icon: '🏍️', color: '#EF4444', orderIndex: 4 },
+  { name: 'Dana Darurat 6 Bulan', targetAmount: 36_000_000, currentAmount: 14_500_000, icon: '🛡️', color: '#3B82F6', orderIndex: 0 },
+  { name: 'Liburan ke Jepang',    targetAmount: 25_000_000, currentAmount: 8_200_000,  icon: '✈️', color: '#F97316', orderIndex: 1 },
+  { name: 'MacBook Pro M4 Max',   targetAmount: 32_000_000, currentAmount: 19_000_000, icon: '💻', color: '#8B5CF6', orderIndex: 2 },
+  { name: 'DP Rumah Idaman',      targetAmount: 120_000_000, currentAmount: 38_000_000, icon: '🏠', color: '#10B981', orderIndex: 3 },
+  { name: 'Motor Vespa Sprint',   targetAmount: 55_000_000, currentAmount: 24_000_000, icon: '🛵', color: '#EF4444', orderIndex: 4 },
 ];
 
-// ─── MAIN SEEDER ─────────────────────────────────────────────────────────────
-async function main() {
-  console.log(`\n🌱 Starting seed for Firebase UID: ${FIREBASE_UID}\n`);
+async function seedUser(user) {
+  console.log(`\n🌱 Seeding user: ${user.name} (${user.email}) - UID: ${user.firebaseUid}`);
 
-  // 1. Find user
-  const user = await prisma.user.findUnique({ where: { firebaseUid: FIREBASE_UID } });
-  if (!user) {
-    console.error(`❌ User with firebaseUid "${FIREBASE_UID}" not found in database.`);
-    console.error('   Make sure you have logged in at least once first.\n');
-    process.exit(1);
-  }
-  console.log(`✅ Found user: ${user.name} (id: ${user.id})`);
-
-  // 2. Clear existing data (avoid duplicates)
+  // Clear existing records to prevent clutter
   await prisma.transaction.deleteMany({ where: { userId: user.id } });
   await prisma.saving.deleteMany({ where: { userId: user.id } });
   await prisma.budget.deleteMany({ where: { userId: user.id } });
-  console.log('🗑️  Cleared existing data');
+  await prisma.account.deleteMany({ where: { userId: user.id } });
+  console.log('   🗑️  Cleared existing user data');
 
-  // 3. Seed Transactions — 60 entries spread over last 6 months
+  // Seed Accounts
+  const accountData = ACCOUNTS_SEED.map(a => ({ ...a, userId: user.id }));
+  await prisma.account.createMany({ data: accountData });
+  console.log(`   🏦 Seeded ${accountData.length} accounts (BCA, Mandiri, GoPay, DANA, Cash)`);
+
+  // Seed Transactions (60 entries over last 6 months)
   const txData = [];
-
-  // ~8 income entries per month (last 6 months)
   for (let m = 0; m < 6; m++) {
-    // Always add salary
     const salaryDate = new Date();
     salaryDate.setMonth(salaryDate.getMonth() - m);
-    salaryDate.setDate(rand(1, 5)); // Gajian awal bulan
+    salaryDate.setDate(rand(1, 3));
     txData.push({
       userId: user.id,
       date: salaryDate,
       category: 'Pendapatan',
       method: 'Transfer Bank',
-      description: 'Gaji Bulanan',
-      amount: rand(7_000_000, 12_000_000),
+      account: 'Bank BCA',
+      description: 'Gaji Bulanan Utama',
+      amount: rand(8_000_000, 12_000_000),
       type: 'income'
     });
 
-    // 2-3 random income
-    const incomeCount = rand(2, 3);
+    const incomeCount = rand(2, 4);
     for (let i = 0; i < incomeCount; i++) {
-      const item = pick(INCOME_ITEMS.slice(1)); // Skip gaji (sudah manual)
+      const item = pick(INCOME_ITEMS.slice(1));
       txData.push({
         userId: user.id,
         date: randomDateInLastMonths(m + 1),
         category: item.category,
         method: item.method,
+        account: item.account,
         description: item.description,
         amount: item.amount(),
         type: 'income'
       });
     }
 
-    // ~8 expense entries per month
-    const expenseCount = rand(7, 10);
+    const expenseCount = rand(8, 12);
     for (let i = 0; i < expenseCount; i++) {
       const item = pick(EXPENSE_ITEMS);
-      const d = randomDateInLastMonths(m + 1);
       txData.push({
         userId: user.id,
-        date: d,
+        date: randomDateInLastMonths(m + 1),
         category: item.category,
         method: item.method,
+        account: item.account,
         description: item.description,
         amount: item.amount(),
         type: 'expense'
       });
     }
   }
-
   await prisma.transaction.createMany({ data: txData });
-  console.log(`💸 Seeded ${txData.length} transactions`);
+  console.log(`   💸 Seeded ${txData.length} transactions across 6 months`);
 
-  // 4. Seed Budgets — for current and last 2 months
+  // Seed Budgets (3 months)
   const budgetData = [];
   for (let m = 0; m < 3; m++) {
     const d = new Date();
@@ -176,16 +160,51 @@ async function main() {
     }
   }
   await prisma.budget.createMany({ data: budgetData });
-  console.log(`📊 Seeded ${budgetData.length} budgets (${BUDGETS_SEED.length} categories × 3 months)`);
+  console.log(`   📊 Seeded ${budgetData.length} budgets`);
 
-  // 5. Seed Savings (Wishlist)
+  // Seed Savings
   const savingsData = SAVINGS_SEED.map(s => ({ ...s, userId: user.id }));
   await prisma.saving.createMany({ data: savingsData });
-  console.log(`🎯 Seeded ${savingsData.length} savings goals`);
+  console.log(`   🎯 Seeded ${savingsData.length} wishlist target tabungan`);
 
-  console.log('\n✨ Seed complete! Refresh your app to see the data.\n');
+  console.log(`   ✅ Selesai seeding untuk ${user.name}`);
+}
+
+async function main() {
+  const targetUid = process.argv[2];
+
+  let users = [];
+  if (targetUid) {
+    const user = await prisma.user.findUnique({ where: { firebaseUid: targetUid } });
+    if (user) users.push(user);
+    else {
+      console.error(`❌ User dengan firebaseUid "${targetUid}" tidak ditemukan di database.`);
+      process.exit(1);
+    }
+  } else {
+    users = await prisma.user.findMany();
+  }
+
+  if (users.length === 0) {
+    console.log('⚠️  Belum ada user terdaftar di database local.');
+    console.log('   Silakan daftar / login terlebih dahulu di web, lalu jalankan script seed ini kembali.');
+    process.exit(0);
+  }
+
+  console.log(`\n==============================================`);
+  console.log(`🌱 MYFINANCE LOCAL DATA DUMP SEEDER (${users.length} User)`);
+  console.log(`==============================================`);
+
+  for (const u of users) {
+    await seedUser(u);
+  }
+
+  console.log('\n==============================================');
+  console.log('🚀 DUMP DATA LOCAL BERHASIL DISIMPAN!');
+  console.log('   Silakan refresh web aplikasi untuk melihat data dump.');
+  console.log('==============================================\n');
 }
 
 main()
-  .catch(e => { console.error(e); process.exit(1); })
+  .catch(e => { console.error('❌ Error Seeding:', e); process.exit(1); })
   .finally(() => prisma.$disconnect());

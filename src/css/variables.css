@@ -1,6 +1,6 @@
 :root {
   color-scheme: light dark;
-  --bg-color: #F0F9FF;
+  --bg-color: #EBF0F5;
   --white: #FFFFFF;
   --primary: #0EA5E9;
   --primary-light: #E0F2FE;
@@ -40,7 +40,7 @@
   --overlay-bg: rgba(0, 0, 0, 0.4);
   --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(255, 255, 255, 0.5);
-  --sidebar-width: 280px;
+  --sidebar-width: 240px;
   --sidebar-collapsed-width: 88px;
   --font-main: 'Poppins', sans-serif;
 }

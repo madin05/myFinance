@@ -1,320 +1,391 @@
 import { store } from '../store.js';
-import { auth, googleProvider, signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from '../firebase-config.js';
+import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
+import { getLoginLayoutHtml } from '../auth/loginTemplates.js';
+import { initLoginAnimations } from '../auth/loginAnimations.js';
 
-export function renderLogin(mode = 'login', pendingEmail = '') {
+export { renderEmailVerificationBanner } from '../auth/emailVerificationBanner.js';
+
+export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
   const container = document.getElementById('login-view');
+  if (!container) return;
+
   const isReg = mode === 'register';
-  const isPending = mode === 'verification-pending';
+  const isForgot = mode === 'forgot-password';
+  const isVerified = mode === 'email-verified';
+  const isVerifiedError = mode === 'email-verified-error';
+  const isResetConfirm = mode === 'reset-password-confirm';
+  const isVerifyOtp = mode === 'verify-otp';
+  const isVerify2FAOtp = mode === 'verify-2fa-otp';
 
-  container.innerHTML = `
-    <div class="login-container" id="login-parallax-container">
-      
-      <!-- BACKGROUND GLOWS (layer-back) -->
-      <div class="parallax-layer layer-back glow-layer-1" data-depth="0.10" style="left: -10%; top: -10%; width: 600px; height: 600px; border-radius: 50%; filter: blur(50px);"></div>
-      <div class="parallax-layer layer-back glow-layer-2" data-depth="0.10" style="right: -10%; bottom: -10%; width: 600px; height: 600px; border-radius: 50%; filter: blur(50px);"></div>
+  container.innerHTML = getLoginLayoutHtml(mode, pendingEmail, extraData);
 
-      <!-- DYNAMIC DRIFTING CLOUDS CONTAINER -->
-      <div id="login-cloud-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: 1;"></div>
+  if (isVerifyOtp || isVerify2FAOtp) {
+    const cancelBtn = document.getElementById('btn-cancel-2fa');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => renderLogin('login');
+    }
 
-      <!-- MIDGROUND DECORATIONS (layer-mid) -->
-      <!-- Floating Gold Coin (Left-Bottom) -->
-      <div class="parallax-layer layer-mid" data-depth="0.25" style="left: 22%; bottom: 15%;">
-        <div class="mascot-interactive floating-element" id="item-coin-small">
-          <div class="mascot-bubble" id="bubble-coin-small">Asetmu aman terjaga!</div>
-          <svg viewBox="0 0 100 100" width="85" height="85" style="filter: drop-shadow(0 12px 24px rgba(245, 158, 11, 0.3));">
-            <!-- Safe Outer Body -->
-            <rect x="15" y="15" width="70" height="70" rx="10" fill="#b45309" />
-            <!-- Safe Door Panel -->
-            <rect x="19" y="19" width="62" height="62" rx="8" fill="url(#goldGrad)" />
-            <rect x="24" y="24" width="52" height="52" rx="4" fill="none" stroke="#d97706" stroke-width="2" />
-            
-            <!-- Big Center Vault Handle Wheel -->
-            <circle cx="50" cy="50" r="18" fill="#fff" opacity="0.9" />
-            <!-- Cross spokes of the wheel -->
-            <line x1="50" y1="35" x2="50" y2="65" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
-            <line x1="35" y1="50" x2="65" y2="50" stroke="#b45309" stroke-width="5" stroke-linecap="round" />
-            <!-- Hub of the wheel -->
-            <circle cx="50" cy="50" r="6" fill="#b45309" />
-            
-            <!-- Dial markings surrounding -->
-            <circle cx="50" cy="50" r="23" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.7" />
-            
-            <!-- Corner details -->
-            <circle cx="24" cy="24" r="2" fill="#fff" opacity="0.7" />
-            <circle cx="76" cy="24" r="2" fill="#fff" opacity="0.7" />
-            <circle cx="24" cy="76" r="2" fill="#fff" opacity="0.7" />
-            <circle cx="76" cy="76" r="2" fill="#fff" opacity="0.7" />
-          </svg>
-        </div>
-      </div>
+    // ─── OTP Input Auto-Focus & Navigation ───
+    const otpInputs = document.querySelectorAll('.otp-input');
+    if (otpInputs.length) {
+      setTimeout(() => otpInputs[0]?.focus(), 100);
 
-      <!-- Floating Wallet (Right-Top) -->
-      <div class="parallax-layer layer-mid" data-depth="0.30" style="right: 20%; top: 18%;">
-        <div class="mascot-interactive floating-element-reverse" id="item-wallet">
-          <div class="mascot-bubble" id="bubble-wallet">Simpan uangmu aman!</div>
-          <svg viewBox="0 0 100 100" width="80" height="80" style="filter: drop-shadow(0 8px 16px rgba(124, 58, 237, 0.25));">
-            <rect x="15" y="25" width="70" height="50" rx="12" fill="url(#purpleGrad)" />
-            <path d="M55,35 H85 V65 H55 Z" fill="#6d28d9" />
-            <circle cx="70" cy="50" r="6" fill="#fbbf24" />
-          </svg>
-        </div>
-      </div>
+      otpInputs.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/\D/g, '');
+          e.target.value = val.slice(0, 1);
+          if (val && idx < otpInputs.length - 1) {
+            otpInputs[idx + 1].focus();
+          }
+          const errEl = document.getElementById('otp-error-msg');
+          if (errEl) errEl.textContent = '';
+        });
 
-      <!-- FOREGROUND MASCOTS (layer-front) -->
-      <!-- Mascot 1: Cute Flying Piggy Bank (Left-Mid) -->
-      <div class="parallax-layer layer-front" data-depth="0.45" style="left: 10%; top: 22%;">
-        <div class="mascot-interactive floating-element" id="mascot-pig">
-          <div class="mascot-bubble" id="bubble-pig">Oink oink! Klik aku!</div>
-          <svg viewBox="0 0 160 160" width="145" height="145" style="filter: drop-shadow(0 12px 24px rgba(244, 63, 94, 0.35));">
-            <!-- Small Angel Wings (Flapping Anim) -->
-            <path class="wing-left-anim" d="M35,65 Q10,40 30,30 Q45,35 40,60" fill="#fff" opacity="0.9" style="transform-origin: 40px 60px;" />
-            <path class="wing-right-anim" d="M125,65 Q150,40 130,30 Q115,35 120,60" fill="#fff" opacity="0.9" style="transform-origin: 120px 60px;" />
-            
-            <!-- Chubby Piggy Body (Pink Gradient) -->
-            <ellipse cx="80" cy="85" rx="55" ry="45" fill="url(#pigGrad)" />
-            
-            <!-- Curly Tail -->
-            <path d="M25,85 Q10,75 15,65 Q22,65 18,75" fill="none" stroke="#f472b6" stroke-width="4" stroke-linecap="round" />
-            
-            <!-- Pointy Pig Ears -->
-            <polygon points="45,50 35,25 55,35" fill="#f472b6" />
-            <polygon points="43,48 37,28 51,36" fill="#f43f5e" />
-            <polygon points="115,50 125,25 105,35" fill="#f472b6" />
-            <polygon points="117,48 123,28 109,36" fill="#f43f5e" />
-            
-            <!-- Snout -->
-            <ellipse cx="80" cy="98" rx="16" ry="11" fill="#f472b6" stroke="#f43f5e" stroke-width="1.5" />
-            <!-- Nostrils -->
-            <circle cx="74" cy="98" r="3" fill="#be185d" />
-            <circle cx="86" cy="98" r="3" fill="#be185d" />
-            
-            <!-- Eyes (With Classes for Cursor Gaze Tracking) -->
-            <circle cx="58" cy="74" r="5" fill="#1e1b4b" class="pig-eye" />
-            <circle cx="102" cy="74" r="5" fill="#1e1b4b" class="pig-eye" />
-            <circle cx="56" cy="72" r="2" fill="#fff" class="pig-eye-pupil" />
-            <circle cx="100" cy="72" r="2" fill="#fff" class="pig-eye-pupil" />
-            
-            <!-- Blush Cheeks -->
-            <circle cx="48" cy="84" r="7" fill="#f43f5e" opacity="0.35" />
-            <circle cx="112" cy="84" r="7" fill="#f43f5e" opacity="0.35" />
-            
-            <!-- Coin Slot on top -->
-            <rect x="72" y="44" width="16" height="5" rx="2" fill="#be185d" />
-          </svg>
-        </div>
-      </div>
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+            otpInputs[idx - 1].focus();
+            otpInputs[idx - 1].value = '';
+          }
+        });
 
-      <!-- Mascot 2: Cute Purple Robot (Right-Bottom) -->
-      <div class="parallax-layer layer-front" data-depth="0.55" style="right: 10%; bottom: 15%;">
-        <div class="mascot-interactive floating-element-reverse" id="mascot-robot">
-          <div class="mascot-bubble" id="bubble-robot">Halo manusia cerdas!</div>
-          <svg viewBox="0 0 140 140" width="130" height="130" style="filter: drop-shadow(0 12px 24px rgba(124, 58, 237, 0.35));">
-            <rect x="25" y="25" width="90" height="90" rx="30" fill="url(#mascotRobot)" />
-            <rect x="35" y="40" width="70" height="45" rx="15" fill="#1e1b4b" />
-            <!-- Eyes (With Classes for Cursor Gaze Tracking) -->
-            <ellipse cx="53" cy="62" rx="4" ry="7" fill="#60a5fa" class="robot-eye" />
-            <ellipse cx="87" cy="62" rx="4" ry="7" fill="#60a5fa" class="robot-eye" />
-            <path d="M62,72 Q70,78 78,72" fill="none" stroke="#60a5fa" stroke-width="3" stroke-linecap="round" />
-            <line x1="70" y1="25" x2="70" y2="12" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
-            <circle cx="70" cy="10" r="6" fill="#fbbf24" />
-          </svg>
-        </div>
-      </div>
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+          pasted.split('').forEach((ch, i) => {
+            if (otpInputs[i]) otpInputs[i].value = ch;
+          });
+          const nextIdx = Math.min(pasted.length, otpInputs.length - 1);
+          otpInputs[nextIdx].focus();
+        });
+      });
+    }
 
-      <!-- SVGs GRADIENTS FOR MASCOTS -->
-      <svg width="0" height="0" style="position: absolute;">
-        <defs>
-          <radialGradient id="pigGrad" cx="50%" cy="40%" r="50%">
-            <stop offset="0%" stop-color="#fbcfe8" />
-            <stop offset="100%" stop-color="#ec4899" />
-          </radialGradient>
-          <linearGradient id="mascotRobot" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#a78bfa" />
-            <stop offset="100%" stop-color="#7c3aed" />
-          </linearGradient>
-          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#fcd34d" />
-            <stop offset="100%" stop-color="#f59e0b" />
-          </linearGradient>
-          <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#c084fc" />
-            <stop offset="100%" stop-color="#818cf8" />
-          </linearGradient>
-        </defs>
-      </svg>
+    // ─── OTP Form Submit ───
+    const otpForm = document.getElementById('otp-form');
+    if (otpForm) {
+      otpForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const otp = Array.from(otpInputs).map(i => i.value).join('');
+        const errEl = document.getElementById('otp-error-msg');
 
-      <!-- MAIN GLASSMORPHISM CARD -->
-      <div class="login-card">
-        <div class="logo-icon" style="margin: 0 auto 1.5rem; text-align: center; width: 140px;">
-          <img src="/assets/logo-navbar-light.svg" class="logo-light" alt="MyFinance" style="width: 100%;">
-          <img src="/assets/logo-navbar-dark.svg" class="logo-dark" alt="MyFinance" style="width: 100%;">
-        </div>
-        
-        ${isPending ? `
-          <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
-            <div style="background: var(--primary-light); color: var(--primary); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 0.25rem; box-shadow: 0 8px 24px var(--primary-light);">
-              <i class="ph ph-envelope-open"></i>
-            </div>
-            <h2 style="margin-bottom: 0;">Verifikasi Email</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0; line-height: 1.6;">
-              Kami telah mengirimkan tautan verifikasi ke:<br>
-              <strong style="color: var(--text-main); font-weight: 700; word-break: break-all;">${pendingEmail}</strong>
-            </p>
-            <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.6; background: var(--bg-color); padding: 12px; border-radius: var(--radius-md); border: 1.5px dashed var(--border); margin: 0;">
-              Silakan periksa kotak masuk atau folder <strong>Spam</strong> Anda, klik tautan tersebut, lalu tekan tombol periksa di bawah.
-            </p>
-            <button id="btn-check-verification" class="btn btn-primary btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; font-weight: 700;">
-              Saya Sudah Verifikasi
-            </button>
-            <button id="btn-resend-verification" class="btn btn-outline btn-full" style="height: 48px; border-radius: 12px; font-size: 0.85rem; margin-top: -0.5rem; font-weight: 600;">
-              Kirim Ulang Email Verifikasi
-            </button>
-            <a href="javascript:void(0)" id="btn-back-to-login" style="color: var(--text-muted); font-weight: 600; text-decoration: none; font-size: 0.85rem; margin-top: 0.25rem;">
-              Keluar & Kembali ke Login
-            </a>
-          </div>
-        ` : `
-          <h2 style="text-align: center; margin-bottom: 0.5rem;">${isReg ? 'Buat Akun Baru' : 'Selamat Datang'}</h2>
-          <p style="text-align: center; color: var(--text-muted); margin-bottom: 2.5rem;">
-            ${isReg ? 'Bergabunglah untuk kelola keuangan lebih baik.' : 'Kelola keuanganmu lebih cerdas & aman.'}
-          </p>
-          
-          <form id="auth-form">
-            ${isReg ? `
-              <div class="form-group">
-                <label>Nama Lengkap</label>
-                <input type="text" id="reg-name" class="form-control" placeholder="Arif Madani" required>
-              </div>
-            ` : ''}
-            <div class="form-group">
-              <label>Username / Email</label>
-              <input type="text" id="email" class="form-control" placeholder="Masukkan username/email" required>
-            </div>
-            <div class="form-group">
-              <label>Password</label>
-              <div style="position: relative; width: 100%;">
-                <input type="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required style="padding-right: 45px;">
-                <button type="button" id="btn-toggle-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
-                  <i class="ph ph-eye"></i>
-                </button>
-              </div>
-            </div>
-            ${isReg ? `
-              <div class="form-group">
-                <label>Konfirmasi Password</label>
-                <div style="position: relative; width: 100%;">
-                  <input type="password" id="confirm-password" class="form-control" placeholder="Ulangi kata sandi" required style="padding-right: 45px;">
-                  <button type="button" id="btn-toggle-confirm-password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: color 0.2s;">
-                    <i class="ph ph-eye"></i>
-                  </button>
-                </div>
-              </div>
-            ` : ''}
-            <button type="submit" class="btn btn-primary btn-full mt-md">
-              ${isReg ? 'Daftar Sekarang' : 'Masuk Sekarang'}
-            </button>
-          </form>
+        if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+          if (errEl) errEl.textContent = 'Masukkan 6 digit kode OTP.';
+          return;
+        }
 
-          <p style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-            ${isReg ? 'Sudah punya akun?' : 'Belum punya akun?'} 
-            <a href="javascript:void(0)" id="btn-switch-auth" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 5px;">
-              ${isReg ? 'Masuk di sini' : 'Daftar di sini'}
-            </a>
-          </p>
+        const btn = document.getElementById('btn-verify-otp');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph ph-spinner ph-spin"></i> Memverifikasi...'; }
 
-          <div style="margin: 2rem 0; display: flex; align-items: center; gap: 1rem;">
-            <div style="flex: 1; height: 1px; background: var(--border);"></div>
-            <span style="color: var(--text-muted); font-size: 0.8rem;">Atau masuk dengan</span>
-            <div style="flex: 1; height: 1px; background: var(--border);"></div>
-          </div>
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-          <button id="btn-google-login" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-radius: 12px;">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-            <span>Masuk dengan Google</span>
-          </button>
-        `}
-      </div>
-    </div>
-  `;
+          if (isVerify2FAOtp) {
+            const preAuthToken = extraData?.preAuthToken;
+            if (!preAuthToken) throw new Error('Sesi 2FA tidak ditemukan. Silakan login kembali.');
 
-  if (isPending) {
-    document.getElementById('btn-check-verification').onclick = async () => {
-      showLoading();
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          await user.reload(); // Ambil status terbaru dari server Firebase
-          if (user.emailVerified) {
-            showToast('Email berhasil diverifikasi! Selamat datang.', 'success');
-            
-            const token = await user.getIdToken();
-            const userData = {
+            const res = await fetch(`${API_URL}/auth/login-2fa/verify`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${preAuthToken}`
+              },
+              body: JSON.stringify({ otp })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Verifikasi 2FA gagal.');
+
+            const userCred = await signInWithCustomToken(auth, data.customToken);
+            const user = userCred.user;
+            const token = await user.getIdToken(true);
+
+            await store.setUser({
               uid: user.uid,
-              name: user.displayName || 'User MyFinance',
+              name: user.displayName || user.email?.split('@')[0] || 'User MyFinance',
               email: user.email,
               avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-              token: token
-            };
-            store.setUser(userData);
-            store.updateUI();
-            
+              token: token,
+              emailVerified: user.emailVerified,
+              provider: 'password'
+            });
+
+            window.isVerificationModalActive = false;
             const loginView = document.getElementById('login-view');
             const appLayout = document.getElementById('app-layout');
-            if (loginView && appLayout) {
-              loginView.style.display = 'none';
-              appLayout.style.display = 'flex';
-            }
+            if (loginView) loginView.style.display = 'none';
+            if (appLayout) appLayout.style.display = 'flex';
             navigateTo('/dashboard');
+
+            showToast('Verifikasi 2FA berhasil! Selamat datang kembali.', 'success');
           } else {
-            showToast('Email belum diverifikasi. Silakan klik tautan di email Anda terlebih dahulu.', 'warning');
+            const token = store.user?.token || extraData?.token;
+            if (!token) throw new Error('Sesi habis, silakan login ulang.');
+
+            const res = await fetch(`${API_URL}/auth/otp/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ otp })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Verifikasi OTP gagal.');
+
+            if (store.user) {
+              store.user.emailVerified = true;
+              store.user.isNewUser = true;
+              store.save();
+            }
+
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+              try { await currentUser.reload(); } catch (e) {}
+            }
+
+            window.isVerificationModalActive = false;
+            const loginView = document.getElementById('login-view');
+            const appLayout = document.getElementById('app-layout');
+            if (loginView) loginView.style.display = 'none';
+            if (appLayout) appLayout.style.display = 'flex';
+            navigateTo('/dashboard');
+
+            showToast('Email berhasil diverifikasi! Selamat datang di MyFinance.', 'success');
+
+            setTimeout(() => {
+              import('../components/tutorial.js').then(m => m.startProductTutorial()).catch(() => {});
+            }, 600);
           }
+        } catch (err) {
+          if (errEl) errEl.textContent = err.message;
+          if (btn) { btn.disabled = false; btn.innerHTML = isVerify2FAOtp ? 'Verifikasi 2FA' : 'Verifikasi Kode'; }
+          otpInputs.forEach(i => { i.value = ''; });
+          otpInputs[0]?.focus();
+        }
+      };
+    }
+
+    // ─── Countdown Timer & Resend OTP ───
+    let countdown = 60;
+    const timerEl = document.getElementById('otp-countdown-timer');
+    const countdownTextEl = document.getElementById('otp-countdown-text');
+    const resendBtn = document.getElementById('btn-resend-otp');
+
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (timerEl) timerEl.textContent = countdown;
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        if (resendBtn) resendBtn.disabled = false;
+        if (countdownTextEl) countdownTextEl.style.display = 'none';
+      }
+    }, 1000);
+
+    if (resendBtn) {
+      resendBtn.onclick = async () => {
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Mengirim...';
+
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+          if (isVerify2FAOtp) {
+            const preAuthToken = extraData?.preAuthToken;
+            if (!preAuthToken) throw new Error('Sesi 2FA tidak ditemukan.');
+
+            const res = await fetch(`${API_URL}/auth/login-2fa/resend`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${preAuthToken}`
+              }
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gagal kirim ulang OTP 2FA.');
+
+            showToast('Kode OTP 2FA baru telah dikirim ke email Anda!', 'success');
+          } else {
+            const token = store.user?.token || extraData?.token;
+            if (!token) throw new Error('Sesi habis.');
+
+            const res = await fetch(`${API_URL}/auth/otp/send`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gagal kirim OTP.');
+
+            showToast('Kode OTP baru telah dikirim ke emailmu!', 'success');
+          }
+
+          resendBtn.textContent = 'Kode Terkirim! ✓';
+
+          countdown = 60;
+          if (countdownTextEl) countdownTextEl.style.display = '';
+          if (timerEl) timerEl.textContent = countdown;
+
+          const newInterval = setInterval(() => {
+            countdown--;
+            if (timerEl) timerEl.textContent = countdown;
+            if (countdown <= 0) {
+              clearInterval(newInterval);
+              if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = 'Kirim Ulang Kode'; }
+              if (countdownTextEl) countdownTextEl.style.display = 'none';
+            }
+          }, 1000);
+        } catch (err) {
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Coba Lagi';
+          showToast(err.message || 'Gagal mengirim ulang kode OTP.', 'error');
+        }
+      };
+    }
+  } else if (isVerified) {
+    const goToLoginBtn = document.getElementById('btn-go-to-login');
+    if (goToLoginBtn) {
+      goToLoginBtn.onclick = async () => {
+        window.history.replaceState(null, '', '/dashboard');
+        
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          showLoading();
+          try {
+            await currentUser.reload();
+            if (store.user) {
+              store.user.emailVerified = currentUser.emailVerified;
+              store.save();
+            }
+          } catch (e) {
+            console.warn('Reload auth user error:', e);
+          } finally {
+            hideLoading();
+          }
+
+          const loginView = document.getElementById('login-view');
+          const appLayout = document.getElementById('app-layout');
+          if (loginView) loginView.style.display = 'none';
+          if (appLayout) appLayout.style.display = 'flex';
+          navigateTo('/dashboard');
         } else {
-          showToast('Sesi habis. Silakan masuk kembali.', 'warning');
           renderLogin('login');
         }
-      } catch (err) {
-        showToast('Gagal memeriksa status: ' + err.message, 'error');
-      } finally {
-        hideLoading();
-      }
-    };
+      };
+    }
+  } else if (isVerifiedError) {
+    const requestNewBtn = document.getElementById('btn-request-new-link');
+    if (requestNewBtn) {
+      requestNewBtn.onclick = async () => {
+        window.history.replaceState(null, '', '/');
+        const { checkAuth } = await import('../main.js');
+        checkAuth();
+      };
+    }
+    const backBtn = document.getElementById('btn-back-to-login-from-error');
+    if (backBtn) {
+      backBtn.onclick = async () => {
+        window.history.replaceState(null, '', '/');
+        const { checkAuth } = await import('../main.js');
+        checkAuth();
+      };
+    }
+  } else if (isForgot) {
+    const forgotForm = document.getElementById('forgot-form');
+    if (forgotForm) {
+      forgotForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('forgot-email').value.trim();
+        if (!emailInput) {
+          showToast('Masukkan email atau username terlebih dahulu.', 'warning');
+          return;
+        }
 
-    document.getElementById('btn-resend-verification').onclick = async () => {
-      showLoading();
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          await sendEmailVerification(user);
-          showToast('Email verifikasi berhasil dikirim ulang!', 'success');
-        } else {
-          showToast('Silakan masuk kembali terlebih dahulu untuk mengirim ulang verifikasi.', 'warning');
+        showLoading();
+        try {
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
+          const res = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput })
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Gagal mengirim email reset password.');
+
+          hideLoading();
+          showAlert('Tautan Terkirim!', data.message || `Link reset password dikirim ke ${emailInput}. Periksa Inbox/Spam!`, 'success');
           renderLogin('login');
+        } catch (err) {
+          hideLoading();
+          showAlert('Gagal Reset Password', err.message || 'Terjadi kesalahan saat mengirim link reset.', 'error');
         }
-      } catch (err) {
-        if (err.code === 'auth/too-many-requests') {
-          showToast('Terlalu banyak permintaan kirim ulang. Harap tunggu beberapa saat.', 'error');
-        } else {
-          showToast('Gagal mengirim ulang email: ' + err.message, 'error');
-        }
-      } finally {
-        hideLoading();
-      }
-    };
+      };
+    }
 
-    document.getElementById('btn-back-to-login').onclick = async () => {
-      showLoading();
-      try {
-        await auth.signOut();
+    const backToLoginBtn = document.getElementById('btn-back-to-login');
+    if (backToLoginBtn) {
+      backToLoginBtn.onclick = () => {
         renderLogin('login');
-      } catch (err) {
-        showToast('Gagal keluar: ' + err.message, 'error');
-      } finally {
-        hideLoading();
-      }
-    };
+      };
+    }
+  } else if (isResetConfirm) {
+    const confirmResetForm = document.getElementById('confirm-reset-form');
+    if (confirmResetForm) {
+      confirmResetForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const newPassword = document.getElementById('reset-new-password').value;
+        if (!newPassword || newPassword.length < 6) {
+          showToast('Kata sandi minimal 6 karakter.', 'warning');
+          return;
+        }
+        if (!extraData || !extraData.oobCode) {
+          showToast('Kode reset tidak ditemukan atau tidak valid.', 'error');
+          return;
+        }
+
+        showLoading();
+        try {
+          const { confirmPasswordReset, signOut } = await import('../firebase-config.js');
+          await confirmPasswordReset(auth, extraData.oobCode, newPassword);
+          try { await signOut(auth); } catch (err) {}
+          store.setUser(null);
+          hideLoading();
+          showAlert('Kata Sandi Berhasil Diubah!', 'Kata sandi kamu telah berhasil diperbarui. Silakan masuk kembali menggunakan kata sandi baru.', 'success');
+          renderLogin('login');
+        } catch (err) {
+          hideLoading();
+          console.error('Confirm password reset error:', err);
+          showAlert('Gagal Ubah Kata Sandi', 'Tautan ini sudah kedaluwarsa atau tidak valid. Silakan minta tautan baru.', 'error');
+        }
+      };
+    }
+
+    const toggleResetPass = document.getElementById('toggle-reset-password');
+    if (toggleResetPass) {
+      toggleResetPass.onclick = () => {
+        const input = document.getElementById('reset-new-password');
+        if (input.type === 'password') {
+          input.type = 'text';
+          toggleResetPass.classList.replace('ph-eye', 'ph-eye-slash');
+        } else {
+          input.type = 'password';
+          toggleResetPass.classList.replace('ph-eye-slash', 'ph-eye');
+        }
+      };
+    }
+
+    const backToLoginFromReset = document.getElementById('btn-back-to-login-from-reset');
+    if (backToLoginFromReset) {
+      backToLoginFromReset.onclick = () => {
+        renderLogin('login');
+      };
+    }
   } else {
     // Switch Auth Mode
     document.getElementById('btn-switch-auth').onclick = () => {
@@ -348,6 +419,15 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
         if (icon) {
           icon.className = isPassword ? 'ph ph-eye-slash' : 'ph ph-eye';
         }
+      };
+    }
+
+    // Forgot Password Logic
+    const btnForgotPassword = document.getElementById('btn-forgot-password');
+    if (btnForgotPassword) {
+      btnForgotPassword.onclick = (e) => {
+        e.preventDefault();
+        renderLogin('forgot-password');
       };
     }
   }
@@ -414,26 +494,50 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
       showLoading();
       try {
         if (isReg) {
-          // Handle Register
           const name = document.getElementById('reg-name').value;
           const confirmPass = document.getElementById('confirm-password').value;
 
-          // Validasi kecocokan sandi
           if (pass !== confirmPass) {
             showToast('Password dan Konfirmasi Password tidak cocok!', 'warning');
             hideLoading();
             return;
           }
 
+          window.isVerificationModalActive = true;
           const result = await createUserWithEmailAndPassword(auth, email, pass);
           const user = result.user;
+
+          const { updateProfile } = await import('../firebase-config.js');
+          await updateProfile(user, { displayName: name });
+
+          const token = await user.getIdToken(true);
+          await store.setUser({
+            uid: user.uid,
+            name: name,
+            email: user.email,
+            avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+            token: token,
+            emailVerified: false,
+            provider: 'password',
+            isNewUser: true
+          }, { name });
+
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
           
-          // Kirim email verifikasi Firebase secara asinkron
-          await sendEmailVerification(user);
-          showToast('Registrasi berhasil! Email verifikasi telah dikirim.', 'success');
-          // Sesi dibiarkan hidup agar user bisa langsung cek verifikasi / kirim ulang secara instan
+          fetch(`${API_URL}/auth/otp/send`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }).catch(err => {
+            console.warn('Gagal trigger kirim OTP backend:', err);
+          });
+
+          hideLoading();
+          renderLogin('verify-otp', user.email, { email: user.email, token });
         } else {
-          // Handle Login (with Demo Fallback)
           if (email === 'guest' && pass === 'guest123') {
             store.setUser({ 
               name: 'Guest User', 
@@ -444,14 +548,45 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
             });
             navigateTo('/dashboard');
           } else {
-            await signInWithEmailAndPassword(auth, email, pass);
-            // onAuthStateChanged di main.js akan menangani pendeteksian emailVerified secara otomatis!
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+            const check2FARes = await fetch(`${API_URL}/auth/2fa/check`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password: pass })
+            }).then(r => r.json()).catch(() => null);
+
+            if (check2FARes && check2FARes.require2FA) {
+              hideLoading();
+              renderLogin('verify-2fa-otp', check2FARes.emailMasked, { preAuthToken: check2FARes.preAuthToken, emailMasked: check2FARes.emailMasked });
+              return;
+            }
+
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCred.user;
+            await user.reload();
+            const token = await user.getIdToken(true);
+            
+            await store.setUser({
+              uid: user.uid,
+              name: user.displayName || (store.user && store.user.uid === user.uid ? store.user.name : null) || 'User MyFinance',
+              email: user.email,
+              avatar: user.photoURL || (store.user && store.user.uid === user.uid ? store.user.avatar : null) || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+              token: token,
+              emailVerified: user.emailVerified,
+              provider: user.providerData[0]?.providerId || 'password'
+            });
+
+            hideLoading();
+            navigateTo('/dashboard');
           }
         }
       } catch (error) {
+        window.isVerificationModalActive = false;
+        console.error("Auth Error:", error);
         let msg = error.message;
         if (error.code === 'auth/operation-not-allowed') {
-          msg = 'Metode masuk dengan Email & Password belum diaktifkan di Firebase Console Anda. Silakan aktifkan terlebih dahulu di menu: Authentication -> Sign-in method -> Email/Password.';
+          msg = 'Metode masuk dengan Email & Password belum diaktifkan di Firebase Console Anda.';
         } else if (error.code === 'auth/email-already-in-use') {
           msg = 'Alamat email ini sudah terdaftar. Silakan gunakan email lain atau langsung masuk ke akun Anda.';
         } else if (error.code === 'auth/invalid-email') {
@@ -461,7 +596,7 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
         } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
           msg = 'Email atau kata sandi yang Anda masukkan salah. Silakan periksa kembali.';
         } else if (error.code === 'auth/too-many-requests') {
-          msg = 'Terlalu banyak percobaan masuk yang gagal. Akses diblokir sementara, silakan coba beberapa saat lagi.';
+          msg = 'Terlalu banyak percobaan masuk yang gagal. Akses diblokir sementara.';
         } else if (error.code === 'auth/network-request-failed') {
           msg = 'Koneksi jaringan gagal. Harap periksa koneksi internet Anda.';
         }
@@ -472,184 +607,6 @@ export function renderLogin(mode = 'login', pendingEmail = '') {
     };
   }
 
-  // List of cute finance quotes for click interactions
-  const quotes = [
-    "Yuk hemat bareng aku!",
-    "Sssst, kurangi jajan kopi ya!",
-    "Tabunganmu aman bersamaku!",
-    "Gajian sebentar lagi datang!",
-    "Ayo raih wishlist impianmu!",
-    "Kelola uang lebih cerdas!",
-    "Yuk catat pengeluaranmu!",
-    "Don't worry, be hemat!"
-  ];
-
-  // Quotes khusus si Babi Terbang
-  const pigQuotes = [
-    "Celengan babi terbang siap meluncur!",
-    "Oink oink! Tabung uangmu di sini!",
-    "Sayapku kepak-kepak demi masa depanmu!",
-    "Aku terbang karena beban tabunganmu ringan!",
-    "Oink! Siap terbang raih mimpimu!",
-    "Koin masuk, hatiku senang!"
-  ];
-
-  // Helper function to handle mascot click interactions
-  const initMascotInteraction = (mascotId, bubbleId, customQuotes = null) => {
-    const mascot = document.getElementById(mascotId);
-    const bubble = document.getElementById(bubbleId);
-    const quoteList = customQuotes || quotes;
-
-    if (mascot && bubble) {
-      mascot.onclick = (e) => {
-        e.stopPropagation(); // Prevent parallax reset
-
-        // Trigger Spin Animation
-        mascot.classList.add('mascot-spin');
-        setTimeout(() => {
-          mascot.classList.remove('mascot-spin');
-        }, 600);
-
-        // Pick a random quote
-        const randomQuote = quoteList[Math.floor(Math.random() * quoteList.length)];
-        bubble.textContent = randomQuote;
-        
-        // Show Bubble
-        bubble.classList.add('active');
-
-        // Hide Bubble after 3.5 seconds
-        if (mascot.bubbleTimeout) clearTimeout(mascot.bubbleTimeout);
-        mascot.bubbleTimeout = setTimeout(() => {
-          bubble.classList.remove('active');
-        }, 3500);
-      };
-    }
-  };
-
-  // Initialize click interactions for all 4 interactive elements
-  initMascotInteraction('mascot-pig', 'bubble-pig', pigQuotes);
-  initMascotInteraction('mascot-robot', 'bubble-robot');
-  initMascotInteraction('item-coin-small', 'bubble-coin-small');
-  initMascotInteraction('item-wallet', 'bubble-wallet');
-
-  // 3D Parallax & Mascot Gaze Tracking (Desktop Only) with Wide Gliding Range
-  const parallaxContainer = document.getElementById('login-parallax-container');
-  if (parallaxContainer && window.innerWidth > 991) {
-    parallaxContainer.onmousemove = (e) => {
-      const { width, height } = parallaxContainer.getBoundingClientRect();
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-
-      const layers = parallaxContainer.querySelectorAll('.parallax-layer');
-      layers.forEach(layer => {
-        const depth = parseFloat(layer.getAttribute('data-depth'));
-        // Standard Parallax Movement
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const deltaX = mouseX - centerX;
-        const deltaY = mouseY - centerY;
-        const moveX = deltaX * depth * 0.45;
-        const moveY = deltaY * depth * 0.45;
-
-        // 3D Head-Turn Face Tilt Angles
-        const rotateY = (deltaX / width) * 25; // up to 25 deg
-        const rotateX = -(deltaY / height) * 25; // up to -25 deg
-
-        layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      });
-
-      // Mascot Eye Gaze Tracking
-      const trackEyes = (mascotId, eyeClass) => {
-        const mascot = document.getElementById(mascotId);
-        if (!mascot) return;
-        const rect = mascot.getBoundingClientRect();
-        const mascotCenterX = rect.left + rect.width / 2;
-        const mascotCenterY = rect.top + rect.height / 2;
-
-        const dx = mouseX - mascotCenterX;
-        const dy = mouseY - mascotCenterY;
-        const angle = Math.atan2(dy, dx);
-        
-        // Eyes smoothly slide up to 4px inside their sockets toward the cursor
-        const eyeX = Math.cos(angle) * 4;
-        const eyeY = Math.sin(angle) * 4;
-
-        const eyes = mascot.querySelectorAll(eyeClass);
-        eyes.forEach(eye => {
-          eye.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
-        });
-      };
-
-      trackEyes('mascot-pig', '.pig-eye, .pig-eye-pupil');
-      trackEyes('mascot-robot', '.robot-eye');
-    };
-
-    parallaxContainer.onmouseleave = () => {
-      const layers = parallaxContainer.querySelectorAll('.parallax-layer');
-      layers.forEach(layer => {
-        layer.style.transform = 'translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg)';
-      });
-
-      // Reset eyes
-      document.querySelectorAll('.pig-eye, .pig-eye-pupil, .robot-eye').forEach(eye => {
-        eye.style.transform = 'translate(0px, 0px)';
-      });
-    };
-  }
-
-  // Dynamic Cloud Generator (Desktop Only)
-  const cloudContainer = document.getElementById('login-cloud-container');
-  if (cloudContainer && window.innerWidth > 991) {
-    const cloudCount = 6;
-    let cloudHTML = '';
-
-    for (let i = 0; i < cloudCount; i++) {
-      // Determine random sizes: small, normal, large
-      const sizeIndex = Math.floor(Math.random() * 3); // 0, 1, 2
-      let width, height, opacity, speedMult;
-      
-      if (sizeIndex === 0) {
-        // Small
-        width = Math.floor(Math.random() * 30) + 45; // 45px - 75px
-        height = Math.floor(width * 0.6);
-        opacity = 0.25;
-        speedMult = 1.35; // Flows faster
-      } else if (sizeIndex === 1) {
-        // Normal
-        width = Math.floor(Math.random() * 40) + 80; // 80px - 120px
-        height = Math.floor(width * 0.6);
-        opacity = 0.35;
-        speedMult = 1.0;
-      } else {
-        // Large
-        width = Math.floor(Math.random() * 50) + 130; // 130px - 180px
-        height = Math.floor(width * 0.6);
-        opacity = 0.45;
-        speedMult = 0.72; // Flows slower
-      }
-
-      const top = Math.floor(Math.random() * 75) + 8; // Spread between 8% and 83% top
-      const duration = Math.floor((Math.random() * 35 + 45) / speedMult); // 45s - 80s adjusted by speed multiplier
-      const delay = -Math.floor(Math.random() * duration); // Negative delay for instant pre-spawn!
-
-      // Drifting direction starting from screen corners (left-to-right or right-to-left)
-      const directionClass = Math.random() > 0.5 ? 'cloud-drift-left-to-right' : 'cloud-drift-right-to-left';
-
-      cloudHTML += `
-        <div class="cloud-ornament" style="
-          top: ${top}%;
-          animation: ${directionClass} ${duration}s linear infinite;
-          animation-delay: ${delay}s;
-          opacity: ${opacity};
-          position: absolute;
-          pointer-events: none;
-        ">
-          <svg viewBox="0 0 100 60" width="${width}" height="${height}">
-            <path d="M20,45 A15,15 0 0,1 30,20 A20,20 0 0,1 70,20 A15,15 0 0,1 80,45 Z" fill="currentColor" />
-          </svg>
-        </div>
-      `;
-    }
-    cloudContainer.innerHTML = cloudHTML;
-  }
+  // Initialize mascot & cloud animations
+  initLoginAnimations();
 }

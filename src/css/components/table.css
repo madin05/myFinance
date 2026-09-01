@@ -2,8 +2,8 @@
   background-color: var(--white);
   border-radius: var(--radius-xl);
   padding: 1rem;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   overflow: visible !important; /* Biar popover gak kepotong bre */
 }
 
@@ -12,6 +12,13 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.section-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .section-header h3 {
@@ -39,7 +46,9 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border);
-  background-color: var(--border-light); /* Background yang solid di light/dark mode */
+  background-color: var(
+    --border-light
+  ); /* Background yang solid di light/dark mode */
   white-space: nowrap;
 }
 
@@ -49,6 +58,15 @@
   color: var(--text-main);
   vertical-align: middle;
   border-bottom: 1px solid var(--border);
+}
+
+/* Prevent unwanted line-breaks in structured data columns */
+.transactions-table td:nth-child(1),
+.transactions-table td:nth-child(2),
+.transactions-table td:nth-child(3),
+.transactions-table td:nth-child(5),
+.transactions-table td:nth-child(6) {
+  white-space: nowrap;
 }
 
 .transactions-table th:first-child,
@@ -70,12 +88,35 @@
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-.badge-blue { background-color: var(--blue-light); color: var(--blue); }
-.badge-green { background-color: var(--green-light); color: var(--green); }
-.badge-orange { background-color: var(--orange-light); color: var(--orange); }
-.badge-purple { background-color: var(--purple-light); color: var(--purple); }
+/* Hide category icon on desktop by default */
+.tx-cat-icon {
+  display: none;
+}
 
-.badge-red { background-color: var(--red-light); color: var(--red); }
+.badge-blue {
+  background-color: var(--blue-light);
+  color: var(--blue);
+}
+.badge-green {
+  background-color: var(--green-light);
+  color: var(--green);
+}
+.badge-orange {
+  background-color: var(--orange-light);
+  color: var(--orange);
+}
+.badge-purple {
+  background-color: var(--purple-light);
+  color: var(--purple);
+}
+
+.badge-red {
+  background-color: var(--red-light);
+  color: var(--red);
+}

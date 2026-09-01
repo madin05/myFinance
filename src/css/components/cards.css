@@ -1,16 +1,20 @@
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-cards-slider-container {
+  display: contents;
 }
 
 .stat-card {
   background-color: var(--card-bg);
   border-radius: var(--radius-xl);
-  padding: 1.1rem;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
+  padding: 1.25rem 1.35rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -19,37 +23,256 @@
 }
 
 .stat-card:hover {
-  box-shadow: var(--shadow);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-light);
 }
 
 .stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.25rem;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 0.75rem;
   z-index: 2;
+  min-height: 28px;
+}
+
+.stat-watermark {
+  position: absolute !important;
+  right: 8px !important;
+  bottom: 4px !important;
+  font-size: 4.2rem !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease !important;
+  line-height: 1 !important;
+  transform: rotate(-6deg) !important;
+  opacity: 0.22 !important;
 }
 
 .icon-box {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
 }
 
+.stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  background-color: var(--border-light, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+/* Card Total Saldo — Vibrant Ocean Blue Gradient (Light Mode) */
+#card-total-saldo {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 25px -5px rgba(2, 132, 199, 0.35) !important;
+}
+
+#card-total-saldo .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-total-saldo .stat-value {
+  color: #ffffff !important;
+}
+
+#card-total-saldo .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-total-saldo .stat-icon-wrapper i,
+#card-total-saldo i {
+  color: #ffffff !important;
+}
+
+#card-total-saldo .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+/* Card Pemasukan (Saldo Masuk) — Vibrant Solid Green Gradient */
+#card-pemasukan {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.28) !important;
+}
+
+#card-pemasukan .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-pemasukan .stat-value {
+  color: #ffffff !important;
+}
+
+#card-pemasukan .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-pemasukan .stat-icon-wrapper i {
+  color: #ffffff !important;
+}
+
+#card-pemasukan .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+#card-pemasukan .stat-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Card Pengeluaran (Duit Keluar) — Vibrant Solid Red Gradient */
+#card-pengeluaran {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.28) !important;
+}
+
+#card-pengeluaran .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-pengeluaran .stat-value {
+  color: #ffffff !important;
+}
+
+#card-pengeluaran .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-pengeluaran .stat-icon-wrapper i {
+  color: #ffffff !important;
+}
+
+#card-pengeluaran .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+#card-pengeluaran .stat-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] #card-total-saldo,
+.dark #card-total-saldo {
+  background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #9d4edd 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 24px rgba(76, 29, 149, 0.45) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-value {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper i,
+[data-theme="dark"] #card-total-saldo i {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-watermark {
+  color: #ffffff !important;
+  opacity: 0.2 !important;
+}
+
+[data-theme="dark"] #card-pemasukan,
+.dark #card-pemasukan {
+  background: linear-gradient(135deg, #064e3b 0%, #047857 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(6, 78, 59, 0.6) !important;
+}
+
+[data-theme="dark"] #card-pengeluaran,
+.dark #card-pengeluaran {
+  background: linear-gradient(135deg, #710e2b 0%, #be123c 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(113, 14, 43, 0.6) !important;
+}
+
+/* Dark Mode Icon Wrappers */
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper,
+.dark #card-total-saldo .stat-icon-wrapper {
+  background-color: #292454;
+  border: 1px solid #5247A3;
+  color: #A5B4FC !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper i,
+.dark #card-total-saldo .stat-icon-wrapper i {
+  color: #A5B4FC !important;
+}
+
+[data-theme="dark"] #card-pemasukan .stat-icon-wrapper,
+.dark #card-pemasukan .stat-icon-wrapper {
+  background-color: #104232;
+  border: 1px solid #1D7A5C;
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] #card-pemasukan .stat-icon-wrapper i,
+.dark #card-pemasukan .stat-icon-wrapper i {
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] #card-pengeluaran .stat-icon-wrapper,
+.dark #card-pengeluaran .stat-icon-wrapper {
+  background-color: #4C1926;
+  border: 1px solid #8A253E;
+  color: #F87171 !important;
+}
+
+[data-theme="dark"] #card-pengeluaran .stat-icon-wrapper i,
+.dark #card-pengeluaran .stat-icon-wrapper i {
+  color: #F87171 !important;
+}
+
+/* Dark Mode Watermarks */
+[data-theme="dark"] #card-total-saldo .stat-watermark, .dark #card-total-saldo .stat-watermark { color: var(--primary, #818CF8); opacity: 0.22; }
+[data-theme="dark"] #card-pemasukan .stat-watermark, .dark #card-pemasukan .stat-watermark { color: #ffffff; opacity: 0.24; }
+[data-theme="dark"] #card-pengeluaran .stat-watermark, .dark #card-pengeluaran .stat-watermark { color: #ffffff; opacity: 0.24; }
+
 .stat-card:hover .stat-watermark {
-  transform: scale(1.1) rotate(-10deg);
-  opacity: 0.12;
+  transform: scale(1.12) rotate(-10deg) !important;
+  opacity: 0.38 !important;
 }
 
 .stat-badge {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -63,10 +286,11 @@
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: var(--text-muted);
-  margin-bottom: 0.25rem;
-  font-weight: 500;
+  margin-bottom: 0;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .stat-value {
@@ -74,18 +298,6 @@
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: -0.01em;
-}
-
-.stat-watermark {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  font-size: 5.5rem;
-  opacity: 0.08;
-  transform: rotate(-15deg);
-  z-index: 1;
-  pointer-events: none;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .progress-bar-container {
@@ -139,10 +351,24 @@
   background-color: var(--card-bg);
   border: 1px solid var(--border);
   position: relative;
+  overflow: visible !important; /* Prevents kebab dropdown from being clipped */
+  /* Hardware-accelerated layer so SortableJS FLIP animations are buttery smooth */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
+/* While dragging:
+   - Disable our hover lift (would fight with SortableJS's translate3d FLIP)
+   - Disable our box-shadow/transform transition on the .wishlist-item rule
+     so SortableJS's inline transition (set via JS) wins for the FLIP animation. */
 .wishlist-container.is-dragging .wishlist-item {
-  transition: none !important;
+  transition: none;
+}
+.wishlist-container.is-dragging .wishlist-item:hover {
+  transform: translate3d(0, 0, 0);
+  box-shadow: none;
 }
 
 .wishlist-actions {
@@ -187,7 +413,7 @@
 
 
 .wishlist-item:hover {
-  transform: translateY(-5px);
+  transform: translate3d(0, -5px, 0);
   box-shadow: var(--shadow-md);
 }
 
@@ -211,9 +437,70 @@
   opacity: 1;
 }
 
-.stat-card.dragging {
-  opacity: 0.4;
-  border: 2px dashed var(--primary);
+/* Ghost Placeholder — GitHub Pinned Repos style.
+   The card frame (background + border) stays fully visible, only the
+   CONTENT inside (text, icons, progress bar, etc.) is dimmed.
+   This makes the source slot look like a clearly defined empty card. */
+.wishlist-item.dragging {
+  opacity: 1 !important;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: border-color 0.2s ease !important;
+}
+.wishlist-item.dragging > * {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+/* Actively Dragged Element (Fallback) - clean lift, follows the cursor.
+   IMPORTANT: do NOT set `transform` here — SortableJS sets it inline via JS
+   (translate3d) every frame to make the card follow the pointer. Overriding
+   with !important would freeze the card in place. */
+.sortable-fallback {
+  opacity: 1 !important;
+  box-shadow:
+    0 16px 32px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(15, 23, 42, 0.10) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-xl) !important;
+  cursor: grabbing !important;
+  z-index: 99999 !important;
+  pointer-events: none;
+  background-color: var(--card-bg) !important;
+  will-change: transform;
+}
+
+/* ===========================================
+   Dark Mode — GitHub-style ghost + premium lift
+   =========================================== */
+
+/* Source slot frame: keep border crisp & visible in dark theme */
+[data-theme="dark"] .wishlist-item.dragging {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+}
+[data-theme="dark"] .wishlist-item.dragging > * {
+  opacity: 0.25;
+}
+
+/* Active dragged card in dark mode: deeper shadow with purple accent */
+[data-theme="dark"] .sortable-fallback {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(199, 125, 255, 0.30) !important;
+  box-shadow:
+    0 0 0 1px rgba(199, 125, 255, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.65),
+    0 8px 18px rgba(157, 78, 221, 0.22) !important;
+}
+
+/* Smooth grab cursor while a card is being held.
+   NOTE: Do NOT add `transition: transform` to non-dragged items here —
+   SortableJS sets its own inline `style.transition` via JS for the FLIP
+   animation, and CSS !important would override it and break smooth reordering. */
+.wishlist-container.is-dragging {
+  cursor: grabbing;
 }
 
 @media (max-width: 768px) {
@@ -224,13 +511,36 @@
 }
 
 /* Dashboard Greeting Styles */
+.dashboard-greeting-simple {
+  margin-bottom: 1.25rem;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.greeting-title-simple {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.greeting-date-simple {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  font-weight: 500;
+}
+
 .dashboard-greeting {
   margin-bottom: 1.5rem;
   background: var(--card-bg);
   padding: 1rem 1.5rem;
   border-radius: var(--radius-xl);
-  border: none; /* Removed thin border for borderless premium design */
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border); /* Added stronger border */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); /* Premium shadow */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -238,7 +548,6 @@
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.5s ease;
   min-height: 110px;
-  box-shadow: var(--shadow);
 }
 
 .dashboard-greeting::before {
@@ -256,31 +565,31 @@
 
 /* Dynamic Atmosphere Gradients for Greeting Box */
 .dashboard-greeting.morning {
-  background: linear-gradient(135deg, rgba(255, 249, 196, 0.15) 0%, rgba(255, 183, 77, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(255, 249, 196, 0.15) 0%, rgba(255, 183, 77, 0.12) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.morning {
-  background: linear-gradient(135deg, rgba(255, 249, 196, 0.03) 0%, rgba(255, 183, 77, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(255, 249, 196, 0.03) 0%, rgba(255, 183, 77, 0.05) 100%), var(--card-bg);
 }
 
 .dashboard-greeting.afternoon {
-  background: linear-gradient(135deg, rgba(224, 247, 250, 0.2) 0%, rgba(2, 136, 209, 0.08) 100%);
+  background: linear-gradient(135deg, rgba(224, 247, 250, 0.2) 0%, rgba(2, 136, 209, 0.08) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.afternoon {
-  background: linear-gradient(135deg, rgba(224, 247, 250, 0.03) 0%, rgba(2, 136, 209, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(224, 247, 250, 0.03) 0%, rgba(2, 136, 209, 0.05) 100%), var(--card-bg);
 }
 
 .dashboard-greeting.evening {
-  background: linear-gradient(135deg, rgba(248, 187, 208, 0.2) 0%, rgba(255, 112, 67, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(248, 187, 208, 0.2) 0%, rgba(255, 112, 67, 0.12) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.evening {
-  background: linear-gradient(135deg, rgba(248, 187, 208, 0.03) 0%, rgba(255, 112, 67, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(248, 187, 208, 0.03) 0%, rgba(255, 112, 67, 0.05) 100%), var(--card-bg);
 }
 
 .dashboard-greeting.night {
-  background: linear-gradient(135deg, rgba(241, 245, 249, 0.2) 0%, rgba(203, 213, 225, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.2) 0%, rgba(203, 213, 225, 0.2) 100%), var(--card-bg);
 }
 body.dark .dashboard-greeting.night {
-  background: linear-gradient(135deg, rgba(13, 27, 42, 0.4) 0%, rgba(27, 38, 59, 0.4) 100%);
+  background: linear-gradient(135deg, rgba(13, 27, 42, 0.4) 0%, rgba(27, 38, 59, 0.4) 100%), var(--card-bg);
 }
 
 .greeting-content {

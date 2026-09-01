@@ -1,13 +1,37 @@
 import { store } from './store.js';
+import { auth } from './firebase-config.js';
 import {
   getDashboardSkeleton,
   getTableSkeleton,
   getTransaksiSkeleton,
   getAnggaranSkeleton,
   getTabunganSkeleton,
+  getSaldoSkeleton,
   getLaporanSkeleton,
-  getAkunSkeleton
+  getAkunSkeleton,
+  getAiSkeleton
 } from './components/skeleton.js';
+
+// --- Daftar rute yang DIKUNCI untuk user yang belum verifikasi email ---
+const VERIFICATION_REQUIRED_ROUTES = ['/transaksi', '/anggaran', '/saldo', '/laporan', '/settings'];
+
+/**
+ * Cek apakah user sudah terverifikasi emailnya.
+ * Prioritas: Firebase Auth currentUser > store.user.emailVerified
+ * Google OAuth users dianggap selalu verified.
+ */
+export function isUserVerified() {
+  const firebaseUser = auth.currentUser;
+  if (firebaseUser) {
+    // Google provider selalu dianggap verified
+    const isGoogle = firebaseUser.providerData.some(p => p.providerId === 'google.com');
+    if (isGoogle) return true;
+    return firebaseUser.emailVerified;
+  }
+  // Fallback ke store
+  if (store.user?.provider === 'google') return true;
+  return store.user?.emailVerified ?? false;
+}
 
 // --- URL Security & Sanitization Layer (Anti-XSS / Anti-Path Traversal) ---
 export function sanitizePath(path) {
@@ -36,11 +60,20 @@ export function showSkeleton(routePath) {
     case '/tabungan':
       container.innerHTML = getTabunganSkeleton(localStorage.getItem('wishlist-view') || 'grid');
       break;
+    case '/saldo':
+      container.innerHTML = getSaldoSkeleton();
+      break;
     case '/laporan':
       container.innerHTML = getLaporanSkeleton();
       break;
     case '/akun':
       container.innerHTML = getAkunSkeleton();
+      break;
+    case '/ai':
+      container.innerHTML = getAiSkeleton();
+      break;
+    case '/settings':
+      container.innerHTML = getTableSkeleton();
       break;
     case '/faq':
       container.innerHTML = getTableSkeleton();
@@ -55,8 +88,10 @@ export function handleRoute() {
   const container = document.getElementById('page-content');
   const modalContainer = document.getElementById('modal-container');
   
-  // Bersihkan modal yang mungkin masih terbuka
+  // Bersihkan modal dan dropdown yang mungkin masih terbuka saat pindah halaman
   if (modalContainer) modalContainer.innerHTML = '';
+  document.getElementById('profile-dropdown')?.classList.remove('active');
+  document.getElementById('notif-dropdown')?.classList.remove('active');
 
   // Reset scroll ke atas halaman setiap kali pindah rute
   window.scrollTo(0, 0);
@@ -67,13 +102,22 @@ export function handleRoute() {
   // Keamanan URL: Dapatkan rute yang aman & bersih
   const route = sanitizePath(window.location.pathname);
 
-  // Sembunyikan/tampilkan searchbar di mobile berdasarkan rute aktif
+  // Sembunyikan/tampilkan searchbar & FAM menu di mobile/ai berdasarkan rute aktif
   const searchBar = document.querySelector('.search-bar');
   if (searchBar) {
     if (route === '/dashboard' || route === '/transaksi') {
       searchBar.classList.remove('mobile-hidden');
     } else {
       searchBar.classList.add('mobile-hidden');
+    }
+  }
+
+  const famMenu = document.querySelector('.menu-tooltip-container');
+  if (famMenu) {
+    if (route === '/ai') {
+      famMenu.style.display = 'none';
+    } else {
+      famMenu.style.display = '';
     }
   }
 
@@ -86,9 +130,16 @@ export function handleRoute() {
       headerEl.classList.remove('curved-header');
     }
   }
-  
+
+  // Toggle kelas page-dashboard untuk styling background hero
+  if (route === '/dashboard') {
+    document.body.classList.add('page-dashboard');
+  } else {
+    document.body.classList.remove('page-dashboard');
+  }
+
   // Update sidebar active state
-  document.querySelectorAll('.nav-item').forEach(item => {
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => {
     const icon = item.querySelector('i');
     item.classList.remove('active');
     if (icon) {
@@ -105,36 +156,57 @@ export function handleRoute() {
     }
   });
 
-  // Show skeleton for a smooth transition
+  // Update mobile bottom nav active state
+  document.querySelectorAll('.bottom-nav-item').forEach(item => {
+    const icon = item.querySelector('i');
+    item.classList.remove('active');
+    if (icon) {
+      icon.classList.remove('ph-fill');
+      icon.classList.add('ph');
+    }
+    const itemRoute = item.getAttribute('href');
+    if (itemRoute === route) {
+      item.classList.add('active');
+      if (icon) {
+        icon.classList.remove('ph');
+        icon.classList.add('ph-fill');
+      }
+    }
+  });
+
+  // Render skeleton for immediate visual feedback
   showSkeleton(route);
 
-  // Snappy routing
-  setTimeout(() => {
-    if (store.isSyncing && store.transactions.length === 0) {
-      console.log('Initial sync in progress, keeping skeleton...');
-      return;
-    }
+  // Render page content immediately without artificial delays
+  loadRoutePage(route);
+}
 
-    if (route === '/dashboard') {
-      import('./pages/dashboard.js').then(module => module.renderDashboard());
-    } else if (route === '/transaksi') {
-      import('./pages/transaksi.js').then(module => module.renderTransaksi());
-    } else if (route === '/anggaran') {
-      import('./pages/anggaran.js').then(module => module.renderAnggaran());
-    } else if (route === '/tabungan') {
-      import('./pages/tabungan.js').then(module => module.renderTabungan());
-    } else if (route === '/laporan') {
-      import('./pages/laporan.js').then(module => module.renderLaporan());
-    } else if (route === '/akun') {
-      import('./pages/akun.js').then(module => module.renderAkun());
-    } else if (route === '/faq') {
-      import('./pages/faq.js').then(module => module.renderFaq());
-    } else if (route === '/notifikasi') {
-      import('./pages/notifikasi.js').then(module => module.renderNotifikasi());
-    } else {
-      import('./pages/error404.js').then(module => module.renderError404());
-    }
-  }, 50);
+function loadRoutePage(route) {
+  if (route === '/dashboard') {
+    import('./pages/dashboard.js').then(module => module.renderDashboard());
+  } else if (route === '/transaksi') {
+    import('./pages/transaksi.js').then(module => module.renderTransaksi());
+  } else if (route === '/anggaran') {
+    import('./pages/anggaran.js').then(module => module.renderAnggaran());
+  } else if (route === '/tabungan') {
+    import('./pages/tabungan.js').then(module => module.renderTabungan());
+  } else if (route === '/saldo') {
+    import('./pages/saldo.js').then(module => module.renderSaldo());
+  } else if (route === '/laporan') {
+    import('./pages/laporan.js').then(module => module.renderLaporan());
+  } else if (route === '/akun') {
+    import('./pages/akun.js').then(module => module.renderAkun());
+  } else if (route === '/ai') {
+    import('./pages/ai.js').then(module => module.renderAiPage());
+  } else if (route === '/settings') {
+    import('./pages/settings.js').then(module => module.renderSettings());
+  } else if (route === '/faq') {
+    import('./pages/faq.js').then(module => module.renderFaq());
+  } else if (route === '/notifikasi') {
+    import('./pages/notifikasi.js').then(module => module.renderNotifikasi());
+  } else {
+    import('./pages/error404.js').then(module => module.renderError404());
+  }
 }
 
 // Fungsi bantu navigasi aman tanpa memicu reload halaman
@@ -147,29 +219,5 @@ export function navigateTo(path) {
 // Fungsi buat render ulang halaman aktif TANPA skeleton (biar gak flicker pas sync data)
 export function refreshCurrentPage() {
   const route = sanitizePath(window.location.pathname);
-  
-  if (store.isSyncing && store.transactions.length === 0) {
-    console.log('Initial sync in progress, keeping skeleton on refresh...');
-    return;
-  }
-  
-  if (route === '/dashboard') {
-    import('./pages/dashboard.js').then(m => m.renderDashboard());
-  } else if (route === '/transaksi') {
-    import('./pages/transaksi.js').then(m => m.renderTransaksi());
-  } else if (route === '/anggaran') {
-    import('./pages/anggaran.js').then(m => m.renderAnggaran());
-  } else if (route === '/tabungan') {
-    import('./pages/tabungan.js').then(m => m.renderTabungan());
-  } else if (route === '/laporan') {
-    import('./pages/laporan.js').then(m => m.renderLaporan());
-  } else if (route === '/akun') {
-    import('./pages/akun.js').then(m => m.renderAkun());
-  } else if (route === '/faq') {
-    import('./pages/faq.js').then(m => m.renderFaq());
-  } else if (route === '/notifikasi') {
-    import('./pages/notifikasi.js').then(m => m.renderNotifikasi());
-  } else {
-    import('./pages/error404.js').then(m => m.renderError404());
-  }
+  loadRoutePage(route);
 }
