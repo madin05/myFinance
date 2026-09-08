@@ -60,40 +60,45 @@ export function parseNaturalLanguageTx(text) {
   const isIncome = incomeKeywords.some((kw) => lower.includes(kw));
   const type = isIncome ? "income" : "expense";
 
-  // 3. Infer Category
+  // 3. Infer Category (expanded slang/abbreviation support)
   let kategori = isIncome ? "Gaji & Pendapatan" : "Lain-lain";
-  if (lower.includes("bensin") || lower.includes("pertamax") || lower.includes("pertalite") || lower.includes("parkir") || lower.includes("gojek") || lower.includes("grab") || lower.includes("angkot") || lower.includes("tol") || lower.includes("transport")) {
+  if (lower.includes("bensin") || lower.includes("bnesin") || lower.includes("pertamax") || lower.includes("pertalite") || lower.includes("parkir") || lower.includes("gojek") || lower.includes("grab") || lower.includes("angkot") || lower.includes("tol") || lower.includes("transport") || lower.includes("ngegas") || lower.includes("solar") || lower.includes("bus") || lower.includes("kereta") || lower.includes("pesawat") || lower.includes("ojol")) {
     kategori = "Transportasi";
-  } else if (lower.includes("makan") || lower.includes("minum") || lower.includes("kopi") || lower.includes("bakso") || lower.includes("nasi") || lower.includes("resto") || lower.includes("warung") || lower.includes("food")) {
+  } else if (lower.includes("makan") || lower.includes("mkn") || lower.includes("minum") || lower.includes("mnm") || lower.includes("kopi") || lower.includes("ngopi") || lower.includes("bakso") || lower.includes("nasi") || lower.includes("resto") || lower.includes("warung") || lower.includes("food") || lower.includes("jajan") || lower.includes("nongkrong") || lower.includes("lunch") || lower.includes("dinner") || lower.includes("sarapan") || lower.includes("starbucks") || lower.includes("kfc") || lower.includes("mcd") || lower.includes("gofood") || lower.includes("grabfood") || lower.includes("mknan")) {
     kategori = "Makanan & Minuman";
-  } else if (lower.includes("gaji") || lower.includes("payroll") || lower.includes("thr") || lower.includes("bonus")) {
+  } else if (lower.includes("gaji") || lower.includes("gajian") || lower.includes("payroll") || lower.includes("thr") || lower.includes("bonus") || lower.includes("honor") || lower.includes("freelance")) {
     kategori = "Gaji & Pendapatan";
-  } else if (lower.includes("belanja") || lower.includes("baju") || lower.includes("sepatu") || lower.includes("tokopedia") || lower.includes("shopee") || lower.includes("mall")) {
+  } else if (lower.includes("belanja") || lower.includes("blj") || lower.includes("baju") || lower.includes("sepatu") || lower.includes("tokopedia") || lower.includes("tokped") || lower.includes("shopee") || lower.includes("shope") || lower.includes("mall") || lower.includes("lazada") || lower.includes("olshop") || lower.includes("skincare") || lower.includes("tas") || lower.includes("shopping")) {
     kategori = "Belanja";
-  } else if (lower.includes("listrik") || lower.includes("air") || lower.includes("wifi") || lower.includes("pulsa") || lower.includes("tagihan") || lower.includes("token")) {
+  } else if (lower.includes("listrik") || lower.includes("air") || lower.includes("wifi") || lower.includes("pulsa") || lower.includes("tagihan") || lower.includes("token") || lower.includes("kuota") || lower.includes("indihome") || lower.includes("iuran") || lower.includes("sewa") || lower.includes("kos") || lower.includes("bill") || lower.includes("rent")) {
     kategori = "Tagihan";
-  } else if (lower.includes("investasi") || lower.includes("saham") || lower.includes("crypto") || lower.includes("reksadana")) {
+  } else if (lower.includes("investasi") || lower.includes("saham") || lower.includes("crypto") || lower.includes("reksadana") || lower.includes("invest") || lower.includes("deposito")) {
     kategori = "Investasi & Tabungan";
-  } else if (lower.includes("obat") || lower.includes("dokter") || lower.includes("sehat") || lower.includes("rs") || lower.includes("gym")) {
+  } else if (lower.includes("obat") || lower.includes("dokter") || lower.includes("sehat") || lower.includes("rs") || lower.includes("gym") || lower.includes("ngegym") || lower.includes("apotek") || lower.includes("klinik") || lower.includes("vitamin")) {
     kategori = "Kesehatan";
-  } else if (lower.includes("kursus") || lower.includes("buku") || lower.includes("udemy") || lower.includes("kuliah") || lower.includes("sekolah")) {
+  } else if (lower.includes("kursus") || lower.includes("buku") || lower.includes("udemy") || lower.includes("kuliah") || lower.includes("sekolah") || lower.includes("les") || lower.includes("seminar") || lower.includes("pelatihan")) {
     kategori = "Pendidikan";
+  } else if (lower.includes("nonton") || lower.includes("bioskop") || lower.includes("game") || lower.includes("mabar") || lower.includes("hiburan") || lower.includes("netflix") || lower.includes("spotify")) {
+    kategori = "Hiburan";
+  } else if (lower.includes("nyalon") || lower.includes("salon") || lower.includes("laundry") || lower.includes("nyuci") || lower.includes("ngeprint") || lower.includes("print") || lower.includes("servis")) {
+    kategori = "Lain-lain";
   }
 
-  // 4. Infer Payment Method
+  // 4. Infer Payment Method (expanded)
   let metode = "Cash";
-  if (lower.includes("transfer") || lower.includes("bank") || lower.includes("bca") || lower.includes("mandiri") || lower.includes("bni") || lower.includes("bri")) {
+  if (lower.includes("transfer") || lower.includes("trnasfer") || lower.includes("bank") || lower.includes("bca") || lower.includes("mandiri") || lower.includes("bni") || lower.includes("bri") || lower.includes("bsi") || lower.includes("cimb") || lower.includes("blu") || lower.includes("jago") || lower.includes("sea bank") || lower.includes("seabank")) {
     metode = "Transfer Bank";
-  } else if (lower.includes("gopay") || lower.includes("ovo") || lower.includes("dana") || lower.includes("shopeepay") || lower.includes("spay") || lower.includes("qris") || lower.includes("ewallet")) {
+  } else if (lower.includes("gopay") || lower.includes("ovo") || lower.includes("dana") || lower.includes("shopeepay") || lower.includes("spay") || lower.includes("qris") || lower.includes("ewallet") || lower.includes("linkaja") || lower.includes("e-wallet")) {
     metode = "E-Wallet";
-  } else if (lower.includes("kartu") || lower.includes("kredit") || lower.includes("debit")) {
+  } else if (lower.includes("kartu") || lower.includes("kredit") || lower.includes("debit") || lower.includes("visa") || lower.includes("mastercard") || lower.includes("cc")) {
     metode = "Kartu Kredit/Debit";
   }
 
-  // 5. Clean up description
+  // 5. Clean up description (strip filler words, slang particles, payment methods)
   let keterangan = text
     .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|k|rb|ribu)?/gi, "")
-    .replace(/\b(cash|tunai|transfer|bank|qris|gopay|ovo|dana|shopeepay|spay|bca|mandiri)\b/gi, "")
+    .replace(/\b(cash|tunai|transfer|bank|qris|gopay|ovo|dana|shopeepay|spay|bca|mandiri|bni|bri|bsi|linkaja|ewallet|e-wallet|visa|mastercard|cc|kartu kredit|kartu debit)\b/gi, "")
+    .replace(/\b(gw|gue|gua|w|bre|bro|cuy|ngab|njir|wkwk|lol|dong|deh|sih|nih|tuh|kan|ya|yaa|aja|aj|udh|udah|abis|habis|tdi|tadi|kmrn|kemarin|kmaren|barusan)\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -102,10 +107,45 @@ export function parseNaturalLanguageTx(text) {
   }
 
   keterangan = keterangan.charAt(0).toUpperCase() + keterangan.slice(1);
-  const todayStr = new Date().toISOString().split("T")[0];
+
+  // Date parsing from slang — use Jakarta timezone
+  const jakartaStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
+  const nowLocal = new Date(jakartaStr);
+  const fmtDate = (d) => {
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yy}-${mm}-${dd}`;
+  };
+  const localDaysAgo = (n) => { const d = new Date(nowLocal); d.setDate(d.getDate() - n); return fmtDate(d); };
+  const todayStr = fmtDate(nowLocal);
+
+  let tanggal = todayStr; // default today
+  if (/\b(kemarin|kmrn|kmaren|kemaren|kmren|semalem|smlm|semalam|yesterday)\b/.test(lower)) {
+    tanggal = localDaysAgo(1);
+  } else if (/\b(2\s*(?:hari|hr)\s*(?:lalu|yll|yg\s*lalu)|lusa|kemarin\s*lusa|kmrn\s*lusa)\b/.test(lower)) {
+    tanggal = localDaysAgo(2);
+  } else if (/\b(3\s*(?:hari|hr)\s*(?:lalu|yll|yg\s*lalu))\b/.test(lower)) {
+    tanggal = localDaysAgo(3);
+  } else if (/\b(seminggu\s*(?:lalu|yll)|1?\s*minggu\s*(?:lalu|yll))\b/.test(lower)) {
+    tanggal = localDaysAgo(7);
+  }
+  // "tgl X" / "tanggal X" — this month if passed, last month if not
+  const tglMatch = lower.match(/\b(?:tgl|tanggal)\s*(\d{1,2})\b/);
+  if (tglMatch) {
+    const day = parseInt(tglMatch[1], 10);
+    if (day >= 1 && day <= 31) {
+      const d = new Date(nowLocal);
+      if (day > nowLocal.getDate()) {
+        d.setMonth(d.getMonth() - 1);
+      }
+      d.setDate(day);
+      tanggal = fmtDate(d);
+    }
+  }
 
   return {
-    tanggal: todayStr,
+    tanggal,
     kategori,
     metode,
     keterangan,

@@ -54,7 +54,10 @@ async function queryGemini(text) {
       body: JSON.stringify({ text }),
     });
     if (!res.ok) return null;
-    return await res.json();
+    const json = await res.json();
+    // Filter out fallback intent (Gemini offline) → let frontend use local parsers
+    if (json.intent === "fallback") return null;
+    return json;
   } catch {
     return null;
   }
