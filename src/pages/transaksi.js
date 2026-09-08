@@ -71,7 +71,7 @@ export function renderTransaksi() {
                 <!-- Header Popover -->
                 <div class="popover-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 2px;">
                   <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
-                    <i class="ph ph-funnel" style="color: var(--primary);"></i> Filter Transaksi
+                    Filter
                   </span>
                   <div style="display: flex; align-items: center; gap: 6px;">
                     <button type="button" id="btn-reset-filter" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
@@ -109,20 +109,21 @@ export function renderTransaksi() {
                   </div>
                 </div>
 
-                <!-- Kategori & Metode Section -->
-                <div class="popover-header" style="padding-left: 0;">Kategori & Metode</div>
-                <div class="form-row" style="gap: 0.75rem; margin-bottom: 1.25rem;">
-                  <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                    <select class="form-control" id="filter-kategori" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                      <option value="all" ${filterState.kategori === 'all' ? 'selected' : ''}>Semua Kategori</option>
-                      ${allKategori.map(k => `<option value="${k}" ${filterState.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
-                    </select>
-                  </div>
-                  <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                    <select class="form-control" id="filter-metode" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                      <option value="all" ${filterState.metode === 'all' ? 'selected' : ''}>Semua Metode</option>
-                      ${allMetode.map(m => `<option value="${m}" ${filterState.metode === m ? 'selected' : ''}>${m}</option>`).join('')}
-                    </select>
+                <!-- Kategori Section -->
+                <div class="popover-header" style="padding-left: 0;">Kategori</div>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                  <select class="form-control" id="filter-kategori" style="padding: 10px; font-size: 0.85rem; height: 42px;">
+                    <option value="all" ${filterState.kategori === 'all' ? 'selected' : ''}>Semua Kategori</option>
+                    ${allKategori.map(k => `<option value="${k}" ${filterState.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+                  </select>
+                </div>
+
+                <!-- Metode Section -->
+                <div class="popover-header" style="padding-left: 0;">Metode</div>
+                <div class="filter-chips-scroll" style="margin-bottom: 1.25rem;">
+                  <div class="filter-chips" id="filter-metode-chips">
+                    <button type="button" class="filter-chip ${filterState.metode === 'all' ? 'active' : ''}" data-metode="all">Semua</button>
+                    ${allMetode.map(m => `<button type="button" class="filter-chip ${filterState.metode === m ? 'active' : ''}" data-metode="${m}">${m}</button>`).join('')}
                   </div>
                 </div>
 
@@ -205,7 +206,6 @@ export function renderTransaksi() {
     filterState.month = document.getElementById('filter-month').value;
     filterState.year = document.getElementById('filter-year').value;
     filterState.kategori = document.getElementById('filter-kategori').value;
-    filterState.metode = document.getElementById('filter-metode').value;
     filterState.priceOperator = document.getElementById('filter-price-operator').value;
     const rawPrice = document.getElementById('filter-price-value').value.replace(/\D/g, '');
     filterState.priceValue = rawPrice ? Number(rawPrice) : '';
@@ -222,10 +222,19 @@ export function renderTransaksi() {
     });
   });
 
+  // Metode chips
+  container.querySelectorAll('#filter-metode-chips .filter-chip').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      container.querySelectorAll('#filter-metode-chips .filter-chip').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      filterState.metode = e.currentTarget.getAttribute('data-metode');
+      updateFilter();
+    });
+  });
+
   container.querySelector('#filter-month').addEventListener('change', updateFilter);
   container.querySelector('#filter-year').addEventListener('change', updateFilter);
   container.querySelector('#filter-kategori').addEventListener('change', updateFilter);
-  container.querySelector('#filter-metode').addEventListener('change', updateFilter);
   container.querySelector('#filter-price-operator').addEventListener('change', updateFilter);
   
   const priceInput = container.querySelector('#filter-price-value');

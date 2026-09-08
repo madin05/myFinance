@@ -64,7 +64,7 @@ export function renderAnggaran() {
       </div>
 
       <div class="table-container">
-        <table class="transactions-table">
+        <table class="transactions-table anggaran-table">
           <thead>
             <tr>
               <th>Kategori</th>

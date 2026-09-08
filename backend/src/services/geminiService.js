@@ -1,7 +1,7 @@
 // src/services/geminiService.js
 // Service untuk extract data struk via Gemini API (REST, no SDK)
 
-const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const PROMPT_TEMPLATE = (todayISO) => `Kamu adalah AI yang tugasnya mengekstrak data dari foto struk belanja Indonesia.
@@ -200,7 +200,9 @@ async function extractReceiptData(imageBase64, mimeType = 'image/jpeg') {
  * Validasi tanggal: kalau kosong / future / format salah, fallback ke hari ini.
  */
 function validateDate(dateStr) {
-  const todayISO = new Date().toISOString().split('T')[0];
+  const jakartaStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
+  const nowJakarta = new Date(jakartaStr);
+  const todayISO = `${nowJakarta.getFullYear()}-${String(nowJakarta.getMonth() + 1).padStart(2, '0')}-${String(nowJakarta.getDate()).padStart(2, '0')}`;
   if (!dateStr || typeof dateStr !== 'string') return todayISO;
 
   // Cek format YYYY-MM-DD
@@ -210,11 +212,11 @@ function validateDate(dateStr) {
   const parsedDate = new Date(dateStr);
   if (isNaN(parsedDate.getTime())) return todayISO;
 
-  // Tanggal tidak boleh > hari ini
-  if (parsedDate > new Date()) return todayISO;
+  // Tanggal tidak boleh > hari ini (Jakarta)
+  if (parsedDate > nowJakarta) return todayISO;
 
   // Tanggal tidak boleh terlalu jauh ke masa lalu (>5 tahun = curiga AI salah parse)
-  const fiveYearsAgo = new Date();
+  const fiveYearsAgo = new Date(nowJakarta);
   fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
   if (parsedDate < fiveYearsAgo) return todayISO;
 
@@ -240,16 +242,73 @@ async function parseNaturalLanguageInput(userText) {
     throw err;
   }
 
-  const now = new Date();
-  const todayISO = now.toISOString().split('T')[0];
-  const dayName = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][now.getDay()];
+  // Force Jakarta timezone (UTC+7) for all date computations
+  const jakartaStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
+  const now = new Date(jakartaStr);
+  const fmt = (d) => {
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+  };
+  const todayISO = fmt(now);
+  const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const dayName = dayNames[now.getDay()];
 
-  const prompt = `Kamu adalah AI Asisten Keuangan MyFinance Indonesia yang SANGAT jago memahami bahasa Indonesia santai, gaul, typo, dan slang.
+  // Pre-compute dates so Gemini doesn't need to do date math
+  const daysAgo = (n) => { const d = new Date(now); d.setDate(d.getDate() - n); return fmt(d); };
+  const yesterdayISO = daysAgo(1);
+  const twoDaysAgoISO = daysAgo(2);
+  const threeDaysAgoISO = daysAgo(3);
+  const oneWeekAgoISO = daysAgo(7);
+
+  // Compute "last Monday", "last Tuesday", etc.
+  const lastDayDates = {};
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    // Find last occurrence of each day (not today)
+    const diff = ((now.getDay() - i + 7) % 7) || 7;
+    d.setDate(d.getDate() - diff);
+    lastDayDates[dayNames[i].toLowerCase()] = fmt(d);
+  }
+
+  // Compute "tanggal X bulan ini" — if date hasn't passed yet, use last month
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const todayDate = now.getDate();
+
+  const prompt = `Kamu adalah "Anya", asisten pencatat keuangan pintar yang santai, responsif, dan sangat peka terhadap konteks bahasa gaul Indonesia. Kamu HARUS bisa mengerti APAPUN yang diketik user — mau bahasa baku, santai, gaul, alay, typo parah, singkatan random, campur Inggris, tanpa tanda baca, atau huruf acak — kamu WAJIB paham maksudnya.
+
+PRINSIP UTAMA:
+- Kamu bukan chatbot kaku. Kamu seperti teman yang SELALU ngerti maksud user walaupun penulisannya berantakan.
+- Jangan pernah bilang "tidak mengerti". Selalu coba tebak intent terbaik dari konteks.
+- Prioritaskan MAKNA di balik kata, bukan ejaan yang benar.
+- SELALU perbaiki typo user di field "keterangan". Output harus rapi dan benar ejaannya (Title Case).
+- SELALU sertakan field "message" berisi balasan kasual dan ramah ala Anya. JANGAN kaku/formal. Contoh: "Oke bre, Nasi Padang 12rb kemarin udah masuk ya!", "Siap, transaksi Es Teh Manis udah dicatat 🍵"
 
 KONTEKS:
 - Hari ini: ${dayName}, ${todayISO}
+- Kemarin: ${yesterdayISO}
+- 2 hari lalu: ${twoDaysAgoISO}
+- 3 hari lalu: ${threeDaysAgoISO}
+- 1 minggu lalu: ${oneWeekAgoISO}
+- Senin lalu: ${lastDayDates['senin']}
+- Selasa lalu: ${lastDayDates['selasa']}
+- Rabu lalu: ${lastDayDates['rabu']}
+- Kamis lalu: ${lastDayDates['kamis']}
+- Jumat lalu: ${lastDayDates['jumat']}
+- Sabtu lalu: ${lastDayDates['sabtu']}
+- Minggu lalu: ${lastDayDates['minggu']}
 - Tujuanmu: Menerjemahkan teks bebas user menjadi data terstruktur yang LENGKAP.
-- User bisa mengetik asal-asalan, singkatan, typo, bahasa gaul → kamu HARUS tetap paham.
+
+KEMAMPUAN PARSING BAHASA YANG WAJIB DIKUASAI:
+1. SINGKATAN UMUM: gw/gue/w=saya, lu/lo=kamu, yg=yang, udh/udah/uda=sudah, blm=belum, bgt/bngt=banget, dr=dari, dpt=dapat, krn/krna=karena, lg=lagi, br=baru, kmrn/kmren/kemaren=kemarin, bsk=besok, tdi/td=tadi, skrg/skrng=sekarang, sblm=sebelum, stlh=setelah, trs/trus=terus, hrs=harus, bs=bisa, gbs=gabisa, gk/ga/gak/g=tidak, sm=sama, org=orang, blj=belanja, mkn=makan, mnm=minum, bnyk/byk=banyak, sdkt=sedikit, jg/jga=juga, dlu/dulu, plg=paling/pulang, tgl=tanggal, bln=bulan, thn=tahun, brp=berapa, gmn/gimana, klo/kalo=kalau, aja/aj=saja, bbrp=beberapa, ttg=tentang, utk/buat/bt=untuk
+2. SINGKATAN NOMINAL: rb/ribu/k=ribu, jt/juta=juta, M=miliar, ce/ceng=100rb, go/gope=500, seribuan/cepek
+3. TYPO & HURUF KETUKER: misalnya "transksi"=transaksi, "bnesin"=bensin, "mknan"=makanan, "trnasfer"=transfer, "byr"=bayar, "trima"=terima, "domprt"=dompet, "tokped"=tokopedia, "shope"=shopee, "msuk"=masuk, "kluar"=keluar, "nmah"=rumah, "ngopi"=kopi
+4. BAHASA GAUL/SLANG: ngab/bre/bro/cuy/njir/wkwk → abaikan, ambil konteks transaksinya saja. "jajan"=makan/belanja, "ngopi"=kopi, "nongkrong"=makan/minum, "top up"=isi saldo, "nyalon"=salon, "ngegas"=bensin, "ngeprint"=print, "nyuci"=laundry, "ngegym"=gym, "nonton"=hiburan, "mabar"=hiburan/game
+5. BAHASA CAMPUR INGGRIS: "lunch"=makan siang, "dinner"=makan malam, "groceries"=belanja, "rent"=sewa, "bill"=tagihan, "salary"=gaji, "invest"=investasi, "save"=nabung, "shopping"=belanja
+6. FORMAT NOMINAL FLEKSIBEL: "25rb", "25k", "25ribu", "25.000", "25000", "Rp25.000", "Rp 25rb", "25 rb", "dua puluh lima ribu", "2,5jt", "2.5 juta" → semua harus dipahami
+7. ISTILAH NOMINAL PASAR/SLANG: "seceng"=1.000, "goceng"=5.000, "ceban"=10.000, "gocap"=50.000, "cepek"=100.000, "sejuta"=1.000.000
 
 CONTOH INPUT SANTAI & CARA KAMU MEMAHAMI:
 - "kmaren beli bakso 15rb" → Transaksi, kemarin, Makanan & Minuman, Rp15.000, Cash
@@ -258,16 +317,33 @@ CONTOH INPUT SANTAI & CARA KAMU MEMAHAMI:
 - "3 hari lalu bayar wifi 350rb" → Transaksi, 3 hari lalu, Tagihan, Rp350.000, Cash
 - "tgl 5 beli baju di tokped 200rb" → Transaksi, tanggal 5 bulan ini, Belanja, Rp200.000, E-Wallet
 - "mau nabung laptop gaming 15jt" → Wishlist
+- "jajan 30k" → Transaksi, hari ini, Makanan & Minuman, Rp30.000, Cash
+- "ngopi starbucks 65rb gopay" → Transaksi, hari ini, Makanan & Minuman, Rp65.000, E-Wallet
+- "gw abis blj di shope 150k" → Transaksi, hari ini, Belanja, Rp150.000, E-Wallet
+- "tdi byr listrik 450rb" → Transaksi, hari ini, Tagihan, Rp450.000, Cash
+- "dpet bonus 2jt dr kantor" → Transaksi income, hari ini, Gaji & Pendapatan, Rp2.000.000, Cash
+- "pgn beli ps5 8.5jt" → Wishlist
+- "nonton bioskop 50rb bre" → Transaksi, hari ini, Hiburan, Rp50.000, Cash
+- "lunch 35k dana" → Transaksi, hari ini, Makanan & Minuman, Rp35.000, E-Wallet
+- "nyalon 200rb kemarin" → Transaksi, kemarin, Lain-lain, Rp200.000, Cash
+- "parkir 5rb tadi" → Transaksi, hari ini, Transportasi, Rp5.000, Cash
 - "ringkasin keuangan 3 bulan" → Summary request
 
-ATURAN TANGGAL (SANGAT PENTING):
-- "hari ini" / "tadi" / "barusan" / "tdi" → ${todayISO}
-- "kemarin" / "kmaren" / "kmrn" / "yesterday" → hitung tanggal kemarin
-- "2 hari lalu" / "3 hari yang lalu" → hitung mundur dari hari ini
-- "senin lalu" / "jumat kemarin" → hitung tanggal hari itu di minggu lalu
-- "minggu lalu" (tanpa sebut hari) → 7 hari lalu
-- "tgl 5" / "tanggal 10" → tanggal tersebut di bulan ini (jika sudah lewat = bulan ini, jika belum = bulan lalu)
-- "awal bulan" → tanggal 1 bulan ini
+ATURAN TANGGAL (SANGAT PENTING — GUNAKAN TANGGAL YANG SUDAH DIHITUNG DI ATAS):
+- "hari ini" / "tadi" / "barusan" / "tdi" / "baru aja" → ${todayISO}
+- "kemarin" / "kmaren" / "kmrn" / "kemaren" / "semalem" / "smlm" / "semalam" / "yesterday" → ${yesterdayISO}
+- "2 hari lalu" / "2 hari yang lalu" / "2hr lalu" → ${twoDaysAgoISO}
+- "3 hari lalu" → ${threeDaysAgoISO}
+- "seminggu lalu" / "minggu lalu" (tanpa sebut hari spesifik) → ${oneWeekAgoISO}
+- "senin lalu" / "senin kemarin" → ${lastDayDates['senin']}
+- "selasa lalu" → ${lastDayDates['selasa']}
+- "rabu lalu" → ${lastDayDates['rabu']}
+- "kamis lalu" → ${lastDayDates['kamis']}
+- "jumat lalu" / "jumat kemarin" → ${lastDayDates['jumat']}
+- "sabtu lalu" → ${lastDayDates['sabtu']}
+- "minggu lalu" (hari Minggu) → ${lastDayDates['minggu']}
+- "tgl 5" / "tanggal 5" → tanggal 5 bulan ini jika ≤ hari ini (${todayDate}), kalau belum lewat → tanggal 5 bulan lalu
+- "awal bulan" → ${thisYear}-${String(thisMonth + 1).padStart(2, '0')}-01
 - Jika TIDAK ada petunjuk waktu sama sekali → ${todayISO}
 - Format output tanggal WAJIB: YYYY-MM-DD
 
@@ -297,12 +373,13 @@ Kembalikan HANYA JSON valid (tanpa markdown wrapper) dengan struktur:
 Untuk intent "transaction":
 {
   "intent": "transaction",
+  "message": "<balasan kasual ala Anya, contoh: 'Oke bre, Bakso 15rb kemarin udah masuk ya! 🍜'>",
   "data": {
     "type": "expense" | "income",
     "tanggal": "YYYY-MM-DD",
     "kategori": "<salah satu kategori di atas>",
     "metode": "Cash" | "E-Wallet" | "Transfer Bank" | "Kartu Kredit/Debit",
-    "keterangan": "<deskripsi bersih dan rapi, capitalize, max 50 karakter>",
+    "keterangan": "<deskripsi bersih dan rapi, Title Case, max 50 karakter>",
     "harga": <number nominal rupiah tanpa pemisah>
   }
 }
@@ -310,8 +387,9 @@ Untuk intent "transaction":
 Untuk intent "wishlist":
 {
   "intent": "wishlist",
+  "message": "<balasan kasual ala Anya, contoh: 'Mantap! Target Laptop Gaming 15jt udah dicatat ⭐'>",
   "data": {
-    "name": "<nama barang/target, rapi & capitalize>",
+    "name": "<nama barang/target, rapi & Title Case>",
     "target": <number nominal rupiah>,
     "current": 0,
     "icon": "ph-star" | "ph-laptop" | "ph-phone" | "ph-car" | "ph-house" | "ph-airplane" | "ph-shopping-bag",
@@ -322,13 +400,14 @@ Untuk intent "wishlist":
 Untuk intent "summary_request":
 {
   "intent": "summary_request",
+  "message": "<balasan kasual ala Anya, contoh: 'Oke, ini ringkasan keuangan kamu 📊'>",
   "period": "1_week" | "1_month" | "3_months" | "1_year"
 }
 
 Untuk intent "unknown":
 {
   "intent": "unknown",
-  "message": "<pesan ramah dalam bahasa Indonesia kasual yang membantu user tahu cara pakai, contoh: 'Coba ketik kayak gini: Makan siang 25rb cash 😊'>"
+  "message": "<pesan ramah kasual ala Anya yang membantu user tahu cara pakai, contoh: 'Hmm gw kurang paham nih 😅 Coba ketik kayak gini: Makan siang 25rb cash'>"
 }
 
 Input User: "${userText.replace(/"/g, '\\"')}"`;
@@ -341,16 +420,45 @@ Input User: "${userText.replace(/"/g, '\\"')}"`;
     }
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+  const attemptNLFetch = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      return res;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        const e = new Error('Timeout NL parse');
+        e.statusCode = 504;
+        throw e;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
 
   try {
-    const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
+    let response;
+    try {
+      response = await attemptNLFetch();
+      if (response.status >= 500) {
+        console.warn(`[GeminiService] NL parse ${response.status}, auto-retry...`);
+        response = await attemptNLFetch();
+      }
+    } catch (err) {
+      if (err.statusCode === 504) {
+        console.warn('[GeminiService] NL parse timeout, auto-retry...');
+        response = await attemptNLFetch();
+      } else {
+        throw err;
+      }
+    }
 
     if (!response.ok) {
       throw new Error(`Gemini API Error status ${response.status}`);
@@ -372,8 +480,6 @@ Input User: "${userText.replace(/"/g, '\\"')}"`;
   } catch (err) {
     console.warn('[GeminiService] Fallback ke parsing manual untuk input:', userText, err.message);
     return null;
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 

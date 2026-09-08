@@ -504,25 +504,25 @@
   }
 
   /* 5. Tanggal (td:1) — hidden untuk baris transaksi normal, tampil untuk empty state */
-  .transactions-table td:nth-child(1):not(.empty-td):not([colspan]) {
+  .transactions-table:not(.anggaran-table) td:nth-child(1):not(.empty-td):not([colspan]) {
     display: none !important;
   }
 
   /* 6. Kategori badge (td:2) — baris pertama */
-  .transactions-table td:nth-child(2) {
+  .transactions-table:not(.anggaran-table) td:nth-child(2) {
     margin-bottom: 5px;
     padding-right: 40% !important; /* ruang untuk harga */
   }
 
   /* 7. Metode (td:3) — teks kecil di bawah */
-  .transactions-table td:nth-child(3) {
+  .transactions-table:not(.anggaran-table) td:nth-child(3) {
     font-size: 0.72rem !important;
     color: var(--text-light) !important;
     margin-top: 6px;
   }
 
   /* 8. Keterangan (td:4) — nama transaksi, baris kedua */
-  .transactions-table td:nth-child(4) {
+  .transactions-table:not(.anggaran-table) td:nth-child(4) {
     font-size: 0.88rem !important;
     font-weight: 600 !important;
     color: var(--text-main) !important;
@@ -531,7 +531,7 @@
   }
 
   /* 9. Harga (td:5) — absolute top-right */
-  .transactions-table td:nth-child(5) {
+  .transactions-table:not(.anggaran-table) td:nth-child(5) {
     position: absolute !important;
     top: 0.9rem !important;
     right: 1rem !important;
@@ -542,11 +542,72 @@
   }
 
   /* 10. Aksi/Kebab (td:6) — absolute bottom-right */
-  .transactions-table td:nth-child(6) {
+  .transactions-table:not(.anggaran-table) td:nth-child(6) {
     position: absolute !important;
     bottom: 0.7rem !important;
     right: 0.75rem !important;
     width: auto !important;
+  }
+
+  /* ====== ANGGARAN TABLE MOBILE CARD ====== */
+  /* Kolom: 1=Kategori, 2=Progress, 3=Terpakai, 4=Target, 5=Sisa, 6=Aksi */
+  .anggaran-table tr:not(.empty-row) {
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 4px 8px;
+    align-items: center;
+  }
+
+  /* td:1 Kategori — top left */
+  .anggaran-table td:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* td:2 Progress bar — full width row 2 */
+  .anggaran-table td:nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0 !important;
+    padding: 2px 0 !important;
+  }
+
+  /* td:3 Terpakai — row 3 left */
+  .anggaran-table td:nth-child(3) {
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 0.78rem !important;
+  }
+  .anggaran-table td:nth-child(3)::before {
+    content: 'Terpakai: ';
+    color: var(--text-light);
+    font-weight: 400;
+  }
+
+  /* td:4 Target — hidden on mobile (info already in progress %) */
+  .anggaran-table td:nth-child(4) {
+    display: none !important;
+  }
+
+  /* td:5 Sisa — row 3 right side */
+  .anggaran-table td:nth-child(5) {
+    grid-column: 1;
+    grid-row: 4;
+    font-size: 0.78rem !important;
+  }
+  .anggaran-table td:nth-child(5)::before {
+    content: 'Sisa: ';
+    color: var(--text-light);
+    font-weight: 400;
+  }
+
+  /* td:6 Aksi/Kebab — top right */
+  .anggaran-table td:nth-child(6) {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto !important;
+    text-align: right !important;
   }
 
   .transactions-table .badge-soft {
