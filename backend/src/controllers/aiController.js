@@ -1,16 +1,17 @@
+
 // backend/src/controllers/aiController.js
 const { parseNaturalLanguageInput, generateFinancialReport } = require('../services/geminiService');
 
 exports.parseInput = async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, financialContext, chatHistory } = req.body;
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ error: 'Field "text" wajib diisi.' });
     }
 
-    const result = await parseNaturalLanguageInput(text);
+    const result = await parseNaturalLanguageInput(text, financialContext, chatHistory);
     if (!result) {
-      return res.json({ intent: 'fallback', message: 'Model Gemini offline atau gagal parse, menggunakan local parser.' });
+      return res.json({ intent: 'unknown', message: 'Halo! Anya siap membantu mencatat transaksi atau wishlist kamu. Coba ketik contohnya: "Nasi padang 20rb cash" 😊' });
     }
 
     return res.json(result);

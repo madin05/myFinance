@@ -898,27 +898,32 @@
   text-align: right;
 }
 
-/* Gemini Message Response Action Buttons (Matches Image 1) */
+/* Message Response Action Bar */
 .ai-msg-action-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 10px;
 }
 
 .ai-msg-act-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  width: 32px;
   height: 32px;
-  border-radius: 50%;
-  display: flex;
+  min-width: 32px;
+  padding: 0;
+  border-radius: 10px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease;
 }
 
 .ai-msg-act-btn:hover {
@@ -926,9 +931,43 @@
   color: var(--text-main);
 }
 
+.ai-msg-act-btn:active {
+  transform: scale(0.92);
+}
+
 .ai-msg-act-btn.active {
   color: var(--primary);
   background-color: var(--primary-light);
+}
+
+.ai-msg-act-btn .ai-act-label {
+  display: none;
+}
+
+/* Copy = primary action: labeled, soft pill, inline success state */
+.ai-msg-act-btn.btn-copy-msg {
+  gap: 6px;
+  padding: 0 12px;
+  margin-left: 2px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.ai-msg-act-btn.btn-copy-msg:hover {
+  color: #fff;
+  background-color: var(--primary);
+}
+
+.ai-msg-act-btn.btn-copy-msg .ai-act-label {
+  display: inline;
+}
+
+.ai-msg-act-btn.btn-copy-msg.copied {
+  color: var(--green);
+  background-color: var(--green-light);
 }
 
 /* Embedded Action Cards (Spec 100% Matching Screenshot 2) */
@@ -1268,6 +1307,15 @@
     max-width: calc(100% - 44px);
     min-width: 0;
     flex: 1;
+  }
+
+  .ai-msg-act-btn {
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .ai-msg-act-btn.btn-copy-msg {
+    margin-left: 0;
   }
 
   .ai-action-card {

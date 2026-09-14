@@ -102,11 +102,6 @@
   color: #ec4899;
 }
 
-.icon-wishlist .quick-access-img,
-img[src*="wishlist.svg"] {
-  transform: translateX(2.5px);
-}
-
 .icon-laporan {
   background: #E8F0FE;
   color: #0ea5e9;
