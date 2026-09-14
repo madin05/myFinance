@@ -43,19 +43,114 @@ let historySearchQuery = "";
 let isSidebarCollapsedDesktop = false;
 
 /**
+ * Build rich financial context snapshot from user's current store
+ */
+export function buildAiFinancialContext() {
+  const txs = store.transactions || [];
+  const budgets = store.budgets || [];
+  const savings = store.savings || [];
+  const accounts = store.saldos || [];
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  let currentMonthIncome = 0;
+  let currentMonthExpense = 0;
+  const expenseByCategory = {};
+  const txCountByCategory = {};
+  const currentMonthTxs = [];
+
+  txs.forEach((t) => {
+    const d = new Date(t.tanggal);
+    if (d >= startOfMonth && d <= now) {
+      const amt = Math.abs(t.harga || t.amount || 0);
+      if (t.type === "income") {
+        currentMonthIncome += amt;
+      } else {
+        currentMonthExpense += amt;
+        expenseByCategory[t.kategori] = (expenseByCategory[t.kategori] || 0) + amt;
+        txCountByCategory[t.kategori] = (txCountByCategory[t.kategori] || 0) + 1;
+        currentMonthTxs.push(t);
+      }
+    }
+  });
+
+  const breakdown = Object.entries(expenseByCategory).map(([cat, amt]) => {
+    const percent = currentMonthExpense > 0 ? Math.round((amt / currentMonthExpense) * 100) : 0;
+    return {
+      kategori: cat,
+      amount: amt,
+      count: txCountByCategory[cat] || 1,
+      percent,
+    };
+  }).sort((a, b) => b.amount - a.amount);
+
+  const budgetList = budgets.map((b) => {
+    const used = expenseByCategory[b.kategori] || 0;
+    const limit = Number(b.limit || b.nominal || 0);
+    const percent = limit > 0 ? Math.round((used / limit) * 100) : 0;
+    return {
+      kategori: b.kategori,
+      limit,
+      used,
+      percent,
+      isOver: used > limit && limit > 0,
+    };
+  });
+
+  const recentTransactions = [...txs]
+    .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
+    .slice(0, 15)
+    .map((t) => ({
+      tanggal: t.tanggal,
+      kategori: t.kategori,
+      keterangan: t.keterangan || t.kategori,
+      harga: t.harga,
+      type: t.type,
+      metode: t.metode || "Cash",
+    }));
+
+  return {
+    userName: store.user?.name || "Pengguna",
+    currentMonth: {
+      income: currentMonthIncome,
+      expense: currentMonthExpense,
+      netBalance: currentMonthIncome - currentMonthExpense,
+      txCount: currentMonthTxs.length,
+      breakdown,
+      recentTransactions,
+    },
+    budgets: budgetList,
+    savings: savings.map((s) => ({
+      name: s.name || s.nama,
+      target: Number(s.target || 0),
+      current: Number(s.current || s.terkumpul || 0),
+    })),
+    accounts: accounts.map((a) => ({
+      nama: a.nama,
+      saldo: Number(a.saldo || 0),
+    })),
+  };
+}
+
+/**
  * Call Gemini AI Backend for multi-turn chat parsing & responses
  */
-async function queryGemini(text) {
+async function queryGemini(text, chatHistory = []) {
   if (!store.user?.token) return null;
+  const financialContext = buildAiFinancialContext();
   try {
     const res = await apiFetch(`${API_URL}/ai/parse`, {
       method: "POST",
       headers: getAuthHeaders(store.user.token),
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({
+        text,
+        financialContext,
+        chatHistory: Array.isArray(chatHistory) ? chatHistory.slice(-8) : []
+      }),
     });
     if (!res.ok) return null;
     const json = await res.json();
-    // Filter out fallback intent (Gemini offline) → let frontend use local parsers
     if (json.intent === "fallback") return null;
     return json;
   } catch {
@@ -587,8 +682,9 @@ function renderActiveChatMessages() {
             <button type="button" class="ai-msg-act-btn btn-share-msg" data-text="${escapeHtml(msg.text)}" title="Bagikan tanggapan">
               <i class="ph ph-share-network"></i>
             </button>
-            <button type="button" class="ai-msg-act-btn btn-copy-msg" data-text="${escapeHtml(msg.text)}" title="Salin ke clipboard">
+            <button type="button" class="ai-msg-act-btn btn-copy-msg" data-text="${escapeHtml(msg.text)}" title="Salin ke clipboard" aria-label="Salin tanggapan">
               <i class="ph ph-copy"></i>
+              <span class="ai-act-label">Salin</span>
             </button>
             <button type="button" class="ai-msg-act-btn btn-more-msg" title="Opsi lainnya">
               <i class="ph ph-dots-three-vertical"></i>
@@ -799,24 +895,42 @@ function bindChatActionButtons() {
 /**
  * Bind message response action icons (Thumbs Up, Thumbs Down, Copy, Share)
  */
+/**
+ * Inline success feedback for the copy action button
+ */
+function showCopySuccess(btn) {
+  if (btn.dataset.copied) return;
+  const icon = btn.querySelector("i");
+  const label = btn.querySelector(".ai-act-label");
+  const prevIcon = icon ? icon.className : "";
+  const prevLabel = label ? label.textContent : "";
+
+  btn.classList.add("copied");
+  btn.dataset.copied = "1";
+  if (icon) icon.className = "ph-fill ph-check-circle";
+  if (label) label.textContent = "Tersalin";
+
+  setTimeout(() => {
+    btn.classList.remove("copied");
+    delete btn.dataset.copied;
+    if (icon) icon.className = prevIcon;
+    if (label) label.textContent = prevLabel;
+  }, 1800);
+}
+
 function bindMessageResponseActions() {
   document.querySelectorAll(".btn-copy-msg").forEach((btn) => {
     btn.addEventListener("click", () => {
       const text = btn.getAttribute("data-text");
-      if (text) {
-        navigator.clipboard
-          .writeText(text)
-          .then(() => {
-            showToast(
-              "Salin Teks",
-              "Tanggapan AI telah disalin ke clipboard.",
-              "success",
-            );
-          })
-          .catch(() => {
-            showToast("Salin Teks", "Gagal menyalin teks.", "error");
-          });
-      }
+      if (!text) return;
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          showCopySuccess(btn);
+        })
+        .catch(() => {
+          showToast("Salin Teks", "Gagal menyalin teks.", "error");
+        });
     });
   });
 
@@ -920,8 +1034,11 @@ async function processUserChatMessage(userText) {
     scrollToBottom();
   }
 
+  // Extract chat history before this message
+  const chatHistory = session.messages.slice(-8);
+
   // Call AI Backend / Fallback Parser
-  let aiResult = await queryGemini(userText);
+  let aiResult = await queryGemini(userText, chatHistory);
 
   // Remove typing indicator
   document.getElementById("ai-typing-indicator")?.remove();
@@ -1000,12 +1117,13 @@ async function processUserChatMessage(userText) {
       lower.includes("analisis")
     ) {
       let pk = "1_month";
-      if (lower.includes("minggu")) pk = "1_week";
+      if (lower.includes("minggu") || lower.includes("7 hari")) pk = "1_week";
       else if (lower.includes("3 bulan")) pk = "3_months";
+      else if (lower.includes("tahun") || lower.includes("1 thn")) pk = "1_year";
       session.messages.push({
         id: `msg_${Date.now()}_a`,
         sender: "assistant",
-        text: "Berikut adalah ringkasan keuangan kamu:",
+        text: "Siap! Anya buatin ringkasan analisis keuangan kamu ya 📊",
         intent: "summary_request",
         period: pk,
         time: nowTime,
@@ -1016,7 +1134,7 @@ async function processUserChatMessage(userText) {
         session.messages.push({
           id: `msg_${Date.now()}_a`,
           sender: "assistant",
-          text: "Saya mendeteksi target wishlist baru:",
+          text: `Mantap! Target "${localWl.name}" sudah Anya deteksi buat Wishlist ⭐`,
           intent: "wishlist",
           data: localWl,
           time: nowTime,
@@ -1024,25 +1142,41 @@ async function processUserChatMessage(userText) {
       } else {
         const localTx = parseNaturalLanguageTx(userText);
         if (localTx) {
+          const isInc = localTx.type === "income";
           session.messages.push({
             id: `msg_${Date.now()}_a`,
             sender: "assistant",
-            text: "Saya memproses transaksi kamu:",
+            text: isInc ? "Mantap! Rincian pemasukan kamu sudah siap dicatat ya 🤑" : "Oke bre, rincian transaksi pengeluaran kamu sudah Anya siapkan ya! 📝",
             intent: "transaction",
             data: localTx,
             time: nowTime,
           });
         } else {
-          // General Q&A / Advice response
+          // General Q&A / Advice response with Data-Grounding
           let adviceText =
-            "Saya siap membantumu mencatat transaksi, wishlist, atau menganalisis keuangan.\n\nContoh yang bisa kamu ketik:\n* **'Makan siang 25rb cash'**\n* **'Nabung laptop 15jt'**\n* **'Ringkas pengeluaran 1 bulan'**";
+            "Halo! Anya di sini siap bantu kamu mencatat transaksi, wishlist, atau menganalisis keuangan.\n\nContoh yang bisa kamu ketik:\n* **'Nasi padang 20rb cash'**\n* **'Bensin pertalite gocap'**\n* **'Nabung laptop 15jt'**\n* **'Ringkas pengeluaran 1 bulan'**";
           if (
             lower.includes("tips") ||
             lower.includes("hemat") ||
-            lower.includes("saran")
+            lower.includes("saran") ||
+            lower.includes("minus") ||
+            lower.includes("boros") ||
+            lower.includes("evaluasi") ||
+            lower.includes("pendapat")
           ) {
-            adviceText =
-              "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.";
+            const fc = buildAiFinancialContext();
+            const inc = fc.currentMonth.income;
+            const exp = fc.currentMonth.expense;
+            const net = inc - exp;
+            const top = fc.currentMonth.breakdown[0];
+
+            if (net < 0 && top) {
+              adviceText = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit ${formatRupiah(Math.abs(net))}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}).\n\n📌 **Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${top.kategori}? 😊`;
+            } else if (top) {
+              adviceText = `Kondisi keuanganmu bulan ini **surplus ${formatRupiah(net)}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}). Bagus banget!\n\n💡 **Saran Anya**:\n1. Pos terbesarmu saat ini di **${top.kategori} (${formatRupiah(top.amount)})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang? ⭐`;
+            } else {
+              adviceText = "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian agar tidak boncos.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
+            }
           } else if (aiResult && aiResult.message) {
             adviceText = aiResult.message;
           }

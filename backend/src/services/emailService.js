@@ -747,5 +747,3 @@ exports.sendDeleteAccountOtpEmail = async (email, otpCode) => {
   console.log(`✅ Delete Account OTP email sent to: ${email}`);
 };
 
-
-

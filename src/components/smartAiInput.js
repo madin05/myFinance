@@ -38,41 +38,51 @@ export function parseNaturalLanguageTx(text) {
   const lower = text.trim().toLowerCase();
   if (!lower) return null;
 
-  // 1. Detect Nominal / Amount
+  // 1. Detect Nominal / Amount (supports Slang numbers + standard format)
   let amount = 0;
-  const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta)/i);
-  const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu)/i);
-  const rawNumMatch = lower.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
+  if (/\b(gocap|gokap|gocapp)\b/i.test(lower)) amount = 50000;
+  else if (/\b(ceban|cebanan)\b/i.test(lower)) amount = 10000;
+  else if (/\b(seceng|sceng)\b/i.test(lower)) amount = 1000;
+  else if (/\b(goceng)\b/i.test(lower)) amount = 5000;
+  else if (/\b(cepek|cpek|secepek)\b/i.test(lower)) amount = 100000;
+  else if (/\b(pekgo)\b/i.test(lower)) amount = 150000;
+  else if (/\b(noban)\b/i.test(lower)) amount = 20000;
+  else if (/\b(sejuta|sejutaaa)\b/i.test(lower)) amount = 1000000;
+  else {
+    const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta|jeti)/i);
+    const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu|rebu)/i);
+    const rawNumMatch = lower.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
 
-  if (jtMatch) {
-    amount = parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
-  } else if (kMatch) {
-    amount = parseFloat(kMatch[1].replace(',', '.')) * 1000;
-  } else if (rawNumMatch) {
-    const cleanStr = rawNumMatch[1].replace(/\./g, "");
-    amount = parseFloat(cleanStr);
+    if (jtMatch) {
+      amount = parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
+    } else if (kMatch) {
+      amount = parseFloat(kMatch[1].replace(',', '.')) * 1000;
+    } else if (rawNumMatch) {
+      const cleanStr = rawNumMatch[1].replace(/\./g, "");
+      amount = parseFloat(cleanStr);
+    }
   }
 
   if (isNaN(amount) || amount <= 0) return null;
 
   // 2. Detect Type (income vs expense)
-  const incomeKeywords = ["gaji", "bonus", "dividen", "dapat", "terima", "inflow", "pemasukan", "hadiah", "jual", "profit", "omset"];
+  const incomeKeywords = ["gaji", "gajian", "payroll", "thr", "bonus", "honor", "freelance", "dpt trf", "dapet trf", "tf masuk", "trf masuk", "cair", "proyek", "dividen", "omset", "pemasukan", "inflow", "terima"];
   const isIncome = incomeKeywords.some((kw) => lower.includes(kw));
   const type = isIncome ? "income" : "expense";
 
   // 3. Infer Category (expanded slang/abbreviation support)
   let kategori = isIncome ? "Gaji & Pendapatan" : "Lain-lain";
-  if (lower.includes("bensin") || lower.includes("bnesin") || lower.includes("pertamax") || lower.includes("pertalite") || lower.includes("parkir") || lower.includes("gojek") || lower.includes("grab") || lower.includes("angkot") || lower.includes("tol") || lower.includes("transport") || lower.includes("ngegas") || lower.includes("solar") || lower.includes("bus") || lower.includes("kereta") || lower.includes("pesawat") || lower.includes("ojol")) {
+  if (lower.includes("bensin") || lower.includes("bnesin") || lower.includes("pertamax") || lower.includes("pertalite") || lower.includes("shell") || lower.includes("parkir") || lower.includes("gojek") || lower.includes("grab") || lower.includes("angkot") || lower.includes("tol") || lower.includes("transport") || lower.includes("ngegas") || lower.includes("solar") || lower.includes("bus") || lower.includes("kereta") || lower.includes("krl") || lower.includes("mrt") || lower.includes("pesawat") || lower.includes("ojol")) {
     kategori = "Transportasi";
-  } else if (lower.includes("makan") || lower.includes("mkn") || lower.includes("minum") || lower.includes("mnm") || lower.includes("kopi") || lower.includes("ngopi") || lower.includes("bakso") || lower.includes("nasi") || lower.includes("resto") || lower.includes("warung") || lower.includes("food") || lower.includes("jajan") || lower.includes("nongkrong") || lower.includes("lunch") || lower.includes("dinner") || lower.includes("sarapan") || lower.includes("starbucks") || lower.includes("kfc") || lower.includes("mcd") || lower.includes("gofood") || lower.includes("grabfood") || lower.includes("mknan")) {
+  } else if (lower.includes("makan") || lower.includes("mkn") || lower.includes("minum") || lower.includes("mnm") || lower.includes("kopi") || lower.includes("ngopi") || lower.includes("bakso") || lower.includes("nasi") || lower.includes("padang") || lower.includes("naspad") || lower.includes("nasgor") || lower.includes("esteh") || lower.includes("es teh") || lower.includes("resto") || lower.includes("warung") || lower.includes("food") || lower.includes("jajan") || lower.includes("nongkrong") || lower.includes("lunch") || lower.includes("dinner") || lower.includes("sarapan") || lower.includes("starbucks") || lower.includes("sbux") || lower.includes("kfc") || lower.includes("mcd") || lower.includes("gofood") || lower.includes("grabfood") || lower.includes("seblak") || lower.includes("indomie") || lower.includes("mknan")) {
     kategori = "Makanan & Minuman";
-  } else if (lower.includes("gaji") || lower.includes("gajian") || lower.includes("payroll") || lower.includes("thr") || lower.includes("bonus") || lower.includes("honor") || lower.includes("freelance")) {
+  } else if (lower.includes("gaji") || lower.includes("gajian") || lower.includes("payroll") || lower.includes("thr") || lower.includes("bonus") || lower.includes("honor") || lower.includes("freelance") || lower.includes("dpt trf")) {
     kategori = "Gaji & Pendapatan";
   } else if (lower.includes("belanja") || lower.includes("blj") || lower.includes("baju") || lower.includes("sepatu") || lower.includes("tokopedia") || lower.includes("tokped") || lower.includes("shopee") || lower.includes("shope") || lower.includes("mall") || lower.includes("lazada") || lower.includes("olshop") || lower.includes("skincare") || lower.includes("tas") || lower.includes("shopping")) {
     kategori = "Belanja";
-  } else if (lower.includes("listrik") || lower.includes("air") || lower.includes("wifi") || lower.includes("pulsa") || lower.includes("tagihan") || lower.includes("token") || lower.includes("kuota") || lower.includes("indihome") || lower.includes("iuran") || lower.includes("sewa") || lower.includes("kos") || lower.includes("bill") || lower.includes("rent")) {
+  } else if (lower.includes("listrik") || lower.includes("air") || lower.includes("wifi") || lower.includes("pulsa") || lower.includes("tagihan") || lower.includes("token") || lower.includes("kuota") || lower.includes("indihome") || lower.includes("iuran") || lower.includes("sewa") || lower.includes("kos") || lower.includes("kost") || lower.includes("kontrakan") || lower.includes("bpjs") || lower.includes("bill") || lower.includes("rent")) {
     kategori = "Tagihan";
-  } else if (lower.includes("investasi") || lower.includes("saham") || lower.includes("crypto") || lower.includes("reksadana") || lower.includes("invest") || lower.includes("deposito")) {
+  } else if (lower.includes("investasi") || lower.includes("saham") || lower.includes("crypto") || lower.includes("reksadana") || lower.includes("invest") || lower.includes("deposito") || lower.includes("bibit")) {
     kategori = "Investasi & Tabungan";
   } else if (lower.includes("obat") || lower.includes("dokter") || lower.includes("sehat") || lower.includes("rs") || lower.includes("gym") || lower.includes("ngegym") || lower.includes("apotek") || lower.includes("klinik") || lower.includes("vitamin")) {
     kategori = "Kesehatan";
@@ -86,7 +96,7 @@ export function parseNaturalLanguageTx(text) {
 
   // 4. Infer Payment Method (expanded)
   let metode = "Cash";
-  if (lower.includes("transfer") || lower.includes("trnasfer") || lower.includes("bank") || lower.includes("bca") || lower.includes("mandiri") || lower.includes("bni") || lower.includes("bri") || lower.includes("bsi") || lower.includes("cimb") || lower.includes("blu") || lower.includes("jago") || lower.includes("sea bank") || lower.includes("seabank")) {
+  if (lower.includes("transfer") || lower.includes("trnasfer") || lower.includes("tf") || lower.includes("trf") || lower.includes("bank") || lower.includes("bca") || lower.includes("mandiri") || lower.includes("bni") || lower.includes("bri") || lower.includes("bsi") || lower.includes("cimb") || lower.includes("blu") || lower.includes("jago") || lower.includes("sea bank") || lower.includes("seabank")) {
     metode = "Transfer Bank";
   } else if (lower.includes("gopay") || lower.includes("ovo") || lower.includes("dana") || lower.includes("shopeepay") || lower.includes("spay") || lower.includes("qris") || lower.includes("ewallet") || lower.includes("linkaja") || lower.includes("e-wallet")) {
     metode = "E-Wallet";
@@ -96,17 +106,24 @@ export function parseNaturalLanguageTx(text) {
 
   // 5. Clean up description (strip filler words, slang particles, payment methods)
   let keterangan = text
-    .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|k|rb|ribu)?/gi, "")
-    .replace(/\b(cash|tunai|transfer|bank|qris|gopay|ovo|dana|shopeepay|spay|bca|mandiri|bni|bri|bsi|linkaja|ewallet|e-wallet|visa|mastercard|cc|kartu kredit|kartu debit)\b/gi, "")
-    .replace(/\b(gw|gue|gua|w|bre|bro|cuy|ngab|njir|wkwk|lol|dong|deh|sih|nih|tuh|kan|ya|yaa|aja|aj|udh|udah|abis|habis|tdi|tadi|kmrn|kemarin|kmaren|barusan)\b/gi, "")
+    .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|jeti|k|rb|ribu|rebu)?/gi, "")
+    .replace(/\b(gocap|ceban|seceng|goceng|cepek|pekgo|noban|sejuta)\b/gi, "")
+    .replace(/\b(cash|tunai|transfer|tf|trf|bank|qris|gopay|ovo|dana|shopeepay|spay|bca|mandiri|bni|bri|bsi|linkaja|ewallet|e-wallet|visa|mastercard|cc|kartu kredit|kartu debit)\b/gi, "")
+    .replace(/\b(gw|gue|gua|w|bre|bro|cuy|ngab|njir|wkwk|lol|dong|deh|sih|nih|tuh|kan|ya|yaa|aja|aj|udh|udah|abis|habis|tdi|tadi|kmrn|kemarin|kmaren|barusan|td|pg|siang|mlm)\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 
   if (!keterangan) {
-    keterangan = isIncome ? `Pemasukan ${kategori}` : `Pengeluaran ${kategori}`;
+    keterangan = isIncome ? `Pemasukan ${kategori}` : kategori;
   }
 
-  keterangan = keterangan.charAt(0).toUpperCase() + keterangan.slice(1);
+  if (/nasi apdang|ns padang|naspad/i.test(keterangan)) keterangan = "Nasi Padang";
+  else if (/esteh masni|es teh mns|esteh mnis/i.test(keterangan)) keterangan = "Es Teh Manis";
+  else if (/bnesin/i.test(keterangan)) keterangan = "Bensin";
+  else if (/tokped/i.test(keterangan)) keterangan = "Belanja Tokopedia";
+  else {
+    keterangan = keterangan.charAt(0).toUpperCase() + keterangan.slice(1);
+  }
 
   // Date parsing from slang — use Jakarta timezone
   const jakartaStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
@@ -166,24 +183,35 @@ export function parseNaturalLanguageWishlist(text) {
   if (!isWishlist) return null;
 
   let amount = 0;
-  const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta)/i);
-  const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu)/i);
-  const rawNumMatch = lower.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
+  if (/\b(gocap|gokap|gocapp)\b/i.test(lower)) amount = 50000;
+  else if (/\b(ceban|cebanan)\b/i.test(lower)) amount = 10000;
+  else if (/\b(seceng|sceng)\b/i.test(lower)) amount = 1000;
+  else if (/\b(goceng)\b/i.test(lower)) amount = 5000;
+  else if (/\b(cepek|cpek|secepek)\b/i.test(lower)) amount = 100000;
+  else if (/\b(pekgo)\b/i.test(lower)) amount = 150000;
+  else if (/\b(noban)\b/i.test(lower)) amount = 20000;
+  else if (/\b(sejuta|sejutaaa)\b/i.test(lower)) amount = 1000000;
+  else {
+    const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta|jeti)/i);
+    const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu|rebu)/i);
+    const rawNumMatch = lower.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
 
-  if (jtMatch) {
-    amount = parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
-  } else if (kMatch) {
-    amount = parseFloat(kMatch[1].replace(',', '.')) * 1000;
-  } else if (rawNumMatch) {
-    const cleanStr = rawNumMatch[1].replace(/\./g, "");
-    amount = parseFloat(cleanStr);
+    if (jtMatch) {
+      amount = parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
+    } else if (kMatch) {
+      amount = parseFloat(kMatch[1].replace(',', '.')) * 1000;
+    } else if (rawNumMatch) {
+      const cleanStr = rawNumMatch[1].replace(/\./g, "");
+      amount = parseFloat(cleanStr);
+    }
   }
 
   if (isNaN(amount) || amount <= 0) return null;
 
   let name = text
     .replace(/(?:wishlist|nabung|target|impian|beli|cita-cita|pengen|mau)/gi, "")
-    .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|k|rb|ribu)?/gi, "")
+    .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|jeti|k|rb|ribu|rebu)?/gi, "")
+    .replace(/\b(gocap|ceban|seceng|goceng|cepek|pekgo|noban|sejuta)\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -196,6 +224,7 @@ export function parseNaturalLanguageWishlist(text) {
   else if (lower.includes("motor") || lower.includes("mobil")) icon = "ph-car";
   else if (lower.includes("rumah") || lower.includes("tanah")) icon = "ph-house";
   else if (lower.includes("liburan") || lower.includes("tiket")) icon = "ph-airplane";
+  else if (lower.includes("sepatu") || lower.includes("baju") || lower.includes("tas")) icon = "ph-shopping-bag";
 
   return {
     name,
