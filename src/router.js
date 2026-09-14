@@ -197,6 +197,13 @@ function loadRoutePage(route) {
   } else if (route === '/akun') {
     import('./pages/akun.js').then(module => module.renderAkun());
   } else if (route === '/ai') {
+    // Don't rebuild the chat DOM on background store syncs / tab focus —
+    // that reset the viewport to the top. Re-pin to the newest message instead.
+    const existingChat = document.getElementById('ai-chat-messages');
+    if (existingChat) {
+      existingChat.scrollTop = existingChat.scrollHeight;
+      return;
+    }
     import('./pages/ai.js').then(module => module.renderAiPage());
   } else if (route === '/settings') {
     import('./pages/settings.js').then(module => module.renderSettings());

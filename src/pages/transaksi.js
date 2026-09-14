@@ -42,10 +42,19 @@ export function renderTransaksi() {
     ...store.transactions.map(tx => tx.kategori).filter(Boolean)
   ])].sort((a, b) => a.localeCompare(b, 'id'));
 
+  // Kumpulkan metode pembayaran riil (abaikan string transfer inter-provider seperti 'Transfer (Bank BCA → GoPay)')
+  const validTxMethods = store.transactions
+    .map(tx => {
+      if (tx.type === 'transfer') return null;
+      if (typeof tx.metode === 'string' && tx.metode.startsWith('Transfer (')) return null;
+      return tx.metode;
+    })
+    .filter(Boolean);
+
   const allMetode = [...new Set([
     ...METODE_LIST,
-    ...store.transactions.map(tx => tx.metode).filter(Boolean)
-  ])].sort((a, b) => a.localeCompare(b, 'id'));
+    ...validTxMethods
+  ])].filter(m => !m.startsWith('Transfer (')).sort((a, b) => a.localeCompare(b, 'id'));
   
   const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
@@ -68,8 +77,11 @@ export function renderTransaksi() {
               </button>
               
               <div class="filter-popover" id="filter-popover" style="display: none;">
+                <!-- Drag handle (mobile bottom sheet) -->
+                <div class="filter-sheet-handle" aria-hidden="true"></div>
+
                 <!-- Header Popover -->
-                <div class="popover-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 2px;">
+                <div class="popover-header filter-sheet-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 2px;">
                   <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
                     Filter
                   </span>
@@ -82,6 +94,9 @@ export function renderTransaksi() {
                     </button>
                   </div>
                 </div>
+
+                <!-- Scrollable filter body -->
+                <div class="filter-popover-body">
 
                 <!-- Tipe Section -->
                 <div class="popover-header" style="padding-left: 0;">Tipe Transaksi</div>
@@ -136,6 +151,7 @@ export function renderTransaksi() {
                   </select>
                   <input type="text" class="form-control" id="filter-price-value" placeholder="Nominal..." style="padding: 10px; font-size: 0.85rem; height: 42px;" value="${filterState.priceValue ? new Intl.NumberFormat('id-ID').format(filterState.priceValue) : ''}">
                 </div>
+                </div>
               </div>
             </div>
             <button class="btn btn-primary" id="btn-tambah-page"><i class="ph ph-plus"></i> Tambah</button>
@@ -165,25 +181,140 @@ export function renderTransaksi() {
 
   const popoverBtn = container.querySelector('#btn-filter-popover');
   const popover = container.querySelector('#filter-popover');
-  
+  const popoverOriginalParent = popover ? popover.parentElement : null;
+
+  const isMobileFilter = () => window.innerWidth <= 768;
+  const getModalContainer = () =>
+    document.getElementById('modal-container') || document.body;
+
+  // Remove any leftover sheet left in the body-level layer by a previous render
+  document
+    .querySelectorAll('#modal-container > #filter-popover, body > #filter-popover')
+    .forEach((el) => el.remove());
+
+  // Backdrop layer for the mobile bottom sheet (fades in/out only)
+  let filterBackdrop = document.getElementById('filter-backdrop');
+  if (!filterBackdrop) {
+    filterBackdrop = document.createElement('div');
+    filterBackdrop.id = 'filter-backdrop';
+    filterBackdrop.className = 'filter-backdrop';
+    document.body.appendChild(filterBackdrop);
+  } else {
+    // Page re-rendered while sheet was open — make sure the backdrop resets.
+    filterBackdrop.classList.remove('active');
+    filterBackdrop.style.display = 'none';
+  }
+
+  const openFilter = () => {
+    if (isMobileFilter()) {
+      // Move sheet + backdrop into the body-level layer so the sheet shares
+      // one stacking context with the backdrop and always sits above it
+      // (and is not clipped/blurred by page ancestors).
+      const host = getModalContainer();
+      host.appendChild(filterBackdrop);
+      host.appendChild(popover);
+
+      popover.classList.remove('dragging', 'snap');
+      popover.style.removeProperty('--sheet-y');
+      filterBackdrop.style.display = 'block';
+      popover.style.display = 'flex';
+      requestAnimationFrame(() => {
+        popover.classList.add('active');
+        filterBackdrop.classList.add('active');
+      });
+    } else {
+      popover.style.display = 'block';
+    }
+  };
+
+  const closeFilter = () => {
+    if (isMobileFilter()) {
+      popover.classList.remove('active');
+      filterBackdrop.classList.remove('active');
+      setTimeout(() => {
+        if (!popover.classList.contains('active')) {
+          popover.style.display = 'none';
+          filterBackdrop.style.display = 'none';
+          // Return the sheet to its original spot for desktop layout.
+          if (popoverOriginalParent && document.body.contains(popoverOriginalParent)) {
+            popoverOriginalParent.appendChild(popover);
+          }
+        }
+      }, 320);
+    } else {
+      popover.style.display = 'none';
+    }
+  };
+
+  filterBackdrop.onclick = () => closeFilter();
+
   popoverBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isVisible = popover.style.display === 'block';
-    popover.style.display = isVisible ? 'none' : 'block';
+    const isOpen = popover.style.display === 'block' || popover.classList.contains('active');
+    if (isOpen) closeFilter();
+    else openFilter();
   });
 
   document.addEventListener('click', (e) => {
-    if (popover && !popover.contains(e.target) && e.target !== popoverBtn) {
+    if (
+      !isMobileFilter() &&
+      popover &&
+      !popover.contains(e.target) &&
+      e.target !== popoverBtn &&
+      e.target !== filterBackdrop
+    ) {
       popover.style.display = 'none';
     }
   });
 
   const closeFilterMobile = container.querySelector('#close-filter-mobile');
   if (closeFilterMobile) {
-    closeFilterMobile.onclick = () => {
-      popover.style.display = 'none';
-    };
+    closeFilterMobile.onclick = () => closeFilter();
   }
+
+  // --- Drag / swipe-down to dismiss the bottom sheet (mobile) ---
+  let fStartY = 0;
+  let fDeltaY = 0;
+  let fDragging = false;
+  const fSetDrag = (px) => popover.style.setProperty('--sheet-y', `${px}px`);
+
+  popover.addEventListener('touchstart', (e) => {
+    if (!isMobileFilter() || e.touches.length !== 1) return;
+    // Drag only from the handle / header so the body can scroll freely.
+    const onHandle = e.target.closest('.filter-sheet-handle, .filter-sheet-header');
+    if (!onHandle) return;
+    fStartY = e.touches[0].clientY;
+    fDeltaY = 0;
+    fDragging = true;
+    popover.classList.remove('snap');
+    popover.classList.add('dragging');
+  }, { passive: true });
+
+  popover.addEventListener('touchmove', (e) => {
+    if (!fDragging) return;
+    const raw = e.touches[0].clientY - fStartY;
+    fDeltaY = Math.max(0, raw);
+    fSetDrag(fDeltaY);
+    if (raw > 0 && e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  popover.addEventListener('touchend', () => {
+    if (!fDragging) return;
+    fDragging = false;
+    popover.classList.remove('dragging');
+    const threshold = Math.max(100, popover.offsetHeight * 0.3);
+    if (fDeltaY > threshold) {
+      closeFilter();
+      setTimeout(() => popover.style.removeProperty('--sheet-y'), 340);
+    } else {
+      popover.classList.add('snap'); // springy snap back
+      setTimeout(() => {
+        popover.classList.remove('snap');
+        popover.style.removeProperty('--sheet-y');
+      }, 400);
+    }
+    fDeltaY = 0;
+  });
 
   const resetBtn = container.querySelector('#btn-reset-filter');
   if (resetBtn) {
@@ -296,7 +427,13 @@ function renderTableBody(container) {
     const matchKategori = filterState.kategori === 'all' || 
       (tx.kategori || '').toLowerCase().trim() === filterState.kategori.toLowerCase().trim() ||
       (tx.kategori || '').toLowerCase().includes(filterState.kategori.toLowerCase());
-    const matchMetode = filterState.metode === 'all' || tx.metode === filterState.metode;
+    const matchMetode = filterState.metode === 'all' || 
+      tx.metode === filterState.metode ||
+      (tx.type === 'transfer' && (
+        (tx.dariAkun && tx.dariAkun.toLowerCase().includes(filterState.metode.toLowerCase())) ||
+        (tx.keAkun && tx.keAkun.toLowerCase().includes(filterState.metode.toLowerCase())) ||
+        (filterState.metode === 'Transfer Bank' || filterState.metode === 'Bank Transfer')
+      ));
     const matchSearch = !filterState.searchQuery || (tx.keterangan || '').toLowerCase().includes(filterState.searchQuery);
     
     let matchPrice = true;

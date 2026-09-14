@@ -50,7 +50,7 @@
   --bg-color: radial-gradient(circle at top left, #1A1333 0%, #0B0716 100%);
   --white: #15121B;
   --primary: #9D4EDD;
-  --primary-light: rgba(157, 78, 221, 0.15);
+  --primary-light: #3B1F5E;
   --primary-dark: #7B2CBF;
   
   --text-main: #F3E8FF;
@@ -68,7 +68,7 @@
   --red: #EF4444;
   --red-light: rgba(239, 68, 68, 0.15);
   --blue: #3B82F6;
-  --blue-light: rgba(59, 130, 246, 0.15);
+  --blue-light: #1E3A5F;
   --orange: #F59E0B;
   --orange-light: rgba(245, 158, 11, 0.15);
   --card-bg: #15121B;
@@ -76,5 +76,5 @@
   --glass-bg: rgba(21, 18, 27, 0.75);
   --glass-border: rgba(255, 255, 255, 0.08);
   --purple: #C77DFF;
-  --purple-light: rgba(199, 125, 255, 0.15);
+  --purple-light: #3B2856;
 }

@@ -1,9 +1,10 @@
 .sidebar {
+  --sidebar-pad-x: 1.25rem;
   width: var(--sidebar-width);
   background-color: var(--white);
   display: flex;
   flex-direction: column;
-  padding: 1.75rem 1.25rem;
+  padding: 1.75rem var(--sidebar-pad-x);
   border-right: 1px solid var(--border);
   position: fixed;
   height: 100vh;
@@ -131,7 +132,7 @@
 }
 
 [data-theme="dark"] .icon-ai {
-  background: rgba(147, 51, 234, 0.2);
+  background: #3B2856;
 }
 
 [data-theme="dark"] .icon-anggaran {
@@ -269,11 +270,12 @@
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 4px 0;
+  width: 100%;
+  padding: 4px 12px 4px 4px;
   height: 48px;
   text-decoration: none;
   color: var(--text-muted);
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -286,24 +288,33 @@
 }
 
 .nav-item.active {
-  background: #e0f2fe;
-  color: var(--primary);
+  background: #0284c7;
+  color: #ffffff !important;
+  font-weight: 600;
   position: relative;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+}
+
+.nav-item.active i,
+.nav-item.active span {
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .nav-item.active {
-  background: #3b1f5e;
-  color: #FFFFFF !important;
+  background: #7b2cbf;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(123, 44, 191, 0.45);
 }
 
-[data-theme="dark"] .nav-item.active i {
-  color: #FFFFFF !important;
+[data-theme="dark"] .nav-item.active i,
+[data-theme="dark"] .nav-item.active span {
+  color: #ffffff !important;
 }
 
 .nav-item.active::before {
   content: '';
   position: absolute;
-  left: -20px;
+  left: calc(-1 * var(--sidebar-pad-x));
   top: 50%;
   transform: translateY(-50%);
   height: 24px;
@@ -401,8 +412,9 @@
 
 /* --- SIDEBAR COLLAPSED STATE --- */
 .sidebar-collapsed .sidebar {
+  --sidebar-pad-x: 0.85rem;
   width: var(--sidebar-collapsed-width);
-  padding: 1.75rem 0.85rem;
+  padding: 1.75rem var(--sidebar-pad-x);
 }
 
 .logo-wrapper,
@@ -462,6 +474,7 @@
 
 /* Tooltip & Active Style for Collapsed Sidebar */
 .sidebar-collapsed .nav-item {
+  padding: 4px;
   justify-content: center;
 }
 
@@ -472,10 +485,6 @@
 
 [data-theme="dark"] .sidebar-collapsed .nav-item.active {
   background: #6937a6;
-}
-
-.sidebar-collapsed .nav-item.active::before {
-  left: -16px;
 }
 
 

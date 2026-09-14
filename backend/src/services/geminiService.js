@@ -406,6 +406,9 @@ ${chatHistoryBlock}
 
 ### STRUKTUR OUTPUT (WAJIB RAW JSON):
 
+1. Jika user hanya memasukkan SATU transaksi/wishlist/permintaan/chat:
+Kembalikan SATU objek JSON seperti berikut:
+
 Untuk intent "transaction":
 {
   "intent": "transaction",
@@ -446,6 +449,35 @@ Untuk intent "unknown" / "chat":
   "message": "<jawaban mendalam berbasis data keuangan & diakhiri ajakan dialog interaktif ala Anya>"
 }
 
+2. JIKA USER MEMASUKKAN LEBIH DARI SATU TRANSAKSI ATAU ITEM SEKALIGUS (contoh: "bensin 30k csh dan makan siang 15k gopay", "makan siang 25rb, beli kopi 18k, nabung hp 3jt"):
+WAJIB KEMBALIKAN DALAM FORMAT ARRAY OBJEK JSON (masing-masing item memiliki intent dan datanya sendiri):
+[
+  {
+    "intent": "transaction",
+    "message": "Siap! Bensin 30rb via Cash sudah Anya siapkan ya.",
+    "data": {
+      "type": "expense",
+      "tanggal": "YYYY-MM-DD",
+      "kategori": "Transportasi",
+      "metode": "Cash",
+      "keterangan": "Bensin",
+      "harga": 30000
+    }
+  },
+  {
+    "intent": "transaction",
+    "message": "Makan siang 15rb via Gopay juga sudah siap!",
+    "data": {
+      "type": "expense",
+      "tanggal": "YYYY-MM-DD",
+      "kategori": "Makanan & Minuman",
+      "metode": "E-Wallet",
+      "keterangan": "Makan Siang",
+      "harga": 15000
+    }
+  }
+]
+
 Input User: "${userText.replace(/"/g, '\\"')}"`;
 
   const body = {
@@ -464,7 +496,7 @@ Input User: "${userText.replace(/"/g, '\\"')}"`;
     try {
       return JSON.parse(rawText);
     } catch {
-      const match = rawText.match(/\{[\s\S]*\}/);
+      const match = rawText.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
       if (match) {
         return JSON.parse(match[0]);
       }
