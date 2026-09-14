@@ -233,7 +233,7 @@
 }
 
 [data-theme="dark"] .profile-dropdown .theme-auto-btn.active {
-  background-color: rgba(157, 78, 221, 0.25) !important;
+  background-color: #3B1F5E !important;
   color: var(--primary) !important;
 }
 

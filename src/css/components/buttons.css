@@ -188,7 +188,7 @@
 [data-theme="dark"] .filter-chip:hover {
   border-color: var(--primary);
   color: var(--primary);
-  background: rgba(99, 102, 241, 0.15);
+  background: #2A2440;
 }
 
 [data-theme="dark"] .filter-chip.active {
@@ -354,7 +354,7 @@
 }
 
 [data-theme="dark"] .theme-auto-btn.active {
-  background: rgba(157, 78, 221, 0.18);
+  background: #3B1F5E;
   color: var(--primary);
 }
 
