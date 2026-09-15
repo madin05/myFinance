@@ -204,16 +204,18 @@
     box-shadow: 0 -5px 16px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     min-height: 68px;
-    transform: none;
-    transition: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+    margin-bottom: -10px;
   }
+
 
   .saldo-grid .stat-card:last-child {
     border-radius: 18px !important;
   }
-
+  
   .saldo-grid .stat-card:hover {
-    transform: none;
+    transform: translateY(-8px);
     box-shadow: 0 -5px 16px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.06);
   }
 
