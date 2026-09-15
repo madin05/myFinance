@@ -7,6 +7,7 @@ import { escapeHtml } from "../../utils.js";
 import {
   parseNaturalLanguageTx,
   parseNaturalLanguageWishlist,
+  parseNaturalLanguageMultiLocal,
   generateFinancialSummary,
 } from "../../components/smartAiInput.js";
 import {
@@ -564,72 +565,97 @@ export async function processUserChatMessage(userText) {
       time: nowTime,
     });
   } else {
-    const localWl = parseNaturalLanguageWishlist(userText);
-    if (localWl) {
+    const localResult = parseNaturalLanguageMultiLocal(userText);
+
+    // 1. Multiple transactions / wishlists parsed offline
+    if (Array.isArray(localResult) && localResult.length > 0) {
       session.messages.push({
         id: `msg_${Date.now()}_a`,
         sender: "assistant",
-        text: `Mantap! Target "${localWl.name}" sudah Anya deteksi buat Wishlist ⭐`,
-        intent: "wishlist",
-        data: localWl,
+        text: `Anya menemukan ${localResult.length} item dari pesan kamu:`,
+        intent: "multi",
+        items: localResult,
         time: nowTime,
       });
-    } else {
-      const localTx = parseNaturalLanguageTx(userText);
-      if (localTx) {
-        const isInc = localTx.type === "income";
+      saveSessions(sessions);
+      renderActiveChatMessages();
+      return;
+    }
+
+    // 2. Single item parsed offline
+    if (localResult && localResult.intent) {
+      if (localResult.intent === "wishlist" && localResult.data) {
         session.messages.push({
           id: `msg_${Date.now()}_a`,
           sender: "assistant",
-          text: isInc
+          text: localResult.message || `Mantap! Target "${localResult.data.name}" sudah Anya deteksi buat Wishlist ⭐`,
+          intent: "wishlist",
+          data: localResult.data,
+          time: nowTime,
+        });
+        saveSessions(sessions);
+        renderActiveChatMessages();
+        return;
+      }
+
+      if (localResult.intent === "transaction" && localResult.data) {
+        const isInc = localResult.data.type === "income";
+        session.messages.push({
+          id: `msg_${Date.now()}_a`,
+          sender: "assistant",
+          text: localResult.message || (isInc
             ? "Mantap! Rincian pemasukan kamu sudah siap dicatat ya 🤑"
-            : "Oke bre, rincian transaksi pengeluaran kamu sudah Anya siapkan ya! 📝",
+            : "Siap! Rincian transaksi pengeluaran kamu sudah Anya siapkan ya! 📝"),
           intent: "transaction",
-          data: localTx,
+          data: localResult.data,
           time: nowTime,
         });
-      } else {
-        // General Q&A / Advice response with Data-Grounding
-        let adviceText =
-          "Halo! Anya di sini siap bantu kamu mencatat transaksi, wishlist, atau menganalisis keuangan.\n\nContoh yang bisa kamu ketik:\n* **'Nasi padang 20rb cash'**\n* **'Bensin pertalite gocap'**\n* **'Nabung laptop 15jt'**\n* **'Ringkas pengeluaran 1 bulan'**";
-        if (
-          lower.includes("tips") ||
-          lower.includes("hemat") ||
-          lower.includes("saran") ||
-          lower.includes("minus") ||
-          lower.includes("boros") ||
-          lower.includes("evaluasi") ||
-          lower.includes("pendapat")
-        ) {
-          const fc = buildAiFinancialContext();
-          const inc = fc.currentMonth.income;
-          const exp = fc.currentMonth.expense;
-          const net = inc - exp;
-          const top = fc.currentMonth.breakdown[0];
-
-          if (net < 0 && top) {
-            adviceText = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit ${formatRupiah(Math.abs(net))}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}).\n\n📌 **Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${top.kategori}? 😊`;
-          } else if (top) {
-            adviceText = `Kondisi keuanganmu bulan ini **surplus ${formatRupiah(net)}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}). Bagus banget!\n\n💡 **Saran Anya**:\n1. Pos terbesarmu saat ini di **${top.kategori} (${formatRupiah(top.amount)})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang? ⭐`;
-          } else {
-            adviceText =
-              "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian agar tidak boncos.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
-          }
-        } else if (aiResult && aiResult.message) {
-          adviceText = aiResult.message;
-        }
-
-        session.messages.push({
-          id: `msg_${Date.now()}_a`,
-          sender: "assistant",
-          text: adviceText,
-          intent: "text",
-          time: nowTime,
-        });
+        saveSessions(sessions);
+        renderActiveChatMessages();
+        return;
       }
     }
+
+    // General Q&A / Advice response with Data-Grounding
+    let adviceText =
+      "Halo! Anya di sini siap bantu kamu mencatat transaksi, wishlist, atau menganalisis keuangan.\n\nContoh yang bisa kamu ketik:\n* **'Nasi padang 20rb cash'**\n* **'Bensin pertalite gocap'**\n* **'Nabung laptop 15jt'**\n* **'Ringkas pengeluaran 1 bulan'**";
+    if (
+      lower.includes("tips") ||
+      lower.includes("hemat") ||
+      lower.includes("saran") ||
+      lower.includes("minus") ||
+      lower.includes("boros") ||
+      lower.includes("evaluasi") ||
+      lower.includes("pendapat")
+    ) {
+      const fc = buildAiFinancialContext();
+      const inc = fc.currentMonth.income;
+      const exp = fc.currentMonth.expense;
+      const net = inc - exp;
+      const top = fc.currentMonth.breakdown[0];
+
+      if (net < 0 && top) {
+        adviceText = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit ${formatRupiah(Math.abs(net))}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}).\n\n📌 **Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${top.kategori}? 😊`;
+      } else if (top) {
+        adviceText = `Kondisi keuanganmu bulan ini **surplus ${formatRupiah(net)}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}). Bagus banget!\n\n💡 **Saran Anya**:\n1. Pos terbesarmu saat ini di **${top.kategori} (${formatRupiah(top.amount)})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang? ⭐`;
+      } else {
+        adviceText =
+          "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian agar tidak boncos.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
+      }
+    } else if (aiResult && aiResult.message) {
+      adviceText = aiResult.message;
+    }
+
+    session.messages.push({
+      id: `msg_${Date.now()}_a`,
+      sender: "assistant",
+      text: adviceText,
+      intent: "text",
+      time: nowTime,
+    });
   }
 
   saveSessions(sessions);
   renderActiveChatMessages(true);
 }
+

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Saldo Page Styles - Wallet Card Deck (Rak), Grid, and List Views
+   Saldo Page Styles - Grid and List Views
    ========================================================================== */
 
 .saldo-section .section-header-top {
@@ -15,14 +15,14 @@
 }
 
 .saldo-section .saldo-total-amount {
-  color: var(--text);
+  color: var(--text-main, var(--text));
 }
 
 .saldo-section .view-toggle {
   display: flex;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md, 8px);
   padding: 2px;
 }
 
@@ -50,14 +50,19 @@
   margin-top: 1.25rem;
 }
 
-/* --- SALDO CARD CONTENT HORIZONTAL LAYOUT & CORNER RADIUS --- */
+/* --- SALDO CARD CONTENT & LAYOUT --- */
 .saldo-card-item {
-  border-radius: 18px 18px 0 0 !important;
-  overflow: hidden;
+  border-radius: var(--radius-md, 12px) !important;
+  background-color: var(--card-bg, #ffffff);
+  border: 1px solid var(--border);
+  padding: 1rem 1.15rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.saldo-card-item:last-child {
-  border-radius: 18px !important;
+.saldo-card-item:hover,
+.saldo-card-item.stat-card:hover {
+  border-color: var(--border);
+  transform: translateY(-12px);
 }
 
 .saldo-card-content {
@@ -74,16 +79,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
 }
 
 .saldo-card-item .brand-logo-img {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   object-fit: contain;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.12));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .saldo-info-col {
@@ -96,18 +101,18 @@
 
 .saldo-card-item .account-name {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--text-main, var(--text));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .saldo-card-item .saldo-value {
   margin: 2px 0 0 0;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
@@ -133,7 +138,7 @@
 }
 
 .saldo-card-item .kebab-wrapper {
-  position: static;
+  position: relative;
   flex-shrink: 0;
 }
 
@@ -142,44 +147,32 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 1.1rem;
-  padding: 4px;
+  font-size: 1.15rem;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: color 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
-.saldo-card-item .kebab-trigger:hover {
-  color: var(--text);
+.saldo-card-item .kebab-trigger:hover,
+.saldo-card-item .kebab-trigger.active {
+  color: var(--primary);
 }
 
 /* --- DEFAULT & GRID VIEW MODE --- */
 .saldo-grid, .saldo-grid.grid-mode {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
 /* --- LIST VIEW MODE --- */
 .saldo-grid.list-mode {
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-.saldo-grid.list-mode .stat-card {
-  border-radius: 18px 18px 0 0 !important;
-  padding: 0.85rem 1.15rem;
-}
-
-.saldo-grid.list-mode .stat-card:not(:first-child) {
-  margin-top: -1.15rem !important;
-}
-
-.saldo-grid.list-mode .stat-card:last-child {
-  border-radius: 18px !important;
+  gap: 0.75rem;
 }
 
 /* --- MOBILE RESPONSIVE OVERRIDES --- */
@@ -191,48 +184,36 @@
   .saldo-grid {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0.75rem;
     margin-top: 0.85rem;
     padding-bottom: 1.5rem;
   }
 
-  .saldo-grid .stat-card {
-    flex-direction: row;
-    align-items: center;
+  .saldo-card-item.stat-card {
+    box-shadow: 0 -8px 20px -4px rgba(15, 23, 42, 0.194);
+    margin-bottom: -40px;
     padding: 0.85rem 1rem;
-    border-radius: 18px 18px 0 0 !important;
-    box-shadow: 0 -5px 16px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.06);
-    border: 1px solid var(--border);
-    min-height: 68px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    will-change: transform;
-    margin-bottom: -10px;
+    border-radius: 12px 12px 0 0 !important;
   }
 
 
-  .saldo-grid .stat-card:last-child {
-    border-radius: 18px !important;
+  .saldo-card-item.stat-card:last-child {
+    border-radius: var(--radius-md, 12px) !important;
   }
+
   
-  .saldo-grid .stat-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 -5px 16px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.06);
-  }
-
-  .saldo-grid .stat-card:not(:first-child) {
-    margin-top: -2.3rem !important;
-  }
 
   .saldo-card-item .account-name {
-    font-size: 0.82rem;
+    font-size: 0.88rem;
   }
 
   .saldo-card-item .saldo-value {
-    font-size: 0.58rem;
+    font-size: 0.82rem;
   }
 
   .account-type-badge {
-    font-size: 0.68rem;
-    padding: 2px 6px;
+    font-size: 0.7rem;
+    padding: 2px 7px;
   }
 }
+
