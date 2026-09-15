@@ -823,9 +823,19 @@
 }
 
 .ai-msg-row.assistant .ai-msg-bubble {
-  background: transparent;
+  background-color: var(--card-bg, #ffffff);
   color: var(--text-main);
-  padding: 0.2rem 0;
+  padding: 0.85rem 1.15rem;
+  border-radius: var(--radius-md, 12px);
+  border-top-left-radius: 4px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .ai-msg-row.assistant .ai-msg-bubble {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .ai-formatted-text {
