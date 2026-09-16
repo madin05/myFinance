@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const { PrismaClient } = require('@prisma/client');
 const p = new PrismaClient();
 p.user.findMany({ select: { firebaseUid: true, name: true, email: true } })
