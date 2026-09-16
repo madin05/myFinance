@@ -804,38 +804,107 @@
   position: relative;
   overflow-wrap: break-word;
   word-break: normal;
+  overflow: visible !important;
 }
 
+/* User Bubble (WhatsApp Style - Right-pointing Tail) */
 .ai-msg-row.user .ai-msg-bubble {
   background-color: var(--card-bg, #ffffff);
   color: var(--text-main);
   padding: 0.65rem 1rem;
-  border-radius: var(--radius-md, 12px);
-  border-top-right-radius: 4px;
+  border-radius: 10px;
+  border-top-right-radius: 0;
   border: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-[data-theme="dark"] .ai-msg-row.user .ai-msg-bubble {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+/* User WhatsApp Tail Border */
+.ai-msg-row.user .ai-msg-bubble::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -8px;
+  width: 8px;
+  height: 13px;
+  background-color: var(--border);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  -webkit-clip-path: polygon(0 0, 100% 0, 0 100%);
+  z-index: 1;
+  pointer-events: none;
 }
 
+/* User WhatsApp Tail Fill */
+.ai-msg-row.user .ai-msg-bubble::after {
+  content: '';
+  position: absolute;
+  top: 0px;
+  right: -6.5px;
+  width: 7px;
+  height: 11.5px;
+  background-color: var(--card-bg, #ffffff);
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  -webkit-clip-path: polygon(0 0, 100% 0, 0 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Assistant Bubble (WhatsApp Style - Left-pointing Tail) */
 .ai-msg-row.assistant .ai-msg-bubble {
   background-color: var(--card-bg, #ffffff);
   color: var(--text-main);
   padding: 0.85rem 1.15rem;
-  border-radius: var(--radius-md, 12px);
-  border-top-left-radius: 4px;
+  border-radius: 10px;
+  border-top-left-radius: 0;
   border: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
+/* Assistant WhatsApp Tail Border */
+.ai-msg-row.assistant .ai-msg-bubble::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -8px;
+  width: 8px;
+  height: 13px;
+  background-color: var(--border);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Assistant WhatsApp Tail Fill */
+.ai-msg-row.assistant .ai-msg-bubble::after {
+  content: '';
+  position: absolute;
+  top: 0px;
+  left: -6.5px;
+  width: 7px;
+  height: 11.5px;
+  background-color: var(--card-bg, #ffffff);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Dark Theme Tokens */
+[data-theme="dark"] .ai-msg-row.user .ai-msg-bubble,
 [data-theme="dark"] .ai-msg-row.assistant .ai-msg-bubble {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  background-color: var(--card-bg, #15121B);
+  border-color: var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .ai-msg-row.user .ai-msg-bubble::before,
+[data-theme="dark"] .ai-msg-row.assistant .ai-msg-bubble::before {
+  background-color: var(--border);
+}
+
+[data-theme="dark"] .ai-msg-row.user .ai-msg-bubble::after,
+[data-theme="dark"] .ai-msg-row.assistant .ai-msg-bubble::after {
+  background-color: var(--card-bg, #15121B);
 }
 
 .ai-formatted-text {
