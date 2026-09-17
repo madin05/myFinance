@@ -813,8 +813,22 @@ function localFallbackNlpParser(userText, context = {}) {
     } else {
       chatMsg = "Tips hemat dari Anya:\n1. Alokasikan 50% kebutuhan pokok, 30% keinginan, dan 20% tabungan.\n2. Rutin catat setiap pengeluaran harian agar tidak boncos.\n3. Buat target wishlist sebelum belanja konsumtif!\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
     }
-  } else if (/halo|hai|hey|hello|hi|pagi|siang|malam|apa kabar|how are you/i.test(lower)) {
-    chatMsg = "Halo! Anya siap membantumu mencatat transaksi dan mengelola keuangan dengan pintar. Ada yang bisa Anya bantu hari ini?";
+  } else if (/halo|hai|hey|hello|hi|pagi|siang|sore|malam|apa kabar|how are you/i.test(lower)) {
+    const fc = context.financialContext;
+    if (fc && fc.currentMonth && (fc.currentMonth.income > 0 || fc.currentMonth.expense > 0)) {
+      const uName = fc.userName || 'Kawan';
+      const inc = Number(fc.currentMonth.income || 0);
+      const exp = Number(fc.currentMonth.expense || 0);
+      const net = inc - exp;
+      if (net >= 0) {
+        chatMsg = `Hai **${uName}**! Apa kabar? Anya di sini siap bantu kamu nih. ✨\n\nWah, Anya lihat catatan keuanganmu bulan ini mantap banget! Total pemasukanmu **Rp ${inc.toLocaleString('id-ID')}** dengan pengeluaran **Rp ${exp.toLocaleString('id-ID')}**, jadi ada **surplus positif sebesar Rp ${net.toLocaleString('id-ID')}**.\n\nSecara keseluruhan kondisi keuanganmu sehat banget, ${uName}. Mau Anya bantu cek lagi progres wishlist atau ada transaksi baru yang mau dicatat hari ini? 😊`;
+      } else {
+        chatMsg = `Hai **${uName}**! Apa kabar? Anya di sini siap bantu kelola keuanganmu. 👋\n\nCatatan bulan ini menunjukkan pemasukan **Rp ${inc.toLocaleString('id-ID')}** dan pengeluaran **Rp ${exp.toLocaleString('id-ID')}** (saat ini sedang defisit **Rp ${Math.abs(net).toLocaleString('id-ID')}**).\n\nAnya siap bantu kasih tips penghematan atau catat transaksi harianmu agar keuanganmu kembali seimbang. Mau mulai dari mana hari ini? 😊`;
+      }
+    } else {
+      const uName = (fc && fc.userName) ? ` **${fc.userName}**` : '';
+      chatMsg = `Halo${uName}! Anya siap membantumu mencatat transaksi, wishlist, dan mengelola keuangan dengan pintar. Ada yang bisa Anya bantu hari ini? ✨`;
+    }
   }
 
   return {

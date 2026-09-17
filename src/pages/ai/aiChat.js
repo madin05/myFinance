@@ -619,6 +619,9 @@ export async function processUserChatMessage(userText) {
     // General Q&A / Advice response with Data-Grounding
     let adviceText =
       "Halo! Anya di sini siap bantu kamu mencatat transaksi, wishlist, atau menganalisis keuangan.\n\nContoh yang bisa kamu ketik:\n* **'Nasi padang 20rb cash'**\n* **'Bensin pertalite gocap'**\n* **'Nabung laptop 15jt'**\n* **'Ringkas pengeluaran 1 bulan'**";
+
+    const isGreeting = /^(hi|hai|halo|hello|hey|hei|pagi|siang|sore|malam|apa kabar|assalamualaikum)\b/i.test(lower.trim());
+
     if (
       lower.includes("tips") ||
       lower.includes("hemat") ||
@@ -641,6 +644,23 @@ export async function processUserChatMessage(userText) {
       } else {
         adviceText =
           "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian agar tidak boncos.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
+      }
+    } else if (isGreeting) {
+      const fc = buildAiFinancialContext();
+      const userName = fc.userName || store.user?.name || "Kawan";
+      const inc = fc.currentMonth.income;
+      const exp = fc.currentMonth.expense;
+      const net = inc - exp;
+      const top = fc.currentMonth.breakdown[0];
+
+      if (inc > 0 || exp > 0) {
+        if (net >= 0) {
+          adviceText = `Hai **${userName}**! Apa kabar? Anya di sini siap bantu kamu nih. ✨\n\nWah, Anya lihat catatan keuanganmu bulan ini mantap banget lho! Total pemasukanmu **${formatRupiah(inc)}** dengan pengeluaran **${formatRupiah(exp)}**, jadi ada **surplus positif sebesar ${formatRupiah(net)}**. Keren banget!\n\n${top ? `Pengeluaran terbesarmu bulan ini ada di kategori **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**.\n\n` : ''}Secara keseluruhan kondisi keuanganmu sehat banget, ${userName}. Mau Anya bantu cek lagi progres wishlist atau ada transaksi baru yang mau dicatat hari ini? 😊`;
+        } else {
+          adviceText = `Hai **${userName}**! Apa kabar? Anya di sini siap nemenin dan bantu kelola keuanganmu. 👋\n\nKalau Anya cek catatan bulan ini, ada total pemasukan **${formatRupiah(inc)}** dan pengeluaran **${formatRupiah(exp)}** (saat ini sedang defisit **${formatRupiah(Math.abs(net))}**).\n\n${top ? `Pos pengeluaran terbanyak ada di **${top.kategori}** (**${formatRupiah(top.amount)}**).\n\n` : ''}Tenang aja, Anya bisa bantu kasih tips penghematan atau catat transaksi harianmu agar keuanganmu kembali seimbang. Mau mulai dari mana hari ini? 😊`;
+        }
+      } else {
+        adviceText = `Hai **${userName}**! Apa kabar? Anya di sini siap bantu kamu mengelola keuangan, mencatat transaksi cepat, atau memantau target wishlist-mu. ✨\n\nBulan ini belum ada transaksi yang tercatat nih. Mau Anya bantu catat transaksi pengeluaran/pemasukan baru, atau butuh saran perencanaan keuangan hari ini? 😊`;
       }
     } else if (aiResult && aiResult.message) {
       adviceText = aiResult.message;

@@ -111,11 +111,15 @@ export async function queryGemini(text, chatHistory = []) {
         chatHistory: Array.isArray(chatHistory) ? chatHistory.slice(-8) : [],
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[aiService] Backend AI request failed with HTTP ${res.status}. Falling back to offline NLP parser.`);
+      return null;
+    }
     const json = await res.json();
     if (json.intent === "fallback") return null;
     return json;
-  } catch {
+  } catch (err) {
+    console.warn(`[aiService] Unable to reach Backend AI (${API_URL}/ai/parse):`, err.message || err);
     return null;
   }
 }
