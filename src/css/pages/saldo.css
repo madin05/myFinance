@@ -62,10 +62,7 @@
 .saldo-card-item:hover,
 .saldo-card-item.stat-card:hover {
   border-color: var(--border);
-<<<<<<< HEAD
-=======
   transform: translateY(-12px);
->>>>>>> origin/main
 }
 
 .saldo-card-content {
@@ -200,7 +197,6 @@
 
   .saldo-card-item.stat-card:last-child {
     border-radius: var(--radius-md, 12px) !important;
-<<<<<<< HEAD
     transform: none !important;
   }
 
@@ -209,10 +205,6 @@
     border-color: var(--border);
     transform: translateY(-14px);
   }
-=======
-  }
-
->>>>>>> origin/main
   
 
   .saldo-card-item .account-name {
