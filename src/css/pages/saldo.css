@@ -62,6 +62,10 @@
 .saldo-card-item:hover,
 .saldo-card-item.stat-card:hover {
   border-color: var(--border);
+<<<<<<< HEAD
+=======
+  transform: translateY(-12px);
+>>>>>>> origin/main
 }
 
 .saldo-card-content {
@@ -164,7 +168,6 @@
 .saldo-grid, .saldo-grid.grid-mode {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  
 }
 
 /* --- LIST VIEW MODE --- */
@@ -197,6 +200,7 @@
 
   .saldo-card-item.stat-card:last-child {
     border-radius: var(--radius-md, 12px) !important;
+<<<<<<< HEAD
     transform: none !important;
   }
 
@@ -205,6 +209,10 @@
     border-color: var(--border);
     transform: translateY(-14px);
   }
+=======
+  }
+
+>>>>>>> origin/main
   
 
   .saldo-card-item .account-name {

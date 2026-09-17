@@ -206,14 +206,13 @@ async function seedUser(user) {
   const txData = [];
 
   for (let m = 0; m < 6; m++) {
-    // Determine year and month for this batch
     const targetDate = new Date(currentYear, currentMonth - m, 1);
     const y = targetDate.getFullYear();
     const mo = targetDate.getMonth();
     const daysInMonth = new Date(y, mo + 1, 0).getDate();
     const maxDay = m === 0 ? currentDay : daysInMonth;
 
-    // A. Main Salary (day 1 or 25)
+    // A. Main Salary
     const salaryDay = m === 0 ? Math.min(1, maxDay) : 1;
     txData.push({
       userId: user.id,
@@ -226,7 +225,7 @@ async function seedUser(user) {
       type: 'income',
     });
 
-    // B. Additional Incomes (1 to 3 items)
+    // B. Additional Incomes
     const incCount = rand(1, 3);
     for (let i = 0; i < incCount; i++) {
       const item = pick(INCOME_TEMPLATES.slice(1));
@@ -243,7 +242,7 @@ async function seedUser(user) {
       });
     }
 
-    // C. Expenses (10 to 18 items per month)
+    // C. Expenses
     const expCount = m === 0 ? Math.max(8, Math.floor((currentDay / daysInMonth) * 16)) : rand(12, 18);
     for (let i = 0; i < expCount; i++) {
       const item = pick(EXPENSE_TEMPLATES);
@@ -260,7 +259,7 @@ async function seedUser(user) {
       });
     }
 
-    // D. Transfers (1 to 2 items per month)
+    // D. Transfers
     const transferCount = rand(1, 2);
     for (let t = 0; t < transferCount; t++) {
       const tr = pick(TRANSFER_TEMPLATES);
@@ -278,12 +277,11 @@ async function seedUser(user) {
     }
   }
 
-  // Sort descending by date before inserting
   txData.sort((a, b) => b.date - a.date);
   await prisma.transaction.createMany({ data: txData });
   console.log(`   💸 Berhasil menambahkan ${txData.length} riwayat transaksi (Income, Expense, Transfer 6 bulan)`);
 
-  // 4. Seed Budgets (for past 6 months to ensure seamless navigation in Anggaran page)
+  // 4. Seed Budgets
   const budgetData = [];
   for (let m = 0; m < 6; m++) {
     const d = new Date(currentYear, currentMonth - m, 1);
@@ -332,7 +330,6 @@ async function main() {
     users = await prisma.user.findMany();
   }
 
-  // If DB has 0 users, create a default local dev user so local environment works immediately
   if (users.length === 0) {
     console.log('⚠️  Belum ada user terdaftar. Membuat user default untuk local development...');
     const defaultUser = await prisma.user.create({
