@@ -20,14 +20,15 @@
 
 .saldo-section .view-toggle {
   display: flex;
-  background: var(--surface);
+  background: var(--bg-color);
   border: 1px solid var(--border);
   border-radius: var(--radius-md, 8px);
   padding: 2px;
+  gap: 2px;
 }
 
 .saldo-section .view-toggle .btn-icon {
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
   border: none;
   background: transparent;
@@ -36,14 +37,38 @@
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-weight: 600;
   font-size: 0.8rem;
 }
 
+.saldo-section .view-toggle .btn-icon:hover {
+  color: var(--text-main);
+}
+
 .saldo-section .view-toggle .btn-icon.active {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: var(--card-bg, #ffffff);
+  color: var(--text-main);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .saldo-section .view-toggle {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .saldo-section .view-toggle .btn-icon {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme="dark"] .saldo-section .view-toggle .btn-icon:hover {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .saldo-section .view-toggle .btn-icon.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .saldo-grid {

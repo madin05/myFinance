@@ -55,7 +55,7 @@ export function renderEmailVerificationBanner(firebaseUser) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal kirim OTP.');
 
-      btn.textContent = 'OTP Terkirim! ✓';
+      btn.textContent = 'OTP Terkirim!';
       
       // Sembunyikan layout utama dan tampilkan view OTP
       const loginView = document.getElementById('login-view');

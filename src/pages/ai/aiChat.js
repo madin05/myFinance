@@ -57,26 +57,26 @@ export function renderActiveChatMessages() {
         <div class="ai-welcome-sparkle-avatar">
           <img src="/assets/technical-support.svg" alt="Anya AI" class="ai-avatar-icon">
         </div>
-        <h3 class="ai-welcome-title">Halo, ${escapeHtml(store.user?.name || "Pengguna")}! 👋</h3>
+        <h3 class="ai-welcome-title">Halo, ${escapeHtml(store.user?.name || "Pengguna")}</h3>
         <p class="ai-welcome-subtitle">
           Saya Anya Asisten Keuangan MyFinance. Tanyakan tips hemat, catat transaksi otomatis, atau minta analisis pengeluaranmu.
         </p>
 
         <div class="ai-welcome-prompts-grid">
           <button type="button" class="ai-welcome-prompt-card" data-text="Makan siang 25rb cash">
-            <span class="ai-welcome-prompt-text">🍜 Makan siang 25rb cash</span>
+            <span class="ai-welcome-prompt-text"><i class="ph ph-fork-knife"></i> Makan siang 25rb cash</span>
             <i class="ph ph-arrow-right"></i>
           </button>
           <button type="button" class="ai-welcome-prompt-card" data-text="Gaji bulanan 7.5jt transfer BCA">
-            <span class="ai-welcome-prompt-text">💼 Gaji bulanan 7.5jt transfer BCA</span>
+            <span class="ai-welcome-prompt-text"><i class="ph ph-briefcase"></i> Gaji bulanan 7.5jt transfer BCA</span>
             <i class="ph ph-arrow-right"></i>
           </button>
           <button type="button" class="ai-welcome-prompt-card" data-text="Nabung beli laptop gaming 15jt">
-            <span class="ai-welcome-prompt-text">⭐ Nabung laptop gaming 15jt</span>
+            <span class="ai-welcome-prompt-text"><i class="ph ph-star"></i> Nabung laptop gaming 15jt</span>
             <i class="ph ph-arrow-right"></i>
           </button>
           <button type="button" class="ai-welcome-prompt-card" data-text="Ringkas pengeluaran 1 bulan">
-            <span class="ai-welcome-prompt-text">📊 Ringkas pengeluaran bulan ini</span>
+            <span class="ai-welcome-prompt-text"><i class="ph ph-chart-bar"></i> Ringkas pengeluaran bulan ini</span>
             <i class="ph ph-arrow-right"></i>
           </button>
         </div>
@@ -559,7 +559,7 @@ export async function processUserChatMessage(userText) {
     session.messages.push({
       id: `msg_${Date.now()}_a`,
       sender: "assistant",
-      text: "Siap! Anya buatin ringkasan analisis keuangan kamu ya 📊",
+      text: "Siap! Anya buatin ringkasan analisis keuangan kamu ya.",
       intent: "summary_request",
       period: pk,
       time: nowTime,
@@ -588,7 +588,7 @@ export async function processUserChatMessage(userText) {
         session.messages.push({
           id: `msg_${Date.now()}_a`,
           sender: "assistant",
-          text: localResult.message || `Mantap! Target "${localResult.data.name}" sudah Anya deteksi buat Wishlist ⭐`,
+          text: localResult.message || `Mantap! Target "${localResult.data.name}" sudah Anya deteksi buat Wishlist.`,
           intent: "wishlist",
           data: localResult.data,
           time: nowTime,
@@ -604,8 +604,8 @@ export async function processUserChatMessage(userText) {
           id: `msg_${Date.now()}_a`,
           sender: "assistant",
           text: localResult.message || (isInc
-            ? "Mantap! Rincian pemasukan kamu sudah siap dicatat ya 🤑"
-            : "Siap! Rincian transaksi pengeluaran kamu sudah Anya siapkan ya! 📝"),
+            ? "Mantap! Rincian pemasukan kamu sudah siap dicatat ya."
+            : "Siap! Rincian transaksi pengeluaran kamu sudah Anya siapkan ya."),
           intent: "transaction",
           data: localResult.data,
           time: nowTime,
@@ -638,12 +638,12 @@ export async function processUserChatMessage(userText) {
       const top = fc.currentMonth.breakdown[0];
 
       if (net < 0 && top) {
-        adviceText = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit ${formatRupiah(Math.abs(net))}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}).\n\n📌 **Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${top.kategori}? 😊`;
+        adviceText = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit ${formatRupiah(Math.abs(net))}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}).\n\n**Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${top.kategori}?`;
       } else if (top) {
-        adviceText = `Kondisi keuanganmu bulan ini **surplus ${formatRupiah(net)}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}). Bagus banget!\n\n💡 **Saran Anya**:\n1. Pos terbesarmu saat ini di **${top.kategori} (${formatRupiah(top.amount)})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang? ⭐`;
+        adviceText = `Kondisi keuanganmu bulan ini **surplus ${formatRupiah(net)}** (Pemasukan ${formatRupiah(inc)} vs Pengeluaran ${formatRupiah(exp)}). Bagus!\n\n**Saran Anya**:\n1. Pos terbesarmu saat ini di **${top.kategori} (${formatRupiah(top.amount)})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang?`;
       } else {
         adviceText =
-          "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian agar tidak boncos.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
+          "**Tips Keuangan Cerdas Anya**:\n1. Alokasikan 50% untuk kebutuhan utama, 30% opsi kebutuhan sekunder, 20% tabungan.\n2. Selalu catat pengeluaran kecil harian agar tidak boncos.\n3. Tetapkan target wishlist agar tabunganmu terstruktur.\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng?";
       }
     } else if (isGreeting) {
       const fc = buildAiFinancialContext();
@@ -655,12 +655,12 @@ export async function processUserChatMessage(userText) {
 
       if (inc > 0 || exp > 0) {
         if (net >= 0) {
-          adviceText = `Hai **${userName}**! Apa kabar? Anya di sini siap bantu kamu nih. ✨\n\nWah, Anya lihat catatan keuanganmu bulan ini mantap banget lho! Total pemasukanmu **${formatRupiah(inc)}** dengan pengeluaran **${formatRupiah(exp)}**, jadi ada **surplus positif sebesar ${formatRupiah(net)}**. Keren banget!\n\n${top ? `Pengeluaran terbesarmu bulan ini ada di kategori **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**.\n\n` : ''}Secara keseluruhan kondisi keuanganmu sehat banget, ${userName}. Mau Anya bantu cek lagi progres wishlist atau ada transaksi baru yang mau dicatat hari ini? 😊`;
+          adviceText = `Hai **${userName}**! Anya di sini siap bantu kamu.\n\nCatatan keuanganmu bulan ini: Total pemasukan **${formatRupiah(inc)}** dengan pengeluaran **${formatRupiah(exp)}**, surplus positif sebesar **${formatRupiah(net)}**.\n\n${top ? `Pengeluaran terbesarmu bulan ini ada di kategori **${top.kategori}** sebesar **${formatRupiah(top.amount)} (${top.percent}%)**.\n\n` : ''}Secara keseluruhan kondisi keuanganmu sehat, ${userName}. Mau Anya bantu cek lagi progres wishlist atau ada transaksi baru yang mau dicatat hari ini?`;
         } else {
-          adviceText = `Hai **${userName}**! Apa kabar? Anya di sini siap nemenin dan bantu kelola keuanganmu. 👋\n\nKalau Anya cek catatan bulan ini, ada total pemasukan **${formatRupiah(inc)}** dan pengeluaran **${formatRupiah(exp)}** (saat ini sedang defisit **${formatRupiah(Math.abs(net))}**).\n\n${top ? `Pos pengeluaran terbanyak ada di **${top.kategori}** (**${formatRupiah(top.amount)}**).\n\n` : ''}Tenang aja, Anya bisa bantu kasih tips penghematan atau catat transaksi harianmu agar keuanganmu kembali seimbang. Mau mulai dari mana hari ini? 😊`;
+          adviceText = `Hai **${userName}**! Anya di sini siap bantu kelola keuanganmu.\n\nCatatan bulan ini menunjukkan total pemasukan **${formatRupiah(inc)}** dan pengeluaran **${formatRupiah(exp)}** (saat ini sedang defisit **${formatRupiah(Math.abs(net))}**).\n\n${top ? `Pos pengeluaran terbanyak ada di **${top.kategori}** (**${formatRupiah(top.amount)}**).\n\n` : ''}Anya bisa bantu beri tips penghematan atau catat transaksi harianmu agar keuanganmu kembali seimbang. Mau mulai dari mana hari ini?`;
         }
       } else {
-        adviceText = `Hai **${userName}**! Apa kabar? Anya di sini siap bantu kamu mengelola keuangan, mencatat transaksi cepat, atau memantau target wishlist-mu. ✨\n\nBulan ini belum ada transaksi yang tercatat nih. Mau Anya bantu catat transaksi pengeluaran/pemasukan baru, atau butuh saran perencanaan keuangan hari ini? 😊`;
+        adviceText = `Hai **${userName}**! Anya di sini siap bantu kamu mengelola keuangan, mencatat transaksi cepat, atau memantau target wishlist-mu.\n\nBulan ini belum ada transaksi yang tercatat. Mau Anya bantu catat transaksi pengeluaran/pemasukan baru, atau butuh saran perencanaan keuangan hari ini?`;
       }
     } else if (aiResult && aiResult.message) {
       adviceText = aiResult.message;

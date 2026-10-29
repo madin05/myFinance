@@ -77,7 +77,40 @@
 /* Header & Action Buttons */
 .btn-history-header {
   font-size: 0.8rem !important;
-  padding: 8px 14px !important;
+  padding: 0 10px !important;
+  height: 36px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--text-muted) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+}
+
+.btn-history-header:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--text-main) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .btn-history-header {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .btn-history-header:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 .wishlist-container {

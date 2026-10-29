@@ -1,4 +1,5 @@
 // backend/src/tests/otp.test.js
+require('dotenv').config();
 const prisma = require('../services/db');
 const { generateOtp, verifyOtp, hashOtp, OTP_LENGTH, MAX_ATTEMPTS } = require('../services/otpService');
 
@@ -111,7 +112,7 @@ async function runOtpTests() {
     }
     console.log(' TEST 5 PASSED: Housekeeping ensures only 1 active OTP per user!');
 
-    console.log('\n🎉 ALL 5 AUTOMATED OTP SECURITY TESTS PASSED PERFECTLY!');
+    console.log('\n[PASS] ALL 5 AUTOMATED OTP SECURITY TESTS PASSED PERFECTLY!');
   } catch (err) {
     console.error('\nTEST SUITE FAILURE:', err.message);
     process.exitCode = 1;

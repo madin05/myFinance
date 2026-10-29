@@ -59,7 +59,7 @@ app.get('/health', (req, res) => {
 
 // ─── Basic Route ────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.json({ message: 'MyFinance API is running 🚀' });
+  res.json({ message: 'MyFinance API is running' });
 });
 
 // ─── Routes ─────────────────────────────────────────────────────────────────

@@ -451,23 +451,33 @@
   /* 3. Tiap row = card (kecuali empty row) */
   .transactions-table tr:not(.empty-row) {
     width: 100% !important;
-    padding: 0.9rem 1rem !important;
+    padding: 0 !important;
     border-radius: 16px !important;
-    background: var(--card-bg) !important;
+    background: linear-gradient(170deg, #ffffff 0%, #f8fafc 100%) !important;
     border: 1px solid var(--border) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
     position: relative !important;
-    min-height: 82px;
+    z-index: 1;
+    overflow: visible !important;
+    min-height: 84px;
+    cursor: pointer;
     transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+ 
+
+  /* Dark mode: sleek gradient background matching Uiverse dark aesthetic with semantic tokens */
+  [data-theme="dark"] .transactions-table tr:not(.empty-row) {
+    background: linear-gradient(170deg, rgba(42, 36, 56, 0.85) 0%, rgba(20, 16, 28, 0.95) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   }
 
-  /* Dark mode: bikin card lebih kontras dari bg gradient */
-  [data-theme="dark"] .transactions-table tr:not(.empty-row) {
-    background: #1c1626 !important;
-    border-color: #3d3548 !important;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  [data-theme="dark"] .transactions-table tr:not(.empty-row):hover {
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
   }
 
   /* Overrides untuk baris kosong (empty state) */
@@ -501,6 +511,57 @@
   .tx-mobile-card td,
   .tx-mobile-card div {
     text-align: left !important;
+  }
+
+  /* Inner wrapper for mobile card layout */
+  .tx-card-inner {
+    position: static !important;
+    width: 100%;
+    padding: 0.9rem 1.05rem 0.9rem 1.05rem !important;
+    overflow: visible !important;
+    font-family: var(--font-main, 'Poppins', sans-serif) !important;
+  }
+
+  .tx-card-top-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 26px;
+    margin-bottom: 8px;
+  }
+
+  .tx-card-price {
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: var(--font-main, 'Poppins', sans-serif) !important;
+    white-space: nowrap;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .tx-card-desc {
+    font-family: var(--font-main, 'Poppins', sans-serif) !important;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text-main);
+    line-height: 1.35;
+    margin-bottom: 4px;
+    padding-right: 36px;
+    padding-left: 2px;
+  }
+
+  .tx-card-meta {
+    font-family: var(--font-main, 'Poppins', sans-serif) !important;
+    font-size: 0.78rem;
+    color: var(--text-light);
+    padding-left: 2px;
+  }
+
+  .tx-card-kebab {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.75rem;
+    z-index: 5;
   }
 
   /* 5. Tanggal (td:1) — hidden untuk baris transaksi normal, tampil untuk empty state */
@@ -900,7 +961,7 @@
     margin-bottom: 1.25rem !important;
   }
 
-  /* Standardized Page Title Spacing (Laporan, Saldo, Wishlist, Transaksi, Anggaran, Settings, Akun) */
+  /* Standardized Page Title Sxxpacing (Laporan, Saldo, Wishlist, Transaksi, Anggaran, Settings, Akun) */
   .section-header {
     margin-top: 0.5rem !important;
     margin-bottom: 1.35rem !important;

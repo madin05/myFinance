@@ -6,19 +6,6 @@ import { formatRupiah, formatDate } from '../../store.js';
 import { getCategoryIconUrl } from '../../utils.js';
 import { getContainer, bindModalEvents } from './modalCore.js';
 
-/**
- * Resolves a category string to a badge CSS class.
- * @param {string} kategori
- * @returns {string}
- */
-function resolveBadgeClass(kategori) {
-  const lower = (kategori || '').toLowerCase();
-  if (lower.includes('gaji')) return 'badge-green';
-  if (lower.includes('makan')) return 'badge-orange';
-  if (lower.includes('belanja')) return 'badge-purple';
-  return 'badge-blue';
-}
-
 export function openDetailTransactionModal(tx) {
   const container = getContainer();
   if (!tx || !container) return;
@@ -27,7 +14,6 @@ export function openDetailTransactionModal(tx) {
   const colorClass = isIncome ? 'var(--green)' : 'var(--red)';
   const typeText = isIncome ? 'Pemasukan' : 'Pengeluaran';
   const formattedAmount = `${isIncome ? '+' : '-'} ${formatRupiah(Math.abs(tx.harga))}`;
-  const badgeClass = resolveBadgeClass(tx.kategori);
 
   container.innerHTML = `
     <div class="detail-tx-overlay" id="detail-tx-overlay">
@@ -64,7 +50,7 @@ export function openDetailTransactionModal(tx) {
 
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Kategori</span>
-              <span class="badge-soft ${badgeClass}" style="font-size: 0.78rem;"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori || 'Umum'}</span></span>
+              <span class="badge-soft" style="font-size: 0.78rem;"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori || 'Umum'}</span></span>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center;">

@@ -499,7 +499,7 @@ export const showVerificationModal = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim kode OTP.');
 
-      btn.textContent = 'Kode Terkirim! ✓';
+      btn.textContent = 'Kode Terkirim!';
       close();
       // Redirect ke halaman OTP input
       const { renderLogin } = await import('../pages/login.js');
@@ -605,7 +605,7 @@ export const showOptionalVerificationModal = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim kode OTP.');
 
-      btn.textContent = 'Kode Terkirim! ✓';
+      btn.textContent = 'Kode Terkirim!';
       close();
       // Redirect ke halaman OTP input
       const { renderLogin } = await import('../pages/login.js');

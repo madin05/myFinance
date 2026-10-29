@@ -124,11 +124,11 @@ export function renderAiPage() {
         <div class="ai-chat-input-container">
           <!-- Horizontal Quick Prompt Chips -->
           <div class="ai-chat-quick-chips" id="ai-quick-chips-wrapper">
-            <button type="button" class="ai-chip-btn" data-text="Bensin 50k cash">⛽ Bensin 50rb</button>
-            <button type="button" class="ai-chip-btn" data-text="Gaji 5jt transfer BCA">💰 Gajian 5jt</button>
-            <button type="button" class="ai-chip-btn" data-text="Nabung laptop 15jt">⭐ Wishlist Laptop 15jt</button>
-            <button type="button" class="ai-chip-btn" data-text="Ringkas pengeluaran bulan ini">📊 Ringkas Bulan Ini</button>
-            <button type="button" class="ai-chip-btn" data-text="Beri saya tips hemat bulan ini">💡 Tips Hemat</button>
+            <button type="button" class="ai-chip-btn" data-text="Bensin 50k cash"><i class="ph ph-gas-pump"></i> Bensin 50rb</button>
+            <button type="button" class="ai-chip-btn" data-text="Gaji 5jt transfer BCA"><i class="ph ph-money"></i> Gajian 5jt</button>
+            <button type="button" class="ai-chip-btn" data-text="Nabung laptop 15jt"><i class="ph ph-star"></i> Wishlist Laptop 15jt</button>
+            <button type="button" class="ai-chip-btn" data-text="Ringkas pengeluaran bulan ini"><i class="ph ph-chart-bar"></i> Ringkas Bulan Ini</button>
+            <button type="button" class="ai-chip-btn" data-text="Beri saya tips hemat bulan ini"><i class="ph ph-lightbulb"></i> Tips Hemat</button>
           </div>
 
           <!-- Gemini Floating Capsule Input Pill -->

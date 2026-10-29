@@ -265,7 +265,7 @@ async function parseNaturalLanguageInput(userText, financialContext = null, chat
       : '  * (Belum ada transaksi)';
 
     const budgetsStr = Array.isArray(financialContext.budgets) && financialContext.budgets.length > 0
-      ? financialContext.budgets.map(b => `  * ${b.kategori}: Limit Rp ${Number(b.limit || 0).toLocaleString('id-ID')} (Terpakai Rp ${Number(b.used || 0).toLocaleString('id-ID')} / ${b.percent || 0}%, ${b.isOver ? '⚠️ OVERBUDGET' : 'Aman'})`).join('\n')
+      ? financialContext.budgets.map(b => `  * ${b.kategori}: Limit Rp ${Number(b.limit || 0).toLocaleString('id-ID')} (Terpakai Rp ${Number(b.used || 0).toLocaleString('id-ID')} / ${b.percent || 0}%, ${b.isOver ? '[OVERBUDGET]' : 'Aman'})`).join('\n')
       : '  * (Belum ada anggaran yang diset)';
 
     const savingsStr = Array.isArray(financialContext.savings) && financialContext.savings.length > 0
@@ -284,7 +284,7 @@ async function parseNaturalLanguageInput(userText, financialContext = null, chat
 - Ringkasan Arus Kas Bulan Ini:
   * Total Pemasukan: Rp ${Number(cm.income || 0).toLocaleString('id-ID')}
   * Total Pengeluaran: Rp ${Number(cm.expense || 0).toLocaleString('id-ID')}
-  * Arus Kas Bersih (Net Balance): Rp ${Number(cm.netBalance || 0).toLocaleString('id-ID')} (${(cm.netBalance || 0) < 0 ? '⚠️ DEFISIT/MINUS' : '✅ SURPLUS/POSITIF'})
+  * Arus Kas Bersih (Net Balance): Rp ${Number(cm.netBalance || 0).toLocaleString('id-ID')} (${(cm.netBalance || 0) < 0 ? 'DEFISIT/MINUS' : 'SURPLUS/POSITIF'})
   * Jumlah Transaksi Bulan Ini: ${cm.txCount || 0} transaksi
 - Rincian Pengeluaran per Kategori:
 ${breakdownStr}
@@ -665,7 +665,7 @@ function localFallbackNlpParser(userText, context = {}) {
     else if (lower.includes("tahun") || lower.includes("1 thn") || lower.includes("year")) period = "1_year";
     return {
       intent: "summary_request",
-      message: `Siap! Anya buatin ringkasan keuangan kamu untuk periode ini ya 📊`,
+      message: `Siap! Anya buatin ringkasan keuangan kamu untuk periode ini ya.`,
       period
     };
   }
@@ -708,7 +708,7 @@ function localFallbackNlpParser(userText, context = {}) {
 
       parsedItems.push({
         intent: 'wishlist',
-        message: `Mantap! Target ${wlName} Rp ${clauseAmount.toLocaleString('id-ID')} udah Anya masukin ke Wishlist ya ⭐`,
+        message: `Mantap! Target ${wlName} Rp ${clauseAmount.toLocaleString('id-ID')} udah Anya masukin ke Wishlist ya.`,
         data: {
           name: wlName,
           target: clauseAmount,
@@ -766,8 +766,8 @@ function localFallbackNlpParser(userText, context = {}) {
       : `${(clauseAmount / 1000).toLocaleString('id-ID')}rb`;
 
     const msg = isIncome
-      ? `Mantap! Pemasukan ${keterangan} ${formattedAmt} via ${metode} sudah Anya siapkan ya 🤑`
-      : `Siap! ${keterangan} ${formattedAmt} via ${metode} sudah Anya siapkan ya 📝`;
+      ? `Mantap! Pemasukan ${keterangan} ${formattedAmt} via ${metode} sudah Anya siapkan ya`
+      : `Siap! ${keterangan} ${formattedAmt} via ${metode} sudah Anya siapkan ya`;
 
     parsedItems.push({
       intent: 'transaction',
@@ -794,7 +794,7 @@ function localFallbackNlpParser(userText, context = {}) {
   }
 
   // 4. Conversational or Tips fallback
-  let chatMsg = "Halo! Anya di sini. Mau catat transaksi atau minta tips apa nih hari ini? Contoh: 'Nasi padang 25rb cash' atau 'Kasi tips hemat bulan ini' 😊";
+  let chatMsg = "Halo! Anya di sini. Mau catat transaksi atau minta tips apa nih hari ini? Contoh: 'Nasi padang 25rb cash' atau 'Kasi tips hemat bulan ini'";
   if (/tips|hemat|saran|nabung gimana|minus|boros|keuangan|evaluasi|pendapat|analisis|advice|saving tips/i.test(lower)) {
     const fc = context.financialContext;
     if (fc && fc.currentMonth) {
@@ -806,12 +806,12 @@ function localFallbackNlpParser(userText, context = {}) {
       const topPct = fc.currentMonth.breakdown?.[0]?.percent || 0;
 
       if (net < 0) {
-        chatMsg = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit Rp ${Math.abs(net).toLocaleString('id-ID')}** (Pemasukan Rp ${inc.toLocaleString('id-ID')} vs Pengeluaran Rp ${exp.toLocaleString('id-ID')}).\n\n📌 **Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${topCat}** sebesar **Rp ${topAmt.toLocaleString('id-ID')} (${topPct}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${topCat}? 😊`;
+        chatMsg = `Wah, kalau Anya cek catatanmu bulan ini, kamu sedang **defisit Rp ${Math.abs(net).toLocaleString('id-ID')}** (Pemasukan Rp ${inc.toLocaleString('id-ID')} vs Pengeluaran Rp ${exp.toLocaleString('id-ID')}).\n\n**Fokus Utama Penghematan**:\n1. Pos pengeluaran terbesarmu ada di **${topCat}** sebesar **Rp ${topAmt.toLocaleString('id-ID')} (${topPct}%)**. Pangkas belanja di pos ini untuk menutup minus.\n2. Terapkan batas budget harian agar arus kas terkendali.\n3. Tunda pengeluaran sekunder/wishlist sampai arus kas kembali surplus.\n\nMau Anya bantu bikinin batasan budget harian untuk kategori ${topCat}?`;
       } else {
-        chatMsg = `Kondisi keuanganmu bulan ini **surplus Rp ${net.toLocaleString('id-ID')}** (Pemasukan Rp ${inc.toLocaleString('id-ID')} vs Pengeluaran Rp ${exp.toLocaleString('id-ID')}). Bagus banget!\n\n💡 **Saran Anya**:\n1. Pos terbesarmu saat ini di **${topCat} (Rp ${topAmt.toLocaleString('id-ID')})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang? ⭐`;
+        chatMsg = `Kondisi keuanganmu bulan ini **surplus Rp ${net.toLocaleString('id-ID')}** (Pemasukan Rp ${inc.toLocaleString('id-ID')} vs Pengeluaran Rp ${exp.toLocaleString('id-ID')}). Bagus!\n\n**Saran Anya**:\n1. Pos terbesarmu saat ini di **${topCat} (Rp ${topAmt.toLocaleString('id-ID')})**.\n2. Sisihkan minimal 20% dari surplusmu ke Wishlist atau Tabungan Darurat.\n\nMau kita alokasikan sebagian surplus ini ke target wishlist-mu sekarang?`;
       }
     } else {
-      chatMsg = "Tips hemat dari Anya:\n1. Alokasikan 50% kebutuhan pokok, 30% keinginan, dan 20% tabungan.\n2. Rutin catat setiap pengeluaran harian agar tidak boncos.\n3. Buat target wishlist sebelum belanja konsumtif!\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng? 😊";
+      chatMsg = "Tips hemat dari Anya:\n1. Alokasikan 50% kebutuhan pokok, 30% keinginan, dan 20% tabungan.\n2. Rutin catat setiap pengeluaran harian agar tidak boncos.\n3. Buat target wishlist sebelum belanja konsumtif!\n\nAda kategori pengeluaran tertentu yang mau kita evaluasi bareng?";
     }
   } else if (/halo|hai|hey|hello|hi|pagi|siang|sore|malam|apa kabar|how are you/i.test(lower)) {
     const fc = context.financialContext;
@@ -821,13 +821,13 @@ function localFallbackNlpParser(userText, context = {}) {
       const exp = Number(fc.currentMonth.expense || 0);
       const net = inc - exp;
       if (net >= 0) {
-        chatMsg = `Hai **${uName}**! Apa kabar? Anya di sini siap bantu kamu nih. ✨\n\nWah, Anya lihat catatan keuanganmu bulan ini mantap banget! Total pemasukanmu **Rp ${inc.toLocaleString('id-ID')}** dengan pengeluaran **Rp ${exp.toLocaleString('id-ID')}**, jadi ada **surplus positif sebesar Rp ${net.toLocaleString('id-ID')}**.\n\nSecara keseluruhan kondisi keuanganmu sehat banget, ${uName}. Mau Anya bantu cek lagi progres wishlist atau ada transaksi baru yang mau dicatat hari ini? 😊`;
+        chatMsg = `Hai **${uName}**! Anya di sini siap bantu kamu.\n\nCatatan keuanganmu bulan ini: Total pemasukan **Rp ${inc.toLocaleString('id-ID')}** dengan pengeluaran **Rp ${exp.toLocaleString('id-ID')}**, surplus positif sebesar **Rp ${net.toLocaleString('id-ID')}**.\n\nSecara keseluruhan kondisi keuanganmu sehat, ${uName}. Mau Anya bantu cek lagi progres wishlist atau ada transaksi baru yang mau dicatat hari ini?`;
       } else {
-        chatMsg = `Hai **${uName}**! Apa kabar? Anya di sini siap bantu kelola keuanganmu. 👋\n\nCatatan bulan ini menunjukkan pemasukan **Rp ${inc.toLocaleString('id-ID')}** dan pengeluaran **Rp ${exp.toLocaleString('id-ID')}** (saat ini sedang defisit **Rp ${Math.abs(net).toLocaleString('id-ID')}**).\n\nAnya siap bantu kasih tips penghematan atau catat transaksi harianmu agar keuanganmu kembali seimbang. Mau mulai dari mana hari ini? 😊`;
+        chatMsg = `Hai **${uName}**! Anya di sini siap bantu kelola keuanganmu.\n\nCatatan bulan ini menunjukkan pemasukan **Rp ${inc.toLocaleString('id-ID')}** dan pengeluaran **Rp ${exp.toLocaleString('id-ID')}** (saat ini sedang defisit **Rp ${Math.abs(net).toLocaleString('id-ID')}**).\n\nAnya siap bantu kasih tips penghematan atau catat transaksi harianmu agar keuanganmu kembali seimbang. Mau mulai dari mana hari ini?`;
       }
     } else {
       const uName = (fc && fc.userName) ? ` **${fc.userName}**` : '';
-      chatMsg = `Halo${uName}! Anya siap membantumu mencatat transaksi, wishlist, dan mengelola keuangan dengan pintar. Ada yang bisa Anya bantu hari ini? ✨`;
+      chatMsg = `Halo${uName}! Anya siap membantumu mencatat transaksi, wishlist, dan mengelola keuangan dengan pintar. Ada yang bisa Anya bantu hari ini?`;
     }
   }
 

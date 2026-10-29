@@ -223,7 +223,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
             showToast('Kode OTP baru telah dikirim ke emailmu!', 'success');
           }
 
-          resendBtn.textContent = 'Kode Terkirim! ✓';
+          resendBtn.textContent = 'Kode Terkirim!';
 
           countdown = 60;
           if (countdownTextEl) countdownTextEl.style.display = '';

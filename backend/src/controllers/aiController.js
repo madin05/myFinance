@@ -11,7 +11,7 @@ exports.parseInput = async (req, res) => {
 
     const result = await parseNaturalLanguageInput(text, financialContext, chatHistory);
     if (!result) {
-      return res.json({ intent: 'unknown', message: 'Halo! Anya siap membantu mencatat transaksi atau wishlist kamu. Coba ketik contohnya: "Nasi padang 20rb cash" 😊' });
+      return res.json({ intent: 'unknown', message: 'Halo! Anya siap membantu mencatat transaksi atau wishlist kamu. Coba ketik contohnya: "Nasi padang 20rb cash"' });
     }
 
     return res.json(result);

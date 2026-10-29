@@ -1,69 +1,89 @@
-import { store, formatRupiah, formatDate } from '../store.js';
-import { initCustomSelects } from '../ui/select.js';
-import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
-import { initStickyHeader, getCategoryIconUrl } from '../utils.js';
-import { showToast } from '../components/notifications.js';
+import { store, formatRupiah, formatDate } from "../store.js";
+import { initCustomSelects } from "../ui/select.js";
+import { initKebabs, cleanupKebabs } from "../ui/kebab.js";
+import { initStickyHeader, getCategoryIconUrl } from "../utils.js";
+import { showToast } from "../components/notifications.js";
 
 const KATEGORI_LIST = [
-  'Makanan & Minuman',
-  'Transportasi',
-  'Belanja',
-  'Tagihan',
-  'Hiburan',
-  'Kesehatan',
-  'Pendidikan',
-  'Investasi & Tabungan',
-  'Gaji & Pendapatan',
-  'Lain-lain'
+  "Makanan & Minuman",
+  "Transportasi",
+  "Belanja",
+  "Tagihan",
+  "Hiburan",
+  "Kesehatan",
+  "Pendidikan",
+  "Investasi & Tabungan",
+  "Gaji & Pendapatan",
+  "Lain-lain",
 ];
 
-const METODE_LIST = ['Cash', 'E-Wallet', 'Bank Transfer', 'Kartu Kredit'];
+const METODE_LIST = ["Cash", "E-Wallet", "Bank Transfer", "Kartu Kredit"];
 
 let filterState = {
-  type: 'all',
-  month: 'all',
-  year: 'all',
-  priceOperator: 'gt',
-  priceValue: '',
-  kategori: 'all',
-  metode: 'all',
-  searchQuery: ''
+  type: "all",
+  month: "all",
+  year: "all",
+  priceOperator: "gt",
+  priceValue: "",
+  kategori: "all",
+  metode: "all",
+  searchQuery: "",
 };
 
 export function renderTransaksi() {
-  const container = document.getElementById('page-content');
+  const container = document.getElementById("page-content");
   if (!container) return;
-  
-  const uniqueYears = [...new Set(store.transactions.map(tx => new Date(tx.tanggal).getFullYear()))].sort((a,b) => b-a);
-  
+
+  const uniqueYears = [
+    ...new Set(
+      store.transactions.map((tx) => new Date(tx.tanggal).getFullYear()),
+    ),
+  ].sort((a, b) => b - a);
+
   // Pastikan semua kategori standar tersedia di dropdown filter
-  const allKategori = [...new Set([
-    ...KATEGORI_LIST,
-    ...store.transactions.map(tx => tx.kategori).filter(Boolean)
-  ])].sort((a, b) => a.localeCompare(b, 'id'));
+  const allKategori = [
+    ...new Set([
+      ...KATEGORI_LIST,
+      ...store.transactions.map((tx) => tx.kategori).filter(Boolean),
+    ]),
+  ].sort((a, b) => a.localeCompare(b, "id"));
 
   // Kumpulkan metode pembayaran riil (abaikan string transfer inter-provider seperti 'Transfer (Bank BCA → GoPay)')
   const validTxMethods = store.transactions
-    .map(tx => {
-      if (tx.type === 'transfer') return null;
-      if (typeof tx.metode === 'string' && tx.metode.startsWith('Transfer (')) return null;
+    .map((tx) => {
+      if (tx.type === "transfer") return null;
+      if (typeof tx.metode === "string" && tx.metode.startsWith("Transfer ("))
+        return null;
       return tx.metode;
     })
     .filter(Boolean);
 
-  const allMetode = [...new Set([
-    ...METODE_LIST,
-    ...validTxMethods
-  ])].filter(m => !m.startsWith('Transfer (')).sort((a, b) => a.localeCompare(b, 'id'));
-  
-  const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const allMetode = [...new Set([...METODE_LIST, ...validTxMethods])]
+    .filter((m) => !m.startsWith("Transfer ("))
+    .sort((a, b) => a.localeCompare(b, "id"));
 
-  const hasActiveFilter = filterState.type !== 'all' || 
-    filterState.month !== 'all' || 
-    filterState.year !== 'all' || 
-    filterState.kategori !== 'all' || 
-    filterState.metode !== 'all' || 
-    filterState.priceValue !== '';
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const hasActiveFilter =
+    filterState.type !== "all" ||
+    filterState.month !== "all" ||
+    filterState.year !== "all" ||
+    filterState.kategori !== "all" ||
+    filterState.metode !== "all" ||
+    filterState.priceValue !== "";
 
   container.innerHTML = `
     <div class="transactions-section">
@@ -72,7 +92,7 @@ export function renderTransaksi() {
           <h3>Daftar Transaksi</h3>
           <div style="display: flex; gap: 0.75rem; align-items: center;">
             <div style="position: relative;" id="filter-container">
-              <button class="btn filter-btn ${hasActiveFilter ? 'active-filter' : ''}" id="btn-filter-popover" title="Filter Transaksi">
+              <button class="btn filter-btn ${hasActiveFilter ? "active-filter" : ""}" id="btn-filter-popover" title="Filter Transaksi">
                 <i class="ph ph-funnel"></i>
               </button>
               
@@ -101,10 +121,10 @@ export function renderTransaksi() {
                 <!-- Tipe Section -->
                 <div class="popover-header" style="padding-left: 0;">Tipe Transaksi</div>
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
-                  <button type="button" class="popover-item ${filterState.type === 'all' ? 'active' : ''}" data-type="all" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Semua</button>
-                  <button type="button" class="popover-item ${filterState.type === 'income' ? 'active' : ''}" data-type="income" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Masuk</button>
-                  <button type="button" class="popover-item ${filterState.type === 'expense' ? 'active' : ''}" data-type="expense" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Keluar</button>
-                  <button type="button" class="popover-item ${filterState.type === 'transfer' ? 'active' : ''}" data-type="transfer" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Transfer</button>
+                  <button type="button" class="popover-item ${filterState.type === "all" ? "active" : ""}" data-type="all" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Semua</button>
+                  <button type="button" class="popover-item ${filterState.type === "income" ? "active" : ""}" data-type="income" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Masuk</button>
+                  <button type="button" class="popover-item ${filterState.type === "expense" ? "active" : ""}" data-type="expense" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Keluar</button>
+                  <button type="button" class="popover-item ${filterState.type === "transfer" ? "active" : ""}" data-type="transfer" style="flex: 1; min-width: 60px; padding: 8px 10px; font-size: 0.8rem; justify-content: center; border-radius: 8px;">Transfer</button>
                 </div>
 
                 <!-- Waktu Section -->
@@ -112,14 +132,14 @@ export function renderTransaksi() {
                 <div class="form-row" style="gap: 0.75rem; margin-bottom: 1.25rem;">
                   <div class="form-group" style="margin-bottom: 0; flex: 1.2;">
                     <select class="form-control" id="filter-month" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                      <option value="all" ${filterState.month === 'all' ? 'selected' : ''}>Bulan</option>
-                      ${monthNames.map((m, i) => `<option value="${i}" ${filterState.month == i ? 'selected' : ''}>${m}</option>`).join('')}
+                      <option value="all" ${filterState.month === "all" ? "selected" : ""}>Bulan</option>
+                      ${monthNames.map((m, i) => `<option value="${i}" ${filterState.month == i ? "selected" : ""}>${m}</option>`).join("")}
                     </select>
                   </div>
                   <div class="form-group" style="margin-bottom: 0; flex: 1;">
                     <select class="form-control" id="filter-year" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                      <option value="all" ${filterState.year === 'all' ? 'selected' : ''}>Tahun</option>
-                      ${uniqueYears.map(y => `<option value="${y}" ${filterState.year == y ? 'selected' : ''}>${y}</option>`).join('')}
+                      <option value="all" ${filterState.year === "all" ? "selected" : ""}>Tahun</option>
+                      ${uniqueYears.map((y) => `<option value="${y}" ${filterState.year == y ? "selected" : ""}>${y}</option>`).join("")}
                     </select>
                   </div>
                 </div>
@@ -128,8 +148,8 @@ export function renderTransaksi() {
                 <div class="popover-header" style="padding-left: 0;">Kategori</div>
                 <div class="form-group" style="margin-bottom: 1.25rem;">
                   <select class="form-control" id="filter-kategori" style="padding: 10px; font-size: 0.85rem; height: 42px;">
-                    <option value="all" ${filterState.kategori === 'all' ? 'selected' : ''}>Semua Kategori</option>
-                    ${allKategori.map(k => `<option value="${k}" ${filterState.kategori === k ? 'selected' : ''}>${k}</option>`).join('')}
+                    <option value="all" ${filterState.kategori === "all" ? "selected" : ""}>Semua Kategori</option>
+                    ${allKategori.map((k) => `<option value="${k}" ${filterState.kategori === k ? "selected" : ""}>${k}</option>`).join("")}
                   </select>
                 </div>
 
@@ -137,8 +157,8 @@ export function renderTransaksi() {
                 <div class="popover-header" style="padding-left: 0;">Metode</div>
                 <div class="filter-chips-scroll" style="margin-bottom: 1.25rem;">
                   <div class="filter-chips" id="filter-metode-chips">
-                    <button type="button" class="filter-chip ${filterState.metode === 'all' ? 'active' : ''}" data-metode="all">Semua</button>
-                    ${allMetode.map(m => `<button type="button" class="filter-chip ${filterState.metode === m ? 'active' : ''}" data-metode="${m}">${m}</button>`).join('')}
+                    <button type="button" class="filter-chip ${filterState.metode === "all" ? "active" : ""}" data-metode="all">Semua</button>
+                    ${allMetode.map((m) => `<button type="button" class="filter-chip ${filterState.metode === m ? "active" : ""}" data-metode="${m}">${m}</button>`).join("")}
                   </div>
                 </div>
 
@@ -146,10 +166,10 @@ export function renderTransaksi() {
                 <div class="popover-header" style="padding-left: 0;">Nominal</div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                   <select class="form-control" id="filter-price-operator" style="width: 80px; padding: 10px; font-size: 0.85rem; height: 42px; flex-shrink: 0;">
-                    <option value="gt" ${filterState.priceOperator === 'gt' ? 'selected' : ''}>&ge;</option>
-                    <option value="lt" ${filterState.priceOperator === 'lt' ? 'selected' : ''}>&le;</option>
+                    <option value="gt" ${filterState.priceOperator === "gt" ? "selected" : ""}>&ge;</option>
+                    <option value="lt" ${filterState.priceOperator === "lt" ? "selected" : ""}>&le;</option>
                   </select>
-                  <input type="text" class="form-control" id="filter-price-value" placeholder="Nominal..." style="padding: 10px; font-size: 0.85rem; height: 42px;" value="${filterState.priceValue ? new Intl.NumberFormat('id-ID').format(filterState.priceValue) : ''}">
+                  <input type="text" class="form-control" id="filter-price-value" placeholder="Nominal..." style="padding: 10px; font-size: 0.85rem; height: 42px;" value="${filterState.priceValue ? new Intl.NumberFormat("id-ID").format(filterState.priceValue) : ""}">
                 </div>
                 </div>
               </div>
@@ -179,30 +199,32 @@ export function renderTransaksi() {
       </div>
     `;
 
-  const popoverBtn = container.querySelector('#btn-filter-popover');
-  const popover = container.querySelector('#filter-popover');
+  const popoverBtn = container.querySelector("#btn-filter-popover");
+  const popover = container.querySelector("#filter-popover");
   const popoverOriginalParent = popover ? popover.parentElement : null;
 
   const isMobileFilter = () => window.innerWidth <= 768;
   const getModalContainer = () =>
-    document.getElementById('modal-container') || document.body;
+    document.getElementById("modal-container") || document.body;
 
   // Remove any leftover sheet left in the body-level layer by a previous render
   document
-    .querySelectorAll('#modal-container > #filter-popover, body > #filter-popover')
+    .querySelectorAll(
+      "#modal-container > #filter-popover, body > #filter-popover",
+    )
     .forEach((el) => el.remove());
 
   // Backdrop layer for the mobile bottom sheet (fades in/out only)
-  let filterBackdrop = document.getElementById('filter-backdrop');
+  let filterBackdrop = document.getElementById("filter-backdrop");
   if (!filterBackdrop) {
-    filterBackdrop = document.createElement('div');
-    filterBackdrop.id = 'filter-backdrop';
-    filterBackdrop.className = 'filter-backdrop';
+    filterBackdrop = document.createElement("div");
+    filterBackdrop.id = "filter-backdrop";
+    filterBackdrop.className = "filter-backdrop";
     document.body.appendChild(filterBackdrop);
   } else {
     // Page re-rendered while sheet was open — make sure the backdrop resets.
-    filterBackdrop.classList.remove('active');
-    filterBackdrop.style.display = 'none';
+    filterBackdrop.classList.remove("active");
+    filterBackdrop.style.display = "none";
   }
 
   const openFilter = () => {
@@ -214,48 +236,52 @@ export function renderTransaksi() {
       host.appendChild(filterBackdrop);
       host.appendChild(popover);
 
-      popover.classList.remove('dragging', 'snap');
-      popover.style.removeProperty('--sheet-y');
-      filterBackdrop.style.display = 'block';
-      popover.style.display = 'flex';
+      popover.classList.remove("dragging", "snap");
+      popover.style.removeProperty("--sheet-y");
+      filterBackdrop.style.display = "block";
+      popover.style.display = "flex";
       requestAnimationFrame(() => {
-        popover.classList.add('active');
-        filterBackdrop.classList.add('active');
+        popover.classList.add("active");
+        filterBackdrop.classList.add("active");
       });
     } else {
-      popover.style.display = 'block';
+      popover.style.display = "block";
     }
   };
 
   const closeFilter = () => {
     if (isMobileFilter()) {
-      popover.classList.remove('active');
-      filterBackdrop.classList.remove('active');
+      popover.classList.remove("active");
+      filterBackdrop.classList.remove("active");
       setTimeout(() => {
-        if (!popover.classList.contains('active')) {
-          popover.style.display = 'none';
-          filterBackdrop.style.display = 'none';
+        if (!popover.classList.contains("active")) {
+          popover.style.display = "none";
+          filterBackdrop.style.display = "none";
           // Return the sheet to its original spot for desktop layout.
-          if (popoverOriginalParent && document.body.contains(popoverOriginalParent)) {
+          if (
+            popoverOriginalParent &&
+            document.body.contains(popoverOriginalParent)
+          ) {
             popoverOriginalParent.appendChild(popover);
           }
         }
       }, 320);
     } else {
-      popover.style.display = 'none';
+      popover.style.display = "none";
     }
   };
 
   filterBackdrop.onclick = () => closeFilter();
 
-  popoverBtn.addEventListener('click', (e) => {
+  popoverBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const isOpen = popover.style.display === 'block' || popover.classList.contains('active');
+    const isOpen =
+      popover.style.display === "block" || popover.classList.contains("active");
     if (isOpen) closeFilter();
     else openFilter();
   });
 
-  document.addEventListener('click', (e) => {
+  document.addEventListener("click", (e) => {
     if (
       !isMobileFilter() &&
       popover &&
@@ -263,11 +289,11 @@ export function renderTransaksi() {
       e.target !== popoverBtn &&
       e.target !== filterBackdrop
     ) {
-      popover.style.display = 'none';
+      popover.style.display = "none";
     }
   });
 
-  const closeFilterMobile = container.querySelector('#close-filter-mobile');
+  const closeFilterMobile = container.querySelector("#close-filter-mobile");
   if (closeFilterMobile) {
     closeFilterMobile.onclick = () => closeFilter();
   }
@@ -276,111 +302,137 @@ export function renderTransaksi() {
   let fStartY = 0;
   let fDeltaY = 0;
   let fDragging = false;
-  const fSetDrag = (px) => popover.style.setProperty('--sheet-y', `${px}px`);
+  const fSetDrag = (px) => popover.style.setProperty("--sheet-y", `${px}px`);
 
-  popover.addEventListener('touchstart', (e) => {
-    if (!isMobileFilter() || e.touches.length !== 1) return;
-    // Drag only from the handle / header so the body can scroll freely.
-    const onHandle = e.target.closest('.filter-sheet-handle, .filter-sheet-header');
-    if (!onHandle) return;
-    fStartY = e.touches[0].clientY;
-    fDeltaY = 0;
-    fDragging = true;
-    popover.classList.remove('snap');
-    popover.classList.add('dragging');
-  }, { passive: true });
+  popover.addEventListener(
+    "touchstart",
+    (e) => {
+      if (!isMobileFilter() || e.touches.length !== 1) return;
+      // Drag only from the handle / header so the body can scroll freely.
+      const onHandle = e.target.closest(
+        ".filter-sheet-handle, .filter-sheet-header",
+      );
+      if (!onHandle) return;
+      fStartY = e.touches[0].clientY;
+      fDeltaY = 0;
+      fDragging = true;
+      popover.classList.remove("snap");
+      popover.classList.add("dragging");
+    },
+    { passive: true },
+  );
 
-  popover.addEventListener('touchmove', (e) => {
-    if (!fDragging) return;
-    const raw = e.touches[0].clientY - fStartY;
-    fDeltaY = Math.max(0, raw);
-    fSetDrag(fDeltaY);
-    if (raw > 0 && e.cancelable) e.preventDefault();
-  }, { passive: false });
+  popover.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!fDragging) return;
+      const raw = e.touches[0].clientY - fStartY;
+      fDeltaY = Math.max(0, raw);
+      fSetDrag(fDeltaY);
+      if (raw > 0 && e.cancelable) e.preventDefault();
+    },
+    { passive: false },
+  );
 
-  popover.addEventListener('touchend', () => {
+  popover.addEventListener("touchend", () => {
     if (!fDragging) return;
     fDragging = false;
-    popover.classList.remove('dragging');
+    popover.classList.remove("dragging");
     const threshold = Math.max(100, popover.offsetHeight * 0.3);
     if (fDeltaY > threshold) {
       closeFilter();
-      setTimeout(() => popover.style.removeProperty('--sheet-y'), 340);
+      setTimeout(() => popover.style.removeProperty("--sheet-y"), 340);
     } else {
-      popover.classList.add('snap'); // springy snap back
+      popover.classList.add("snap"); // springy snap back
       setTimeout(() => {
-        popover.classList.remove('snap');
-        popover.style.removeProperty('--sheet-y');
+        popover.classList.remove("snap");
+        popover.style.removeProperty("--sheet-y");
       }, 400);
     }
     fDeltaY = 0;
   });
 
-  const resetBtn = container.querySelector('#btn-reset-filter');
+  const resetBtn = container.querySelector("#btn-reset-filter");
   if (resetBtn) {
     resetBtn.onclick = () => {
       filterState = {
-        type: 'all',
-        month: 'all',
-        year: 'all',
-        priceOperator: 'gt',
-        priceValue: '',
-        kategori: 'all',
-        metode: 'all',
-        searchQuery: filterState.searchQuery
+        type: "all",
+        month: "all",
+        year: "all",
+        priceOperator: "gt",
+        priceValue: "",
+        kategori: "all",
+        metode: "all",
+        searchQuery: filterState.searchQuery,
       };
       renderTransaksi();
     };
   }
 
   const updateFilter = () => {
-    filterState.month = document.getElementById('filter-month').value;
-    filterState.year = document.getElementById('filter-year').value;
-    filterState.kategori = document.getElementById('filter-kategori').value;
-    filterState.priceOperator = document.getElementById('filter-price-operator').value;
-    const rawPrice = document.getElementById('filter-price-value').value.replace(/\D/g, '');
-    filterState.priceValue = rawPrice ? Number(rawPrice) : '';
+    filterState.month = document.getElementById("filter-month").value;
+    filterState.year = document.getElementById("filter-year").value;
+    filterState.kategori = document.getElementById("filter-kategori").value;
+    filterState.priceOperator = document.getElementById(
+      "filter-price-operator",
+    ).value;
+    const rawPrice = document
+      .getElementById("filter-price-value")
+      .value.replace(/\D/g, "");
+    filterState.priceValue = rawPrice ? Number(rawPrice) : "";
     renderTableBody(container);
   };
 
-  const typeBtns = container.querySelectorAll('.popover-item[data-type]');
-  typeBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      typeBtns.forEach(b => b.classList.remove('active'));
-      e.currentTarget.classList.add('active');
-      filterState.type = e.currentTarget.getAttribute('data-type');
+  const typeBtns = container.querySelectorAll(".popover-item[data-type]");
+  typeBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      typeBtns.forEach((b) => b.classList.remove("active"));
+      e.currentTarget.classList.add("active");
+      filterState.type = e.currentTarget.getAttribute("data-type");
       updateFilter();
     });
   });
 
   // Metode chips
-  container.querySelectorAll('#filter-metode-chips .filter-chip').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      container.querySelectorAll('#filter-metode-chips .filter-chip').forEach(b => b.classList.remove('active'));
-      e.currentTarget.classList.add('active');
-      filterState.metode = e.currentTarget.getAttribute('data-metode');
-      updateFilter();
+  container
+    .querySelectorAll("#filter-metode-chips .filter-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        container
+          .querySelectorAll("#filter-metode-chips .filter-chip")
+          .forEach((b) => b.classList.remove("active"));
+        e.currentTarget.classList.add("active");
+        filterState.metode = e.currentTarget.getAttribute("data-metode");
+        updateFilter();
+      });
     });
-  });
 
-  container.querySelector('#filter-month').addEventListener('change', updateFilter);
-  container.querySelector('#filter-year').addEventListener('change', updateFilter);
-  container.querySelector('#filter-kategori').addEventListener('change', updateFilter);
-  container.querySelector('#filter-price-operator').addEventListener('change', updateFilter);
-  
-  const priceInput = container.querySelector('#filter-price-value');
-  priceInput.addEventListener('input', (e) => {
-    let val = e.target.value.replace(/\D/g, '');
+  container
+    .querySelector("#filter-month")
+    .addEventListener("change", updateFilter);
+  container
+    .querySelector("#filter-year")
+    .addEventListener("change", updateFilter);
+  container
+    .querySelector("#filter-kategori")
+    .addEventListener("change", updateFilter);
+  container
+    .querySelector("#filter-price-operator")
+    .addEventListener("change", updateFilter);
+
+  const priceInput = container.querySelector("#filter-price-value");
+  priceInput.addEventListener("input", (e) => {
+    let val = e.target.value.replace(/\D/g, "");
     if (val) {
-      e.target.value = new Intl.NumberFormat('id-ID').format(val);
+      e.target.value = new Intl.NumberFormat("id-ID").format(val);
     }
     updateFilter();
   });
 
   // Global Search Sync
-  const globalSearch = document.getElementById('global-search');
+  const globalSearch = document.getElementById("global-search");
   if (globalSearch) {
-    globalSearch.addEventListener('input', (e) => {
+    globalSearch.addEventListener("input", (e) => {
       filterState.searchQuery = e.target.value.toLowerCase();
       renderTableBody(container);
     });
@@ -393,23 +445,23 @@ export function renderTransaksi() {
 
   renderTableBody(container);
 
-  document.getElementById('btn-tambah-page').addEventListener('click', () => {
-    import('../components/modal/index.js').then(module => {
+  document.getElementById("btn-tambah-page").addEventListener("click", () => {
+    import("../components/modal/index.js").then((module) => {
       module.openAddTransactionModal(() => renderTransaksi());
     });
   });
 
-  initCustomSelects(container.querySelector('#filter-popover'));
+  initCustomSelects(container.querySelector("#filter-popover"));
 
   // Aktifkan sticky header di mobile
   initStickyHeader();
 }
 
 function renderTableBody(container) {
-  const tbody = container.querySelector('#tx-table-body');
+  const tbody = container.querySelector("#tx-table-body");
   const isMobile = window.innerWidth <= 768;
   let filteredTxs = [...store.transactions];
-  
+
   // Sortir: Terbaru di atas (Berdasarkan tanggal, lalu ID sebagai penentu jika tanggal sama)
   filteredTxs.sort((a, b) => {
     const dateDiff = new Date(b.tanggal) - new Date(a.tanggal);
@@ -417,35 +469,59 @@ function renderTableBody(container) {
     return (b.id || 0) - (a.id || 0);
   });
 
-  filteredTxs = filteredTxs.filter(tx => {
+  filteredTxs = filteredTxs.filter((tx) => {
     const txDate = new Date(tx.tanggal);
     const absHarga = Math.abs(tx.harga);
-    
-    const matchType = filterState.type === 'all' || tx.type === filterState.type;
-    const matchMonth = filterState.month === 'all' || txDate.getMonth() == filterState.month;
-    const matchYear = filterState.year === 'all' || txDate.getFullYear() == filterState.year;
-    const matchKategori = filterState.kategori === 'all' || 
-      (tx.kategori || '').toLowerCase().trim() === filterState.kategori.toLowerCase().trim() ||
-      (tx.kategori || '').toLowerCase().includes(filterState.kategori.toLowerCase());
-    const matchMetode = filterState.metode === 'all' || 
+
+    const matchType =
+      filterState.type === "all" || tx.type === filterState.type;
+    const matchMonth =
+      filterState.month === "all" || txDate.getMonth() == filterState.month;
+    const matchYear =
+      filterState.year === "all" || txDate.getFullYear() == filterState.year;
+    const matchKategori =
+      filterState.kategori === "all" ||
+      (tx.kategori || "").toLowerCase().trim() ===
+        filterState.kategori.toLowerCase().trim() ||
+      (tx.kategori || "")
+        .toLowerCase()
+        .includes(filterState.kategori.toLowerCase());
+    const matchMetode =
+      filterState.metode === "all" ||
       tx.metode === filterState.metode ||
-      (tx.type === 'transfer' && (
-        (tx.dariAkun && tx.dariAkun.toLowerCase().includes(filterState.metode.toLowerCase())) ||
-        (tx.keAkun && tx.keAkun.toLowerCase().includes(filterState.metode.toLowerCase())) ||
-        (filterState.metode === 'Transfer Bank' || filterState.metode === 'Bank Transfer')
-      ));
-    const matchSearch = !filterState.searchQuery || (tx.keterangan || '').toLowerCase().includes(filterState.searchQuery);
-    
+      (tx.type === "transfer" &&
+        ((tx.dariAkun &&
+          tx.dariAkun
+            .toLowerCase()
+            .includes(filterState.metode.toLowerCase())) ||
+          (tx.keAkun &&
+            tx.keAkun
+              .toLowerCase()
+              .includes(filterState.metode.toLowerCase())) ||
+          filterState.metode === "Transfer Bank" ||
+          filterState.metode === "Bank Transfer"));
+    const matchSearch =
+      !filterState.searchQuery ||
+      (tx.keterangan || "").toLowerCase().includes(filterState.searchQuery);
+
     let matchPrice = true;
-    if (filterState.priceValue !== '') {
-      if (filterState.priceOperator === 'gt') {
+    if (filterState.priceValue !== "") {
+      if (filterState.priceOperator === "gt") {
         matchPrice = absHarga >= filterState.priceValue;
       } else {
         matchPrice = absHarga <= filterState.priceValue;
       }
     }
-    
-    return matchType && matchMonth && matchYear && matchKategori && matchMetode && matchPrice && matchSearch;
+
+    return (
+      matchType &&
+      matchMonth &&
+      matchYear &&
+      matchKategori &&
+      matchMetode &&
+      matchPrice &&
+      matchSearch
+    );
   });
 
   const kebabHtml = (id) => `
@@ -469,56 +545,80 @@ function renderTableBody(container) {
     </div>
   `;
 
-  const txHtml = filteredTxs.map(tx => {
-    const isIncome = tx.type === 'income';
-    const isTransfer = tx.type === 'transfer';
-    const colorClass = isTransfer ? 'text-primary' : (isIncome ? 'text-green' : 'text-red');
-    const sign = isTransfer ? '⇄' : (isIncome ? '+' : '-');
-    let badgeClass = isTransfer ? 'badge-blue' : 'badge-blue';
-    const lowerKategori = (tx.kategori || '').toLowerCase();
-    if (lowerKategori.includes('gaji')) badgeClass = 'badge-green';
-    else if (lowerKategori.includes('makan')) badgeClass = 'badge-orange';
-    else if (lowerKategori.includes('belanja')) badgeClass = 'badge-purple';
+  const txHtml = filteredTxs
+    .map((tx) => {
+      const isIncome = tx.type === "income";
+      const isTransfer = tx.type === "transfer";
+      const colorClass = isTransfer
+        ? "text-primary"
+        : isIncome
+          ? "text-green"
+          : "text-red";
+      const sign = isTransfer ? "" : isIncome ? "+" : "-";
+      let ribbonColorClass = "ribbon-indigo";
+      const lowerKategori = (tx.kategori || "").toLowerCase();
+      if (lowerKategori.includes("makan") || lowerKategori.includes("minum"))
+        ribbonColorClass = "ribbon-orange";
+      else if (
+        lowerKategori.includes("gaji") ||
+        lowerKategori.includes("pendapatan")
+      )
+        ribbonColorClass = "ribbon-green";
+      else if (lowerKategori.includes("belanja"))
+        ribbonColorClass = "ribbon-purple";
+      else if (
+        lowerKategori.includes("tagihan") ||
+        lowerKategori.includes("listrik")
+      )
+        ribbonColorClass = "ribbon-red";
+      else if (lowerKategori.includes("transport"))
+        ribbonColorClass = "ribbon-blue";
 
-    if (isMobile) {
-      // === MOBILE: render sebagai card <div>, bukan <tr> ===
-      // Catatan: visual card (border, bg, radius, padding) di-handle oleh
-      // .transactions-table tr di responsive.css supaya tidak double border.
-      return `
+      if (isMobile) {
+        // === MOBILE: render sebagai card <div>, bukan <tr> ===
+        return `
         <tr class="tx-mobile-card" data-id="${tx.id}">
           <td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;text-align:left!important;">
-            <div style="position:relative;">
-              <!-- Baris 1: Badge + Harga -->
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span class="badge-soft ${badgeClass}" style="font-size:0.62rem; padding:2px 7px; border-radius:6px;">
+            <div class="tx-card-inner">
+              <!-- 3D Horizontal Folded Ribbon (100% Horizontal with Poppins) -->
+              <div class="tx-horizontal-ribbon-container ${ribbonColorClass}">
+                <div class="tx-horizontal-ribbon">
                   <img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" />
-                  <span>${tx.kategori}</span>
-                </span>
-                <span class="${colorClass} font-bold" style="font-size:0.88rem; white-space:nowrap;">${sign} ${formatRupiah(Math.abs(tx.harga))}</span>
+                  <span class="tx-ribbon-text">${tx.kategori}</span>
+                </div>
+                <span class="tx-ribbon-ear" aria-hidden="true"></span>
               </div>
+
+              <!-- Top Row: Price (aligned to right) -->
+              <div class="tx-card-top-row">
+                <span class="${colorClass} tx-card-price">${sign} ${formatRupiah(Math.abs(tx.harga))}</span>
+              </div>
+
               <!-- Baris 2: Keterangan -->
-              <div style="font-weight:600; font-size:0.88rem; color:var(--text-main); line-height:1.4; margin-bottom:4px; padding-right:36px;">
+              <div class="tx-card-desc">
                 ${tx.keterangan}
               </div>
+
               <!-- Baris 3: Tanggal • Metode -->
-              <div style="font-size:0.72rem; color:var(--text-light);">
+              <div class="tx-card-meta">
                 ${formatDate(tx.tanggal)} &bull; ${tx.metode}
               </div>
+
               <!-- Kebab absolute bottom-right -->
-              <div style="position:absolute; bottom:-0.25rem; right:-0.35rem;">
+              <div class="tx-card-kebab">
                 ${kebabHtml(tx.id)}
               </div>
             </div>
           </td>
         </tr>
       `;
-    }
+      }
 
-    // === DESKTOP: render normal table row ===
-    return `
+      // === DESKTOP: render normal table row ===
+      return `
       <tr>
         <td>${formatDate(tx.tanggal)}</td>
-        <td><span class="badge-soft ${badgeClass}"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
+        <td><span class="badge-soft"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
         <td>${tx.metode}</td>
         <td>${tx.keterangan}</td>
         <td class="text-right ${colorClass} font-bold">${sign} ${formatRupiah(Math.abs(tx.harga))}</td>
@@ -527,11 +627,12 @@ function renderTableBody(container) {
         </td>
       </tr>
     `;
-  }).join('');
+    })
+    .join("");
 
   const emptyMsg = `
     <tr class="empty-row">
-      <td colspan="6" class="empty-td" style="${isMobile ? 'display:block;' : ''}text-align: center; padding: 3rem 1.5rem;">
+      <td colspan="6" class="empty-td" style="${isMobile ? "display:block;" : ""}text-align: center; padding: 3rem 1.5rem;">
         <style>
           [data-theme="light"] .tx-illustration-dark { display: none !important; }
           [data-theme="dark"] .tx-illustration-light { display: none !important; }
@@ -554,28 +655,32 @@ function renderTableBody(container) {
     (id) => {
       const txToEdit = store.getTransactionById(Number(id));
       if (txToEdit) {
-        import('../components/modal/index.js').then(module => {
+        import("../components/modal/index.js").then((module) => {
           module.openAddTransactionModal(() => renderTransaksi(), txToEdit);
         });
       }
     },
     // onDelete
     (id) => {
-      import('../components/modal/index.js').then(module => {
+      import("../components/modal/index.js").then((module) => {
         module.openConfirmModal(
-          'Hapus Transaksi?',
-          'Data yang dihapus tidak dapat dikembalikan.',
+          "Hapus Transaksi?",
+          "Data yang dihapus tidak dapat dikembalikan.",
           () => {
-            store.deleteTransactionRemote(Number(id))
+            store
+              .deleteTransactionRemote(Number(id))
               .then(() => {
-                showToast('Transaksi berhasil dihapus!', 'info');
+                showToast("Transaksi berhasil dihapus!", "info");
                 renderTransaksi();
               })
               .catch((err) => {
-                showToast('Gagal hapus transaksi: ' + (err?.message || err), 'error');
+                showToast(
+                  "Gagal hapus transaksi: " + (err?.message || err),
+                  "error",
+                );
                 renderTransaksi();
               });
-          }
+          },
         );
       });
     },
@@ -583,10 +688,10 @@ function renderTableBody(container) {
     (id) => {
       const txToView = store.getTransactionById(Number(id));
       if (txToView) {
-        import('../components/modal/index.js').then(module => {
+        import("../components/modal/index.js").then((module) => {
           module.openDetailTransactionModal(txToView);
         });
       }
-    }
+    },
   );
 }

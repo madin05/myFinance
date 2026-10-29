@@ -181,7 +181,7 @@ const SAVINGS_SEED = [
 
 async function seedUser(user) {
   console.log(`\n======================================================`);
-  console.log(`🌱 Seeding User: ${user.name} (${user.email})`);
+  console.log(`[Seed] Seeding User: ${user.name} (${user.email})`);
   console.log(`   UID: ${user.firebaseUid} | DB ID: ${user.id}`);
   console.log(`======================================================`);
 
@@ -190,12 +190,12 @@ async function seedUser(user) {
   await prisma.saving.deleteMany({ where: { userId: user.id } });
   await prisma.budget.deleteMany({ where: { userId: user.id } });
   await prisma.account.deleteMany({ where: { userId: user.id } });
-  console.log('   🗑️  Data lama user berhasil dibersihkan.');
+  console.log('   [Info] Data lama user berhasil dibersihkan.');
 
   // 2. Seed Accounts
   const accountData = ACCOUNTS_SEED.map(a => ({ ...a, userId: user.id }));
   await prisma.account.createMany({ data: accountData });
-  console.log(`   🏦 Berhasil menambahkan ${accountData.length} akun saldo (BCA, Mandiri, Jago, GoPay, DANA, Dompet Tunai)`);
+  console.log(`   [Success] Berhasil menambahkan ${accountData.length} akun saldo (BCA, Mandiri, Jago, GoPay, DANA, Dompet Tunai)`);
 
   // 3. Seed Transactions (over the last 6 months, including current month up to today)
   const now = new Date();
@@ -279,7 +279,7 @@ async function seedUser(user) {
 
   txData.sort((a, b) => b.date - a.date);
   await prisma.transaction.createMany({ data: txData });
-  console.log(`   💸 Berhasil menambahkan ${txData.length} riwayat transaksi (Income, Expense, Transfer 6 bulan)`);
+  console.log(`   [Success] Berhasil menambahkan ${txData.length} riwayat transaksi (Income, Expense, Transfer 6 bulan)`);
 
   // 4. Seed Budgets
   const budgetData = [];
@@ -296,14 +296,14 @@ async function seedUser(user) {
     }
   }
   await prisma.budget.createMany({ data: budgetData });
-  console.log(`   📊 Berhasil menambahkan ${budgetData.length} target anggaran (${periodOf(new Date(currentYear, currentMonth - 5, 1))} s/d ${periodOf(now)})`);
+  console.log(`   [Success] Berhasil menambahkan ${budgetData.length} target anggaran (${periodOf(new Date(currentYear, currentMonth - 5, 1))} s/d ${periodOf(now)})`);
 
   // 5. Seed Savings / Wishlist
   const savingsData = SAVINGS_SEED.map(s => ({ ...s, userId: user.id }));
   await prisma.saving.createMany({ data: savingsData });
-  console.log(`   🎯 Berhasil menambahkan ${savingsData.length} target wishlist (Aktif & Selesai untuk history)`);
+  console.log(`   [Success] Berhasil menambahkan ${savingsData.length} target wishlist (Aktif & Selesai untuk history)`);
 
-  console.log(`   ✅ Selesai seeding data dump untuk user: ${user.name}`);
+  console.log(`   [Complete] Selesai seeding data dump untuk user: ${user.name}`);
 }
 
 async function main() {
@@ -323,7 +323,7 @@ async function main() {
     if (user) {
       users.push(user);
     } else {
-      console.error(`❌ User dengan UID/Email "${targetParam}" tidak ditemukan di database.`);
+      console.error(`[Error] User dengan UID/Email "${targetParam}" tidak ditemukan di database.`);
       process.exit(1);
     }
   } else {
@@ -331,7 +331,7 @@ async function main() {
   }
 
   if (users.length === 0) {
-    console.log('⚠️  Belum ada user terdaftar. Membuat user default untuk local development...');
+    console.log('[Warning] Belum ada user terdaftar. Membuat user default untuk local development...');
     const defaultUser = await prisma.user.create({
       data: {
         firebaseUid: 'local-dev-user-001',
@@ -343,11 +343,11 @@ async function main() {
       }
     });
     users.push(defaultUser);
-    console.log(`✅ Berhasil membuat user default: ${defaultUser.name} (${defaultUser.email})`);
+    console.log(`[Success] Berhasil membuat user default: ${defaultUser.name} (${defaultUser.email})`);
   }
 
   console.log(`\n======================================================`);
-  console.log(`🚀 MYFINANCE DATA DUMP LOADER (${users.length} User Terpilih)`);
+  console.log(`[MYFINANCE] DATA DUMP LOADER (${users.length} User Terpilih)`);
   console.log(`======================================================`);
 
   for (const u of users) {
@@ -355,7 +355,7 @@ async function main() {
   }
 
   console.log('\n======================================================');
-  console.log('🎉 SELURUH DATA DUMP LOKAL BERHASIL DISINKRONISASI!');
+  console.log('[MYFINANCE] SELURUH DATA DUMP LOKAL BERHASIL DISINKRONISASI!');
   console.log('   Semua fitur (Dashboard, Transaksi, Anggaran, Tabungan,');
   console.log('   Laporan & AI) kini memiliki data dump yang selaras.');
   console.log('======================================================\n');
@@ -363,7 +363,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Error Seeding Data Dump:', e);
+    console.error('[Error] Error Seeding Data Dump:', e);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());

@@ -198,18 +198,33 @@ export function renderLaporan() {
         background: transparent;
         color: var(--text-muted);
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 600;
         cursor: pointer;
-        border-radius: 10px;
+        border-radius: 8px;
         transition: all 0.2s ease;
       }
       .tab-btn.active {
-        background: var(--white);
-        color: var(--primary);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background: var(--card-bg, #ffffff);
+        color: var(--text-main);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
       .tab-btn:hover:not(.active) {
         color: var(--text-main);
+      }
+      [data-theme="dark"] .filter-tabs {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+      }
+      [data-theme="dark"] .tab-btn {
+        color: rgba(255, 255, 255, 0.65);
+      }
+      [data-theme="dark"] .tab-btn:hover:not(.active) {
+        color: #ffffff;
+      }
+      [data-theme="dark"] .tab-btn.active {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       }
     </style>
   `;

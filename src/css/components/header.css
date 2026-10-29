@@ -214,8 +214,9 @@
 }
 
 .profile-dropdown .theme-auto-btn.active {
-  background-color: var(--primary-light) !important;
-  color: var(--primary) !important;
+  background-color: #ffffff !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
 .profile-dropdown .st-sunMoonThemeToggleBtn svg {
@@ -228,13 +229,34 @@
 }
 
 [data-theme="dark"] .profile-dropdown .theme-toggle-group {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .profile-dropdown .theme-auto-btn,
+[data-theme="dark"] .profile-dropdown .themeToggle {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme="dark"] .profile-dropdown .theme-auto-btn:hover,
+[data-theme="dark"] .profile-dropdown .themeToggle:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .profile-dropdown .theme-auto-btn.active {
-  background-color: #3B1F5E !important;
-  color: var(--primary) !important;
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .profile-dropdown .st-sunMoonThemeToggleBtn svg {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+[data-theme="dark"] .profile-dropdown .st-sunMoonThemeToggleBtn svg .sunMoon,
+[data-theme="dark"] .profile-dropdown .st-sunMoonThemeToggleBtn svg .sunRay {
+  fill: currentColor !important;
 }
 
 .dropdown-header {

@@ -52,6 +52,10 @@
   white-space: nowrap;
 }
 
+.transactions-table tr {
+  transform: scale(0.98);
+}
+
 .transactions-table td {
   padding: 0.6rem 1rem;
   font-size: 0.8rem;
@@ -84,14 +88,17 @@
 }
 
 .badge-soft {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  background-color: var(--border-light, #f1f5f9);
+  color: var(--text-main, #1e293b);
+  border: 1px solid var(--border, #e2e8f0);
 }
 
 /* Hide category icon on desktop by default */
@@ -99,18 +106,218 @@
   display: none;
 }
 
+[data-theme="dark"] .badge-soft {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-main, #f3e8ff);
+  border-color: var(--border, #37323e);
+}
+
+/* ===================================================
+   3D HORIZONTAL FOLDED RIBBON BADGE (CLEAN & ACCURATE)
+   =================================================== */
+
+.tx-horizontal-ribbon-container,
+.tx-corner-ribbon-wrapper,
+.tx-folded-ribbon-container {
+  position: absolute;
+  top: 14px;
+  left: -8px;
+  z-index: 10;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.tx-horizontal-ribbon,
+.tx-corner-ribbon,
+.tx-folded-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px 0 10px;
+  /* Kiri strictly 0 biar ilusi melipatnya nempel ke card */
+  border-radius: 0 6px 6px 0 !important;
+  color: #ffffff !important;
+  font-family: var(--font-main, "Poppins", sans-serif) !important;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  border: none !important;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.tx-horizontal-ribbon .tx-ribbon-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #ffffff !important;
+  line-height: 1;
+}
+
+.tx-horizontal-ribbon .tx-cat-icon {
+  display: inline-block !important;
+  width: 14px !important;
+  height: 14px !important;
+  object-fit: contain !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+}
+
+/* 3D Fold Ear (HAPUS ::after dari container biar gak ganda!) */
+.tx-ribbon-ear {
+  display: block;
+  width: 8px;
+  height: 7px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  margin-left: 0;
+  z-index: 1;
+  position: relative;
+  filter: brightness(0.6);
+}
+
+/* Pastikan card inner di mobile punya padding atas aman */
+.tx-card-inner {
+  position: relative !important;
+  overflow: visible !important;
+  padding-top: 2.8rem !important; /* Biar judul "Beli Game" ga ketabrak badge */
+}
+/* --- Ribbon Color Schemes with 3D Fold Shadows --- */
+
+/* 1. Orange / Makanan & Minuman */
+.ribbon-orange .tx-horizontal-ribbon,
+.ribbon-orange .tx-corner-ribbon,
+.ribbon-orange .tx-folded-ribbon {
+  background-image: linear-gradient(
+    135deg,
+    #f5c8bf 0%,
+    #ff8c37 50%,
+    #ff5722 100%
+  ) !important;
+}
+.ribbon-orange .tx-ribbon-ear,
+.ribbon-orange.tx-horizontal-ribbon-container::after,
+.ribbon-orange.tx-corner-ribbon-wrapper::after,
+.ribbon-orange.tx-folded-ribbon-container::after {
+  background-color: #9a3412 !important;
+}
+
+/* 2. Green / Gaji & Pendapatan */
+.ribbon-green .tx-horizontal-ribbon,
+.ribbon-green .tx-corner-ribbon,
+.ribbon-green .tx-folded-ribbon {
+  background-image: linear-gradient(
+    135deg,
+    #10b981 0%,
+    #34d399 50%,
+    #059669 100%
+  ) !important;
+}
+.ribbon-green .tx-ribbon-ear,
+.ribbon-green.tx-horizontal-ribbon-container::after,
+.ribbon-green.tx-corner-ribbon-wrapper::after,
+.ribbon-green.tx-folded-ribbon-container::after {
+  background-color: #064e3b !important;
+}
+
+/* 3. Indigo / Investasi, Tabungan & Default */
+.ribbon-indigo .tx-horizontal-ribbon,
+.ribbon-indigo .tx-corner-ribbon,
+.ribbon-indigo .tx-folded-ribbon,
+.tx-horizontal-ribbon-container:not([class*="ribbon-"]) .tx-horizontal-ribbon,
+.tx-corner-ribbon-wrapper:not([class*="ribbon-"]) .tx-corner-ribbon,
+.tx-folded-ribbon-container:not([class*="ribbon-"]) .tx-folded-ribbon {
+  background-image: linear-gradient(
+    135deg,
+    #acaefa 0%,
+    #818cf8 50%,
+    #4f46e5 100%
+  ) !important;
+}
+.ribbon-indigo .tx-ribbon-ear,
+.ribbon-indigo.tx-horizontal-ribbon-container::after,
+.ribbon-indigo.tx-corner-ribbon-wrapper::after,
+.ribbon-indigo.tx-folded-ribbon-container::after,
+.tx-horizontal-ribbon-container:not([class*="ribbon-"])::after,
+.tx-corner-ribbon-wrapper:not([class*="ribbon-"])::after,
+.tx-folded-ribbon-container:not([class*="ribbon-"])::after {
+  background-color: #1e1b4b !important;
+}
+
+/* 4. Purple / Belanja */
+.ribbon-purple .tx-horizontal-ribbon,
+.ribbon-purple .tx-corner-ribbon,
+.ribbon-purple .tx-folded-ribbon {
+  background-image: linear-gradient(
+    135deg,
+    #8b5cf6 0%,
+    #c084fc 50%,
+    #7c3aed 100%
+  ) !important;
+}
+.ribbon-purple .tx-ribbon-ear,
+.ribbon-purple.tx-horizontal-ribbon-container::after,
+.ribbon-purple.tx-corner-ribbon-wrapper::after,
+.ribbon-purple.tx-folded-ribbon-container::after {
+  background-color: #3b0764 !important;
+}
+
+/* 5. Blue / Transportasi */
+.ribbon-blue .tx-horizontal-ribbon,
+.ribbon-blue .tx-corner-ribbon,
+.ribbon-blue .tx-folded-ribbon {
+  background-image: linear-gradient(
+    135deg,
+    #0ea5e9 0%,
+    #38bdf8 50%,
+    #0284c7 100%
+  ) !important;
+}
+.ribbon-blue .tx-ribbon-ear,
+.ribbon-blue.tx-horizontal-ribbon-container::after,
+.ribbon-blue.tx-corner-ribbon-wrapper::after,
+.ribbon-blue.tx-folded-ribbon-container::after {
+  background-color: #082f49 !important;
+}
+
+/* 6. Red / Tagihan & Urgent */
+.ribbon-red .tx-horizontal-ribbon,
+.ribbon-red .tx-corner-ribbon,
+.ribbon-red .tx-folded-ribbon {
+  background-image: linear-gradient(
+    135deg,
+    #ef4444 0%,
+    #f87171 50%,
+    #dc2626 100%
+  ) !important;
+}
+.ribbon-red .tx-ribbon-ear,
+.ribbon-red.tx-horizontal-ribbon-container::after,
+.ribbon-red.tx-corner-ribbon-wrapper::after,
+.ribbon-red.tx-folded-ribbon-container::after {
+  background-color: #450a0a !important;
+}
+
 .badge-blue {
   background-color: var(--blue-light);
   color: var(--blue);
 }
+
 .badge-green {
   background-color: var(--green-light);
   color: var(--green);
 }
+
 .badge-orange {
   background-color: var(--orange-light);
   color: var(--orange);
 }
+
 .badge-purple {
   background-color: var(--purple-light);
   color: var(--purple);
@@ -119,4 +326,29 @@
 .badge-red {
   background-color: var(--red-light);
   color: var(--red);
+}
+
+[data-theme="dark"] .badge-blue {
+  background-color: #1e3a5f !important;
+  color: #60a5fa !important;
+}
+
+[data-theme="dark"] .badge-green {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .badge-orange {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #fb923c !important;
+}
+
+[data-theme="dark"] .badge-purple {
+  background-color: rgba(157, 78, 221, 0.2) !important;
+  color: #c084fc !important;
+}
+
+[data-theme="dark"] .badge-red {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
 }

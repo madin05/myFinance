@@ -2,7 +2,10 @@ import { store, formatRupiah, formatDate } from "../store.js";
 import { openAdjustBalanceModal } from "../components/modal/index.js";
 import { navigateTo } from "../router.js";
 import { initStickyHeader, escapeHtml, getCategoryIconUrl } from "../utils.js";
-import { getSmartAiInputHtml, initSmartAiInputEvents } from "../components/smartAiInput.js";
+import {
+  getSmartAiInputHtml,
+  initSmartAiInputEvents,
+} from "../components/smartAiInput.js";
 
 let currentSavingIndex = 0;
 let savingInterval = null;
@@ -31,23 +34,76 @@ export function renderDashboard() {
     return (b.id || 0) - (a.id || 0);
   });
 
+  const isMobile = window.innerWidth <= 768;
   const topTransactions = sortedTxs.slice(0, 4);
   const txHtml = topTransactions
     .map((tx) => {
       const isIncome = tx.type === "income";
-      const colorClass = isIncome ? "text-green" : "text-red";
-      const sign = isIncome ? "+" : "-";
+      const isTransfer = tx.type === "transfer";
+      const colorClass = isTransfer
+        ? "text-primary"
+        : isIncome
+          ? "text-green"
+          : "text-red";
+      const sign = isTransfer ? "" : isIncome ? "+" : "-";
 
-      let badgeClass = "badge-blue";
-      const lowerKategori = tx.kategori.toLowerCase();
-      if (lowerKategori.includes("gaji")) badgeClass = "badge-green";
-      else if (lowerKategori.includes("makan")) badgeClass = "badge-orange";
-      else if (lowerKategori.includes("belanja")) badgeClass = "badge-purple";
+      let ribbonColorClass = "ribbon-indigo";
+      const lowerKategori = (tx.kategori || "").toLowerCase();
+      if (lowerKategori.includes("makan") || lowerKategori.includes("minum"))
+        ribbonColorClass = "ribbon-orange";
+      else if (
+        lowerKategori.includes("gaji") ||
+        lowerKategori.includes("pendapatan")
+      )
+        ribbonColorClass = "ribbon-green";
+      else if (lowerKategori.includes("belanja"))
+        ribbonColorClass = "ribbon-purple";
+      else if (
+        lowerKategori.includes("tagihan") ||
+        lowerKategori.includes("listrik")
+      )
+        ribbonColorClass = "ribbon-red";
+      else if (lowerKategori.includes("transport"))
+        ribbonColorClass = "ribbon-blue";
+
+      if (isMobile) {
+        return `
+          <tr class="tx-mobile-card" data-id="${tx.id}">
+            <td colspan="5" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;text-align:left!important;">
+              <div class="tx-card-inner">
+                <!-- 3D Horizontal Folded Ribbon (100% Horizontal with Poppins) -->
+                <div class="tx-horizontal-ribbon-container ${ribbonColorClass}">
+                  <div class="tx-horizontal-ribbon">
+                    <img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" />
+                    <span class="tx-ribbon-text">${tx.kategori}</span>
+                  </div>
+                  <span class="tx-ribbon-ear" aria-hidden="true"></span>
+                </div>
+
+                <!-- Top Row: Price (aligned to right) -->
+                <div class="tx-card-top-row">
+                  <span class="${colorClass} tx-card-price" style="white-space: nowrap;">${sign} ${formatRupiah(Math.abs(tx.harga))}</span>
+                </div>
+
+                <!-- Baris 2: Keterangan -->
+                <div class="tx-card-desc">
+                  ${tx.keterangan}
+                </div>
+
+                <!-- Baris 3: Tanggal • Metode -->
+                <div class="tx-card-meta">
+                  ${formatDate(tx.tanggal)} &bull; ${tx.metode}
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
 
       return `
       <tr>
         <td>${formatDate(tx.tanggal)}</td>
-        <td><span class="badge-soft ${badgeClass}"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
+        <td><span class="badge-soft"><img src="${getCategoryIconUrl(tx.kategori, tx.type)}" class="tx-cat-icon" alt="" /><span>${tx.kategori}</span></span></td>
         <td>${tx.metode}</td>
         <td>${tx.keterangan}</td>
         <td class="text-right ${colorClass} font-bold" style="white-space: nowrap;">${sign} ${formatRupiah(Math.abs(tx.harga))}</td>
@@ -116,12 +172,14 @@ export function renderDashboard() {
 
   const timeParts = getFormattedTimeParts();
   const isSaldoHidden = localStorage.getItem("myfinance_hide_saldo") === "true";
-  const displayBalanceText = isSaldoHidden ? "Rp ••••••••" : formatRupiah(stats.balance);
+  const displayBalanceText = isSaldoHidden
+    ? "Rp ••••••••"
+    : formatRupiah(stats.balance);
 
   container.innerHTML = `
     <!-- Greeting Section (Minimal & Simple) -->
     <div class="dashboard-greeting-simple">
-      <h1 class="greeting-title-simple">${getGreeting()}, <span class="font-bold">${escapeHtml(store.user?.name || "Tamu")}</span>! 👋</h1>
+      <h1 class="greeting-title-simple">${getGreeting()}, <span class="font-bold">${escapeHtml(store.user?.name || "Tamu")}</span></h1>
       <p class="greeting-date-simple">${getFormattedDayText()} &bull; ${timeParts.time} ${timeParts.ampm}</p>
     </div>
 
@@ -131,8 +189,8 @@ export function renderDashboard() {
         <div class="stat-header" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:8px;">
             <p class="stat-label" style="margin:0;">${stats.hasAccounts ? `Total Saldo` : "Saldo Saat Ini"}</p>
-            <button id="btn-toggle-hide-saldo" title="${isSaldoHidden ? 'Tampilkan Saldo' : 'Sembunyikan Saldo'}" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
-              <i class="ph ${isSaldoHidden ? 'ph-eye-slash' : 'ph-eye'}" style="font-size:1.05rem;"></i>
+            <button id="btn-toggle-hide-saldo" title="${isSaldoHidden ? "Tampilkan Saldo" : "Sembunyikan Saldo"}" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; padding:2px 4px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
+              <i class="ph ${isSaldoHidden ? "ph-eye-slash" : "ph-eye"}" style="font-size:1.05rem;"></i>
             </button>
           </div>
           ${
@@ -155,7 +213,7 @@ export function renderDashboard() {
         <div class="stat-footer">
           <div class="stat-line"><div class="stat-line-fill" style="width: 100%; background: var(--text-muted); opacity: 0.4;"></div></div>
         </div>
-        <i class="ph ph-bank stat-watermark"></i>
+        <img src="/assets/3d-balance.png" class="stat-watermark stat-3d-icon" alt="Total Saldo" />
       </div>
 
       <div class="stats-cards-slider-container">
@@ -170,7 +228,7 @@ export function renderDashboard() {
           <div class="stat-footer">
             <div class="stat-line"><div class="stat-line-fill bg-green" style="width: ${Math.min((stats.income / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
           </div>
-          <i class="ph ph-trend-up stat-watermark"></i>
+          <img src="/assets/3d-income.png" class="stat-watermark stat-3d-icon" alt="Pemasukan" />
         </div>
 
         <div class="stat-card" id="card-pengeluaran" style="cursor: pointer;" title="Lihat Laporan Pengeluaran">
@@ -184,7 +242,7 @@ export function renderDashboard() {
           <div class="stat-footer">
             <div class="stat-line"><div class="stat-line-fill bg-red" style="width: ${Math.min((stats.expense / (stats.income + stats.expense || 1)) * 100, 100)}%"></div></div>
           </div>
-          <i class="ph ph-trend-down stat-watermark"></i>
+          <img src="/assets/3d-expense.png" class="stat-watermark stat-3d-icon" alt="Pengeluaran" />
         </div>
       </div>
     </div>
@@ -335,7 +393,8 @@ export function renderDashboard() {
     btnToggleHideSaldo.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      const currentHidden = localStorage.getItem("myfinance_hide_saldo") === "true";
+      const currentHidden =
+        localStorage.getItem("myfinance_hide_saldo") === "true";
       localStorage.setItem("myfinance_hide_saldo", String(!currentHidden));
       renderDashboard();
     });
@@ -345,7 +404,12 @@ export function renderDashboard() {
   const cardTotalSaldo = document.getElementById("card-total-saldo");
   if (cardTotalSaldo) {
     cardTotalSaldo.addEventListener("click", (e) => {
-      if (e.target.closest('#btn-adjust-balance') || e.target.closest('#btn-goto-saldo') || e.target.closest('#btn-toggle-hide-saldo')) return;
+      if (
+        e.target.closest("#btn-adjust-balance") ||
+        e.target.closest("#btn-goto-saldo") ||
+        e.target.closest("#btn-toggle-hide-saldo")
+      )
+        return;
       if (stats.hasAccounts) {
         navigateTo("/saldo");
       } else {

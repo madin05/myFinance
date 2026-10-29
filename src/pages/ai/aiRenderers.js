@@ -108,7 +108,7 @@ export function renderWishlistCardInChat(wishlist, saved = false, itemIndex = nu
   return `
     <div class="ai-action-card" ${idxAttr}>
       <div class="ai-action-card-top">
-        <span class="badge-soft badge-purple ai-action-card-badge">⭐ Target Wishlist</span>
+        <span class="badge-soft badge-purple ai-action-card-badge"><i class="ph ph-star"></i> Target Wishlist</span>
         <strong class="ai-action-card-amount purple">${formatRupiah(wishlist.target)}</strong>
       </div>
       <h4 class="ai-action-card-title">${escapeHtml(wishlist.name)}</h4>
