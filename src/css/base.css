@@ -366,13 +366,12 @@ body.disable-animations .stat-watermark {
   display: none !important;
 }
 
-/* Memaksa jarum sinar matahari (Sun rays) langsung mekar statis saat mode hemat aktif */
-body.disable-animations
-  .st-sunMoonThemeToggleBtn
-  .themeToggleInput:checked
-  + svg
-  .sunRay {
-  transform: scale(1) !important;
+/* Mode hemat animasi */
+body.disable-animations .st-sunMoonThemeToggleBtn svg,
+body.disable-animations .st-sunMoonThemeToggleBtn svg .sunMoon,
+body.disable-animations .st-sunMoonThemeToggleBtn svg mask circle,
+body.disable-animations .st-sunMoonThemeToggleBtn svg .sunRay {
+  transition: none !important;
 }
 
 /* Tata Letak Ringkas (Compact Layout Density Mode) */

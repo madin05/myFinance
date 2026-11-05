@@ -107,7 +107,7 @@ export function getCategoryIconUrl(kategori, type = null) {
 
   // Check Transfer Antar Akun
   if (type === 'transfer' || k.includes('transfer') || k.includes('pindah')) {
-    return '/assets/investment.svg';
+    return '/assets/transfer.svg';
   }
 
   // Check Investasi lebih awal jika ada kata kunci investasi/dividen

@@ -47,13 +47,13 @@ export function renderAnggaran() {
         </div>
         <div class="section-header-controls anggaran-controls" style="display: flex; align-items: center; gap: 12px;">
           <div class="month-selector" style="display: flex; align-items: center; gap: 8px;">
-            <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px; cursor: pointer;">
+            <button class="icon-btn" id="prev-month" style="width: 32px; height: 32px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text-muted);">
               <i class="ph ph-caret-left"></i>
             </button>
-            <span class="font-bold month-label" style="min-width: 130px; text-align: center; color: var(--primary); font-size: 0.95rem;">
+            <span class="font-bold month-label" style="min-width: 130px; text-align: center; color: var(--text-main); font-size: 0.95rem;">
               ${currentViewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
             </span>
-            <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border-radius: 8px; cursor: pointer;">
+            <button class="icon-btn" id="next-month" style="width: 32px; height: 32px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text-muted);">
               <i class="ph ph-caret-right"></i>
             </button>
           </div>
@@ -64,7 +64,7 @@ export function renderAnggaran() {
       </div>
 
       <div class="table-container">
-        <table class="transactions-table">
+        <table class="transactions-table anggaran-table">
           <thead>
             <tr>
               <th>Kategori</th>

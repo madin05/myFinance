@@ -3,7 +3,7 @@ const { parseNaturalLanguageInput, generateFinancialReport } = require('../servi
 
 async function runAiTests() {
   console.log('====================================================');
-  console.log('🤖 RUNNING MYFINANCE AI AUTOMATED TEST SUITE');
+  console.log('[TEST] RUNNING MYFINANCE AI AUTOMATED TEST SUITE');
   console.log('====================================================');
 
   let passedCount = 0;
@@ -11,10 +11,10 @@ async function runAiTests() {
 
   function assert(condition, testName) {
     if (condition) {
-      console.log(`✅ [PASS] ${testName}`);
+      console.log(`[PASS] ${testName}`);
       passedCount++;
     } else {
-      console.error(`❌ [FAIL] ${testName}`);
+      console.error(`[FAIL] ${testName}`);
       failedCount++;
     }
   }
@@ -34,7 +34,7 @@ async function runAiTests() {
       assert(result.data && result.data.harga === 50000, 'Harga correctly parsed as 50000');
       assert(result.data && result.data.kategori === 'Transportasi', 'Kategori correctly inferred as Transportasi');
     } else {
-      console.log('⚠️ [SKIP] Gemini API rate limited / offline, fallback heuristic engine ready.');
+      console.log('[SKIP] Gemini API rate limited / offline, fallback heuristic engine ready.');
     }
   } catch (err) {
     console.error('Test 1 error:', err.message);
@@ -55,7 +55,7 @@ async function runAiTests() {
       assert(result.data && result.data.target === 15000000, 'Target price correctly parsed as 15,000,000');
       assert(result.data && result.data.name.toLowerCase().includes('laptop'), 'Wishlist name contains "laptop"');
     } else {
-      console.log('⚠️ [SKIP] Gemini API rate limited / offline, fallback heuristic engine ready.');
+      console.log('[SKIP] Gemini API rate limited / offline, fallback heuristic engine ready.');
     }
   } catch (err) {
     console.error('Test 2 error:', err.message);
@@ -84,7 +84,7 @@ async function runAiTests() {
       assert(typeof report.healthRating === 'number' && report.healthRating >= 1, 'Health rating is a valid score');
       assert(Array.isArray(report.insights) && report.insights.length >= 1, 'Returns array of AI insights');
     } else {
-      console.log('⚠️ [SKIP] Gemini API offline, fallback metrics report used.');
+      console.log('[SKIP] Gemini API offline, fallback metrics report used.');
     }
   } catch (err) {
     console.error('Test 3 error:', err.message);
@@ -111,7 +111,7 @@ async function runAiTests() {
   }
 
   console.log('\n====================================================');
-  console.log(`🎉 TEST SUMMARY: ${passedCount} PASSED, ${failedCount} FAILED.`);
+  console.log(`[SUMMARY] TEST SUMMARY: ${passedCount} PASSED, ${failedCount} FAILED.`);
   console.log('====================================================');
 }
 

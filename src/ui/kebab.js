@@ -64,9 +64,6 @@ export function closeAllKebabs() {
   }
   if (_activeTrigger) {
     _activeTrigger.classList.remove('active');
-    // Remove z-index boost from the parent card
-    const card = _activeTrigger.closest('.stat-card') || _activeTrigger.closest('tr') || _activeTrigger.closest('.wishlist-item');
-    if (card) card.style.zIndex = '';
     _activeTrigger = null;
   }
 }

@@ -24,12 +24,13 @@
 }
 
 .kebab-trigger:hover {
-  background: var(--bg-color);
+  background: transparent;
   color: var(--text-main);
 }
 
-.kebab-trigger.active {
-  background: var(--bg-color);
+.kebab-trigger.active,
+.kebab-trigger:active {
+  background: transparent;
   color: var(--primary);
 }
 

@@ -1,4 +1,5 @@
 // backend/src/tests/twoFactor.test.js
+require('dotenv').config();
 const prisma = require('../services/db');
 const { generate2FAToken, verify2FAToken, JWT_SECRET } = require('../services/twoFactorService');
 const jwt = require('jsonwebtoken');
@@ -137,7 +138,7 @@ async function runTests() {
     }
     console.log(' TEST 7 PASSED: 2FA deactivation magic link verification & session clean-up verified!');
 
-    console.log('\n🎉 ALL 7 AUTOMATED 2FA SECURITY TESTS PASSED PERFECTLY!');
+    console.log('\n[PASS] ALL 7 AUTOMATED 2FA SECURITY TESTS PASSED PERFECTLY!');
   } catch (err) {
     console.error('\nTEST SUITE FAILURE:', err.message);
     process.exitCode = 1;

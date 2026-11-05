@@ -142,7 +142,7 @@ export function renderTabungan() {
       <div class="section-header-top">
         <h3>My Wishlist &amp; Savings</h3>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          ${historyGoals.length > 0 ? `<button class="btn btn-outline btn-history-header" id="btn-toggle-history"><i class="ph ph-clock-counter-clockwise"></i> Histori</button>` : ''}
+          ${historyGoals.length > 0 ? `<button class="btn btn-history-header" id="btn-toggle-history"><i class="ph ph-clock-counter-clockwise"></i> Histori</button>` : ''}
           ${allGoals.length > 0 ? '<button class="btn btn-primary" id="btn-create-goal"><i class="ph ph-plus"></i>Tambah</button>' : ''}
         </div>
       </div>

@@ -55,7 +55,7 @@ export function openCalculator() {
   }
 
   const cardStyle = isMobile
-    ? 'position: fixed; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 100vw; height: auto; max-height: 90vh; padding: 1rem 1.5rem 2rem; border-radius: 28px 28px 0 0; background: var(--card-bg); box-shadow: 0 -10px 40px rgba(0,0,0,0.35); border-top: 1px solid var(--border); border-left: none; border-right: none; border-bottom: none; z-index: 2500; user-select: none; overflow: hidden; display: flex; flex-direction: column; pointer-events: auto;'
+    ? 'position: fixed; bottom: 0; left: 0; right: 0; width: 100vw; max-width: 100vw; height: 92vh; height: 92dvh; padding: 1rem 1.25rem 1.5rem; border-radius: 28px 28px 0 0; background: var(--card-bg); box-shadow: 0 -10px 40px rgba(0,0,0,0.35); border-top: 1px solid var(--border); border-left: none; border-right: none; border-bottom: none; z-index: 2500; user-select: none; overflow: hidden; display: flex; flex-direction: column; pointer-events: auto;'
     : 'position: fixed; top: 150px; right: 40px; width: 340px; height: 510px; min-width: 300px; min-height: 460px; max-width: 600px; max-height: 850px; padding: 1.5rem; border-radius: var(--radius-xl); background: var(--card-bg); box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 2000; user-select: none; overflow: hidden; display: flex; flex-direction: column; pointer-events: auto;';
 
   overlayEl.innerHTML = `
@@ -81,7 +81,7 @@ export function openCalculator() {
         <div id="calc-display" style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.1; margin-top: 4px;">0</div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, 1fr); gap: 0.75rem; flex: 1;">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, minmax(0, 1fr)); gap: 0.7rem; flex: 1; min-height: 0;">
         ${BUTTONS.map(b => `<button class="btn-calc ${b.class}" data-val="${b.val}" style="${b.style || ''}">${b.label}</button>`).join('')}
       </div>
 
@@ -93,7 +93,7 @@ export function openCalculator() {
 
       <style>
         .btn-calc {
-          height: 100%; width: 100%; border: none; background: var(--border-light);
+          height: 100%; width: 100%; min-height: 44px; border: none; background: var(--border-light);
           color: var(--text-main); font-size: clamp(0.95rem, 0.85rem + 0.8vh, 1.45rem);
           font-weight: 500; border-radius: 12px; cursor: pointer;
           display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;

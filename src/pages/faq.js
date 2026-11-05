@@ -65,7 +65,7 @@ export function renderFaq() {
           <h1 class="page-title">Tanya Jawab (FAQ)</h1>
           <p class="text-muted">Temukan jawaban atas pertanyaan umum mengenai pengelolaan keuangan di MyFinance</p>
         </div>
-        <button class="btn btn-primary" id="btn-replay-tutorial" style="border-radius: 12px; height: 42px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+        <button class="btn btn-primary" id="btn-replay-tutorial" style="border-radius: 8px; height: 36px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
           <i class="ph ph-play-circle" style="font-size: 1.15rem;"></i> Putar Panduan Aplikasi
         </button>
       </div>

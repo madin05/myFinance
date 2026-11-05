@@ -81,7 +81,7 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
   const mailOptions = {
     from: `"MyFinance" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: 'Verifikasi Email Akun MyFinance Kamu 🎉',
+    subject: 'Verifikasi Email Akun MyFinance Kamu',
     html: `
       <!DOCTYPE html>
       <html lang="id">
@@ -100,7 +100,7 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
                 <tr>
                   <td style="background:linear-gradient(135deg,#6366f1,#7c3aed);padding:36px 40px;text-align:center;">
                     <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
-                      💰 MyFinance
+                      MyFinance
                     </h1>
                     <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">
                       Kelola keuanganmu lebih cerdas & aman
@@ -112,7 +112,7 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
                 <tr>
                   <td style="padding:40px;">
                     <h2 style="margin:0 0 12px;color:#1e293b;font-size:20px;font-weight:700;">
-                      Verifikasi Email Kamu 👋
+                      Verifikasi Email Kamu
                     </h2>
                     <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.6;">
                       Terima kasih sudah daftar di <strong>MyFinance</strong>! 
@@ -125,7 +125,7 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
                         <td align="center" style="background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:50px;">
                           <a href="${verificationLink}" 
                              style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.2px;">
-                            ✓ Verifikasi Email Sekarang
+                            Verifikasi Email Sekarang
                           </a>
                         </td>
                       </tr>
@@ -166,7 +166,7 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ Verification email sent to: ${email}`);
+  console.log(`[Email] Verification email sent to: ${email}`);
 };
 
 /**
@@ -192,7 +192,7 @@ exports.sendOtpVerificationEmail = async (email, otpCode) => {
   const mailOptions = {
     from: `"MyFinance" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: 'Kode Verifikasi Akun MyFinance Kamu 🔐',
+    subject: 'Kode Verifikasi Akun MyFinance Kamu',
     html: `
       <!DOCTYPE html>
       <html lang="id">
@@ -211,7 +211,7 @@ exports.sendOtpVerificationEmail = async (email, otpCode) => {
                 <tr>
                   <td style="background:linear-gradient(135deg,#6366f1,#7c3aed);padding:36px 40px;text-align:center;">
                     <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
-                      💰 MyFinance
+                      MyFinance
                     </h1>
                     <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">
                       Verifikasi Akun Baru
@@ -223,7 +223,7 @@ exports.sendOtpVerificationEmail = async (email, otpCode) => {
                 <tr>
                   <td style="padding:40px;">
                     <h2 style="margin:0 0 12px;color:#1e293b;font-size:20px;font-weight:700;">
-                      Kode Verifikasi OTP 🔐
+                      Kode Verifikasi OTP
                     </h2>
                     <p style="margin:0 0 28px;color:#64748b;font-size:15px;line-height:1.6;">
                       Masukkan kode 6-digit berikut di halaman verifikasi MyFinance untuk mengaktifkan akunmu.
@@ -267,7 +267,7 @@ exports.sendOtpVerificationEmail = async (email, otpCode) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ OTP verification email sent to: ${email}`);
+  console.log(`[Email] OTP verification email sent to: ${email}`);
 };
 
 /**
@@ -313,7 +313,7 @@ exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
   const mailOptions = {
     from: `"MyFinance" <${process.env.GMAIL_USER}>`,
     to: email,
-    subject: 'Atur Ulang Password Akun MyFinance Kamu 🔑',
+    subject: 'Atur Ulang Password Akun MyFinance Kamu',
     html: `
       <!DOCTYPE html>
       <html lang="id">
@@ -332,7 +332,7 @@ exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
                 <tr>
                   <td style="background:linear-gradient(135deg,#6366f1,#7c3aed);padding:36px 40px;text-align:center;">
                     <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">
-                      💰 MyFinance
+                      MyFinance
                     </h1>
                     <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">
                       Atur Ulang Kata Sandi
@@ -344,7 +344,7 @@ exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
                 <tr>
                   <td style="padding:40px;">
                     <h2 style="margin:0 0 12px;color:#1e293b;font-size:20px;font-weight:700;">
-                      Lupa Kata Sandi? 🔑
+                      Lupa Kata Sandi?
                     </h2>
                     <p style="margin:0 0 24px;color:#64748b;font-size:15px;line-height:1.6;">
                       Kami menerima permintaan untuk mengubah kata sandi akun MyFinance kamu. Klik tombol di bawah untuk membuat kata sandi baru.
@@ -356,7 +356,7 @@ exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
                         <td align="center" style="background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:50px;">
                           <a href="${resetLink}" 
                              style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.2px;">
-                            🔑 Reset Password Sekarang
+                            Reset Password Sekarang
                           </a>
                         </td>
                       </tr>
@@ -396,7 +396,7 @@ exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ Password reset email sent to: ${email}`);
+  console.log(`[Email] Password reset email sent to: ${email}`);
 };
 
 /**
@@ -514,7 +514,7 @@ exports.send2FAMagicLinkEmail = async (email, rawToken, type = 'LOGIN', reqOrigi
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ 2FA Magic link email (${type}) sent to: ${email}`);
+  console.log(`[2FA] Magic link email (${type}) sent to: ${email}`);
 };
 
 /**
@@ -598,7 +598,7 @@ exports.send2FADisabledSecurityEmail = async (email, ipAddress, userAgent, times
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ 2FA deactivation security alert sent to: ${email}`);
+  console.log(`[2FA] Deactivation security alert sent to: ${email}`);
 };
 
 /**
@@ -671,7 +671,7 @@ exports.send2FAOtpEmail = async (email, otpCode) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ 2FA OTP email sent to: ${email}`);
+  console.log(`2FA OTP email sent to: ${email}`);
 };
 
 /**
@@ -744,8 +744,6 @@ exports.sendDeleteAccountOtpEmail = async (email, otpCode) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log(`✅ Delete Account OTP email sent to: ${email}`);
+  console.log(`Delete Account OTP email sent to: ${email}`);
 };
-
-
 

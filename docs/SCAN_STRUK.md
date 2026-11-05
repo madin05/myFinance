@@ -457,7 +457,7 @@ Backend **tidak pernah save image ke disk atau database**. Image hanya di RAM se
 
 ### Kenapa Gemini, bukan alternatif lain?
 
-**❌ Tesseract.js (OCR open-source di browser)**
+**[x] Tesseract.js (OCR open-source di browser)**
 - Pros: gratis, no backend
 - Cons:
   - Akurasi struk Indonesia jelek (font kasir thermal sering blur)
@@ -466,7 +466,7 @@ Backend **tidak pernah save image ke disk atau database**. Image hanya di RAM se
   - Bundle size 5+ MB
   - Lambat di HP (CPU intensive)
 
-**❌ Google Cloud Vision API**
+**[x] Google Cloud Vision API**
 - Pros: akurasi tinggi
 - Cons:
   - Cuma OCR (extract teks mentah)
@@ -474,14 +474,14 @@ Backend **tidak pernah save image ke disk atau database**. Image hanya di RAM se
   - Setup lebih ribet (service account JSON, billing project, enable API)
   - 2-step process (OCR → parse) = lebih lambat
 
-**❌ OpenAI GPT-4 Vision**
+**[x] OpenAI GPT-4 Vision**
 - Pros: akurasi bagus
 - Cons:
   - Lebih mahal
   - Tidak ada free tier yang serius
   - Project sudah di ekosistem Google/Firebase
 
-**✅ Google Gemini 2.0 Flash**
+**[v] Google Gemini 2.0 Flash**
 - Vision + reasoning dalam 1 call (OCR + structured extraction sekaligus)
 - Free tier generous (1.500 request/hari)
 - `responseMimeType: 'application/json'` → output langsung valid JSON

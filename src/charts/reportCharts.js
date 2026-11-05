@@ -134,7 +134,7 @@ export function initReportCharts(sortedCategories, filteredTransactions, totalEx
 
             if (progress > 0.01) {
               ctx.shadowColor = color;
-              ctx.shadowBlur = 12 * progress;
+              ctx.shadowBlur = 5 * progress;
             } else {
               ctx.shadowBlur = 0;
             }

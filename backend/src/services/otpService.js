@@ -127,7 +127,7 @@ async function verifyOtp(userId, rawOtp, type = 'LOGIN_2FA') {
     throw error;
   }
 
-  // ✅ OTP Valid — Mark as used
+  // OTP Valid — Mark as used
   await prisma.otpVerification.update({
     where: { id: record.id },
     data: { isUsed: true }

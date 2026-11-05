@@ -113,7 +113,7 @@ export function renderSaldo() {
         ${saldos.length > 0 ? saldos.map((s, index) => {
           const brandColor = getBrandColor(s);
           return `
-          <div class="stat-card saldo-card-item" data-index="${index}" style="z-index: ${index + 1};">
+          <div class="stat-card saldo-card-item" data-index="${index}">
             <div class="saldo-card-content">
               <div class="brand-icon-box" style="background: color-mix(in srgb, ${brandColor} 18%, transparent); box-shadow: 0 2px 10px color-mix(in srgb, ${brandColor} 20%, transparent); color: ${brandColor};">
                 ${getLogo(s) ? `<img src="${getLogo(s)}" class="brand-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><i class="ph-fill ${getTypeIcon(s.type)}" style="display:none"></i>` : `<i class="ph-fill ${getTypeIcon(s.type)}"></i>`}

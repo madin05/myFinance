@@ -30,140 +30,300 @@ async function callGeminiParse(text) {
 }
 
 /**
- * Parse natural language text into a structured transaction object (Fallback)
+ * Universal Multilingual Amount Parser for Frontend Local Fallback.
  */
-export function parseNaturalLanguageTx(text) {
-  if (!text || typeof text !== "string") return null;
+function parseLocalSingleAmount(str) {
+  if (!str || typeof str !== 'string') return 0;
+  const lower = str.toLowerCase();
+  if (/\b(gocap|gokap|gocapp)\b/i.test(lower)) return 50000;
+  if (/\b(ceban|cebanan)\b/i.test(lower)) return 10000;
+  if (/\b(seceng|sceng)\b/i.test(lower)) return 1000;
+  if (/\b(goceng)\b/i.test(lower)) return 5000;
+  if (/\b(cepek|cpek|secepek)\b/i.test(lower)) return 100000;
+  if (/\b(pekgo)\b/i.test(lower)) return 150000;
+  if (/\b(noban)\b/i.test(lower)) return 20000;
+  if (/\b(sejuta|sejutaaa)\b/i.test(lower)) return 1000000;
 
-  const lower = text.trim().toLowerCase();
-  if (!lower) return null;
+  const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta|jeti|m(?:illion)?)\b/i);
+  if (jtMatch) return parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
 
-  // 1. Detect Nominal / Amount
-  let amount = 0;
-  const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta)/i);
-  const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu)/i);
-  const rawNumMatch = lower.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
+  const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu|rebu|grand|keping)\b/i);
+  if (kMatch) return parseFloat(kMatch[1].replace(',', '.')) * 1000;
 
-  if (jtMatch) {
-    amount = parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
-  } else if (kMatch) {
-    amount = parseFloat(kMatch[1].replace(',', '.')) * 1000;
-  } else if (rawNumMatch) {
-    const cleanStr = rawNumMatch[1].replace(/\./g, "");
-    amount = parseFloat(cleanStr);
+  const rawNumMatch = lower.match(/(?:rp\.?\s*|\$\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
+  if (rawNumMatch) {
+    const cleanStr = rawNumMatch[1].replace(/\./g, '');
+    const val = parseFloat(cleanStr);
+    if (!isNaN(val) && val > 0) return val;
   }
-
-  if (isNaN(amount) || amount <= 0) return null;
-
-  // 2. Detect Type (income vs expense)
-  const incomeKeywords = ["gaji", "bonus", "dividen", "dapat", "terima", "inflow", "pemasukan", "hadiah", "jual", "profit", "omset"];
-  const isIncome = incomeKeywords.some((kw) => lower.includes(kw));
-  const type = isIncome ? "income" : "expense";
-
-  // 3. Infer Category
-  let kategori = isIncome ? "Gaji & Pendapatan" : "Lain-lain";
-  if (lower.includes("bensin") || lower.includes("pertamax") || lower.includes("pertalite") || lower.includes("parkir") || lower.includes("gojek") || lower.includes("grab") || lower.includes("angkot") || lower.includes("tol") || lower.includes("transport")) {
-    kategori = "Transportasi";
-  } else if (lower.includes("makan") || lower.includes("minum") || lower.includes("kopi") || lower.includes("bakso") || lower.includes("nasi") || lower.includes("resto") || lower.includes("warung") || lower.includes("food")) {
-    kategori = "Makanan & Minuman";
-  } else if (lower.includes("gaji") || lower.includes("payroll") || lower.includes("thr") || lower.includes("bonus")) {
-    kategori = "Gaji & Pendapatan";
-  } else if (lower.includes("belanja") || lower.includes("baju") || lower.includes("sepatu") || lower.includes("tokopedia") || lower.includes("shopee") || lower.includes("mall")) {
-    kategori = "Belanja";
-  } else if (lower.includes("listrik") || lower.includes("air") || lower.includes("wifi") || lower.includes("pulsa") || lower.includes("tagihan") || lower.includes("token")) {
-    kategori = "Tagihan";
-  } else if (lower.includes("investasi") || lower.includes("saham") || lower.includes("crypto") || lower.includes("reksadana")) {
-    kategori = "Investasi & Tabungan";
-  } else if (lower.includes("obat") || lower.includes("dokter") || lower.includes("sehat") || lower.includes("rs") || lower.includes("gym")) {
-    kategori = "Kesehatan";
-  } else if (lower.includes("kursus") || lower.includes("buku") || lower.includes("udemy") || lower.includes("kuliah") || lower.includes("sekolah")) {
-    kategori = "Pendidikan";
-  }
-
-  // 4. Infer Payment Method
-  let metode = "Cash";
-  if (lower.includes("transfer") || lower.includes("bank") || lower.includes("bca") || lower.includes("mandiri") || lower.includes("bni") || lower.includes("bri")) {
-    metode = "Transfer Bank";
-  } else if (lower.includes("gopay") || lower.includes("ovo") || lower.includes("dana") || lower.includes("shopeepay") || lower.includes("spay") || lower.includes("qris") || lower.includes("ewallet")) {
-    metode = "E-Wallet";
-  } else if (lower.includes("kartu") || lower.includes("kredit") || lower.includes("debit")) {
-    metode = "Kartu Kredit/Debit";
-  }
-
-  // 5. Clean up description
-  let keterangan = text
-    .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|k|rb|ribu)?/gi, "")
-    .replace(/\b(cash|tunai|transfer|bank|qris|gopay|ovo|dana|shopeepay|spay|bca|mandiri)\b/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!keterangan) {
-    keterangan = isIncome ? `Pemasukan ${kategori}` : `Pengeluaran ${kategori}`;
-  }
-
-  keterangan = keterangan.charAt(0).toUpperCase() + keterangan.slice(1);
-  const todayStr = new Date().toISOString().split("T")[0];
-
-  return {
-    tanggal: todayStr,
-    kategori,
-    metode,
-    keterangan,
-    harga: amount,
-    type,
-  };
+  return 0;
 }
 
 /**
- * Parse natural language text into a structured Wishlist object (Fallback)
+ * Detect Multilingual Category from Clause Text.
  */
-export function parseNaturalLanguageWishlist(text) {
-  if (!text || typeof text !== "string") return null;
+function detectLocalCategory(clause, isIncome = false) {
+  if (isIncome) return 'Gaji & Pendapatan';
+  const lower = clause.toLowerCase();
 
+  if (/bensin|bnesin|pertamax|pertalite|shell|solar|fuel|gas|gasoline|parkir|parking|gojek|goride|gocar|grab|grabcar|ojol|angkot|tol|toll|transport|transportation|ngegas|bus|kereta|train|krl|mrt|lrt|flight|pesawat|tiket pesawat|taxi|taksi|uber/i.test(lower)) {
+    return 'Transportasi';
+  }
+  if (/makan|mkn|minum|mnm|kopi|ngopi|coffee|bakso|nasi|padang|naspad|nasgor|esteh|es teh|resto|restaurant|warung|food|jajan|snack|nongkrong|lunch|dinner|breakfast|sarapan|starbucks|sbux|kfc|mcd|mcdonalds|gofood|grabfood|shopeefood|seblak|mie|indomie|groceries|grocery|supermarket/i.test(lower)) {
+    return 'Makanan & Minuman';
+  }
+  if (/gaji|gajian|payroll|thr|bonus|honor|freelance|proyek|dpt trf|salary|wage|dividend|omset/i.test(lower)) {
+    return 'Gaji & Pendapatan';
+  }
+  if (/belanja|blj|baju|clothes|celana|pants|sepatu|shoes|tas|bag|tokped|tokopedia|shopee|shope|mall|olshop|skincare|lazada|blibli|amazon|shopping|buy|beli/i.test(lower)) {
+    return 'Belanja';
+  }
+  if (/listrik|electricity|token|pdam|air|water|wifi|indihome|pulsa|kuota|data|paket data|internet|phone bill|tagihan|bill|iuran|sewa|rent|kos|kost|kontrakan|bpjs|insurance|asuransi/i.test(lower)) {
+    return 'Tagihan';
+  }
+  if (/investasi|invest|investment|saham|stock|stocks|crypto|btc|reksadana|deposito|bibit/i.test(lower)) {
+    return 'Investasi & Tabungan';
+  }
+  if (/obat|medicine|medical|dokter|doctor|apotek|pharmacy|rumah sakit|hospital|klinik|clinic|rs|gym|fitness|ngegym|vitamin|sehat|health/i.test(lower)) {
+    return 'Kesehatan';
+  }
+  if (/kursus|course|buku|book|udemy|kuliah|tuition|sekolah|school|les|seminar|pelatihan|education|pendidikan/i.test(lower)) {
+    return 'Pendidikan';
+  }
+  if (/nonton|cinema|bioskop|movie|game|gaming|mabar|netflix|spotify|liburan|holiday|vacation|hiburan|entertainment/i.test(lower)) {
+    return 'Hiburan';
+  }
+  return 'Lain-lain';
+}
+
+/**
+ * Detect Payment Method from Clause.
+ */
+function detectLocalPaymentMethod(clause) {
+  const lower = clause.toLowerCase();
+  if (/transfer|tf|trf|bca|mandiri|bni|bri|bsi|jago|seabank|bank|cimb|blu|wire/i.test(lower)) {
+    return 'Transfer Bank';
+  }
+  if (/gopay|ovo|dana|shopeepay|spay|qris|linkaja|ewallet|e-wallet|wallet|paypal/i.test(lower)) {
+    return 'E-Wallet';
+  }
+  if (/kartu kredit|kartu debit|credit card|debit card|kredit|debit|visa|mastercard|cc/i.test(lower)) {
+    return 'Kartu Kredit/Debit';
+  }
+  if (/cash|tunai|cash money/i.test(lower)) {
+    return 'Cash';
+  }
+  return null;
+}
+
+/**
+ * Detect Global Collective Payment Modifiers (e.g. "cash semua", "all via gopay").
+ */
+function detectLocalGlobalPaymentMethod(fullText) {
+  const lower = fullText.toLowerCase();
+  if (/\b(?:cash|tunai)\s+semua\b|\bsemua(?:\s+pake|\s+pakai|\s+via|\s+by|\s+in)?\s+(?:cash|tunai)\b|\ball\s+(?:in\s+)?cash\b/i.test(lower)) {
+    return 'Cash';
+  }
+  if (/\b(?:gopay|ovo|dana|shopeepay|spay|qris|linkaja|ewallet|e-wallet)\s+semua\b|\bsemua(?:\s+pake|\s+pakai|\s+via|\s+by)?\s+(?:gopay|ovo|dana|shopeepay|spay|qris|linkaja|ewallet|e-wallet)\b|\ball\s+(?:via\s+)?(?:gopay|ovo|dana|qris|ewallet)\b/i.test(lower)) {
+    return 'E-Wallet';
+  }
+  if (/\b(?:transfer|tf|trf|bca|mandiri|bni|bri|bsi|jago|seabank|bank)\s+semua\b|\bsemua(?:\s+pake|\s+pakai|\s+via|\s+by|\s+pake\s+trf)?\s+(?:transfer|tf|trf|bca|mandiri|bni|bri|bsi|jago|seabank|bank)\b|\ball\s+(?:via\s+)?(?:transfer|bank|bca)\b/i.test(lower)) {
+    return 'Transfer Bank';
+  }
+  if (/\b(?:kartu kredit|kartu debit|kredit|debit|visa|mastercard|cc)\s+semua\b|\bsemua(?:\s+pake|\s+pakai|\s+via|\s+by)?\s+(?:kartu kredit|kartu debit|kredit|debit|visa|mastercard|cc)\b|\ball\s+(?:via\s+)?(?:card|credit card|cc)\b/i.test(lower)) {
+    return 'Kartu Kredit/Debit';
+  }
+  return null;
+}
+
+/**
+ * Universal Multilingual Multi-Item Local Fallback Parser for Anya.
+ * Handles single & multiple transactions, wishlists, and summaries offline.
+ */
+export function parseNaturalLanguageMultiLocal(text) {
+  if (!text || typeof text !== 'string') return null;
   const lower = text.trim().toLowerCase();
-  const wishlistKeywords = ["wishlist", "nabung", "target", "impian", "beli", "cita-cita", "save"];
-  const isWishlist = wishlistKeywords.some((kw) => lower.includes(kw));
-  if (!isWishlist) return null;
+  if (!lower) return null;
 
-  let amount = 0;
-  const jtMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:jt|juta)/i);
-  const kMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(?:k|rb|ribu)/i);
-  const rawNumMatch = lower.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/i);
+  // Date parsing from slang — use Jakarta timezone
+  const jakartaStr = new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
+  const nowLocal = new Date(jakartaStr);
+  const fmtDate = (d) => {
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yy}-${mm}-${dd}`;
+  };
+  const localDaysAgo = (n) => { const d = new Date(nowLocal); d.setDate(d.getDate() - n); return fmtDate(d); };
+  const todayStr = fmtDate(nowLocal);
 
-  if (jtMatch) {
-    amount = parseFloat(jtMatch[1].replace(',', '.')) * 1000000;
-  } else if (kMatch) {
-    amount = parseFloat(kMatch[1].replace(',', '.')) * 1000;
-  } else if (rawNumMatch) {
-    const cleanStr = rawNumMatch[1].replace(/\./g, "");
-    amount = parseFloat(cleanStr);
+  // 1. Check summary request intent
+  if (
+    lower.includes("summary") ||
+    lower.includes("ringkas") ||
+    lower.includes("rangkum") ||
+    lower.includes("keuangan") ||
+    lower.includes("analisis") ||
+    lower.includes("report")
+  ) {
+    let period = "1_month";
+    if (lower.includes("minggu") || lower.includes("7 hari") || lower.includes("week")) period = "1_week";
+    else if (lower.includes("3 bulan") || lower.includes("3 months")) period = "3_months";
+    else if (lower.includes("tahun") || lower.includes("1 thn") || lower.includes("year")) period = "1_year";
+    return {
+      intent: "summary_request",
+      message: "Siap! Anya buatin ringkasan analisis keuangan kamu ya.",
+      period
+    };
   }
 
-  if (isNaN(amount) || amount <= 0) return null;
+  // 2. Detect global payment method
+  const globalPayment = detectLocalGlobalPaymentMethod(text);
 
-  let name = text
-    .replace(/(?:wishlist|nabung|target|impian|beli|cita-cita|pengen|mau)/gi, "")
-    .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|k|rb|ribu)?/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  // 3. Multi-Clause Segmentation
+  const clauses = text
+    .split(/(?:,|\n|;|\band\b|\bdan\b|\bterus\b|\blalu\b|\bkemudian\b|\+)/i)
+    .map(c => c.trim())
+    .filter(c => c.length > 0);
 
-  if (!name) name = "Target Impian";
-  name = name.charAt(0).toUpperCase() + name.slice(1);
+  const parsedItems = [];
 
-  let icon = "ph-star";
-  if (lower.includes("laptop") || lower.includes("pc") || lower.includes("komputer")) icon = "ph-laptop";
-  else if (lower.includes("hp") || lower.includes("phone") || lower.includes("iphone")) icon = "ph-phone";
-  else if (lower.includes("motor") || lower.includes("mobil")) icon = "ph-car";
-  else if (lower.includes("rumah") || lower.includes("tanah")) icon = "ph-house";
-  else if (lower.includes("liburan") || lower.includes("tiket")) icon = "ph-airplane";
+  for (const clause of clauses) {
+    const clauseLower = clause.toLowerCase();
+    const amount = parseLocalSingleAmount(clause);
+    if (amount <= 0) continue;
 
-  return {
-    name,
-    target: amount,
-    current: 0,
-    icon,
-    color: "purple",
-  };
+    // Check wishlist intent in clause
+    const isWishlist = /wishlist|nabung|target|impian|dream|save\s+for|want\s+to\s+buy|pengen\s+beli|mau\s+beli/i.test(clauseLower);
+    if (isWishlist) {
+      let wlName = clause
+        .replace(/(?:wishlist|nabung|target|impian|beli|cita-cita|pengen|mau|dream|save\s+for|want\s+to\s+buy)/gi, '')
+        .replace(/(?:rp\.?\s*|\$\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|jeti|m(?:illion)?|k|rb|ribu|rebu|grand)?/gi, '')
+        .replace(/\b(gocap|ceban|seceng|goceng|cepek|pekgo|noban|sejuta)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!wlName) wlName = 'Target Impian';
+      wlName = wlName.charAt(0).toUpperCase() + wlName.slice(1);
+
+      let icon = 'ph-star';
+      if (/laptop|pc|komputer|computer/i.test(clauseLower)) icon = 'ph-laptop';
+      else if (/hp|phone|iphone|samsung|gadget/i.test(clauseLower)) icon = 'ph-phone';
+      else if (/motor|mobil|car|vehicle|motorcycle/i.test(clauseLower)) icon = 'ph-car';
+      else if (/rumah|tanah|kost|house|apartment/i.test(clauseLower)) icon = 'ph-house';
+      else if (/liburan|tiket|trip|vacation|holiday|flight/i.test(clauseLower)) icon = 'ph-airplane';
+      else if (/sepatu|baju|tas|shoes|bag|clothes/i.test(clauseLower)) icon = 'ph-shopping-bag';
+
+      parsedItems.push({
+        intent: 'wishlist',
+        message: `Mantap! Target "${wlName}" sudah Anya deteksi buat Wishlist.`,
+        data: {
+          name: wlName,
+          target: amount,
+          current: 0,
+          icon,
+          color: 'purple'
+        }
+      });
+      continue;
+    }
+
+    // Transaction Intent
+    const isIncome = /gaji|gajian|payroll|thr|bonus|honor|freelance|dpt trf|dapet trf|tf masuk|trf masuk|cair|proyek|dividen|omset|pemasukan|inflow|salary|wage|received transfer/i.test(clauseLower);
+    const type = isIncome ? 'income' : 'expense';
+    const kategori = detectLocalCategory(clause, isIncome);
+    const metode = detectLocalPaymentMethod(clause) || globalPayment || 'Cash';
+
+    // Date resolution
+    let tanggal = todayStr;
+    if (/\b(kemarin|kmrn|kmaren|kemaren|kmren|semalem|smlm|semalam|yesterday|last night)\b/i.test(clauseLower)) {
+      tanggal = localDaysAgo(1);
+    } else if (/\b(2\s*(?:hari|hr|days)\s*(?:lalu|yll|ago)|lusa)\b/i.test(clauseLower)) {
+      tanggal = localDaysAgo(2);
+    } else if (/\b(3\s*(?:hari|hr|days)\s*(?:lalu|yll|ago))\b/i.test(clauseLower)) {
+      tanggal = localDaysAgo(3);
+    } else if (/\b(1?\s*(?:minggu|week)\s*(?:lalu|yll|ago)|seminggu\s*(?:lalu|yll))\b/i.test(clauseLower)) {
+      tanggal = localDaysAgo(7);
+    }
+
+    // Clean up description
+    let keterangan = clause
+      .replace(/(?:rp\.?\s*|\$\s*)?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:jt|juta|jeti|m(?:illion)?|k|rb|ribu|rebu|grand)?/gi, '')
+      .replace(/\b(gocap|ceban|seceng|goceng|cepek|pekgo|noban|sejuta)\b/gi, '')
+      .replace(/\b(cash|tunai|transfer|tf|trf|bank|qris|gopay|ovo|dana|shopeepay|spay|bca|mandiri|bni|bri|bsi|linkaja|ewallet|e-wallet|visa|mastercard|cc|kartu kredit|kartu debit|semua|all)\b/gi, '')
+      .replace(/\b(gw|gue|gua|w|bre|bro|cuy|ngab|njir|wkwk|lol|dong|deh|sih|nih|tuh|kan|ya|yaa|aja|aj|udh|udah|abis|habis|tdi|tadi|kmrn|kemarin|kmaren|barusan|td|pg|siang|mlm|spent|bought|paid|for|on|with|by)\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!keterangan) {
+      keterangan = isIncome ? `Pemasukan ${kategori}` : kategori;
+    }
+
+    // Slang correction to Title Case
+    if (/nasi apdang|ns padang|naspad/i.test(keterangan)) keterangan = 'Nasi Padang';
+    else if (/esteh masni|es teh mns|esteh mnis/i.test(keterangan)) keterangan = 'Es Teh Manis';
+    else if (/bnesin|bensin pertalite/i.test(keterangan)) keterangan = 'Bensin';
+    else if (/tokped/i.test(keterangan)) keterangan = 'Belanja Tokopedia';
+    else if (/paket data|kuota/i.test(keterangan)) keterangan = 'Paket Data';
+    else {
+      keterangan = keterangan.charAt(0).toUpperCase() + keterangan.slice(1);
+    }
+
+    const formattedAmt = amount >= 1000000
+      ? `${(amount / 1000000).toLocaleString('id-ID')}jt`
+      : `${(amount / 1000).toLocaleString('id-ID')}rb`;
+
+    const msg = isIncome
+      ? `Mantap! Pemasukan ${keterangan} ${formattedAmt} via ${metode} sudah Anya siapkan ya`
+      : `Siap! ${keterangan} ${formattedAmt} via ${metode} sudah Anya siapkan ya`;
+
+    parsedItems.push({
+      intent: 'transaction',
+      message: msg,
+      data: {
+        type,
+        tanggal,
+        kategori,
+        metode,
+        keterangan,
+        harga: amount
+      }
+    });
+  }
+
+  // If multiple items were parsed, return array of items
+  if (parsedItems.length > 1) {
+    return parsedItems;
+  }
+
+  // If exactly one item was parsed, return single intent object
+  if (parsedItems.length === 1) {
+    return parsedItems[0];
+  }
+
+  return null;
+}
+
+/**
+ * Parse natural language text into a structured transaction object (Fallback backwards-compatibility)
+ */
+export function parseNaturalLanguageTx(text) {
+  const result = parseNaturalLanguageMultiLocal(text);
+  if (Array.isArray(result)) return result[0]?.data || null;
+  if (result && result.intent === 'transaction') return result.data;
+  return null;
+}
+
+/**
+ * Parse natural language text into a structured Wishlist object (Fallback backwards-compatibility)
+ */
+export function parseNaturalLanguageWishlist(text) {
+  const result = parseNaturalLanguageMultiLocal(text);
+  if (Array.isArray(result)) {
+    const wl = result.find(r => r.intent === 'wishlist');
+    return wl?.data || null;
+  }
+  if (result && result.intent === 'wishlist') return result.data;
+  return null;
 }
 
 /**
@@ -258,12 +418,12 @@ export function generateFinancialSummary(periodKey = "1_month") {
       </div>
 
       <p style="margin: 0 0 0.4rem 0; font-size: 0.8rem; color: var(--text-muted);">
-        ${topCat ? `📌 <strong>Pengeluaran terbesar</strong>: <span style="color:var(--text-main); font-weight:600;">${topCat}</span> (${formatRupiah(topAmount)})` : '📌 Belum ada transaksi pengeluaran dalam periode ini.'}
+        ${topCat ? `<strong>Pengeluaran terbesar</strong>: <span style="color:var(--text-main); font-weight:600;">${topCat}</span> (${formatRupiah(topAmount)})` : 'Belum ada transaksi pengeluaran dalam periode ini.'}
       </p>
 
       <div id="ai-insights-box" style="margin-top: 0.5rem; background: var(--bg-color); padding: 0.6rem 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
         <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
-          💡 <strong>Saran AI</strong>: ${isHealthy ? `Keuanganmu positif <span style="color:var(--green); font-weight:600;">${formatRupiah(netBalance)}</span>. Bagus! Alokasikan 20% dari surplus ke target Wishlist milikmu.` : `Pengeluaran melebihi pemasukan dalam ${periodLabel}! Tekan pengeluaran di kategori ${topCat || 'terbesar'} agar arus kas kembali sehat.`}
+          <strong>Saran AI</strong>: ${isHealthy ? `Keuanganmu positif <span style="color:var(--green); font-weight:600;">${formatRupiah(netBalance)}</span>. Bagus! Alokasikan 20% dari surplus ke target Wishlist milikmu.` : `Pengeluaran melebihi pemasukan dalam ${periodLabel}! Tekan pengeluaran di kategori ${topCat || 'terbesar'} agar arus kas kembali sehat.`}
         </p>
       </div>
     </div>
