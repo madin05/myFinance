@@ -177,11 +177,7 @@ export function renderDashboard() {
     : formatRupiah(stats.balance);
 
   container.innerHTML = `
-    <!-- Greeting Section (Minimal & Simple) -->
-    <div class="dashboard-greeting-simple">
-      <h1 class="greeting-title-simple">${getGreeting()}, <span class="font-bold">${escapeHtml(store.user?.name || "Tamu")}</span></h1>
-    </div>
-
+    
     <!-- Top Cards (Total Saldo -> Pemasukan -> Pengeluaran) -->
     <div class="stats-cards">
       <div class="stat-card" id="card-total-saldo" style="cursor: pointer;">
