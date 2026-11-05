@@ -1003,7 +1003,7 @@
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding: 0.75rem 1rem calc(5.5rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
+    padding: 0.75rem 1rem calc(6rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
   }
 
   /* General stat cards outside .stats-cards */
