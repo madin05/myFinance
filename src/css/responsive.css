@@ -111,6 +111,53 @@
     border-bottom-right-radius: 1.75rem !important;
   }
 
+  .table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: auto !important;
+    overscroll-behavior-x: none !important;
+  }
+
+  .transactions-table:not(.anggaran-table) {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-x: none !important;
+  }
+
+  .transactions-table:not(.anggaran-table) thead {
+    display: none !important;
+  }
+
+  .transactions-table:not(.anggaran-table),
+  .transactions-table:not(.anggaran-table) tbody,
+  .transactions-table:not(.anggaran-table) tr,
+  .transactions-table:not(.anggaran-table) td {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .transactions-table:not(.anggaran-table) tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .transactions-table:not(.anggaran-table) tr:not(.empty-row) {
+    width: calc(100% - 8px) !important;
+    max-width: calc(100% - 8px) !important;
+    margin-left: 8px !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    touch-action: pan-y !important;
+  }
+
   .header {
     display: flex;
     flex-wrap: wrap;
@@ -468,7 +515,11 @@
 
   /* 3. Tiap row = card (kecuali empty row) */
   .transactions-table tr:not(.empty-row) {
-    width: 100% !important;
+    width: calc(100% - 8px) !important;
+    max-width: calc(100% - 8px) !important;
+    margin-left: 8px !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
     padding: 0 !important;
     border-radius: 16px !important;
     background: linear-gradient(170deg, #ffffff 0%, #f8fafc 100%) !important;
@@ -479,6 +530,7 @@
     overflow: visible !important;
     min-height: 84px;
     cursor: pointer;
+    touch-action: pan-y !important;
     transition:
       transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
       box-shadow 0.25s ease,
@@ -1073,6 +1125,7 @@
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    overflow-x: clip !important;
   }
 
   .bottom-grid .stat-card,
@@ -1210,8 +1263,10 @@
     font-size: 0.88rem !important;
   }
 
-  .table-container {
+  .anggaran-table-container,
+  .table-container:has(.anggaran-table) {
     overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: auto !important;
   }
 }
