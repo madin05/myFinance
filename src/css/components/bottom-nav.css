@@ -170,17 +170,17 @@
 
   /* --- Dark Mode (Khusus Mode Gelap) --- */
   [data-theme="dark"] .bottom-nav-item.active {
-    color: #c084fc;
+    color: #ffffff !important;
   }
 
   [data-theme="dark"] .bottom-nav-item.active i {
-    color: #c084fc;
+    color: #ffffff !important;
   }
 
   [data-theme="dark"] .bottom-nav-item.active span {
-    color: #c084fc;
-    opacity: 1;
-    font-weight: 500;
+    color: #ffffff !important;
+    opacity: 1 !important;
+    font-weight: 600;
   }
 
   /* Active Indicator Dot (Hidden as per user request) */
