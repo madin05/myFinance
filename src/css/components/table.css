@@ -64,13 +64,25 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* Prevent unwanted line-breaks in structured data columns */
-.transactions-table td:nth-child(1),
-.transactions-table td:nth-child(2),
-.transactions-table td:nth-child(3),
-.transactions-table td:nth-child(5),
-.transactions-table td:nth-child(6) {
+/* Prevent unwanted line-breaks in structured data columns (desktop only) */
+.transactions-table tr:not(.tx-mobile-card) td:nth-child(1),
+.transactions-table tr:not(.tx-mobile-card) td:nth-child(2),
+.transactions-table tr:not(.tx-mobile-card) td:nth-child(3),
+.transactions-table tr:not(.tx-mobile-card) td:nth-child(5),
+.transactions-table tr:not(.tx-mobile-card) td:nth-child(6) {
   white-space: nowrap;
+}
+
+/* Mobile transaction cards allow natural wrapping for long notes and metadata */
+.tx-mobile-card td {
+  white-space: normal !important;
+}
+
+.tx-card-desc,
+.tx-card-meta {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
 }
 
 .transactions-table th:first-child,

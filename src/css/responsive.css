@@ -578,6 +578,10 @@
     text-align: center !important;
   }
 
+  .tx-mobile-card td {
+    white-space: normal !important;
+  }
+
   .tx-mobile-card td,
   .tx-mobile-card div {
     text-align: left !important;
@@ -614,17 +618,25 @@
     font-weight: 600;
     font-size: 0.92rem;
     color: var(--text-main);
-    line-height: 1.35;
+    line-height: 1.4;
     margin-bottom: 4px;
     padding-right: 36px;
     padding-left: 2px;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
   }
 
   .tx-card-meta {
     font-family: var(--font-main, 'Poppins', sans-serif) !important;
     font-size: 0.78rem;
     color: var(--text-light);
+    line-height: 1.35;
     padding-left: 2px;
+    padding-right: 42px;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
   }
 
   .tx-card-kebab {
