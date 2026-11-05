@@ -89,7 +89,7 @@ export function renderTransaksi() {
     <div class="transactions-section">
       <div class="section-header">
         <div class="section-header-top">
-          <h3>Daftar Transaksi</h3>
+          <h3>Aktifitas Transaksi</h3>
           <div style="display: flex; gap: 0.75rem; align-items: center;">
             <div style="position: relative;" id="filter-container">
               <button class="btn filter-btn ${hasActiveFilter ? "active-filter" : ""}" id="btn-filter-popover" title="Filter Transaksi">
