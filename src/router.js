@@ -160,14 +160,14 @@ export function handleRoute() {
   document.querySelectorAll('.bottom-nav-item').forEach(item => {
     const icon = item.querySelector('i');
     item.classList.remove('active');
-    if (icon) {
+    if (icon && !icon.classList.contains('bottom-nav-custom-icon')) {
       icon.classList.remove('ph-fill');
       icon.classList.add('ph');
     }
     const itemRoute = item.getAttribute('href');
     if (itemRoute === route) {
       item.classList.add('active');
-      if (icon) {
+      if (icon && !icon.classList.contains('bottom-nav-custom-icon')) {
         icon.classList.remove('ph');
         icon.classList.add('ph-fill');
       }

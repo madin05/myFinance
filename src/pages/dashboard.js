@@ -180,7 +180,6 @@ export function renderDashboard() {
     <!-- Greeting Section (Minimal & Simple) -->
     <div class="dashboard-greeting-simple">
       <h1 class="greeting-title-simple">${getGreeting()}, <span class="font-bold">${escapeHtml(store.user?.name || "Tamu")}</span></h1>
-      <p class="greeting-date-simple">${getFormattedDayText()} &bull; ${timeParts.time} ${timeParts.ampm}</p>
     </div>
 
     <!-- Top Cards (Total Saldo -> Pemasukan -> Pengeluaran) -->
