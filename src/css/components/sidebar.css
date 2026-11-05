@@ -9,9 +9,10 @@
   position: fixed;
   height: 100vh;
   z-index: 1100;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s ease;
+  transition:
+    width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    padding 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease;
   white-space: nowrap;
   overflow: hidden !important;
 }
@@ -19,7 +20,9 @@
 /* Shadow halus untuk Sidebar pada Light Mode */
 [data-theme="light"] .sidebar,
 :root:not([data-theme="dark"]) .sidebar {
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05), 1px 0 6px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    4px 0 24px rgba(0, 0, 0, 0.05),
+    1px 0 6px rgba(0, 0, 0, 0.02);
 }
 
 [data-theme="dark"] .sidebar {
@@ -59,7 +62,6 @@
 }
 
 .quick-access-card:hover {
-  transform: translateY(-2px);
   background: transparent;
   box-shadow: none;
   border-color: transparent;
@@ -72,7 +74,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .quick-access-img {
@@ -83,34 +87,7 @@
 }
 
 .quick-access-card:hover .quick-access-icon {
-  transform: scale(1.08);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* Icon specific accent themes (Soft light pastel background for icon) */
-.icon-ai {
-  background: #F3E8FF;
-  color: #7c3aed;
-}
-
-.icon-anggaran {
-  background: #E6F4EA;
-  color: #10b981;
-}
-
-.icon-wishlist {
-  background: #FCE8E6;
-  color: #ec4899;
-}
-
-.icon-laporan {
-  background: #E8F0FE;
-  color: #0ea5e9;
-}
-
-.icon-bantuan {
-  background: #FEF3C7;
-  color: #f59e0b;
 }
 
 .quick-access-title {
@@ -122,33 +99,13 @@
 }
 
 [data-theme="dark"] .dashboard-quick-access {
-  background: #1C1626;
-  border-color: #3D3548;
+  background: #1c1626;
+  border-color: #3d3548;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="dark"] .quick-access-card {
   box-shadow: none;
-}
-
-[data-theme="dark"] .icon-ai {
-  background: #3B2856;
-}
-
-[data-theme="dark"] .icon-anggaran {
-  background: rgba(34, 197, 94, 0.2);
-}
-
-[data-theme="dark"] .icon-wishlist {
-  background: rgba(239, 68, 68, 0.2);
-}
-
-[data-theme="dark"] .icon-laporan {
-  background: rgba(59, 130, 246, 0.2);
-}
-
-[data-theme="dark"] .icon-bantuan {
-  background: rgba(245, 158, 11, 0.2);
 }
 
 /* Hide Quick Access Grid on Desktop since Desktop has the Sidebar */
@@ -232,11 +189,19 @@
 }
 
 /* Logic Dual Logo */
-.logo-dark { display: none !important; }
-.logo-light { display: block !important; }
+.logo-dark {
+  display: none !important;
+}
+.logo-light {
+  display: block !important;
+}
 
-[data-theme="dark"] .logo-dark { display: block !important; }
-[data-theme="dark"] .logo-light { display: none !important; }
+[data-theme="dark"] .logo-dark {
+  display: block !important;
+}
+[data-theme="dark"] .logo-light {
+  display: none !important;
+}
 
 .logo-text {
   display: flex;
@@ -312,7 +277,7 @@
 }
 
 .nav-item.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: calc(-1 * var(--sidebar-pad-x));
   top: 50%;
@@ -422,9 +387,10 @@
 .nav-item span,
 .sidebar-footer span,
 .nav-dropdown-arrow {
-  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              margin 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    margin 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 1;
   max-width: 180px;
   display: inline-block;
@@ -480,13 +446,9 @@
 
 .sidebar-collapsed .nav-item.active {
   background: var(--primary);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 [data-theme="dark"] .sidebar-collapsed .nav-item.active {
   background: #6937a6;
 }
-
-
-
-
