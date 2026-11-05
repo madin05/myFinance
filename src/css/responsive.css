@@ -988,13 +988,22 @@
      ========================================================= */
 
   /* 1. Dashboard Layout & Cards (Mobile) */
-  .main-content {
-    padding: 0.75rem 0.85rem calc(6.5rem + env(safe-area-inset-bottom, 0px))
-      0.85rem !important;
+  .dashboard-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .dashboard-container {
-    gap: 1rem !important;
+  .main-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0.75rem 1rem calc(5.5rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
   }
 
   /* General stat cards outside .stats-cards */
@@ -1020,11 +1029,27 @@
   }
 
   .bottom-grid {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
     gap: 1rem !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  .widgets-section {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
   }
 
   .bottom-grid .stat-card,
   .bottom-grid .widget-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
     padding: 1.15rem 1rem !important;
     border-radius: 20px !important;
   }
