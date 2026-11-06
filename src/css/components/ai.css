@@ -1177,6 +1177,17 @@
   box-shadow: none;
 }
 
+[data-theme="dark"] .ai-action-card-btn {
+  background-color: var(--primary) !important;
+  color: #120e1d !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .ai-action-card-btn i,
+[data-theme="dark"] .ai-action-card-btn span {
+  color: #120e1d !important;
+}
+
 /* Multi-Items Combined Container */
 .ai-multi-items-wrapper {
   margin-top: 0.5rem;
@@ -1237,6 +1248,15 @@
   cursor: not-allowed;
   background-color: var(--border) !important;
   color: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .btn-save-all-multi {
+  background-color: var(--primary) !important;
+  color: #120e1d !important;
+}
+
+[data-theme="dark"] .btn-save-all-multi i {
+  color: #120e1d !important;
 }
 
 .ai-multi-items-grid {

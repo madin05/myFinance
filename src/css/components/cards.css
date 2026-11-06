@@ -469,6 +469,15 @@
   color: white;
 }
 
+[data-theme="dark"] .btn-action-sm.primary {
+  background-color: var(--primary) !important;
+  color: #120e1d !important;
+}
+
+[data-theme="dark"] .btn-action-sm.primary i {
+  color: #120e1d !important;
+}
+
 .btn-action-sm.danger {
   background-color: var(--red-light);
   color: var(--red);
