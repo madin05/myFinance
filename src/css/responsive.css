@@ -1319,21 +1319,31 @@
     margin-right: -1rem !important;
     margin-top: 0 !important;
     width: calc(100% + 2rem) !important;
-    height: 140px !important;
-    background: transparent !important;
+    height: 180px !important;
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%) !important;
     box-shadow: none !important;
-    border-radius: 0 !important;
-    padding-top: 0.25rem !important;
+    border-radius: 0 0 36px 36px !important;
+    padding-top: 0.6rem !important;
     position: relative;
     z-index: 5;
+    overflow: hidden !important;
+  }
+
+  [data-theme="dark"] .account-settings .profile-hero-banner {
+    background: linear-gradient(135deg, #241846 0%, #171226 50%, #0b0716 100%) !important;
+  }
+
+  .account-settings .profile-hero-badge {
+    margin-bottom: 8px !important;
   }
 
   .account-settings .profile-hero-title {
     font-size: 1.25rem !important;
+    margin-bottom: 0 !important;
   }
 
   .account-settings .account-grid {
-    margin-top: -38px !important;
+    margin-top: 0 !important;
     position: relative !important;
     z-index: 10 !important;
   }
@@ -1352,9 +1362,9 @@
   }
 
   .account-settings .avatar-wrapper {
-    width: 104px !important;
-    height: 104px !important;
-    margin: -52px auto 0.85rem !important;
+    width: 96px !important;
+    height: 96px !important;
+    margin: -48px auto 0.85rem !important;
     position: relative !important;
     z-index: 15 !important;
   }

@@ -19,7 +19,7 @@
     top: -200px;
     left: 0;
     right: 0;
-    height: 420px;
+    height: 300px;
     background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%);
     z-index: 0;
     opacity: 0;
@@ -141,29 +141,6 @@
   margin: 0 !important;
   letter-spacing: -0.02em;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-}
-
-.profile-hero-wave {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
-  line-height: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.profile-hero-wave svg {
-  position: relative;
-  display: block;
-  width: calc(100% + 1.3px);
-  height: 44px;
-}
-
-.profile-hero-wave svg path {
-  fill: var(--bg-color);
-  transition: fill 0.3s ease;
 }
 
 /* --- Profile Card (Separate Box Below Banner) --- */

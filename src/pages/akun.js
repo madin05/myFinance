@@ -43,7 +43,7 @@ export function renderAkun() {
 
   container.innerHTML = `
     <div class="account-settings">
-      <!-- Full-Width Hero Organic Curved Header Banner (Outside card boundaries) -->
+      <!-- Full-Width Hero Header Banner (Outside card boundaries) -->
       <div class="profile-hero-banner">
         <div class="profile-hero-glow glow-1"></div>
         <div class="profile-hero-glow glow-2"></div>
@@ -53,11 +53,6 @@ export function renderAkun() {
             ${isVerified ? 'Akun Terverifikasi' : 'Profil Pengguna'}
           </span>
           <h2 class="profile-hero-title">Pengaturan Profil</h2>
-        </div>
-        <div class="profile-hero-wave">
-          <svg viewBox="0 0 500 60" preserveAspectRatio="none">
-            <path d="M0,20 C120,50 220,55 320,40 C420,25 470,10 500,5 L500,60 L0,60 Z" fill="var(--bg-color)"></path>
-          </svg>
         </div>
       </div>
 
