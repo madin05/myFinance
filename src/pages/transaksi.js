@@ -671,7 +671,7 @@ function renderTableBody(container) {
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
           <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 140px; height: 140px;" />
           <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 140px; height: 140px;" />
-          <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi</p>
+          <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi nih</p>
         </div>
       </td>
     </tr>
