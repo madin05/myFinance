@@ -118,8 +118,8 @@ export function renderAnggaran() {
                   [data-theme="dark"] .budget-table-empty-light { display: none !important; }
                 </style>
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
-                  <img class="budget-table-empty-light" src="/assets/transactions-empty-light.svg" alt="Belum ada anggaran" style="width: 110px; height: 110px; opacity: 0.85;" />
-                  <img class="budget-table-empty-dark" src="/assets/transactions-empty-dark.svg" alt="Belum ada anggaran" style="width: 110px; height: 110px; opacity: 0.85;" />
+                  <img class="budget-table-empty-light" src="/assets/transactions-empty-light.svg" alt="Belum ada anggaran" style="width: 76px; height: 76px; opacity: 0.85;" />
+                  <img class="budget-table-empty-dark" src="/assets/transactions-empty-dark.svg" alt="Belum ada anggaran" style="width: 76px; height: 76px; opacity: 0.85;" />
                   <p class="text-muted" style="margin: 0; font-size: 0.875rem;">Belum ada anggaran nih</p>
                 </div>
               </td></tr>

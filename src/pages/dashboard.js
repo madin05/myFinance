@@ -306,8 +306,8 @@ export function renderDashboard() {
                       [data-theme="dark"] .tx-illustration-light { display: none !important; }
                     </style>
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
-                      <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 120px; height: 120px;" />
-                      <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 120px; height: 120px;" />
+                      <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 76px; height: 76px; opacity: 0.85;" />
+                      <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 76px; height: 76px; opacity: 0.85;" />
                       <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi</p>
                     </div>
                   </td>
@@ -500,8 +500,8 @@ function renderBudgetWidget() {
           [data-theme="light"] .budget-illustration-dark { display: none !important; }
           [data-theme="dark"] .budget-illustration-light { display: none !important; }
         </style>
-        <img class="budget-illustration-light" src="/assets/transactions-empty-light.svg" alt="Belum ada anggaran" style="width: 76px; height: 76px; margin-bottom: 0.65rem; opacity: 0.85;" />
-        <img class="budget-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="Belum ada anggaran" style="width: 76px; height: 76px; margin-bottom: 0.65rem; opacity: 0.85;" />
+        <img class="budget-illustration-light" src="/assets/transactions-empty-light.svg" alt="Belum ada anggaran" style="width: 48px; height: 48px; margin-bottom: 0.5rem; opacity: 0.85;" />
+        <img class="budget-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="Belum ada anggaran" style="width: 48px; height: 48px; margin-bottom: 0.5rem; opacity: 0.85;" />
         <p class="text-sm text-muted text-center" style="margin: 0;">Belum ada anggaran.</p>
       </div>
     `;
