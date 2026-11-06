@@ -77,7 +77,6 @@
 
 /* --- SALDO CARD CONTENT & LAYOUT --- */
 .saldo-card-item {
-  border-radius: var(--radius-md, 12px) !important;
   background-color: var(--card-bg, #ffffff);
   border: 1px solid var(--border);
   padding: 1rem 1.15rem;

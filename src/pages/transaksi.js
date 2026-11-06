@@ -669,8 +669,8 @@ function renderTableBody(container) {
           [data-theme="dark"] .tx-illustration-light { display: none !important; }
         </style>
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;">
-          <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 140px; height: 140px;" />
-          <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 140px; height: 140px;" />
+          <img class="tx-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Transactions" style="width: 80px; height: 80px; opacity: 0.85;" />
+          <img class="tx-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Transactions" style="width: 80px; height: 80px; opacity: 0.85;" />
           <p class="text-muted text-xs" style="margin: 0; font-size: 0.85rem;">Belum ada transaksi nih</p>
         </div>
       </td>
