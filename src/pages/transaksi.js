@@ -85,14 +85,12 @@ export function renderTransaksi() {
     filterState.metode !== "all" ||
     filterState.priceValue !== "";
 
-  container.innerHTML = `
-    <div class="transactions-section">
-      <div class="section-header">
-        <div class="section-header-top">
-          <h3>Aktifitas Transaksi</h3>
-          <div style="display: flex; gap: 0.75rem; align-items: center;">
-            <div style="position: relative;" id="filter-container">
-              <button class="btn filter-btn ${hasActiveFilter ? "active-filter" : ""}" id="btn-filter-popover" title="Filter Transaksi">
+  const searchFilterSlot = document.getElementById("search-filter-slot");
+  if (searchFilterSlot) {
+    searchFilterSlot.innerHTML = `
+    <div class="search-filter-divider"></div>
+    <div style="position: relative;" id="filter-container">
+      <button class="btn filter-btn ${hasActiveFilter ? "active-filter" : ""}" id="btn-filter-popover" title="Filter Transaksi">
                 <i class="ph ph-funnel"></i>
               </button>
               
@@ -172,13 +170,17 @@ export function renderTransaksi() {
                   <input type="text" class="form-control" id="filter-price-value" placeholder="Nominal..." style="padding: 10px; font-size: 0.85rem; height: 42px;" value="${filterState.priceValue ? new Intl.NumberFormat("id-ID").format(filterState.priceValue) : ""}">
                 </div>
                 </div>
-              </div>
-            </div>
-            <button class="btn btn-primary" id="btn-tambah-page"><i class="ph ph-plus"></i> Tambah</button>
-          </div>
+    </div>`;
+  }
+
+  container.innerHTML = `
+    <div class="transactions-section">
+      <div class="section-header">
+        <div class="section-header-top">
+          <h3>Aktifitas Transaksi</h3>
+          <button class="btn btn-primary" id="btn-tambah-page"><i class="ph ph-plus"></i> Tambah</button>
         </div>
       </div>
-        
       <div class="table-container">
           <table class="transactions-table">
             <thead>
@@ -199,8 +201,8 @@ export function renderTransaksi() {
       </div>
     `;
 
-  const popoverBtn = container.querySelector("#btn-filter-popover");
-  const popover = container.querySelector("#filter-popover");
+  const popoverBtn = document.getElementById("btn-filter-popover");
+  const popover = document.getElementById("filter-popover");
   const popoverOriginalParent = popover ? popover.parentElement : null;
 
   const isMobileFilter = () => window.innerWidth <= 768;
@@ -228,6 +230,7 @@ export function renderTransaksi() {
   }
 
   const openFilter = () => {
+    if (!popover) return;
     if (isMobileFilter()) {
       // Move sheet + backdrop into the body-level layer so the sheet shares
       // one stacking context with the backdrop and always sits above it
@@ -250,6 +253,7 @@ export function renderTransaksi() {
   };
 
   const closeFilter = () => {
+    if (!popover) return;
     if (isMobileFilter()) {
       popover.classList.remove("active");
       filterBackdrop.classList.remove("active");
@@ -273,161 +277,186 @@ export function renderTransaksi() {
 
   filterBackdrop.onclick = () => closeFilter();
 
-  popoverBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isOpen =
-      popover.style.display === "block" || popover.classList.contains("active");
-    if (isOpen) closeFilter();
-    else openFilter();
-  });
-
-  document.addEventListener("click", (e) => {
-    if (
-      !isMobileFilter() &&
-      popover &&
-      !popover.contains(e.target) &&
-      e.target !== popoverBtn &&
-      e.target !== filterBackdrop
-    ) {
-      popover.style.display = "none";
-    }
-  });
-
-  const closeFilterMobile = container.querySelector("#close-filter-mobile");
-  if (closeFilterMobile) {
-    closeFilterMobile.onclick = () => closeFilter();
-  }
-
-  // --- Drag / swipe-down to dismiss the bottom sheet (mobile) ---
-  let fStartY = 0;
-  let fDeltaY = 0;
-  let fDragging = false;
-  const fSetDrag = (px) => popover.style.setProperty("--sheet-y", `${px}px`);
-
-  popover.addEventListener(
-    "touchstart",
-    (e) => {
-      if (!isMobileFilter() || e.touches.length !== 1) return;
-      // Drag only from the handle / header so the body can scroll freely.
-      const onHandle = e.target.closest(
-        ".filter-sheet-handle, .filter-sheet-header",
-      );
-      if (!onHandle) return;
-      fStartY = e.touches[0].clientY;
-      fDeltaY = 0;
-      fDragging = true;
-      popover.classList.remove("snap");
-      popover.classList.add("dragging");
-    },
-    { passive: true },
-  );
-
-  popover.addEventListener(
-    "touchmove",
-    (e) => {
-      if (!fDragging) return;
-      const raw = e.touches[0].clientY - fStartY;
-      fDeltaY = Math.max(0, raw);
-      fSetDrag(fDeltaY);
-      if (raw > 0 && e.cancelable) e.preventDefault();
-    },
-    { passive: false },
-  );
-
-  popover.addEventListener("touchend", () => {
-    if (!fDragging) return;
-    fDragging = false;
-    popover.classList.remove("dragging");
-    const threshold = Math.max(100, popover.offsetHeight * 0.3);
-    if (fDeltaY > threshold) {
-      closeFilter();
-      setTimeout(() => popover.style.removeProperty("--sheet-y"), 340);
-    } else {
-      popover.classList.add("snap"); // springy snap back
-      setTimeout(() => {
-        popover.classList.remove("snap");
-        popover.style.removeProperty("--sheet-y");
-      }, 400);
-    }
-    fDeltaY = 0;
-  });
-
-  const resetBtn = container.querySelector("#btn-reset-filter");
-  if (resetBtn) {
-    resetBtn.onclick = () => {
-      filterState = {
-        type: "all",
-        month: "all",
-        year: "all",
-        priceOperator: "gt",
-        priceValue: "",
-        kategori: "all",
-        metode: "all",
-        searchQuery: filterState.searchQuery,
-      };
-      renderTransaksi();
-    };
-  }
-
   const updateFilter = () => {
-    filterState.month = document.getElementById("filter-month").value;
-    filterState.year = document.getElementById("filter-year").value;
-    filterState.kategori = document.getElementById("filter-kategori").value;
-    filterState.priceOperator = document.getElementById(
-      "filter-price-operator",
-    ).value;
-    const rawPrice = document
-      .getElementById("filter-price-value")
-      .value.replace(/\D/g, "");
-    filterState.priceValue = rawPrice ? Number(rawPrice) : "";
+    const monthEl = document.getElementById("filter-month");
+    const yearEl = document.getElementById("filter-year");
+    const katEl = document.getElementById("filter-kategori");
+    const priceOpEl = document.getElementById("filter-price-operator");
+    const priceValEl = document.getElementById("filter-price-value");
+
+    if (monthEl) filterState.month = monthEl.value;
+    if (yearEl) filterState.year = yearEl.value;
+    if (katEl) filterState.kategori = katEl.value;
+    if (priceOpEl) filterState.priceOperator = priceOpEl.value;
+    if (priceValEl) {
+      const rawPrice = priceValEl.value.replace(/\D/g, "");
+      filterState.priceValue = rawPrice ? Number(rawPrice) : "";
+    }
+
+    const hasActive =
+      filterState.type !== "all" ||
+      filterState.month !== "all" ||
+      filterState.year !== "all" ||
+      filterState.kategori !== "all" ||
+      filterState.metode !== "all" ||
+      filterState.priceValue !== "";
+
+    if (popoverBtn) {
+      if (hasActive) {
+        popoverBtn.classList.add("active-filter");
+      } else {
+        popoverBtn.classList.remove("active-filter");
+      }
+    }
+
     renderTableBody(container);
   };
 
-  const typeBtns = container.querySelectorAll(".popover-item[data-type]");
-  typeBtns.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      typeBtns.forEach((b) => b.classList.remove("active"));
-      e.currentTarget.classList.add("active");
-      filterState.type = e.currentTarget.getAttribute("data-type");
-      updateFilter();
+  if (popoverBtn && popover) {
+    popoverBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen =
+        popover.style.display === "block" || popover.classList.contains("active");
+      if (isOpen) closeFilter();
+      else openFilter();
     });
-  });
 
-  // Metode chips
-  container
-    .querySelectorAll("#filter-metode-chips .filter-chip")
-    .forEach((btn) => {
+    document.addEventListener("click", (e) => {
+      if (
+        !isMobileFilter() &&
+        popover &&
+        !popover.contains(e.target) &&
+        e.target !== popoverBtn &&
+        !popoverBtn.contains(e.target) &&
+        e.target !== filterBackdrop
+      ) {
+        popover.style.display = "none";
+      }
+    });
+
+    const closeFilterMobile = popover.querySelector("#close-filter-mobile");
+    if (closeFilterMobile) {
+      closeFilterMobile.onclick = () => closeFilter();
+    }
+
+    // --- Drag / swipe-down to dismiss the bottom sheet (mobile) ---
+    let fStartY = 0;
+    let fDeltaY = 0;
+    let fDragging = false;
+    const fSetDrag = (px) => popover.style.setProperty("--sheet-y", `${px}px`);
+
+    popover.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!isMobileFilter() || e.touches.length !== 1) return;
+        // Drag only from the handle / header so the body can scroll freely.
+        const onHandle = e.target.closest(
+          ".filter-sheet-handle, .filter-sheet-header",
+        );
+        if (!onHandle) return;
+        fStartY = e.touches[0].clientY;
+        fDeltaY = 0;
+        fDragging = true;
+        popover.classList.remove("snap");
+        popover.classList.add("dragging");
+      },
+      { passive: true },
+    );
+
+    popover.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!fDragging) return;
+        const raw = e.touches[0].clientY - fStartY;
+        fDeltaY = Math.max(0, raw);
+        fSetDrag(fDeltaY);
+        if (raw > 0 && e.cancelable) e.preventDefault();
+      },
+      { passive: false },
+    );
+
+    popover.addEventListener("touchend", () => {
+      if (!fDragging) return;
+      fDragging = false;
+      popover.classList.remove("dragging");
+      const threshold = Math.max(100, popover.offsetHeight * 0.3);
+      if (fDeltaY > threshold) {
+        closeFilter();
+        setTimeout(() => popover.style.removeProperty("--sheet-y"), 340);
+      } else {
+        popover.classList.add("snap"); // springy snap back
+        setTimeout(() => {
+          popover.classList.remove("snap");
+          popover.style.removeProperty("--sheet-y");
+        }, 400);
+      }
+      fDeltaY = 0;
+    });
+
+    const resetBtn = popover.querySelector("#btn-reset-filter");
+    if (resetBtn) {
+      resetBtn.onclick = () => {
+        filterState = {
+          type: "all",
+          month: "all",
+          year: "all",
+          priceOperator: "gt",
+          priceValue: "",
+          kategori: "all",
+          metode: "all",
+          searchQuery: filterState.searchQuery,
+        };
+        renderTransaksi();
+      };
+    }
+
+    const typeBtns = popover.querySelectorAll(".popover-item[data-type]");
+    typeBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        container
-          .querySelectorAll("#filter-metode-chips .filter-chip")
-          .forEach((b) => b.classList.remove("active"));
+        typeBtns.forEach((b) => b.classList.remove("active"));
         e.currentTarget.classList.add("active");
-        filterState.metode = e.currentTarget.getAttribute("data-metode");
+        filterState.type = e.currentTarget.getAttribute("data-type");
         updateFilter();
       });
     });
 
-  container
-    .querySelector("#filter-month")
-    .addEventListener("change", updateFilter);
-  container
-    .querySelector("#filter-year")
-    .addEventListener("change", updateFilter);
-  container
-    .querySelector("#filter-kategori")
-    .addEventListener("change", updateFilter);
-  container
-    .querySelector("#filter-price-operator")
-    .addEventListener("change", updateFilter);
+    // Metode chips
+    popover
+      .querySelectorAll("#filter-metode-chips .filter-chip")
+      .forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          popover
+            .querySelectorAll("#filter-metode-chips .filter-chip")
+            .forEach((b) => b.classList.remove("active"));
+          e.currentTarget.classList.add("active");
+          filterState.metode = e.currentTarget.getAttribute("data-metode");
+          updateFilter();
+        });
+      });
 
-  const priceInput = container.querySelector("#filter-price-value");
-  priceInput.addEventListener("input", (e) => {
-    let val = e.target.value.replace(/\D/g, "");
-    if (val) {
-      e.target.value = new Intl.NumberFormat("id-ID").format(val);
+    const monthEl = popover.querySelector("#filter-month");
+    if (monthEl) monthEl.addEventListener("change", updateFilter);
+
+    const yearEl = popover.querySelector("#filter-year");
+    if (yearEl) yearEl.addEventListener("change", updateFilter);
+
+    const katEl = popover.querySelector("#filter-kategori");
+    if (katEl) katEl.addEventListener("change", updateFilter);
+
+    const priceOpEl = popover.querySelector("#filter-price-operator");
+    if (priceOpEl) priceOpEl.addEventListener("change", updateFilter);
+
+    const priceInput = popover.querySelector("#filter-price-value");
+    if (priceInput) {
+      priceInput.addEventListener("input", (e) => {
+        let val = e.target.value.replace(/\D/g, "");
+        if (val) {
+          e.target.value = new Intl.NumberFormat("id-ID").format(val);
+        }
+        updateFilter();
+      });
     }
-    updateFilter();
-  });
+  }
 
   // Global Search Sync
   const globalSearch = document.getElementById("global-search");
@@ -451,7 +480,9 @@ export function renderTransaksi() {
     });
   });
 
-  initCustomSelects(container.querySelector("#filter-popover"));
+  if (popover) {
+    initCustomSelects(popover);
+  }
 
   // Aktifkan sticky header di mobile
   initStickyHeader();
