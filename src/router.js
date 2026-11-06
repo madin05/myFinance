@@ -130,7 +130,7 @@ export function handleRoute() {
   // Kelola border radius pada header berdasarkan rute aktif
   const headerEl = document.querySelector('.header');
   if (headerEl) {
-    if (route !== '/dashboard' && route !== '/transaksi') {
+    if (route !== '/dashboard' && route !== '/transaksi' && route !== '/akun') {
       headerEl.classList.add('curved-header');
     } else {
       headerEl.classList.remove('curved-header');

@@ -7,39 +7,7 @@
   width: 100%;
 }
 
-/* --- Full-Bleed Top Hero Extended Background for Akun (Mobile zero-gap buffer) --- */
-.akun-hero-bg {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .akun-hero-bg {
-    display: block;
-    position: absolute;
-    top: -200px;
-    left: 0;
-    right: 0;
-    height: 300px;
-    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%);
-    z-index: 0;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, background 0.3s ease;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  [data-theme="dark"] .akun-hero-bg {
-    background: linear-gradient(135deg, #241846 0%, #171226 50%, #0b0716 100%);
-  }
-
-  body.page-akun .akun-hero-bg {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
-/* --- Hero Organic Curved Header Banner (Outside Card Boundaries) --- */
+/* --- Hero Header Banner (Outside Card Boundaries) --- */
 .profile-hero-banner {
   position: relative;
   width: 100%;
@@ -279,14 +247,14 @@
 
 .profile-meta-label {
   font-size: 0.68rem;
-  font-weight: 500;
+  font-weight: 430;
   letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
 .profile-meta-val {
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-main);
   white-space: nowrap;
 }
