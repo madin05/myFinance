@@ -16,7 +16,11 @@
   box-sizing: border-box;
 }
 
-.btn-full { width: 100%; flex-shrink: 0; justify-content: center; }
+.btn-full {
+  width: 100%;
+  flex-shrink: 0;
+  justify-content: center;
+}
 
 .btn-primary {
   background-color: var(--primary);
@@ -153,7 +157,9 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
-.filter-chips-scroll::-webkit-scrollbar { display: none; }
+.filter-chips-scroll::-webkit-scrollbar {
+  display: none;
+}
 
 .filter-chips {
   display: flex;
@@ -207,7 +213,7 @@
 [data-theme="dark"] .filter-chip:hover {
   border-color: var(--primary);
   color: var(--primary);
-  background: #2A2440;
+  background: #2a2440;
 }
 
 [data-theme="dark"] .filter-chip.active {
@@ -224,7 +230,7 @@
   background-color: var(--card-bg);
   backdrop-filter: blur(12px);
   border-radius: 16px;
-  box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   width: 360px;
   max-height: 80vh;
@@ -247,13 +253,25 @@
 }
 
 @keyframes dropdownIn {
-  from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .popover-header {
@@ -261,7 +279,6 @@
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-light);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
@@ -335,14 +352,14 @@
   padding: 2px;
   gap: 2px;
   background: rgba(0, 0, 0, 0.04);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
 [data-theme="dark"] .theme-toggle-group {
   border-color: rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(8px);
 }
 
@@ -371,7 +388,9 @@
 .theme-auto-btn.active {
   background: #ffffff;
   color: var(--text-main);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] .theme-auto-btn {
@@ -440,7 +459,9 @@
 .st-sunMoonThemeToggleBtn svg {
   width: 20px;
   height: 20px;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+  transition:
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s ease;
   transform: rotate(90deg);
   color: var(--text-main);
   overflow: visible;
@@ -469,15 +490,29 @@
   transform: scale(1);
   opacity: 1;
   transform-origin: 10px 10px;
-  transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.35s ease;
+  transition:
+    transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 0.35s ease;
 }
 
-.st-sunMoonThemeToggleBtn svg .sunRay1 { transition-delay: 0.01s; }
-.st-sunMoonThemeToggleBtn svg .sunRay2 { transition-delay: 0.03s; }
-.st-sunMoonThemeToggleBtn svg .sunRay3 { transition-delay: 0.05s; }
-.st-sunMoonThemeToggleBtn svg .sunRay4 { transition-delay: 0.07s; }
-.st-sunMoonThemeToggleBtn svg .sunRay5 { transition-delay: 0.09s; }
-.st-sunMoonThemeToggleBtn svg .sunRay6 { transition-delay: 0.11s; }
+.st-sunMoonThemeToggleBtn svg .sunRay1 {
+  transition-delay: 0.01s;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay2 {
+  transition-delay: 0.03s;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay3 {
+  transition-delay: 0.05s;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay4 {
+  transition-delay: 0.07s;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay5 {
+  transition-delay: 0.09s;
+}
+.st-sunMoonThemeToggleBtn svg .sunRay6 {
+  transition-delay: 0.11s;
+}
 
 /* Dark mode (Checked): Rotates to 40deg, center scales to 1, mask slides into (0,0) carving crescent moon, rays shrink & hide */
 .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg {
@@ -497,7 +532,9 @@
 .st-sunMoonThemeToggleBtn .themeToggleInput:checked + svg .sunRay {
   transform: scale(0);
   opacity: 0;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease;
   transition-delay: 0s;
 }
 
@@ -565,7 +602,7 @@
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   width: 160px;
   padding: 8px;
   z-index: 2000; /* Super high z-index */
@@ -637,7 +674,9 @@
   border-top: 6px solid #0f172a;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   z-index: 100004;
 }
@@ -658,7 +697,9 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   z-index: 100003;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -694,7 +735,9 @@
   border-right: 6px solid #0f172a;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   z-index: 100004;
 }
@@ -715,7 +758,9 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   z-index: 100003;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -729,8 +774,12 @@
 }
 
 /* Tooltip sidebar HANYA aktif saat sidebar terlipat (collapsed). Saat sidebar terbuka (expanded), tooltip disembunyikan */
-.dashboard-container:not(.sidebar-collapsed) .sidebar [data-tooltip-right]::before,
-.dashboard-container:not(.sidebar-collapsed) .sidebar [data-tooltip-right]::after,
+.dashboard-container:not(.sidebar-collapsed)
+  .sidebar
+  [data-tooltip-right]::before,
+.dashboard-container:not(.sidebar-collapsed)
+  .sidebar
+  [data-tooltip-right]::after,
 .sidebar:not(.collapsed) [data-tooltip-right]::before,
 .sidebar:not(.collapsed) [data-tooltip-right]::after {
   display: none !important;
@@ -791,7 +840,9 @@
 .fam-item {
   position: absolute;
   transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Kurva ultra smooth */
-  transition-delay: calc(0.08s * var(--i)); /* Efek staggered yang lebih berasa */
+  transition-delay: calc(
+    0.08s * var(--i)
+  ); /* Efek staggered yang lebih berasa */
   transform: scale(0) rotate(-90deg); /* Putaran lebih kalem */
   z-index: 100000;
   pointer-events: none;
@@ -837,7 +888,9 @@
   color: white;
   border: none;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
   box-shadow: var(--shadow-md);
   position: relative;
   border: 1.5px solid rgba(255, 255, 255, 0.1);
@@ -845,11 +898,15 @@
 
 .fam-anchor:hover {
   transform: scale(1.1);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.bg-primary { background-color: var(--primary); }
-.bg-pink { background-color: #ec4899; }
+.bg-primary {
+  background-color: var(--primary);
+}
+.bg-pink {
+  background-color: #ec4899;
+}
 
 /* Tooltip Left for FAM */
 [data-tooltip-left]::before {
@@ -865,7 +922,9 @@
   border-left: 6px solid #0f172a;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   z-index: 100004;
 }
@@ -886,7 +945,9 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   border: 1px solid rgba(255, 255, 255, 0.12);
   z-index: 100003;
@@ -919,7 +980,9 @@
   border-top: 6px solid #0f172a;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   z-index: 100004;
 }
@@ -940,7 +1003,9 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
   border: 1px solid rgba(255, 255, 255, 0.12);
   z-index: 100003;
@@ -961,7 +1026,7 @@
     width: 50px;
     height: 50px;
   }
-  
+
   .fam-trigger {
     width: 48px;
     height: 48px;
@@ -997,7 +1062,7 @@
   .fam-anchor:hover {
     transform: scale(1.05);
   }
-  
+
   /* Hide tooltips on mobile FAM to keep it clean */
   [data-tooltip-left]::after {
     display: none !important;
@@ -1009,7 +1074,6 @@
     transform: scale(0);
   }
 }
-
 
 /* Animated Hamburger Menu (Uiverse.io) */
 .hamburger {

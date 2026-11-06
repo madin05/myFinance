@@ -102,11 +102,11 @@ export function renderTransaksi() {
 
                 <!-- Header Popover -->
                 <div class="popover-header filter-sheet-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 2px;">
-                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
                     Filter
                   </span>
                   <div style="display: flex; align-items: center; gap: 6px;">
-                    <button type="button" id="btn-reset-filter" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
+                    <button type="button" id="btn-reset-filter" style="background: none; border: none; color: var(--text-main); font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px;">
                       Reset
                     </button>
                     <button type="button" class="mobile-only icon-btn" id="close-filter-mobile" style="width: 28px; height: 28px; min-width: 28px; padding: 0;">

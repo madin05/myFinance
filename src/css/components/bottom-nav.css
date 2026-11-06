@@ -231,8 +231,18 @@
 
   [data-theme="dark"] .bottom-nav-fab-btn {
     border-color: #161223;
-    background: var(--primary);
-    box-shadow: 0 4px 16px rgba(157, 78, 221, 0.4);
+    background: #ffffff !important;
+    color: #161223 !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45), 0 0 14px rgba(255, 255, 255, 0.12);
+  }
+
+  [data-theme="dark"] .bottom-nav-fab-btn i {
+    color: #161223 !important;
+  }
+
+  [data-theme="dark"] .bottom-nav-fab:hover .bottom-nav-fab-btn,
+  [data-theme="dark"] .bottom-nav-fab:focus .bottom-nav-fab-btn {
+    background: #f4f4f5 !important;
   }
 
   .bottom-nav-fab:hover .bottom-nav-fab-btn,
