@@ -91,8 +91,8 @@
     padding: 0 !important;
   }
 
-  body:not(.page-dashboard) .main-content,
-  body:not(.page-dashboard)
+  body:not(.page-dashboard):not(.page-akun) .main-content,
+  body:not(.page-dashboard):not(.page-akun)
     .dashboard-container.sidebar-collapsed
     .main-content {
     margin-left: 0 !important;
@@ -1139,7 +1139,7 @@
     padding: 0 !important;
   }
 
-  body:not(.page-dashboard) .main-content {
+  body:not(.page-dashboard):not(.page-akun) .main-content {
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;
@@ -1281,7 +1281,9 @@
   }
 
   /* Mobile Page Akun Top Full-Bleed Hero & Content Sheet (Matching Reference Concept) */
-  body.page-akun .main-content {
+  body.page-akun .main-content,
+  body.page-akun .dashboard-container .main-content,
+  body.page-akun .dashboard-container.sidebar-collapsed .main-content {
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-top: 0 !important;
@@ -1295,8 +1297,19 @@
     background: var(--card-bg, #ffffff) !important;
   }
 
-  [data-theme="dark"] body.page-akun .main-content {
+  [data-theme="dark"] body.page-akun .main-content,
+  [data-theme="dark"] body.page-akun .dashboard-container .main-content,
+  [data-theme="dark"] body.page-akun .dashboard-container.sidebar-collapsed .main-content {
     background: #0B0716 !important;
+  }
+
+  body.page-akun #page-content,
+  body.page-akun .main-content #page-content {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
   }
 
   body.page-akun .header {
@@ -1305,6 +1318,7 @@
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
+    max-width: 100vw !important;
     background: transparent !important;
     box-shadow: none !important;
     border: none !important;
@@ -1332,10 +1346,22 @@
     border-color: rgba(255, 255, 255, 0.6) !important;
   }
 
-  /* Full-width Mobile Profile Hero Banner with Organic Curved Bottom */
+  /* Full-width Mobile Profile Hero Banner - 100% Flush to Left and Right */
+  .account-settings {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
   .account-settings .profile-hero-banner {
     margin: 0 !important;
     width: 100% !important;
+    max-width: 100vw !important;
     height: calc(185px + env(safe-area-inset-top, 0px)) !important;
     background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%) !important;
     box-shadow: none !important;
@@ -1364,30 +1390,50 @@
     margin-bottom: 0 !important;
   }
 
-  /* Mobile Content Sheet Container (Seamless White/Dark Surface) */
+  /* Mobile Content Sheet Container (Seamless White/Dark Surface, Perfectly Centered) */
   .account-settings .account-grid {
     margin-top: 0 !important;
     position: relative !important;
     z-index: 10 !important;
     width: 100% !important;
+    max-width: 100vw !important;
     padding: 0 1rem calc(6.5rem + env(safe-area-inset-bottom, 0px)) 1rem !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
+    align-items: center !important;
     gap: 1.25rem !important;
   }
 
+  .account-settings .account-grid > div {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+  }
+
   .account-settings .profile-card {
+    width: 100% !important;
     padding: 0 !important;
     overflow: visible !important;
     text-align: center !important;
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
 
   .profile-card-body {
+    width: 100% !important;
     padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
   }
 
   .account-settings .avatar-wrapper {
@@ -1396,6 +1442,9 @@
     margin: -48px auto 0.85rem !important;
     position: relative !important;
     z-index: 15 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .account-settings .avatar-wrapper #profile-preview {
@@ -1419,19 +1468,28 @@
   }
 
   .account-settings .profile-card h3.profile-username-heading {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
     font-size: 1.25rem !important;
     font-weight: 700 !important;
-    margin-bottom: 0.2rem !important;
+    margin: 0.15rem 0 0.2rem !important;
     color: var(--text-main) !important;
   }
 
   .profile-email-text {
+    width: 100% !important;
+    text-align: center !important;
     font-size: 0.8rem !important;
     margin-bottom: 1.15rem !important;
     color: var(--text-muted) !important;
   }
 
   .profile-meta-grid {
+    width: 100% !important;
+    box-sizing: border-box !important;
     background: var(--bg-color, #EBF0F5) !important;
     border-radius: 18px !important;
     padding: 0.85rem 0.5rem !important;
