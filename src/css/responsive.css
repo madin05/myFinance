@@ -445,7 +445,7 @@
     gap: 0.5rem !important;
   }
 
-  .section-header-top .btn {
+  .section-header-top .btn:not(.filter-btn) {
     padding: 0.45rem 0.75rem !important;
     font-size: 0.8rem !important;
     white-space: nowrap !important;
@@ -478,10 +478,55 @@
     line-height: 1.4;
   }
 
-  .filter-btn {
-    flex: none;
+  .filter-btn,
+  #btn-filter-popover {
+    flex: none !important;
     width: 44px !important;
     height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.2rem !important;
+    background-color: var(--bg-color) !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: var(--text-muted) !important;
+    transition: all 0.2s ease !important;
+  }
+
+  [data-theme="dark"] .filter-btn,
+  [data-theme="dark"] #btn-filter-popover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-muted) !important;
+  }
+
+  .filter-btn:hover,
+  #btn-filter-popover:hover {
+    background-color: var(--border) !important;
+    color: var(--text-main) !important;
+    border-radius: 50% !important;
+  }
+
+  [data-theme="dark"] .filter-btn:hover,
+  [data-theme="dark"] #btn-filter-popover:hover {
+    background-color: var(--border) !important;
+    color: var(--text-main) !important;
+  }
+
+  .filter-btn.active-filter,
+  #btn-filter-popover.active-filter {
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary) !important;
+    border-radius: 50% !important;
   }
 
   /* ======================================
@@ -966,7 +1011,7 @@
 
   /* Compact buttons (+ Atur Anggaran, Export Buttons) */
   #btn-set-budget,
-  .section-header .btn {
+  .section-header .btn:not(.filter-btn) {
     padding: 0.35rem 0.65rem !important;
     font-size: 0.75rem !important;
     height: auto !important;
@@ -975,7 +1020,7 @@
   }
 
   #btn-set-budget i,
-  .section-header .btn i {
+  .section-header .btn:not(.filter-btn) i {
     font-size: 0.8rem !important;
   }
 
