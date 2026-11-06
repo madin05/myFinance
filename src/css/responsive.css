@@ -107,8 +107,6 @@
     width: 100% !important;
     transform: none !important;
     height: 495px !important;
-    border-bottom-left-radius: 1.75rem !important;
-    border-bottom-right-radius: 1.75rem !important;
   }
 
   .table-container {
@@ -510,7 +508,6 @@
     align-items: center !important;
     justify-content: center !important;
     font-size: 1.2rem !important;
-    background-color: var(--bg-color) !important;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;

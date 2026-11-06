@@ -148,7 +148,7 @@
 }
 
 .ai-banner-btn:hover {
-  color: #ffffff !important;
+  color: var(--border) !important;
   border-color: var(--primary) !important;
 }
 

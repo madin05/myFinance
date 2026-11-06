@@ -423,8 +423,7 @@ body.layout-compact .section-header {
   height: 475px;
   background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%);
   z-index: 0;
-  border-bottom-left-radius: 2.5rem;
-  border-bottom-right-radius: 2.5rem;
+  
   opacity: 0;
   visibility: hidden;
   transition:
