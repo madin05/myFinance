@@ -81,13 +81,11 @@
   background-color: var(--card-bg, #ffffff);
   border: 1px solid var(--border);
   padding: 1rem 1.15rem;
-  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .saldo-card-item:hover,
 .saldo-card-item.stat-card:hover {
   border-color: var(--border);
-  transform: translateY(-12px);
 }
 
 .saldo-card-content {
@@ -127,7 +125,7 @@
 .saldo-card-item .account-name {
   margin: 0;
   font-size: 0.92rem;
-  font-weight: 700;
+  font-weight: 520;
   color: var(--text-main, var(--text));
   white-space: nowrap;
   overflow: hidden;
@@ -138,7 +136,7 @@
 .saldo-card-item .saldo-value {
   margin: 2px 0 0 0;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 450;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;

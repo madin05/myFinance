@@ -280,6 +280,9 @@
           <script>
             (function() {
               var p = (window.location.pathname || '').replace(/\/$/, '') || '/dashboard';
+              if (p === '/dashboard' || p === '') {
+                document.body.classList.add('page-dashboard');
+              }
               var c = document.getElementById('page-content');
               if (!c) return;
               if (p === '/transaksi') {
@@ -377,6 +380,6 @@
     <!-- Email Verification Banner (fixed overlay, zero layout impact) -->
     <div id="email-verify-banner" class="email-verify-banner" style="display: none;" role="alert" aria-live="polite"></div>
 
-    <script type="module" src="/src/main.js?v=feat-empty-state-icon-v17"></script>
+    <script type="module" src="/src/main.js?v=feat-dashboard-sheet-v18"></script>
   </body>
 </html>
