@@ -18,10 +18,11 @@
   align-items: center;
   background-color: var(--white);
   border-radius: var(--radius-full);
-  padding: 0.75rem 1.5rem;
+  padding: 0.35rem 0.5rem 0.35rem 1.25rem;
   width: 400px;
   border: 1px solid var(--border);
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .search-bar:focus-within {
@@ -32,8 +33,9 @@
 .search-bar .search-icon {
   color: var(--text-light);
   font-size: 1.2rem;
-  margin-right: 0.75rem;
+  margin-right: 0.65rem;
   transition: color 0.2s ease;
+  flex-shrink: 0;
 }
 
 .search-bar:focus-within .search-icon {
@@ -45,13 +47,80 @@
   background: transparent;
   outline: none;
   width: 100%;
+  flex: 1;
+  min-width: 0;
   font-size: 0.95rem;
   color: var(--text-main);
   font-family: inherit;
+  padding: 0.35rem 0.35rem 0.35rem 0;
 }
 
 .search-bar input::placeholder {
   color: var(--text-light);
+}
+
+/* Search bar unified filter slot */
+.search-filter-slot {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.search-filter-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border);
+  margin: 0 0.45rem;
+  flex-shrink: 0;
+}
+
+.search-bar #filter-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar .filter-btn {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  max-width: 34px !important;
+  max-height: 34px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.15rem !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text-muted) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.search-bar .filter-btn:hover {
+  background-color: var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+.search-bar .filter-btn.active-filter {
+  background-color: var(--primary) !important;
+  color: #120e1d !important;
+}
+
+[data-theme="light"] .search-bar .filter-btn.active-filter {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.search-bar .filter-popover {
+  top: calc(100% + 10px) !important;
+  right: -6px !important;
 }
 
 .header-actions {

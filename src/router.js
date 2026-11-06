@@ -112,6 +112,12 @@ export function handleRoute() {
     }
   }
 
+  // Bersihkan filter slot jika bukan di rute /transaksi
+  const searchFilterSlot = document.getElementById("search-filter-slot");
+  if (searchFilterSlot && route !== '/transaksi') {
+    searchFilterSlot.innerHTML = '';
+  }
+
   const famMenu = document.querySelector('.menu-tooltip-container');
   if (famMenu) {
     if (route === '/ai') {
