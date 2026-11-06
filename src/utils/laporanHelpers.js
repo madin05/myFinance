@@ -52,8 +52,8 @@ export function renderEmptyChartState(message) {
         [data-theme="light"] .report-illustration-dark { display: none !important; }
         [data-theme="dark"] .report-illustration-light { display: none !important; }
       </style>
-      <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 120px; height: 120px;" />
-      <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 120px; height: 120px;" />
+      <img class="report-illustration-light" src="/assets/transactions-empty-light.svg" alt="No Data" style="width: 76px; height: 76px; opacity: 0.85;" />
+      <img class="report-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="No Data" style="width: 76px; height: 76px; opacity: 0.85;" />
       <p class="text-muted text-xs" style="margin-top: 0.5rem; font-size: 0.8rem;">${message}</p>
     </div>
   `;
