@@ -1280,19 +1280,32 @@
     border-radius: 20px !important;
   }
 
-  /* Mobile Page Akun Top Full-Bleed Hero (Zero-gap top buffer) */
+  /* Mobile Page Akun Top Full-Bleed Hero (Single Unified Element) */
+  body.page-akun {
+    background-color: #38bdf8;
+  }
+
+  [data-theme="dark"] body.page-akun {
+    background-color: #241846;
+  }
+
   body.page-akun .main-content {
-    padding-top: 0.5rem !important;
+    padding-top: 0 !important;
   }
 
   body.page-akun .header {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
     background: transparent !important;
     box-shadow: none !important;
     border: none !important;
-    margin-bottom: 0 !important;
-    padding: 0.75rem 1rem 0.25rem 1rem !important;
-    z-index: 20;
-    position: relative;
+    margin: 0 !important;
+    padding: calc(0.65rem + env(safe-area-inset-top, 0px)) 1rem 0.25rem 1rem !important;
+    z-index: 25 !important;
+    box-sizing: border-box !important;
   }
 
   body.page-akun .header .header-user-btn,
@@ -1313,20 +1326,21 @@
     border-color: rgba(255, 255, 255, 0.6) !important;
   }
 
-  /* Full-width Mobile Profile Hero Banner Outside Boundaries */
+  /* Full-width Mobile Profile Hero Banner - Single Unified Hero Element */
   .account-settings .profile-hero-banner {
     margin-left: -1rem !important;
     margin-right: -1rem !important;
     margin-top: 0 !important;
     width: calc(100% + 2rem) !important;
-    height: 180px !important;
+    height: calc(215px + env(safe-area-inset-top, 0px)) !important;
     background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%) !important;
     box-shadow: none !important;
     border-radius: 0 0 36px 36px !important;
-    padding-top: 0.6rem !important;
-    position: relative;
-    z-index: 5;
+    padding-top: calc(3.6rem + env(safe-area-inset-top, 0px)) !important;
+    position: relative !important;
+    z-index: 5 !important;
     overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   [data-theme="dark"] .account-settings .profile-hero-banner {
