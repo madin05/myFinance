@@ -112,9 +112,16 @@ export function renderAnggaran() {
               </td>
             </tr>
             `).join('') : `
-              <tr><td colspan="6" style="text-align:center; padding: 3rem; color: var(--text-muted);">
-                <i class="ph ph-chart-pie-slice" style="font-size: 2.5rem; display:block; margin-bottom:0.75rem; opacity:0.5;"></i>
-                Belum ada anggaran nih
+              <tr><td colspan="6" style="text-align:center; padding: 2.5rem 1.5rem; color: var(--text-muted);">
+                <style>
+                  [data-theme="light"] .budget-table-empty-dark { display: none !important; }
+                  [data-theme="dark"] .budget-table-empty-light { display: none !important; }
+                </style>
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
+                  <img class="budget-table-empty-light" src="/assets/transactions-empty-light.svg" alt="Belum ada anggaran" style="width: 110px; height: 110px; opacity: 0.85;" />
+                  <img class="budget-table-empty-dark" src="/assets/transactions-empty-dark.svg" alt="Belum ada anggaran" style="width: 110px; height: 110px; opacity: 0.85;" />
+                  <p class="text-muted" style="margin: 0; font-size: 0.875rem;">Belum ada anggaran nih</p>
+                </div>
               </td></tr>
             `}
           </tbody>

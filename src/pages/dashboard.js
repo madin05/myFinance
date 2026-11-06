@@ -495,9 +495,14 @@ function renderBudgetWidget() {
 
   if (store.budgets.length === 0) {
     container.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0; opacity: 0.7;">
-        <i class="ph ph-wallet" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-muted);"></i>
-        <p class="text-sm text-muted text-center">Belum ada anggaran.</p>
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0;">
+        <style>
+          [data-theme="light"] .budget-illustration-dark { display: none !important; }
+          [data-theme="dark"] .budget-illustration-light { display: none !important; }
+        </style>
+        <img class="budget-illustration-light" src="/assets/transactions-empty-light.svg" alt="Belum ada anggaran" style="width: 76px; height: 76px; margin-bottom: 0.65rem; opacity: 0.85;" />
+        <img class="budget-illustration-dark" src="/assets/transactions-empty-dark.svg" alt="Belum ada anggaran" style="width: 76px; height: 76px; margin-bottom: 0.65rem; opacity: 0.85;" />
+        <p class="text-sm text-muted text-center" style="margin: 0;">Belum ada anggaran.</p>
       </div>
     `;
     return;
