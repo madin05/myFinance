@@ -126,7 +126,7 @@
   width: 44px;
   height: 44px;
   padding: 0;
-  border-radius: 12px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -140,6 +140,16 @@
 }
 
 .filter-btn:hover {
+  background-color: var(--border);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .filter-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .filter-btn:hover {
   background-color: var(--border);
   color: var(--text-main);
 }
