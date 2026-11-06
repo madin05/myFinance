@@ -144,6 +144,13 @@ export function handleRoute() {
     document.body.classList.remove('page-dashboard');
   }
 
+  // Toggle kelas page-akun untuk styling full-bleed hero di halaman profil
+  if (route === '/akun') {
+    document.body.classList.add('page-akun');
+  } else {
+    document.body.classList.remove('page-akun');
+  }
+
   // Update sidebar active state
   document.querySelectorAll('.sidebar .nav-item').forEach(item => {
     const icon = item.querySelector('i');

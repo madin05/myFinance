@@ -169,6 +169,11 @@
             </defs>
           </svg>
         </div>
+        <!-- Akun Mobile Hero Extended Background (Top zero-gap buffer) -->
+        <div class="akun-hero-bg">
+          <div class="hero-ornament-glow glow-1"></div>
+          <div class="hero-ornament-glow glow-2"></div>
+        </div>
         <!-- Header -->
         <header class="header">
           <div class="search-bar">
@@ -282,6 +287,8 @@
               var p = (window.location.pathname || '').replace(/\/$/, '') || '/dashboard';
               if (p === '/dashboard' || p === '') {
                 document.body.classList.add('page-dashboard');
+              } else if (p === '/akun') {
+                document.body.classList.add('page-akun');
               }
               var c = document.getElementById('page-content');
               if (!c) return;
