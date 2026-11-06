@@ -1280,30 +1280,62 @@
     border-radius: 20px !important;
   }
 
+  /* Mobile Page Akun Top Full-Bleed Hero (Zero-gap top buffer) */
+  body.page-akun .main-content {
+    padding-top: 0.5rem !important;
+  }
+
+  body.page-akun .header {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin-bottom: 0 !important;
+    padding: 0.75rem 1rem 0.25rem 1rem !important;
+    z-index: 20;
+    position: relative;
+  }
+
+  body.page-akun .header .header-user-btn,
+  body.page-akun .header .icon-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  body.page-akun .header .header-user-btn:hover,
+  body.page-akun .header .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  body.page-akun .header .user-profile img {
+    border-color: rgba(255, 255, 255, 0.6) !important;
+  }
+
   /* Full-width Mobile Profile Hero Banner Outside Boundaries */
   .account-settings .profile-hero-banner {
     margin-left: -1rem !important;
     margin-right: -1rem !important;
-    margin-top: -0.75rem !important;
+    margin-top: 0 !important;
     width: calc(100% + 2rem) !important;
-    height: 180px !important;
-    border-radius: 0 0 38px 38px !important;
-    padding-top: 1.4rem !important;
-    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25) !important;
-  }
-
-  [data-theme="dark"] .account-settings .profile-hero-banner {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+    height: 140px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding-top: 0.25rem !important;
+    position: relative;
+    z-index: 5;
   }
 
   .account-settings .profile-hero-title {
-    font-size: 1.2rem !important;
+    font-size: 1.25rem !important;
   }
 
   .account-settings .account-grid {
-    margin-top: -46px !important;
+    margin-top: -38px !important;
     position: relative !important;
-    z-index: 5 !important;
+    z-index: 10 !important;
   }
 
   .account-settings .profile-card {
@@ -1324,7 +1356,7 @@
     height: 104px !important;
     margin: -52px auto 0.85rem !important;
     position: relative !important;
-    z-index: 10 !important;
+    z-index: 15 !important;
   }
 
   .account-settings .edit-avatar-btn {
