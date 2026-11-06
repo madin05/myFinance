@@ -232,6 +232,11 @@ body.dark .ph-fill.ph-monitor {
   min-height: 100vh;
 }
 
+#app-layout[style*="display: none"],
+.dashboard-container[style*="display: none"] {
+  display: none !important;
+}
+
 .main-content {
   flex-grow: 1;
   margin-left: var(--sidebar-width);

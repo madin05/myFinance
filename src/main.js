@@ -5,7 +5,7 @@ import { renderLogin, renderEmailVerificationBanner } from './pages/login.js';
 import { openAddTransactionModal, openQuickActionSheet } from './components/modal/index.js';
 import { openCalculator } from './components/calculator.js';
 import { openScanReceiptModal } from './components/scanReceipt.js';
-import { handleRoute, refreshCurrentPage, navigateTo } from './router.js';
+import { handleRoute, refreshCurrentPage, navigateTo, showSkeleton, sanitizePath } from './router.js';
 import { hideLoading, initStickyHeader, initBottomSheetSwipe } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
@@ -132,6 +132,14 @@ export async function checkAuth() {
   const mode = urlParams.get('mode') || hashParams.get('mode');
   const oobCode = urlParams.get('oobCode') || hashParams.get('oobCode');
   const isResetSuccess = urlParams.get('resetSuccess') === 'true' || hashParams.get('resetSuccess') === 'true';
+
+  // Optimistic UI for authenticated sessions: render route-specific skeleton immediately
+  if (!mode && store.user) {
+    loginView.style.display = 'none';
+    appLayout.style.display = 'flex';
+    showSkeleton(sanitizePath(window.location.pathname));
+    store.updateUI();
+  }
 
   // 1. Setelah reset password selesai di Firebase, kembalikan ke Halaman Login & Logout user!
   if (isResetSuccess) {

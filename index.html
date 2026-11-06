@@ -276,35 +276,32 @@
           </div>
         </header>
         <main class="page-content" id="page-content">
-        <!-- Initial Skeleton for fast loading appearance -->
-        <div class="skeleton-wrapper" style="padding: 1.5rem;">
-          <div class="skeleton" style="height: 40px; width: 40%; margin-bottom: 2.5rem; border-radius: 8px;"></div>
-          
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-            <!-- Left Skeleton (Profile Style) -->
-            <div class="stat-card" style="padding: 2.5rem 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
-              <div class="skeleton" style="width: 120px; height: 120px; border-radius: 50%;"></div>
-              <div class="skeleton" style="width: 60%; height: 24px; border-radius: 6px;"></div>
-              <div class="skeleton" style="width: 40%; height: 16px; border-radius: 4px;"></div>
-              <div class="skeleton" style="width: 80%; height: 40px; border-radius: 100px; margin-top: 1rem;"></div>
-            </div>
-            
-            <!-- Right Skeleton (Form Style) -->
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-              <div class="stat-card" style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
-                <div class="skeleton" style="width: 30%; height: 20px; border-radius: 4px;"></div>
-                <div class="skeleton" style="width: 100%; height: 48px; border-radius: 12px;"></div>
-                <div class="skeleton" style="width: 100%; height: 48px; border-radius: 12px;"></div>
-                <div class="skeleton" style="width: 40%; height: 44px; border-radius: 10px; align-self: flex-end;"></div>
-              </div>
-              <div class="stat-card" style="padding: 1.5rem; height: 100px;">
-                <div class="skeleton" style="width: 50%; height: 20px; border-radius: 4px; margin-bottom: 1rem;"></div>
-                <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px; margin-top: 10px;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+          <!-- Route-Aware Initial Skeleton -->
+          <script>
+            (function() {
+              var p = (window.location.pathname || '').replace(/\/$/, '') || '/dashboard';
+              var c = document.getElementById('page-content');
+              if (!c) return;
+              if (p === '/transaksi') {
+                c.innerHTML = '<div class="transactions-section"><div class="section-header" style="flex-wrap: wrap; gap: 1rem;"><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px;"></div><div style="display: flex; gap: 1rem; align-items: center;"><div class="skeleton" style="width: 44px; height: 44px; border-radius: 12px;"></div><div class="skeleton" style="width: 120px; height: 44px; border-radius: 12px;"></div></div></div><div class="table-container"><div class="skeleton" style="height: 40px; width: 100%; border-radius: 10px;"></div><div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;"><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div></div></div></div>';
+              } else if (p === '/saldo') {
+                c.innerHTML = '<div class="saldo-section"><div class="section-header"><div><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 240px; height: 18px; border-radius: 8px;"></div></div><div class="skeleton" style="width: 160px; height: 44px; border-radius: 12px;"></div></div><div class="saldo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;"><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div></div></div>';
+              } else if (p === '/anggaran') {
+                c.innerHTML = '<div class="budget-section"><div class="section-header"><div><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 240px; height: 18px; border-radius: 8px;"></div></div><div class="skeleton" style="width: 160px; height: 44px; border-radius: 12px;"></div></div><div class="budget-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;"><div class="stat-card skeleton" style="height: 190px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 190px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 190px; border-radius: 24px; border: none;"></div></div></div>';
+              } else if (p === '/tabungan') {
+                c.innerHTML = '<div class="section-header"><div><div class="skeleton" style="width: 240px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 320px; height: 18px; border-radius: 8px;"></div></div><div style="display: flex; gap: 1rem; align-items: center;"><div class="skeleton" style="width: 90px; height: 40px; border-radius: 12px;"></div><div class="skeleton" style="width: 170px; height: 44px; border-radius: 12px;"></div></div></div><div class="wishlist-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;"><div class="stat-card skeleton" style="height: 220px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 220px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 220px; border-radius: 24px; border: none;"></div></div>';
+              } else if (p === '/laporan') {
+                c.innerHTML = '<div class="section-header" style="flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem;"><div><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 280px; height: 18px; border-radius: 8px;"></div></div><div style="display: flex; gap: 1rem; flex-wrap: wrap;"><div class="skeleton" style="width: 240px; height: 44px; border-radius: 12px;"></div><div class="skeleton" style="width: 130px; height: 44px; border-radius: 12px;"></div></div></div><div class="visual-analysis" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;"><div class="stat-card" style="padding: 1.5rem;"><div class="skeleton" style="width: 180px; height: 24px; border-radius: 8px; margin-bottom: 1.5rem;"></div><div style="height: 250px; display: flex; align-items: center; justify-content: center;"><div class="skeleton skeleton-circle" style="width: 170px; height: 170px; border-radius: 50%;"></div></div></div><div class="stat-card" style="padding: 1.5rem;"><div class="skeleton" style="width: 160px; height: 24px; border-radius: 8px; margin-bottom: 1.5rem;"></div><div style="height: 250px; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 10px 0;"><div class="skeleton" style="height: 40%; width: 100%; border-radius: 12px;"></div><div class="skeleton" style="height: 25%; width: 100%; border-radius: 12px;"></div></div></div></div>';
+              } else if (p === '/akun') {
+                c.innerHTML = '<div class="account-settings"><div class="section-header"><div><div class="skeleton" style="width: 260px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 340px; height: 18px; border-radius: 8px;"></div></div></div><div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;"><div style="display: flex; flex-direction: column; gap: 1.5rem;"><div class="stat-card skeleton" style="height: 320px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 140px; border-radius: 24px; border: none;"></div></div><div class="stat-card skeleton" style="height: 480px; border-radius: 24px; border: none;"></div></div></div>';
+              } else if (p === '/ai') {
+                c.innerHTML = '<div class="ai-page-skeleton" style="display: flex; gap: 1.25rem; height: calc(100vh - 140px);"><div class="skeleton" style="width: 280px; height: 100%; border-radius: 20px;"></div><div class="skeleton" style="flex: 1; height: 100%; border-radius: 20px;"></div></div>';
+              } else {
+                c.innerHTML = '<div class="stats-cards"><div class="stat-card skeleton" style="height: 180px; border-radius: 20px; border: none;"></div><div class="stat-card skeleton" style="height: 180px; border-radius: 20px; border: none;"></div><div class="stat-card skeleton" style="height: 180px; border-radius: 20px; border: none;"></div></div><div class="bottom-grid"><div class="transactions-section skeleton" style="height: 500px; border-radius: 24px; border: none;"></div><div class="widgets-section" style="display: flex; flex-direction: column; gap: 1.5rem;"><div class="widget-card skeleton" style="height: 240px; border-radius: 20px; border: none;"></div><div class="widget-card skeleton" style="height: 240px; border-radius: 20px; border: none;"></div></div></div>';
+              }
+            })();
+          </script>
+        </main>
 
       <!-- Mobile Bottom Navigation Bar -->
       <nav class="bottom-nav" id="bottom-nav" aria-label="Navigasi Utama">
@@ -380,6 +377,6 @@
     <!-- Email Verification Banner (fixed overlay, zero layout impact) -->
     <div id="email-verify-banner" class="email-verify-banner" style="display: none;" role="alert" aria-live="polite"></div>
 
-    <script type="module" src="/src/main.js?v=search-filter-unified-v15"></script>
+    <script type="module" src="/src/main.js?v=fix-skeleton-route-v16"></script>
   </body>
 </html>
