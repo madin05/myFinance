@@ -20,6 +20,7 @@
 @import './css/pages/faq.css';
 @import './css/pages/tabungan.css';
 @import './css/pages/saldo.css';
+@import './css/pages/akun.css';
 @import './css/components/ai.css';
 @import './css/responsive.css';
 
@@ -36,4 +37,4 @@
   transform: scale(1.1);
 }
 
-/* Cache-bust: feat-stat-watermark-opacity-v21 */
+/* Cache-bust: feat-akun-hero-card-v22 */

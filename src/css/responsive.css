@@ -519,7 +519,6 @@
 
   [data-theme="dark"] .filter-btn,
   [data-theme="dark"] #btn-filter-popover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
     color: var(--text-muted) !important;
   }
 
@@ -1282,14 +1281,28 @@
   }
 
   .account-settings .profile-card {
-    padding: 1.5rem 1rem 1.25rem !important;
+    padding: 0 !important;
+    overflow: hidden !important;
     text-align: center;
   }
 
+  .profile-hero-banner {
+    height: 125px !important;
+    padding-top: 1.15rem !important;
+  }
+
+  .profile-hero-title {
+    font-size: 1.05rem !important;
+  }
+
+  .profile-card-body {
+    padding: 0 1rem 1.35rem !important;
+  }
+
   .account-settings .avatar-wrapper {
-    width: 90px !important;
-    height: 90px !important;
-    margin: 0 auto 1rem !important;
+    width: 96px !important;
+    height: 96px !important;
+    margin: -48px auto 0.85rem !important;
   }
 
   .account-settings .edit-avatar-btn {
@@ -1298,14 +1311,26 @@
     font-size: 0.85rem !important;
   }
 
-  .account-settings .profile-card h3 {
-    font-size: 1.1rem !important;
+  .account-settings .profile-card h3.profile-username-heading {
+    font-size: 1.15rem !important;
     margin-bottom: 0.2rem !important;
   }
 
-  .account-settings .profile-card p.text-muted {
+  .profile-email-text {
     font-size: 0.78rem !important;
     margin-bottom: 1.15rem !important;
+  }
+
+  .profile-meta-grid {
+    padding: 0.85rem 0.25rem !important;
+  }
+
+  .profile-meta-label {
+    font-size: 0.65rem !important;
+  }
+
+  .profile-meta-val {
+    font-size: 0.82rem !important;
   }
 
   .account-settings .stat-card h4,

@@ -53,44 +53,71 @@ export function renderAkun() {
         
         <!-- Section 1: Profile Preview & Identity -->
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <div class="stat-card profile-card" style="padding: 2.5rem 1.5rem; text-align: center;">
-            <div class="avatar-wrapper" style="position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; cursor: pointer;" id="btn-preview-pp">
-               <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow-lg); border: 4px solid var(--white);">
-              <label for="avatar-upload" class="edit-avatar-btn" style="position: absolute; bottom: 0; right: 0; background: var(--text-main); color: var(--card-bg); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--card-bg);" onclick="event.stopPropagation()" title="Ubah Foto Profil">
-                <i class="ph ph-camera"></i>
-              </label>
-              <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
-            </div>
-            <h3 style="margin-bottom: 0.25rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              @${user.name || "user"}
-              <button class="icon-btn" id="btn-edit-username" style="width: 28px; height: 28px; font-size: 0.8rem; background: var(--bg-color); border-radius: 50%;" title="Ubah Username">
-                <i class="ph ph-pencil-simple"></i>
-              </button>
-            </h3>
-            <p class="text-muted text-sm" style="margin-bottom: 1.5rem;">${user.email}</p>
-            
-            <!-- Metadata Informasi Akun -->
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.25rem 0.5rem; margin-bottom: ${!isVerified ? '1.5rem' : '0'}; text-align: left;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span class="text-muted text-sm">Join Date</span>
-                <span class="font-bold text-sm" style="color: var(--text-main);">${joinDate}</span>
+          <div class="stat-card profile-card">
+            <!-- Hero Organic Curved Header Banner -->
+            <div class="profile-hero-banner">
+              <div class="profile-hero-glow glow-1"></div>
+              <div class="profile-hero-glow glow-2"></div>
+              <div class="profile-hero-header">
+                <span class="profile-hero-badge">
+                  <i class="ph-bold ${isVerified ? 'ph-seal-check' : 'ph-user'}"></i>
+                  ${isVerified ? 'Akun Terverifikasi' : 'Profil Pengguna'}
+                </span>
+                <h3 class="profile-hero-title">Pengaturan Profil</h3>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span class="text-muted text-sm">Status Akun</span>
-                <span class="${isVerified ? 'text-green' : 'text-amber'} text-sm font-bold">${isVerified ? 'Aktif' : 'Belum Verifikasi'}</span>
+              <div class="profile-hero-wave">
+                <svg viewBox="0 0 500 60" preserveAspectRatio="none">
+                  <path d="M0,20 C120,50 220,55 320,40 C420,25 470,10 500,5 L500,60 L0,60 Z" fill="var(--card-bg)"></path>
+                </svg>
               </div>
             </div>
 
-            ${!isVerified ? `
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem; width: 100%;">
-                <div class="account-badge" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); padding: 6px 16px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="ph-bold ph-warning-circle" style="font-size: 0.9rem;"></i> BELUM VERIFIKASI
-                </div>
-                <button id="btn-resend-verification" class="btn btn-outline btn-sm" style="font-size: 0.78rem; padding: 8px 16px; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; width: 100%; justify-content: center;">
-                  <i class="ph ph-paper-plane-tilt"></i> Kirim Ulang Email Verifikasi
-                </button>
+            <!-- Profile Content Body -->
+            <div class="profile-card-body">
+              <div class="avatar-wrapper" id="btn-preview-pp" title="Klik untuk lihat foto profil">
+                <img src="${user.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name || "User") + "&background=7C3AED&color=fff&bold=true"}" id="profile-preview" referrerpolicy="no-referrer" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=7C3AED&color=fff&bold=true'; this.parentElement.classList.remove('skeleton');" alt="${user.name || "User"}">
+                <label for="avatar-upload" class="edit-avatar-btn" onclick="event.stopPropagation()" title="Ubah Foto Profil">
+                  <i class="ph ph-camera"></i>
+                </label>
+                <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
               </div>
-            ` : ''}
+
+              <span class="profile-role-subtitle">Pengguna Terdaftar</span>
+              <h3 class="profile-username-heading">
+                @${user.name || "user"}
+                <button class="icon-btn" id="btn-edit-username" title="Ubah Username">
+                  <i class="ph ph-pencil-simple"></i>
+                </button>
+              </h3>
+              <p class="profile-email-text">${user.email}</p>
+              
+              <!-- Metadata Quick Stats (3 Columns - Matching Sample Concept) -->
+              <div class="profile-meta-grid">
+                <div class="profile-meta-col">
+                  <span class="profile-meta-label">Join Date</span>
+                  <span class="profile-meta-val">${joinDate}</span>
+                </div>
+                <div class="profile-meta-col border-divider">
+                  <span class="profile-meta-label">Status</span>
+                  <span class="profile-meta-val ${isVerified ? 'text-green' : 'text-amber'}">${isVerified ? 'Aktif' : 'Belum Verif'}</span>
+                </div>
+                <div class="profile-meta-col">
+                  <span class="profile-meta-label">2FA</span>
+                  <span class="profile-meta-val ${user.is2FAEnabled ? 'text-green' : 'text-muted'}">${user.is2FAEnabled ? 'Aktif' : 'Nonaktif'}</span>
+                </div>
+              </div>
+
+              ${!isVerified ? `
+                <div class="profile-verification-alert">
+                  <div class="account-badge" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); padding: 6px 16px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="ph-bold ph-warning-circle" style="font-size: 0.9rem;"></i> BELUM VERIFIKASI
+                  </div>
+                  <button id="btn-resend-verification" class="btn btn-outline btn-sm" style="font-size: 0.78rem; padding: 8px 16px; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; width: 100%; justify-content: center;">
+                    <i class="ph ph-paper-plane-tilt"></i> Kirim Ulang Email Verifikasi
+                  </button>
+                </div>
+              ` : ''}
+            </div>
           </div>
         </div>
 
