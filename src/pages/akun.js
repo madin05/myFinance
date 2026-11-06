@@ -63,7 +63,6 @@ export function renderAkun() {
                   <i class="ph-bold ${isVerified ? 'ph-seal-check' : 'ph-user'}"></i>
                   ${isVerified ? 'Akun Terverifikasi' : 'Profil Pengguna'}
                 </span>
-                <h3 class="profile-hero-title">Pengaturan Profil</h3>
               </div>
               <div class="profile-hero-wave">
                 <svg viewBox="0 0 500 60" preserveAspectRatio="none">
@@ -82,7 +81,6 @@ export function renderAkun() {
                 <input type="file" id="avatar-upload" style="display: none;" accept="image/*">
               </div>
 
-              <span class="profile-role-subtitle">Pengguna Terdaftar</span>
               <h3 class="profile-username-heading">
                 @${user.name || "user"}
                 <button class="icon-btn" id="btn-edit-username" title="Ubah Username">
