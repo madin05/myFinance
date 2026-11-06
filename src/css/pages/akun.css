@@ -7,33 +7,26 @@
   width: 100%;
 }
 
-.account-settings .profile-card {
-  padding: 0 !important;
-  overflow: hidden !important;
-  position: relative;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl, 24px);
-  box-shadow: var(--shadow);
-}
-
-/* --- Hero Organic Curved Header Banner --- */
+/* --- Hero Organic Curved Header Banner (Outside Card Boundaries) --- */
 .profile-hero-banner {
   position: relative;
   width: 100%;
-  height: 145px;
+  height: 165px;
   background: linear-gradient(135deg, #38bdf8 0%, #0284c7 45%, #1d4ed8 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 1.4rem;
+  padding-top: 1.6rem;
   overflow: hidden;
   box-sizing: border-box;
+  border-radius: var(--radius-xl, 24px);
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.22);
 }
 
 [data-theme="dark"] .profile-hero-banner {
   background: linear-gradient(135deg, #241846 0%, #171226 50%, #0b0716 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .profile-hero-glow {
@@ -47,7 +40,11 @@
   right: -30px;
   width: 190px;
   height: 190px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.22) 0%,
+    transparent 70%
+  );
 }
 
 .profile-hero-glow.glow-2 {
@@ -55,15 +52,27 @@
   left: -40px;
   width: 160px;
   height: 160px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 70%
+  );
 }
 
 [data-theme="dark"] .profile-hero-glow.glow-1 {
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(168, 85, 247, 0.3) 0%,
+    transparent 70%
+  );
 }
 
 [data-theme="dark"] .profile-hero-glow.glow-2 {
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.25) 0%,
+    transparent 70%
+  );
 }
 
 .profile-hero-header {
@@ -72,7 +81,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  text-align: center;
 }
 
 .profile-hero-badge {
@@ -85,20 +95,20 @@
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  padding: 3px 12px;
+  padding: 4px 14px;
   border-radius: 100px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .profile-hero-title {
   color: #ffffff !important;
-  font-size: 1.15rem !important;
+  font-size: 1.35rem !important;
   font-weight: 700 !important;
   margin: 0 !important;
-  letter-spacing: -0.015em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .profile-hero-wave {
@@ -120,15 +130,25 @@
 }
 
 .profile-hero-wave svg path {
-  fill: var(--card-bg);
+  fill: var(--bg-color);
   transition: fill 0.3s ease;
 }
 
-/* --- Profile Content Body --- */
+/* --- Profile Card (Separate Box Below Banner) --- */
+.account-settings .profile-card {
+  padding: 0 !important;
+  overflow: visible !important;
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 24px);
+  box-shadow: var(--shadow);
+}
+
 .profile-card-body {
   position: relative;
   z-index: 2;
-  padding: 0 1.5rem 1.75rem;
+  padding: 2.25rem 1.5rem 1.75rem;
   text-align: center;
 }
 
@@ -136,7 +156,7 @@
   position: relative;
   width: 110px;
   height: 110px;
-  margin: -55px auto 1rem !important;
+  margin: 0 auto 1.25rem !important;
   cursor: pointer;
   z-index: 3;
 }
@@ -180,16 +200,6 @@
   transform: scale(1.1);
   background: var(--primary) !important;
   color: #ffffff !important;
-}
-
-.profile-role-subtitle {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-bottom: 2px;
-  display: block;
 }
 
 .profile-username-heading {

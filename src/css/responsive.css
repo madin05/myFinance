@@ -1280,39 +1280,61 @@
     border-radius: 20px !important;
   }
 
+  /* Full-width Mobile Profile Hero Banner Outside Boundaries */
+  .account-settings .profile-hero-banner {
+    margin-left: -1rem !important;
+    margin-right: -1rem !important;
+    margin-top: -0.75rem !important;
+    width: calc(100% + 2rem) !important;
+    height: 180px !important;
+    border-radius: 0 0 38px 38px !important;
+    padding-top: 1.4rem !important;
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25) !important;
+  }
+
+  [data-theme="dark"] .account-settings .profile-hero-banner {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .account-settings .profile-hero-title {
+    font-size: 1.2rem !important;
+  }
+
+  .account-settings .account-grid {
+    margin-top: -46px !important;
+    position: relative !important;
+    z-index: 5 !important;
+  }
+
   .account-settings .profile-card {
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     text-align: center;
-  }
-
-  .profile-hero-banner {
-    height: 125px !important;
-    padding-top: 1.15rem !important;
-  }
-
-  .profile-hero-title {
-    font-size: 1.05rem !important;
+    border-radius: 24px !important;
+    background: var(--card-bg) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
   }
 
   .profile-card-body {
-    padding: 0 1rem 1.35rem !important;
+    padding: 0 1.15rem 1.45rem !important;
   }
 
   .account-settings .avatar-wrapper {
-    width: 96px !important;
-    height: 96px !important;
-    margin: -48px auto 0.85rem !important;
+    width: 104px !important;
+    height: 104px !important;
+    margin: -52px auto 0.85rem !important;
+    position: relative !important;
+    z-index: 10 !important;
   }
 
   .account-settings .edit-avatar-btn {
-    width: 30px !important;
-    height: 30px !important;
+    width: 32px !important;
+    height: 32px !important;
     font-size: 0.85rem !important;
   }
 
   .account-settings .profile-card h3.profile-username-heading {
-    font-size: 1.15rem !important;
+    font-size: 1.2rem !important;
     margin-bottom: 0.2rem !important;
   }
 
