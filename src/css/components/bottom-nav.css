@@ -18,7 +18,7 @@
     width: 100% !important;
     z-index: 1050 !important;
     height: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
-    border-radius: 0 !important;
+    border-radius: 20px !important;
     margin: 0 !important;
     padding: 4px 0.5rem calc(6px + env(safe-area-inset-bottom, 0px)) !important;
     justify-content: space-around !important;
