@@ -43,9 +43,21 @@ export function renderAkun() {
 
   container.innerHTML = `
     <div class="account-settings">
-      <div class="section-header">
-        <div>
-          <h3>Pengaturan Profil</h3>
+      <!-- Full-Width Hero Organic Curved Header Banner (Outside card boundaries) -->
+      <div class="profile-hero-banner">
+        <div class="profile-hero-glow glow-1"></div>
+        <div class="profile-hero-glow glow-2"></div>
+        <div class="profile-hero-header">
+          <span class="profile-hero-badge">
+            <i class="ph-bold ${isVerified ? 'ph-seal-check' : 'ph-user'}"></i>
+            ${isVerified ? 'Akun Terverifikasi' : 'Profil Pengguna'}
+          </span>
+          <h2 class="profile-hero-title">Pengaturan Profil</h2>
+        </div>
+        <div class="profile-hero-wave">
+          <svg viewBox="0 0 500 60" preserveAspectRatio="none">
+            <path d="M0,20 C120,50 220,55 320,40 C420,25 470,10 500,5 L500,60 L0,60 Z" fill="var(--bg-color)"></path>
+          </svg>
         </div>
       </div>
 
@@ -54,23 +66,6 @@ export function renderAkun() {
         <!-- Section 1: Profile Preview & Identity -->
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
           <div class="stat-card profile-card">
-            <!-- Hero Organic Curved Header Banner -->
-            <div class="profile-hero-banner">
-              <div class="profile-hero-glow glow-1"></div>
-              <div class="profile-hero-glow glow-2"></div>
-              <div class="profile-hero-header">
-                <span class="profile-hero-badge">
-                  <i class="ph-bold ${isVerified ? 'ph-seal-check' : 'ph-user'}"></i>
-                  ${isVerified ? 'Akun Terverifikasi' : 'Profil Pengguna'}
-                </span>
-              </div>
-              <div class="profile-hero-wave">
-                <svg viewBox="0 0 500 60" preserveAspectRatio="none">
-                  <path d="M0,20 C120,50 220,55 320,40 C420,25 470,10 500,5 L500,60 L0,60 Z" fill="var(--card-bg)"></path>
-                </svg>
-              </div>
-            </div>
-
             <!-- Profile Content Body -->
             <div class="profile-card-body">
               <div class="avatar-wrapper" id="btn-preview-pp" title="Klik untuk lihat foto profil">
