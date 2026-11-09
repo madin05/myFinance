@@ -9,8 +9,12 @@
   ],
   "rewrites": [
     {
+      "source": "/health",
+      "destination": "http://16.178.138.30/myfinance-api/health"
+    },
+    {
       "source": "/api/:path*",
-      "destination": "http://16.178.138.30:5000/api/:path*"
+      "destination": "http://16.178.138.30/myfinance-api/api/:path*"
     },
     {
       "source": "/((?!api).*)",
