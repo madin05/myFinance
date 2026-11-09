@@ -362,7 +362,7 @@ export async function checkAuth() {
       if (banner) banner.style.display = 'none';
       
       const currentPath = window.location.pathname;
-      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
+      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/saldo', '/laporan', '/akun', '/ai', '/settings', '/faq', '/notifikasi'];
       if (!validRoutes.includes(currentPath)) {
         navigateTo('/dashboard');
       }

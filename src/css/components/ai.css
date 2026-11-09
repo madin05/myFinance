@@ -1357,6 +1357,15 @@
   display: flex;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
+}
+
+.ai-pill-left {
+  margin-left: 2px;
+}
+
+.ai-pill-right {
+  margin-right: 2px;
 }
 
 .ai-pill-icon-btn {
@@ -1370,6 +1379,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
   transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
@@ -1384,6 +1394,7 @@
 
 .ai-pill-field {
   flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   outline: none;
@@ -1508,12 +1519,24 @@
   }
 
   .ai-input-pill {
-    padding: 4px 8px;
+    padding: 4px 6px 4px 8px;
+    box-sizing: border-box;
   }
 
   .ai-pill-icon-btn {
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
+  }
+
+  .ai-pill-right {
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .ai-pill-left {
+    margin-left: 2px;
+    flex-shrink: 0;
   }
 }
 
