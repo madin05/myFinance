@@ -315,6 +315,36 @@
   background-color: #450a0a !important;
 }
 
+/* 7. Skeleton / Loading Placeholder */
+.ribbon-skeleton .tx-horizontal-ribbon,
+.ribbon-skeleton .tx-corner-ribbon,
+.ribbon-skeleton .tx-folded-ribbon {
+  background: var(--border-light, #e2e8f0) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .ribbon-skeleton .tx-horizontal-ribbon,
+[data-theme="dark"] .ribbon-skeleton .tx-corner-ribbon,
+[data-theme="dark"] .ribbon-skeleton .tx-folded-ribbon {
+  background: #252033 !important;
+  background-image: none !important;
+}
+
+.ribbon-skeleton .tx-ribbon-ear,
+.ribbon-skeleton.tx-horizontal-ribbon-container::after,
+.ribbon-skeleton.tx-corner-ribbon-wrapper::after,
+.ribbon-skeleton.tx-folded-ribbon-container::after {
+  background-color: var(--border, #cbd5e1) !important;
+}
+
+[data-theme="dark"] .ribbon-skeleton .tx-ribbon-ear,
+[data-theme="dark"] .ribbon-skeleton.tx-horizontal-ribbon-container::after,
+[data-theme="dark"] .ribbon-skeleton.tx-corner-ribbon-wrapper::after,
+[data-theme="dark"] .ribbon-skeleton.tx-folded-ribbon-container::after {
+  background-color: #1a1624 !important;
+}
+
 .badge-blue {
   background-color: var(--blue-light);
   color: var(--blue);

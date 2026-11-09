@@ -42,21 +42,101 @@ export function getTableSkeleton() {
 }
 
 export function getTransaksiSkeleton() {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
+  if (isMobile) {
+    return `
+      <div class="transactions-section">
+        <div class="section-header">
+          <div class="section-header-top">
+            <div class="skeleton" style="width: 170px; height: 26px; border-radius: 8px;"></div>
+            <div class="skeleton" style="width: 95px; height: 38px; border-radius: 10px;"></div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="transactions-table">
+            <tbody id="tx-table-body">
+              ${Array(6).fill(`
+                <tr class="tx-mobile-card">
+                  <td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;text-align:left!important;">
+                    <div class="tx-card-inner">
+                      <!-- 3D Horizontal Folded Ribbon -->
+                      <div class="tx-horizontal-ribbon-container ribbon-skeleton">
+                        <div class="tx-horizontal-ribbon">
+                          <div class="skeleton" style="width: 65px; height: 12px; border-radius: 4px;"></div>
+                        </div>
+                        <span class="tx-ribbon-ear" aria-hidden="true"></span>
+                      </div>
+
+                      <!-- Top Row: Price (aligned to right) -->
+                      <div class="tx-card-top-row">
+                        <div class="skeleton" style="width: 85px; height: 18px; border-radius: 6px;"></div>
+                      </div>
+
+                      <!-- Baris 2: Keterangan -->
+                      <div class="tx-card-desc">
+                        <div class="skeleton" style="width: 55%; height: 16px; border-radius: 6px;"></div>
+                      </div>
+
+                      <!-- Baris 3: Tanggal • Metode -->
+                      <div class="tx-card-meta">
+                        <div class="skeleton" style="width: 38%; height: 12px; border-radius: 4px; margin-top: 4px;"></div>
+                      </div>
+
+                      <!-- Kebab absolute bottom-right -->
+                      <div class="tx-card-kebab">
+                        <div class="skeleton" style="width: 24px; height: 24px; border-radius: 6px;"></div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="transactions-section">
-      <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
-        <div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px;"></div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-          <div class="skeleton" style="width: 44px; height: 44px; border-radius: 12px;"></div>
-          <div class="skeleton" style="width: 120px; height: 44px; border-radius: 12px;"></div>
+      <div class="section-header">
+        <div class="section-header-top">
+          <div class="skeleton" style="width: 170px; height: 26px; border-radius: 8px;"></div>
+          <div class="skeleton" style="width: 95px; height: 38px; border-radius: 10px;"></div>
         </div>
       </div>
 
       <div class="table-container">
-        <div class="skeleton" style="height: 40px; width: 100%; border-radius: 10px;"></div>
-        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
-          ${Array(8).fill(`<div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div>`).join('')}
-        </div>
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Kategori</th>
+              <th>Metode</th>
+              <th>Keterangan</th>
+              <th class="text-right">Harga</th>
+              <th class="text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tx-table-body">
+            ${Array(7).fill(`
+              <tr>
+                <td><div class="skeleton" style="width: 80px; height: 16px; border-radius: 6px;"></div></td>
+                <td>
+                  <span class="badge-soft" style="border: 1px solid var(--border);">
+                    <div class="skeleton" style="width: 80px; height: 14px; border-radius: 4px;"></div>
+                  </span>
+                </td>
+                <td><div class="skeleton" style="width: 75px; height: 16px; border-radius: 6px;"></div></td>
+                <td><div class="skeleton" style="width: 140px; height: 16px; border-radius: 6px;"></div></td>
+                <td class="text-right"><div class="skeleton" style="width: 90px; height: 18px; border-radius: 6px; margin-left: auto;"></div></td>
+                <td class="text-right"><div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; margin-left: auto;"></div></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
       </div>
     </div>
   `;
