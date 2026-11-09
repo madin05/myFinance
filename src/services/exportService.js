@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { formatRupiah } from "../store.js";
 
 export const exportService = {
@@ -145,16 +145,19 @@ export const exportService = {
   },
 
   /**
-   * Export data ke XLSX dengan 3 Sheet
+   * Export data ke XLSX dengan 3 Sheet menggunakan ExcelJS
    */
-  exportToExcel(transactions, metadata) {
+  async exportToExcel(transactions, metadata) {
     console.log('Exporting to Excel...', metadata);
     const { periode, username, totalIncome, totalExpense, categories } = metadata;
 
-    const wb = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "myfinanceid";
+    workbook.created = new Date();
 
     // Sheet 1: Summary
-    const summaryData = [
+    const wsSummary = workbook.addWorksheet("Summary");
+    const summaryRows = [
       ["myfinanceid - LAPORAN KEUANGAN"],
       ["Periode", periode],
       ["Username", username],
@@ -167,36 +170,42 @@ export const exportService = {
       ["KATEGORI", "TOTAL"],
       ...categories.map(c => [c.name, c.total])
     ];
-    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+    summaryRows.forEach(row => wsSummary.addRow(row));
 
     // Sheet 2: Transaksi
-    const txData = [
-      ["Tanggal", "Keterangan", "Kategori", "Metode", "Tipe", "Nominal"],
-      ...transactions.map(tx => [
+    const wsTx = workbook.addWorksheet("Transaksi");
+    wsTx.addRow(["Tanggal", "Keterangan", "Kategori", "Metode", "Tipe", "Nominal"]);
+    transactions.forEach(tx => {
+      wsTx.addRow([
         new Date(tx.tanggal).toLocaleDateString('id-ID'),
         tx.keterangan,
         tx.kategori,
         tx.metode,
         tx.type === 'income' ? 'Masuk' : 'Keluar',
         tx.harga
-      ])
-    ];
-    const wsTx = XLSX.utils.aoa_to_sheet(txData);
-    XLSX.utils.book_append_sheet(wb, wsTx, "Transaksi");
+      ]);
+    });
 
     // Sheet 3: Per Kategori (More Detailed)
-    const catDetailData = [
-      ["Breakdown Per Kategori"],
-      ["Kategori", "Total Nominal", "Jumlah Transaksi"],
-      ...categories.map(c => {
-        const count = transactions.filter(tx => tx.kategori === c.name).length;
-        return [c.name, c.total, count];
-      })
-    ];
-    const wsCat = XLSX.utils.aoa_to_sheet(catDetailData);
-    XLSX.utils.book_append_sheet(wb, wsCat, "Per Kategori");
+    const wsCat = workbook.addWorksheet("Per Kategori");
+    wsCat.addRow(["Breakdown Per Kategori"]);
+    wsCat.addRow(["Kategori", "Total Nominal", "Jumlah Transaksi"]);
+    categories.forEach(c => {
+      const count = transactions.filter(tx => tx.kategori === c.name).length;
+      wsCat.addRow([c.name, c.total, count]);
+    });
 
-    XLSX.writeFile(wb, `Laporan_myfinanceid_${periode.replace(/ /g, '_')}.xlsx`);
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `Laporan_myfinanceid_${periode.replace(/ /g, '_')}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 };

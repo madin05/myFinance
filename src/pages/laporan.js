@@ -278,7 +278,7 @@ export function renderLaporan() {
       if (format === "pdf") {
         await exportService.exportToPDF(filteredTransactions, metadata);
       } else {
-        exportService.exportToExcel(filteredTransactions, metadata);
+        await exportService.exportToExcel(filteredTransactions, metadata);
       }
 
       showToast(
