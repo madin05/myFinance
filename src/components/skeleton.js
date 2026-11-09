@@ -224,25 +224,92 @@ export function getLaporanSkeleton() {
 export function getAkunSkeleton() {
   return `
     <div class="account-settings">
-      <div class="section-header">
-        <div>
-          <div class="skeleton" style="width: 260px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div>
-          <div class="skeleton" style="width: 340px; height: 18px; border-radius: 8px;"></div>
+      <!-- Full-Width Hero Header Banner -->
+      <div class="profile-hero-banner">
+        <div class="profile-hero-glow glow-1"></div>
+        <div class="profile-hero-glow glow-2"></div>
+        <div class="profile-hero-header">
+          <span class="profile-hero-badge" style="border: 1px solid rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.2);">
+            <div class="skeleton" style="width: 100px; height: 12px; border-radius: 100px;"></div>
+          </span>
+          <div class="skeleton" style="width: 180px; height: 26px; border-radius: 8px; margin-top: 6px;"></div>
         </div>
       </div>
 
-      <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-        <!-- Left Column Skeletons -->
+      <div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr)); gap: 1.5rem; margin-top: 1.5rem; align-items: start;">
+        
+        <!-- Section 1: Profile Preview & Identity Card -->
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <div class="stat-card skeleton" style="height: 320px; border-radius: 24px; border: none;"></div>
-          <div class="stat-card skeleton" style="height: 140px; border-radius: 24px; border: none;"></div>
+          <div class="stat-card profile-card">
+            <div class="profile-card-body">
+              <div class="avatar-wrapper">
+                <div class="avatar-skeleton-circle">
+                  <div class="skeleton skeleton-circle" style="width: 100%; height: 100%;"></div>
+                </div>
+              </div>
+
+              <!-- Username & Edit Icon Skeleton -->
+              <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0.15rem 0 0.35rem;">
+                <div class="skeleton" style="width: 130px; height: 24px; border-radius: 6px;"></div>
+                <div class="skeleton" style="width: 22px; height: 22px; border-radius: 6px;"></div>
+              </div>
+
+              <!-- Email Skeleton -->
+              <div style="display: flex; justify-content: center; margin-bottom: 1.15rem;">
+                <div class="skeleton" style="width: 170px; height: 15px; border-radius: 6px;"></div>
+              </div>
+              
+              <!-- Metadata Quick Stats (3 Columns) -->
+              <div class="profile-meta-grid">
+                <div class="profile-meta-col" style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                  <div class="skeleton" style="width: 48px; height: 11px; border-radius: 4px;"></div>
+                  <div class="skeleton" style="width: 72px; height: 15px; border-radius: 4px;"></div>
+                </div>
+                <div class="profile-meta-col border-divider" style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                  <div class="skeleton" style="width: 38px; height: 11px; border-radius: 4px;"></div>
+                  <div class="skeleton" style="width: 48px; height: 15px; border-radius: 4px;"></div>
+                </div>
+                <div class="profile-meta-col" style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                  <div class="skeleton" style="width: 28px; height: 11px; border-radius: 4px;"></div>
+                  <div class="skeleton" style="width: 48px; height: 15px; border-radius: 4px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Right Column Skeletons -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <div class="stat-card skeleton" style="height: 380px; border-radius: 24px; border: none;"></div>
-          <div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div>
+        <!-- Section 2: Security & Danger Zone Cards -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;">
+          <!-- Akses Keamanan -->
+          <div class="stat-card" style="padding: 2rem;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+              <div class="skeleton" style="width: 22px; height: 22px; border-radius: 6px;"></div>
+              <div class="skeleton" style="width: 130px; height: 20px; border-radius: 6px;"></div>
+            </div>
+            
+            <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+              <div class="skeleton" style="width: 110px; height: 16px; border-radius: 4px;"></div>
+              <div class="skeleton" style="width: 18px; height: 18px; border-radius: 4px;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="skeleton" style="width: 160px; height: 16px; border-radius: 4px;"></div>
+                <div class="skeleton" style="width: 210px; height: 12px; border-radius: 4px;"></div>
+              </div>
+              <div class="skeleton" style="width: 44px; height: 24px; border-radius: 100px;"></div>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="stat-card" style="padding: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.02);">
+            <div class="skeleton" style="width: 95px; height: 18px; border-radius: 6px; margin-bottom: 0.5rem;"></div>
+            <div class="skeleton" style="width: 90%; height: 13px; border-radius: 4px; margin-bottom: 0.35rem;"></div>
+            <div class="skeleton" style="width: 60%; height: 13px; border-radius: 4px; margin-bottom: 1.25rem;"></div>
+            <div class="skeleton" style="width: 100%; height: 48px; border-radius: 12px;"></div>
+          </div>
         </div>
+
       </div>
     </div>
   `;
