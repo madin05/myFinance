@@ -894,6 +894,17 @@
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
 }
 
+[data-theme="dark"] #fam-toggle:checked + .fam-trigger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.45) !important;
+}
+
+[data-theme="dark"] #fam-toggle:checked + .fam-trigger i {
+  color: #ffffff !important;
+}
+
 .fam-item {
   position: absolute;
   transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Kurva ultra smooth */
@@ -963,6 +974,56 @@
 }
 .bg-pink {
   background-color: #ec4899;
+}
+
+/* Dark Mode Floating Action Menu (FAM) */
+[data-theme="dark"] .fam-anchor {
+  background-color: #1e1730 !important;
+  color: #f4f4f5 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] #btn-fam-add-tx i {
+  color: #38bdf8 !important; /* Sky/Biru untuk Tambah Transaksi */
+}
+
+[data-theme="dark"] #btn-fam-wishlist i {
+  color: #f472b6 !important; /* Pink/Rose untuk Wishlist */
+}
+
+[data-theme="dark"] #btn-fam-calculator i {
+  color: #a78bfa !important; /* Violet/Ungu untuk Kalkulator */
+}
+
+[data-theme="dark"] #btn-fam-scan-receipt i {
+  color: #34d399 !important; /* Emerald/Hijau untuk Scan Struk */
+}
+
+[data-theme="dark"] .fam-anchor:hover {
+  background-color: #291f42 !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  transform: scale(1.1);
+}
+
+[data-theme="dark"] #btn-fam-add-tx:hover {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme="dark"] #btn-fam-wishlist:hover {
+  border-color: #f472b6 !important;
+  box-shadow: 0 6px 20px rgba(244, 114, 182, 0.25) !important;
+}
+
+[data-theme="dark"] #btn-fam-calculator:hover {
+  border-color: #a78bfa !important;
+  box-shadow: 0 6px 20px rgba(167, 139, 250, 0.25) !important;
+}
+
+[data-theme="dark"] #btn-fam-scan-receipt:hover {
+  border-color: #34d399 !important;
+  box-shadow: 0 6px 20px rgba(52, 211, 153, 0.25) !important;
 }
 
 /* Tooltip Left for FAM */
