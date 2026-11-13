@@ -1,0 +1,157 @@
+/* Wishlist Cards & Drag-and-Drop System */
+.wishlist-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.wishlist-item {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: visible !important;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.wishlist-container.is-dragging .wishlist-item {
+  transition: none;
+}
+.wishlist-container.is-dragging .wishlist-item:hover {
+  transform: translate3d(0, 0, 0);
+  box-shadow: none;
+}
+
+.wishlist-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-action-sm {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-action-sm:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.9);
+}
+
+.btn-action-sm i {
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.btn-action-sm.primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+[data-theme="dark"] .btn-action-sm.primary {
+  background-color: var(--primary) !important;
+  color: #120e1d !important;
+}
+
+[data-theme="dark"] .btn-action-sm.primary i {
+  color: #120e1d !important;
+}
+
+.btn-action-sm.danger {
+  background-color: var(--red-light);
+  color: var(--red);
+}
+
+.wishlist-item:hover {
+  transform: translate3d(0, -5px, 0);
+  box-shadow: var(--shadow-md);
+}
+
+.drag-handle {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.5rem;
+  color: var(--text-light);
+  cursor: grab;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  font-size: 1.25rem;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.wishlist-item:hover .drag-handle {
+  opacity: 1;
+}
+
+/* SortableJS Ghost & Dragging States */
+.wishlist-item.dragging {
+  opacity: 1 !important;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: border-color 0.2s ease !important;
+}
+.wishlist-item.dragging > * {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.sortable-fallback {
+  opacity: 1 !important;
+  box-shadow:
+    0 16px 32px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(15, 23, 42, 0.10) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-xl) !important;
+  cursor: grabbing !important;
+  z-index: 99999 !important;
+  pointer-events: none;
+  background-color: var(--card-bg) !important;
+  will-change: transform;
+}
+
+[data-theme="dark"] .wishlist-item.dragging {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+}
+[data-theme="dark"] .wishlist-item.dragging > * {
+  opacity: 0.25;
+}
+
+[data-theme="dark"] .sortable-fallback {
+  background-color: var(--card-bg) !important;
+  border: 1px solid rgba(199, 125, 255, 0.30) !important;
+  box-shadow:
+    0 0 0 1px rgba(199, 125, 255, 0.12),
+    0 20px 44px rgba(0, 0, 0, 0.65),
+    0 8px 18px rgba(157, 78, 221, 0.22) !important;
+}
+
+.wishlist-container.is-dragging {
+  cursor: grabbing;
+}
+
+@media (max-width: 768px) {
+  .wishlist-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

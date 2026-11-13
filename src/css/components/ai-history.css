@@ -1,0 +1,292 @@
+/* Left History Drawer Panel */
+.ai-history-panel {
+  width: 290px;
+  background-color: var(--card-bg);
+  border-radius: 20px 0 0 20px;
+  border: 1px solid var(--border);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+  z-index: 10;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-history-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.25rem;
+}
+
+.ai-history-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-history-sparkle-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ai-history-sparkle-icon .ai-avatar-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ai-history-brand-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+/* Segmented Toggle Tabs */
+.ai-history-tabs {
+  background-color: var(--border-light);
+  border-radius: 999px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.ai-history-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ai-history-tab.active {
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.badge-beta {
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--blue-light);
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* History Actions & Search */
+.ai-history-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-history-action-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.6rem 0.85rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.ai-history-action-btn:hover {
+  background-color: var(--border-light);
+}
+
+.ai-history-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ai-history-search-box i {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.ai-history-search-box input {
+  width: 100%;
+  background-color: var(--border-light);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem 0.45rem 2.2rem;
+  font-size: 0.8rem;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.ai-history-search-box input:focus {
+  background-color: var(--card-bg);
+  border-color: var(--primary);
+}
+
+.ai-history-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.4rem 0.4rem 0.1rem 0.4rem;
+}
+
+/* History Session List */
+.ai-history-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 2px;
+}
+
+.ai-history-empty {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.ai-history-item {
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ai-history-item:hover {
+  background-color: var(--border-light);
+}
+
+.ai-history-item.active {
+  background-color: var(--border-light);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .ai-history-item.active {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.ai-history-item-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.ai-history-title {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.ai-history-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ai-history-item:hover .ai-history-item-actions,
+.ai-history-item.active .ai-history-item-actions {
+  opacity: 1;
+}
+
+.ai-history-pin-btn,
+.ai-history-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.ai-history-pin-btn:hover {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.ai-history-pin-btn.pinned {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.ai-history-delete-btn:hover {
+  color: var(--red);
+  background-color: var(--red-light);
+}
+
+.ai-history-footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-clear-history-btn {
+  background: transparent;
+  border: none;
+  color: var(--red);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.ai-clear-history-btn:hover {
+  background-color: var(--red-light);
+}
