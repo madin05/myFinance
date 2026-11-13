@@ -3,17 +3,10 @@
 /* All Imports MUST be at the top */
 @import './css/variables.css';
 @import './css/base.css';
-@import './css/components/buttons.css';
-@import './css/components/chips.css';
-@import './css/components/theme-toggle.css';
-@import './css/components/tooltips.css';
-@import './css/components/fam.css';
-@import './css/components/hamburger.css';
+@import './css/components/buttons/index.css';
 @import './css/components/sidebar.css';
 @import './css/components/header.css';
-@import './css/components/cards.css';
-@import './css/components/wishlist.css';
-@import './css/components/greeting-widget.css';
+@import './css/components/cards/index.css';
 @import './css/components/table.css';
 @import './css/components/widgets.css';
 @import './css/components/modal.css';
@@ -28,7 +21,7 @@
 @import './css/pages/tabungan.css';
 @import './css/pages/saldo.css';
 @import './css/pages/akun.css';
-@import './css/components/ai.css';
+@import './css/components/ai/index.css';
 @import './css/responsive.css';
 
 /* Custom Styles (After Imports) */
