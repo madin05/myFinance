@@ -80,6 +80,9 @@ body.modal-open {
 }
 
 /* Utilities */
+.text-main {
+  color: var(--text-main) !important;
+}
 .text-primary {
   color: var(--primary) !important;
 }

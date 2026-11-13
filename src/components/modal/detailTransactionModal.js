@@ -11,9 +11,10 @@ export function openDetailTransactionModal(tx) {
   if (!tx || !container) return;
 
   const isIncome = tx.type === 'income';
-  const colorClass = isIncome ? 'var(--green)' : 'var(--red)';
-  const typeText = isIncome ? 'Pemasukan' : 'Pengeluaran';
-  const formattedAmount = `${isIncome ? '+' : '-'} ${formatRupiah(Math.abs(tx.harga))}`;
+  const isTransfer = tx.type === 'transfer';
+  const typeText = isTransfer ? 'Transfer' : isIncome ? 'Pemasukan' : 'Pengeluaran';
+  const sign = isTransfer ? '' : isIncome ? '+' : '-';
+  const formattedAmount = `${sign} ${formatRupiah(Math.abs(tx.harga))}`.trim();
 
   container.innerHTML = `
     <div class="detail-tx-overlay" id="detail-tx-overlay">
@@ -29,10 +30,10 @@ export function openDetailTransactionModal(tx) {
             <div class="detail-tx-icon-wrapper">
               <img src="${getCategoryIconUrl(tx.kategori, tx.type)}" alt="${tx.kategori || ''}" class="detail-tx-icon" />
             </div>
-            <span style="font-size: 0.75rem; font-weight: 700; color: ${colorClass}; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; display: inline-block;">
               ${typeText}
             </span>
-            <h2 style="font-size: 1.85rem; font-weight: 800; color: ${colorClass}; margin: 0.25rem 0 0; letter-spacing: -0.02em;">
+            <h2 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin: 0.25rem 0 0; letter-spacing: -0.02em; font-feature-settings: 'tnum'; font-variant-numeric: tabular-nums;">
               ${formattedAmount}
             </h2>
           </div>

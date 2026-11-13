@@ -663,12 +663,15 @@
   }
 
   .tx-card-price {
+    color: var(--text-main);
     font-size: 0.95rem;
     font-weight: 700;
     font-family: var(--font-main, "Poppins", sans-serif) !important;
     white-space: nowrap;
     line-height: 1;
     letter-spacing: -0.01em;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
   }
 
   .tx-card-desc {
