@@ -4,7 +4,9 @@
   padding: 1rem;
   border: 1px solid var(--border);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  overflow: visible !important; /* Biar popover gak kepotong bre */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .section-header {
@@ -28,11 +30,13 @@
 
 .table-container {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -57,7 +61,7 @@
 .transactions-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  min-width: 640px;
 }
 
 .transactions-table th {
@@ -99,8 +103,8 @@
 /* Kolom Keterangan: pastikan memiliki ruang baca proporsional agar tidak terjepit perkata */
 .transactions-table tr:not(.tx-mobile-card) th:nth-child(4),
 .transactions-table tr:not(.tx-mobile-card) td:nth-child(4) {
-  min-width: 190px;
-  max-width: 380px;
+  min-width: 170px;
+  max-width: 340px;
   white-space: normal;
   word-break: normal;
   overflow-wrap: break-word;
