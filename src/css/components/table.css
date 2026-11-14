@@ -27,14 +27,37 @@
 }
 
 .table-container {
-  overflow: visible !important; /* Supaya kebab dropdown tidak terpotong/terpotong di bawah card */
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   width: 100%;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .transactions-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 720px;
 }
 
 .transactions-table th {
@@ -71,6 +94,16 @@
 .transactions-table tr:not(.tx-mobile-card) td:nth-child(5),
 .transactions-table tr:not(.tx-mobile-card) td:nth-child(6) {
   white-space: nowrap;
+}
+
+/* Kolom Keterangan: pastikan memiliki ruang baca proporsional agar tidak terjepit perkata */
+.transactions-table tr:not(.tx-mobile-card) th:nth-child(4),
+.transactions-table tr:not(.tx-mobile-card) td:nth-child(4) {
+  min-width: 190px;
+  max-width: 380px;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 /* Mobile transaction cards allow natural wrapping for long notes and metadata */

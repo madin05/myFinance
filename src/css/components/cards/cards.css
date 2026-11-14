@@ -10,6 +10,11 @@
   display: contents;
 }
 
+/* Slider Pagination Dots (hidden by default on desktop) */
+.slider-dots {
+  display: none;
+}
+
 .stat-card {
   background-color: var(--card-bg);
   border-radius: var(--radius-xl);

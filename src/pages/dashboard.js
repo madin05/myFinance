@@ -238,8 +238,8 @@ export function renderDashboard() {
       </div>
     </div>
 
-    <!-- Slider Dots Indicator (Mobile Only) -->
-    <div class="slider-dots mobile-only" id="stats-slider-dots">
+    <!-- Slider Dots Indicator (Mobile & Tablet) -->
+    <div class="slider-dots" id="stats-slider-dots">
       <span class="dot active" data-index="0"></span>
       <span class="dot" data-index="1"></span>
       <span class="dot" data-index="2"></span>
