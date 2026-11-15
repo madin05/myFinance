@@ -162,7 +162,7 @@ exports.requestDeleteOtp = async (req, res) => {
     });
   } catch (error) {
     console.error('Request Delete OTP Error:', error.message);
-    res.status(500).json({ error: 'Gagal mengirim kode OTP hapus akun. Silakan coba lagi.' });
+    res.status(500).json({ error: error.message || 'Gagal mengirim kode OTP hapus akun. Silakan coba lagi.' });
   }
 };
 

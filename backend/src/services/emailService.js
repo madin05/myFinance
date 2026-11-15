@@ -9,20 +9,28 @@ const admin = require('./firebase');
  */
 let cachedTransporter = null;
 
+const getSenderEmail = () =>
+  process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.GMAIL_USER || 'no-reply@myfinance.id';
+const getSenderName = () => process.env.EMAIL_FROM_NAME || 'MyFinance';
+const getSecuritySenderName = () => process.env.EMAIL_SECURITY_NAME || 'MyFinance Security';
+
 const getTransporter = () => {
   if (!cachedTransporter) {
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+    const user = process.env.SMTP_USER || process.env.GMAIL_USER;
+    const pass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+
     cachedTransporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // STARTTLS for fast connection setup
+      host,
+      port,
+      secure,
       pool: true,
       maxConnections: 10,
       maxMessages: 200,
       rateDelta: 1000,
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
+      auth: { user, pass },
       tls: {
         rejectUnauthorized: false
       }
@@ -32,7 +40,7 @@ const getTransporter = () => {
 };
 
 // Pre-warm SMTP pool on server start
-if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+if (process.env.GMAIL_USER || process.env.SMTP_USER) {
   getTransporter();
 }
 
@@ -79,7 +87,7 @@ exports.sendVerificationEmail = async (email, reqOrigin = null) => {
   const transporter = getTransporter();
 
   const mailOptions = {
-    from: `"MyFinance" <${process.env.GMAIL_USER}>`,
+    from: `"${getSenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: 'Verifikasi Email Akun MyFinance Kamu',
     html: `
@@ -190,7 +198,7 @@ exports.sendOtpVerificationEmail = async (email, otpCode) => {
   ).join('<td style="width:8px;"></td>');
 
   const mailOptions = {
-    from: `"MyFinance" <${process.env.GMAIL_USER}>`,
+    from: `"${getSenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: 'Kode Verifikasi Akun MyFinance Kamu',
     html: `
@@ -311,7 +319,7 @@ exports.sendPasswordResetEmail = async (email, reqOrigin = null) => {
   const transporter = getTransporter();
 
   const mailOptions = {
-    from: `"MyFinance" <${process.env.GMAIL_USER}>`,
+    from: `"${getSenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: 'Atur Ulang Password Akun MyFinance Kamu',
     html: `
@@ -439,7 +447,7 @@ exports.send2FAMagicLinkEmail = async (email, rawToken, type = 'LOGIN', reqOrigi
   }
 
   const mailOptions = {
-    from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
+    from: `"${getSecuritySenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: title,
     html: `
@@ -533,7 +541,7 @@ exports.send2FADisabledSecurityEmail = async (email, ipAddress, userAgent, times
   }).format(timestamp);
 
   const mailOptions = {
-    from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
+    from: `"${getSecuritySenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: 'Peringatan Keamanan: 2FA Akun MyFinance Dinonaktifkan',
     html: `
@@ -612,7 +620,7 @@ exports.send2FAOtpEmail = async (email, otpCode) => {
   const transporter = getTransporter();
 
   const mailOptions = {
-    from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
+    from: `"${getSecuritySenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: `Kode OTP 2FA Login MyFinance: ${otpCode}`,
     html: `
@@ -685,7 +693,7 @@ exports.sendDeleteAccountOtpEmail = async (email, otpCode) => {
   const transporter = getTransporter();
 
   const mailOptions = {
-    from: `"MyFinance Security" <${process.env.GMAIL_USER}>`,
+    from: `"${getSecuritySenderName()}" <${getSenderEmail()}>`,
     to: email,
     subject: `Kode OTP Hapus Akun MyFinance: ${otpCode}`,
     html: `

@@ -440,6 +440,13 @@ export function renderDashboard() {
 
   // Init Slider Dots untuk Mobile Stats Cards
   initStatsCardsSliderDots();
+
+  // Auto-start tutorial onboarding untuk pengguna baru yang belum pernah menyelesaikannya
+  setTimeout(() => {
+    import("../components/tutorial.js")
+      .then((m) => m.startProductTutorial())
+      .catch(() => {});
+  }, 700);
 }
 
 function initStatsCardsSliderDots() {

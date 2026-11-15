@@ -1,5 +1,5 @@
 import { store } from '../store.js';
-import { auth, googleProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken } from '../firebase-config.js';
+import { auth, googleProvider, signInWithPopup, getAdditionalUserInfo, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken } from '../firebase-config.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, showAlert } from '../components/notifications.js';
 import { navigateTo } from '../router.js';
@@ -454,6 +454,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
         const token = await user.getIdToken();
+        const isNew = getAdditionalUserInfo(result)?.isNewUser;
 
         await store.setUser({
           name: user.displayName,
@@ -461,7 +462,8 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
           token: token,
           uid: user.uid,
-          provider: 'google'
+          provider: 'google',
+          isNewUser: Boolean(isNew)
         });
 
         navigateTo('/dashboard');
