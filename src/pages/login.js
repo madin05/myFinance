@@ -455,7 +455,7 @@ export function renderLogin(mode = 'login', pendingEmail = '', extraData = {}) {
         const user = result.user;
         const token = await user.getIdToken();
 
-        store.setUser({
+        await store.setUser({
           name: user.displayName,
           email: user.email,
           avatar: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,

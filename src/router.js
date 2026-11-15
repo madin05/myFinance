@@ -40,7 +40,10 @@ export function sanitizePath(path) {
   const mainPath = path.split('?')[0];
   // Bersihkan karakter ilegal selain huruf, angka, slash, dash, dan underscore
   const clean = mainPath.replace(/[^a-zA-Z0-9\/\-_]/g, '');
-  return (clean === '/' || clean === '') ? '/dashboard' : clean;
+  if (clean === '/' || clean === '' || clean === '/login' || clean === '/index.html') {
+    return '/dashboard';
+  }
+  return clean;
 }
 
 export function showSkeleton(routePath) {
@@ -202,7 +205,7 @@ export function handleRoute() {
 }
 
 function loadRoutePage(route) {
-  if (route === '/dashboard') {
+  if (route === '/dashboard' || route === '/login') {
     import('./pages/dashboard.js').then(module => module.renderDashboard());
   } else if (route === '/transaksi') {
     import('./pages/transaksi.js').then(module => module.renderTransaksi());

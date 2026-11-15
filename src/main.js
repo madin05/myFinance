@@ -340,7 +340,6 @@ export async function checkAuth() {
           provider: user.providerData[0]?.providerId || 'unknown'
         };
         store.setUser(userData);
-        store.sync();
       }
 
       if (needsVerification) {
@@ -355,17 +354,17 @@ export async function checkAuth() {
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
 
-      handleRoute();
+      const currentPath = sanitizePath(window.location.pathname);
+      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/saldo', '/laporan', '/akun', '/ai', '/settings', '/faq', '/notifikasi'];
+      if (!validRoutes.includes(currentPath) || window.location.pathname === '/login' || window.location.pathname === '/') {
+        navigateTo('/dashboard');
+      } else {
+        handleRoute();
+      }
       store.updateUI();
 
       const banner = document.getElementById('email-verify-banner');
       if (banner) banner.style.display = 'none';
-      
-      const currentPath = window.location.pathname;
-      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/saldo', '/laporan', '/akun', '/ai', '/settings', '/faq', '/notifikasi'];
-      if (!validRoutes.includes(currentPath)) {
-        navigateTo('/dashboard');
-      }
     } else {
       stopVerificationPolling();
       loginView.style.display = 'block';

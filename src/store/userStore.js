@@ -4,9 +4,10 @@ import { generateAvatarUrl } from "./storage.js";
 
 export const userStoreMethods = {
   async setUser(userData, extraData = {}) {
-    const prevUid = this.user?.uid;
+    const prevUid = this.user?.uid || localStorage.getItem("last_active_uid");
     const nextUid = userData?.uid;
-    const isDifferentUser = !prevUid || (nextUid && prevUid !== nextUid);
+    const isGuest = this.user?.role === "guest" || userData?.role === "guest";
+    const isDifferentUser = isGuest || (prevUid && nextUid && prevUid !== nextUid);
 
     if (isDifferentUser) {
       this.transactions = [];
@@ -18,7 +19,12 @@ export const userStoreMethods = {
       localStorage.removeItem("savings");
       localStorage.removeItem("budgets");
       localStorage.removeItem("saldos");
+    localStorage.removeItem("last_active_uid");
       localStorage.removeItem("notifications");
+    }
+
+    if (nextUid) {
+      localStorage.setItem("last_active_uid", nextUid);
     }
 
     this.isSyncing = Boolean(userData?.token);
@@ -123,6 +129,7 @@ export const userStoreMethods = {
     localStorage.removeItem("savings");
     localStorage.removeItem("budgets");
     localStorage.removeItem("saldos");
+    localStorage.removeItem("last_active_uid");
 
     try {
       await userService.deleteSession();

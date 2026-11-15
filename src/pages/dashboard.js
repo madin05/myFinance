@@ -14,6 +14,14 @@ export function renderDashboard() {
   const container = document.getElementById("page-content");
   if (!container) return;
 
+  // Jika data masih dalam proses sinkronisasi pertama kali dan belum ada data lokal, tampilkan skeleton
+  if (store.isSyncing && (!store.transactions || store.transactions.length === 0) && (!store.saldos || store.saldos.length === 0)) {
+    import("../components/skeleton.js").then((m) => {
+      container.innerHTML = m.getDashboardSkeleton();
+    });
+    return;
+  }
+
   const stats = store.getStats();
 
   const getBadge = (diff, type) => {
