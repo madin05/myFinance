@@ -2,6 +2,20 @@ body.pwa-offline-locked {
   overflow: hidden !important;
 }
 
+body.pwa-offline-locked .main-content > *:not(.header),
+body.pwa-offline-locked #content-area,
+body.pwa-offline-locked .dashboard-hero-bg,
+body.pwa-offline-locked #login-view,
+body.pwa-offline-locked .menu-tooltip-container,
+body.pwa-offline-locked #bottom-nav {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.pwa-offline-locked .main-content {
+  background: transparent !important;
+}
+
 .pwa-offline-gate {
   position: fixed;
   inset: 0;
