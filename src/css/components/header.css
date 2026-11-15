@@ -461,6 +461,7 @@
 .dropdown-list {
   max-height: 320px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .notif-item {

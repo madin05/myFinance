@@ -28,8 +28,10 @@ body {
   max-width: 100vw !important;
 }
 
+html.modal-open,
 body.modal-open {
   overflow: hidden !important;
+  overscroll-behavior: none !important;
 }
 
 /* ================================
