@@ -85,9 +85,10 @@ export function showOfflineGate({ onRetry, message = '' } = {}) {
   if (gate.hidden) {
     previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     gate.hidden = false;
-    gate.classList.add('active');
+    document.documentElement.classList.add('pwa-offline-locked');
     document.body.classList.add('pwa-offline-locked');
     requestAnimationFrame(() => {
+      gate.classList.add('active');
       gate.querySelector('#pwa-offline-retry')?.focus();
     });
   }
@@ -123,6 +124,7 @@ export function hideOfflineGate() {
 
   gate.classList.remove('active');
   gate.hidden = true;
+  document.documentElement.classList.remove('pwa-offline-locked');
   document.body.classList.remove('pwa-offline-locked');
 
   const feedbackEl = gate.querySelector('#pwa-offline-feedback');
@@ -237,6 +239,7 @@ export function showIosInstallModal() {
 
     const closeModal = () => {
       modal.classList.remove('active');
+      document.documentElement.classList.remove('modal-open');
       document.body.classList.remove('modal-open');
     };
 
@@ -254,6 +257,7 @@ export function showIosInstallModal() {
 
   requestAnimationFrame(() => {
     modal.classList.add('active');
+    document.documentElement.classList.add('modal-open');
     document.body.classList.add('modal-open');
     modal.querySelector('[data-pwa-ios-done]')?.focus();
   });

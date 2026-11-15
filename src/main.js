@@ -9,6 +9,7 @@ import { handleRoute, refreshCurrentPage, navigateTo, showSkeleton, sanitizePath
 import { hideLoading, initStickyHeader, initBottomSheetSwipe } from './utils.js';
 import { initNavigation } from './ui/navigation.js';
 import { initCustomSelects } from './ui/select.js';
+import { initScrollLock } from './ui/scrollLock.js';
 import { showConfirm, checkVerification } from './components/notifications.js';
 
 import './style.css';
@@ -483,32 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 5. Scroll Lock Observer (Locks background scrolling smoothly when any modal or mobile sidebar is open)
-  let scrollLockRaf = null;
-  const updateScrollLock = () => {
-    const hasActiveModal = Boolean(
-      document.querySelector(
-        '.modal-overlay.active, .modal-card.active, .detail-tx-overlay.active, .custom-alert-overlay.active, .sidebar.mobile-active, .sidebar-overlay.active, .pwa-ios-modal-overlay.active'
-      )
-    );
-
-    const isLocked = document.body.classList.contains('modal-open');
-
-    if (hasActiveModal && !isLocked) {
-      document.body.classList.add('modal-open');
-    } else if (!hasActiveModal && isLocked) {
-      document.body.classList.remove('modal-open');
-    }
-  };
-
-  const scrollLockObserver = new MutationObserver(() => {
-    if (scrollLockRaf) return;
-    scrollLockRaf = requestAnimationFrame(() => {
-      scrollLockRaf = null;
-      updateScrollLock();
-    });
-  });
-  scrollLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  // 5. Scroll Lock Manager (Locks background scrolling across desktop & mobile overlays)
+  initScrollLock();
 
 });
 
