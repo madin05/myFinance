@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://myfinanceid.vercel.app/sitemap.xml

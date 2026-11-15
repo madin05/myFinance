@@ -17,7 +17,7 @@
       "destination": "http://16.178.138.30/myfinance-api/api/:path*"
     },
     {
-      "source": "/((?!api).*)",
+      "source": "/((?!api|robots\\.txt|sitemap\\.xml).*)",
       "destination": "/index.html"
     }
   ]

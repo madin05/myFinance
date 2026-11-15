@@ -1,9 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>myfinanceid</title>
+    <title>MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI</title>
+    <meta name="description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian. Kelola finansial pribadi lebih rapi dan terkontrol." />
+    <meta name="keywords" content="aplikasi keuangan, pencatat keuangan, catat keuangan, asisten keuangan ai, money manager, financial tracker, anggaran bulanan, tabungan, myfinance" />
+    <meta name="author" content="MyFinance" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://myfinanceid.vercel.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://myfinanceid.vercel.app/" />
+    <meta property="og:title" content="MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI" />
+    <meta property="og:description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian." />
+    <meta property="og:image" content="https://myfinanceid.vercel.app/assets/android-chrome-512x512.png" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content="MyFinance" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://myfinanceid.vercel.app/" />
+    <meta name="twitter:title" content="MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI" />
+    <meta name="twitter:description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian." />
+    <meta name="twitter:image" content="https://myfinanceid.vercel.app/assets/android-chrome-512x512.png" />
+
+    <meta name="theme-color" content="#09090b" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MyFinance",
+        "url": "https://myfinanceid.vercel.app/",
+        "description": "Aplikasi pencatat keuangan cerdas dengan asisten AI, manajemen anggaran bulanan, dan perencanaan tabungan impian.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "All",
+        "inLanguage": "id-ID"
+      }
+    </script>
+
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
@@ -32,6 +70,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
+    <noscript>
+      <div style="padding: 24px; text-align: center; font-family: sans-serif; max-width: 600px; margin: 40px auto; line-height: 1.6;">
+        <h1>MyFinance - Asisten dan Pencatat Keuangan Pribadi</h1>
+        <p>Aplikasi pencatat keuangan cerdas dengan fitur asisten AI, pelacak pengeluaran, anggaran bulanan, dan tabungan impian.</p>
+        <p>Silakan aktifkan JavaScript di browser Anda untuk menjalankan aplikasi MyFinance.</p>
+      </div>
+    </noscript>
     
     <!-- Sidebar Overlay (Mobile Only) -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
