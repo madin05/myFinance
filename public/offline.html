@@ -122,17 +122,48 @@
       background-color: var(--status-dot);
     }
 
-    .icon-box {
-      width: 48px;
-      height: 48px;
+    .offline-illustration-wrapper {
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: var(--bg-muted);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      color: var(--fg-primary);
-      margin-bottom: 1rem;
+      margin-bottom: 0.875rem;
+    }
+
+    .offline-img {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .offline-img-dark {
+      display: none !important;
+    }
+
+    .offline-img-light {
+      display: block !important;
+    }
+
+    [data-theme="dark"] .offline-img-light {
+      display: none !important;
+    }
+
+    [data-theme="dark"] .offline-img-dark {
+      display: block !important;
+    }
+
+    .offline-sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     h1 {
@@ -239,19 +270,12 @@
       </span>
     </div>
 
-    <div class="icon-box" aria-hidden="true">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="2" y1="2" x2="22" y2="22"></line>
-        <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
-        <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
-        <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path>
-        <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path>
-        <path d="M5 13a10 10 0 0 1 5.24-2.76"></path>
-        <line x1="12" y1="20" x2="12.01" y2="20"></line>
-      </svg>
+    <div class="offline-illustration-wrapper">
+      <img src="/assets/offline-illustration-light.webp" class="offline-img offline-img-light" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="320" height="253" />
+      <img src="/assets/offline-illustration-dark.webp" class="offline-img offline-img-dark" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="320" height="253" />
     </div>
 
-    <h1 id="offline-title">Tidak Ada Koneksi Internet</h1>
+    <h1 id="offline-title" class="offline-sr-only">Tidak Ada Koneksi Internet</h1>
     <p class="offline-desc" id="offline-desc">
       MyFinance hanya dapat diakses saat perangkat Anda terhubung ke internet agar saldo, anggaran, dan catatan transaksi selalu akurat dan tersinkronisasi.
     </p>

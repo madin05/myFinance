@@ -62,6 +62,10 @@ test('offline.html enforces online-only UX cleanly with zero emojis', () => {
   assert.ok(html.includes('id="btn-retry-connection"'));
   assert.ok(html.includes('/favicon.ico?_ping='));
   assert.ok(html.includes('hanya dapat diakses saat perangkat Anda terhubung ke internet'));
+  assert.ok(html.includes('offline-illustration-light.webp'));
+  assert.ok(html.includes('offline-illustration-dark.webp'));
+  assert.ok(fs.existsSync(path.join(PUBLIC_DIR, 'assets', 'offline-illustration-light.webp')));
+  assert.ok(fs.existsSync(path.join(PUBLIC_DIR, 'assets', 'offline-illustration-dark.webp')));
 });
 
 test('service worker enforces online-only navigation and never caches app shell HTML', () => {

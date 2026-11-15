@@ -12,7 +12,11 @@ const PRECACHE_URLS = [
   '/assets/favicon-32x32.png',
   '/assets/favicon-16x16.png',
   '/assets/logo-navbar-light.svg',
-  '/assets/logo-navbar-dark.svg'
+  '/assets/logo-navbar-dark.svg',
+  '/assets/offline-illustration-light.webp',
+  '/assets/offline-illustration-dark.webp',
+  '/assets/offline-illustration-light.png',
+  '/assets/offline-illustration-dark.png'
 ];
 
 const HASHED_ASSET_PATTERN = /\/assets\/.*-[a-zA-Z0-9_-]{6,}\.(js|css|woff2?)$/;

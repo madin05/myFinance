@@ -49,9 +49,12 @@ function ensureOfflineGate({ onRetry } = {}) {
         </span>
       </div>
 
-      <div class="pwa-offline-icon">${createWifiOffSvg()}</div>
+      <div class="pwa-offline-illustration-wrapper">
+        <img src="/assets/offline-illustration-light.webp" class="pwa-offline-img pwa-offline-img-light" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="340" height="269" />
+        <img src="/assets/offline-illustration-dark.webp" class="pwa-offline-img pwa-offline-img-dark" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="340" height="269" />
+      </div>
 
-      <h2 id="pwa-offline-title" class="pwa-offline-title">Koneksi Internet Terputus</h2>
+      <h2 id="pwa-offline-title" class="pwa-offline-sr-only">Koneksi Internet Terputus</h2>
       <p id="pwa-offline-desc" class="pwa-offline-desc">
         MyFinance hanya dapat diakses saat perangkat terhubung ke internet agar saldo, anggaran, dan riwayat transaksi Anda selalu sinkron dan aman.
       </p>
