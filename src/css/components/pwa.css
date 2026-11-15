@@ -109,7 +109,7 @@ body.pwa-offline-locked .main-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.875rem;
+  margin-bottom: 1.125rem;
 }
 
 .pwa-offline-img {
@@ -205,7 +205,13 @@ body.pwa-offline-locked .main-content {
   min-height: 1.25rem;
   margin: 0 0 0.875rem;
   font-size: 0.8125rem;
+  text-align: center;
   color: var(--text-muted);
+}
+
+.pwa-offline-feedback:empty {
+  display: none;
+  margin: 0;
 }
 
 .pwa-btn-primary {

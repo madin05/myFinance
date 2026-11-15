@@ -127,7 +127,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.875rem;
+      margin-bottom: 1.125rem;
     }
 
     .offline-img {
@@ -207,8 +207,14 @@
     .status-feedback {
       min-height: 1.25rem;
       font-size: 0.8125rem;
+      text-align: center;
       color: var(--fg-secondary);
       margin-bottom: 0.875rem;
+    }
+
+    .status-feedback:empty {
+      display: none;
+      margin: 0;
     }
 
     .btn-retry {
@@ -259,17 +265,6 @@
 </head>
 <body>
   <main class="offline-card" role="alertdialog" aria-labelledby="offline-title">
-    <div class="offline-header">
-      <div class="offline-brand">
-        <img src="/assets/favicon-32x32.png" width="22" height="22" alt="Logo MyFinance" style="border-radius: 4px;" />
-        <span>MyFinance</span>
-      </div>
-      <span class="status-chip" id="offline-chip">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Offline</span>
-      </span>
-    </div>
-
     <div class="offline-illustration-wrapper">
       <img src="/assets/offline-illustration-light.webp" class="offline-img offline-img-light" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="320" height="253" />
       <img src="/assets/offline-illustration-dark.webp" class="offline-img offline-img-dark" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="320" height="253" />
