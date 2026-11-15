@@ -4,17 +4,50 @@ import { generateAvatarUrl } from "./storage.js";
 
 export const userStoreMethods = {
   async setUser(userData, extraData = {}) {
-    this.isSyncing = true;
+    const prevUid = this.user?.uid || localStorage.getItem("last_active_uid");
+    const nextUid = userData?.uid;
+    const isGuest = this.user?.role === "guest" || userData?.role === "guest";
+    const isDifferentUser = isGuest || (prevUid && nextUid && prevUid !== nextUid);
+
+    if (isDifferentUser) {
+      this.transactions = [];
+      this.savings = [];
+      this.budgets = [];
+      this.saldos = [];
+      this.notifications = [];
+      localStorage.removeItem("transactions");
+      localStorage.removeItem("savings");
+      localStorage.removeItem("budgets");
+      localStorage.removeItem("saldos");
+    localStorage.removeItem("last_active_uid");
+      localStorage.removeItem("notifications");
+    }
+
+    if (nextUid) {
+      localStorage.setItem("last_active_uid", nextUid);
+    }
+
+    this.isSyncing = Boolean(userData?.token);
     this.user = userData;
     this.save();
 
     if (userData?.token) {
-      userService.createSession(userData.token).catch((err) => {
-        console.error("Gagal membuat session cookie:", err);
-      });
+      // Ensure session cookie is switched to this account before sync reads from DB
+      const sessionPromise = userService
+        .createSession(userData.token)
+        .catch((err) => {
+          console.error("Gagal membuat session cookie:", err);
+        })
+        .finally(() => {
+          if (this._sessionPromise === sessionPromise) {
+            this._sessionPromise = null;
+          }
+        });
+      this._sessionPromise = sessionPromise;
+      await sessionPromise;
     }
 
-    this.sync(extraData);
+    return this.sync(extraData);
   },
 
   async updateProfile(profileData) {
@@ -96,6 +129,7 @@ export const userStoreMethods = {
     localStorage.removeItem("savings");
     localStorage.removeItem("budgets");
     localStorage.removeItem("saldos");
+    localStorage.removeItem("last_active_uid");
 
     try {
       await userService.deleteSession();

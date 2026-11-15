@@ -11,12 +11,15 @@ const isIpOrLocalhost =
   hostname.startsWith("172.") ||
   hostname.startsWith("110.168.");
 
-// When accessing via LAN IP from HP, use http://<LAN_IP>:5000/api so API calls route to Laptop backend
+// When accessing via LAN IP from HP, use http://<LAN_IP>:5000/api so API calls route to Laptop backend.
+// On production (e.g. Vercel / custom domains), ALWAYS use relative "/api" so requests
+// are proxied cleanly via vercel.json rewrites, preventing mixed content and stale env variable issues.
 const envApiUrl = import.meta.env.VITE_API_URL;
-export const API_URL =
-  (isIpOrLocalhost && hostname !== "localhost" && hostname !== "127.0.0.1")
+export const API_URL = !isIpOrLocalhost
+  ? "/api"
+  : (hostname !== "localhost" && hostname !== "127.0.0.1")
     ? `http://${hostname}:5000/api`
-    : (envApiUrl || (isIpOrLocalhost ? `http://${hostname}:5000/api` : "/api"));
+    : (envApiUrl || "http://localhost:5000/api");
 
 export function getAuthHeaders(token, isJson = true) {
   const headers = {};

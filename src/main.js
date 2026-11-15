@@ -12,6 +12,7 @@ import { initCustomSelects } from './ui/select.js';
 import { showConfirm, checkVerification } from './components/notifications.js';
 
 import './style.css';
+import { initPwa } from './pwa/index.js';
 
 // --- reactive UI update ---
 window.addEventListener('store-updated', () => {
@@ -340,7 +341,6 @@ export async function checkAuth() {
           provider: user.providerData[0]?.providerId || 'unknown'
         };
         store.setUser(userData);
-        store.sync();
       }
 
       if (needsVerification) {
@@ -355,17 +355,17 @@ export async function checkAuth() {
       loginView.style.display = 'none';
       appLayout.style.display = 'flex';
 
-      handleRoute();
+      const currentPath = sanitizePath(window.location.pathname);
+      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/saldo', '/laporan', '/akun', '/ai', '/settings', '/faq', '/notifikasi'];
+      if (!validRoutes.includes(currentPath) || window.location.pathname === '/login' || window.location.pathname === '/') {
+        navigateTo('/dashboard');
+      } else {
+        handleRoute();
+      }
       store.updateUI();
 
       const banner = document.getElementById('email-verify-banner');
       if (banner) banner.style.display = 'none';
-      
-      const currentPath = window.location.pathname;
-      const validRoutes = ['/dashboard', '/transaksi', '/anggaran', '/tabungan', '/laporan', '/akun', '/faq', '/notifikasi'];
-      if (!validRoutes.includes(currentPath)) {
-        navigateTo('/dashboard');
-      }
     } else {
       stopVerificationPolling();
       loginView.style.display = 'block';
@@ -410,25 +410,12 @@ export async function checkAuth() {
 
 // --- INITIALIZATION ---
 
-function preloadSvgAssets() {
-  const assets = [
-    '/assets/asset_notif_light.svg',
-    '/assets/asset_notif_dark.svg',
-    '/assets/warning_delete_light.svg',
-    '/assets/warning_delete_dark.svg'
-  ];
-  assets.forEach(src => {
-    const img = new Image();
-    img.src = src;
-  });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  preloadSvgAssets();
   hideLoading();
   initNavigation();
   initCustomSelects();
   initNetworkStatus();
+  initPwa();
   checkAuth();
 
   // Init sticky header global untuk semua halaman
@@ -497,14 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 5. Scroll Lock Observer (Locks background scrolling smoothly when any modal or mobile sidebar is open)
-  const scrollLockObserver = new MutationObserver(() => {
+  let scrollLockRaf = null;
+  const updateScrollLock = () => {
     const hasActiveModal = Boolean(
-      document.querySelector('.modal-overlay.active') || 
-      document.querySelector('.modal-card.active') || 
-      document.querySelector('.detail-tx-overlay.active') || 
-      document.querySelector('.custom-alert-overlay.active') ||
-      document.querySelector('.sidebar.mobile-active') ||
-      document.querySelector('.sidebar-overlay.active')
+      document.querySelector(
+        '.modal-overlay.active, .modal-card.active, .detail-tx-overlay.active, .custom-alert-overlay.active, .sidebar.mobile-active, .sidebar-overlay.active, .pwa-ios-modal-overlay.active'
+      )
     );
 
     const isLocked = document.body.classList.contains('modal-open');
@@ -514,6 +499,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (!hasActiveModal && isLocked) {
       document.body.classList.remove('modal-open');
     }
+  };
+
+  const scrollLockObserver = new MutationObserver(() => {
+    if (scrollLockRaf) return;
+    scrollLockRaf = requestAnimationFrame(() => {
+      scrollLockRaf = null;
+      updateScrollLock();
+    });
   });
   scrollLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 

@@ -1,6 +1,7 @@
 // backend/src/services/otpService.js
 const crypto = require('crypto');
 const prisma = require('./db');
+const { withRetry } = require('./db');
 const admin = require('./firebase');
 
 const OTP_LENGTH = 6;
@@ -24,40 +25,42 @@ function hashOtp(rawOtp) {
  * @returns {Promise<{otpCode: string, expiresAt: Date}>}
  */
 async function generateOtp(userId, type = 'LOGIN_2FA') {
-  // Housekeeping: hapus semua OTP lama untuk user & type ini (expired / used)
-  await prisma.otpVerification.deleteMany({
-    where: {
-      userId,
-      type,
-      OR: [
-        { isUsed: true },
-        { expiresAt: { lt: new Date() } }
-      ]
-    }
+  return await withRetry(async () => {
+    // Housekeeping: hapus semua OTP lama untuk user & type ini (expired / used)
+    await prisma.otpVerification.deleteMany({
+      where: {
+        userId,
+        type,
+        OR: [
+          { isUsed: true },
+          { expiresAt: { lt: new Date() } }
+        ]
+      }
+    });
+
+    // Invalidate OTP pending yang masih aktif untuk type ini
+    await prisma.otpVerification.deleteMany({
+      where: { userId, type }
+    });
+
+    // Generate 6-digit angka random kriptografis
+    const otpCode = String(crypto.randomInt(100000, 999999));
+    const otpHash = hashOtp(otpCode);
+    const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
+
+    await prisma.otpVerification.create({
+      data: {
+        userId,
+        otpHash,
+        type,
+        expiresAt,
+        attempts: 0,
+        isUsed: false
+      }
+    });
+
+    return { otpCode, expiresAt };
   });
-
-  // Invalidate OTP pending yang masih aktif untuk type ini
-  await prisma.otpVerification.deleteMany({
-    where: { userId, type }
-  });
-
-  // Generate 6-digit angka random kriptografis
-  const otpCode = String(crypto.randomInt(100000, 999999));
-  const otpHash = hashOtp(otpCode);
-  const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
-
-  await prisma.otpVerification.create({
-    data: {
-      userId,
-      otpHash,
-      type,
-      expiresAt,
-      attempts: 0,
-      isUsed: false
-    }
-  });
-
-  return { otpCode, expiresAt };
 }
 
 /**

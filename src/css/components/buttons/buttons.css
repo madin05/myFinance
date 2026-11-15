@@ -1,0 +1,299 @@
+/* Base Buttons & Actions */
+.btn {
+  padding: 0 0.85rem;
+  height: 36px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.btn-full {
+  width: 100%;
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff !important;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.2);
+}
+
+[data-theme="dark"] .btn-primary {
+  background-color: var(--primary) !important;
+  color: #120e1d !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background-color: var(--primary-dark) !important;
+  color: #0b0716 !important;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .btn-primary i,
+[data-theme="dark"] .btn-primary svg {
+  color: #120e1d !important;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.btn-outline:hover {
+  background-color: var(--bg-color);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .btn-outline {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.btn-white {
+  background-color: var(--white);
+  color: var(--primary);
+}
+
+.btn-white:hover {
+  background-color: #f8fafc;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.btn-icon-absolute {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--white);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-icon-absolute:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.filter-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .filter-btn:hover {
+  background-color: var(--border);
+  color: var(--text-main);
+}
+
+.filter-btn.active-filter {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+/* Split Button & Download Group */
+.download-group {
+  display: flex;
+  align-items: center;
+  background: var(--primary);
+  border-radius: 100px;
+  box-shadow: 0 4px 15px rgba(63, 54, 229, 0.25);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.download-group:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(63, 54, 229, 0.35);
+}
+
+.download-main {
+  padding: 0 1rem;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 100px 0 0 100px;
+}
+
+.download-toggle {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+  border-radius: 0 100px 100px 0;
+}
+
+.download-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .download-group {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .download-main,
+[data-theme="dark"] .download-toggle {
+  color: #120e1d !important;
+  border-right-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .download-main i,
+[data-theme="dark"] .download-toggle i {
+  color: #120e1d !important;
+}
+
+.download-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 160px;
+  padding: 8px;
+  z-index: 2000;
+  display: none;
+  animation: dropdownIn 0.2s ease-out;
+}
+
+.section-header {
+  position: relative;
+  z-index: 10;
+}
+
+.download-menu.active {
+  display: block;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.menu-item:hover {
+  background: var(--bg-color);
+}
+
+.menu-item i {
+  font-size: 1.1rem;
+}
+
+.menu-item.active {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.btn-icon-absolute[data-tooltip] {
+  position: absolute;
+}

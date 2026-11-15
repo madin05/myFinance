@@ -44,7 +44,14 @@ build
 *.sln
 *.sw?
 
-archive/
+# Vercel & local tooling
+.vercel
+.cache
+.vite
+coverage
+*.tmp
+*.temp
 
+archive/
 
 .agents

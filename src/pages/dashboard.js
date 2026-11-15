@@ -14,6 +14,14 @@ export function renderDashboard() {
   const container = document.getElementById("page-content");
   if (!container) return;
 
+  // Jika data masih dalam proses sinkronisasi pertama kali dan belum ada data lokal, tampilkan skeleton
+  if (store.isSyncing && (!store.transactions || store.transactions.length === 0) && (!store.saldos || store.saldos.length === 0)) {
+    import("../components/skeleton.js").then((m) => {
+      container.innerHTML = m.getDashboardSkeleton();
+    });
+    return;
+  }
+
   const stats = store.getStats();
 
   const getBadge = (diff, type) => {
@@ -40,11 +48,7 @@ export function renderDashboard() {
     .map((tx) => {
       const isIncome = tx.type === "income";
       const isTransfer = tx.type === "transfer";
-      const colorClass = isTransfer
-        ? "text-primary"
-        : isIncome
-          ? "text-green"
-          : "text-red";
+      const colorClass = "text-main";
       const sign = isTransfer ? "" : isIncome ? "+" : "-";
 
       let ribbonColorClass = "ribbon-indigo";
@@ -242,8 +246,8 @@ export function renderDashboard() {
       </div>
     </div>
 
-    <!-- Slider Dots Indicator (Mobile Only) -->
-    <div class="slider-dots mobile-only" id="stats-slider-dots">
+    <!-- Slider Dots Indicator (Mobile & Tablet) -->
+    <div class="slider-dots" id="stats-slider-dots">
       <span class="dot active" data-index="0"></span>
       <span class="dot" data-index="1"></span>
       <span class="dot" data-index="2"></span>
@@ -436,6 +440,13 @@ export function renderDashboard() {
 
   // Init Slider Dots untuk Mobile Stats Cards
   initStatsCardsSliderDots();
+
+  // Auto-start tutorial onboarding untuk pengguna baru yang belum pernah menyelesaikannya
+  setTimeout(() => {
+    import("../components/tutorial.js")
+      .then((m) => m.startProductTutorial())
+      .catch(() => {});
+  }, 700);
 }
 
 function initStatsCardsSliderDots() {

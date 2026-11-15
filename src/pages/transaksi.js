@@ -580,11 +580,7 @@ function renderTableBody(container) {
     .map((tx) => {
       const isIncome = tx.type === "income";
       const isTransfer = tx.type === "transfer";
-      const colorClass = isTransfer
-        ? "text-primary"
-        : isIncome
-          ? "text-green"
-          : "text-red";
+      const colorClass = "text-main";
       const sign = isTransfer ? "" : isIncome ? "+" : "-";
       let ribbonColorClass = "ribbon-indigo";
       const lowerKategori = (tx.kategori || "").toLowerCase();

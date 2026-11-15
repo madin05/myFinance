@@ -35,16 +35,29 @@ export async function startProductTutorial(force = false) {
     // 1. Check if already completed in localStorage for this user
     if (localStorage.getItem(key)) return;
 
-    // 2. Tutorial is strictly for BRAND NEW registered users.
-    // If user has existing financial data or is not explicitly a new registration, skip tutorial.
+    // Tunggu jika sinkronisasi data awal sedang berlangsung
+    if (store.isSyncing) {
+      await new Promise((resolve) => {
+        const handler = () => {
+          if (!store.isSyncing) {
+            window.removeEventListener('store-updated', handler);
+            resolve();
+          }
+        };
+        window.addEventListener('store-updated', handler);
+        setTimeout(resolve, 1500);
+      });
+    }
+
+    // 2. Tutorial untuk pengguna baru (belum memiliki data keuangan)
     const hasExistingData = Boolean(
       (store.transactions && store.transactions.length > 0) ||
       (store.saldos && store.saldos.length > 0) ||
-      (store.wishlists && store.wishlists.length > 0) ||
+      (store.savings && store.savings.length > 0) ||
       (store.budgets && store.budgets.length > 0)
     );
 
-    if (hasExistingData || !store.user?.isNewUser) {
+    if (hasExistingData && !store.user?.isNewUser) {
       localStorage.setItem(key, 'true');
       return;
     }

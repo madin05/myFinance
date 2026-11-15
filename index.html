@@ -1,18 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>myfinanceid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI</title>
+    <meta name="description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian. Kelola finansial pribadi lebih rapi dan terkontrol." />
+    <meta name="keywords" content="aplikasi keuangan, pencatat keuangan, catat keuangan, asisten keuangan ai, money manager, financial tracker, anggaran bulanan, tabungan, myfinance" />
+    <meta name="author" content="MyFinance" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://myfinanceid.vercel.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://myfinanceid.vercel.app/" />
+    <meta property="og:title" content="MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI" />
+    <meta property="og:description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian." />
+    <meta property="og:image" content="https://myfinanceid.vercel.app/assets/android-chrome-512x512.png" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content="MyFinance" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://myfinanceid.vercel.app/" />
+    <meta name="twitter:title" content="MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI" />
+    <meta name="twitter:description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian." />
+    <meta name="twitter:image" content="https://myfinanceid.vercel.app/assets/android-chrome-512x512.png" />
+
+    <meta name="theme-color" content="#09090b" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MyFinance",
+        "url": "https://myfinanceid.vercel.app/",
+        "description": "Aplikasi pencatat keuangan cerdas dengan asisten AI, manajemen anggaran bulanan, dan perencanaan tabungan impian.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "All",
+        "inLanguage": "id-ID"
+      }
+    </script>
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
     <link rel="manifest" href="/assets/site.webmanifest" />
-    <!-- Preload Modal & Notification SVG Illustrations -->
-    <link rel="preload" as="image" href="/assets/asset_notif_light.svg" type="image/svg+xml" />
-    <link rel="preload" as="image" href="/assets/asset_notif_dark.svg" type="image/svg+xml" />
-    <link rel="preload" as="image" href="/assets/warning_delete_light.svg" type="image/svg+xml" />
-    <link rel="preload" as="image" href="/assets/warning_delete_dark.svg" type="image/svg+xml" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyFinance" />
     <script>
       // Apply saved theme ASAP to avoid flash / resetting on refresh.
       try {
@@ -25,13 +63,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Sortable JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   </head>
   <body>
+    <noscript>
+      <div style="padding: 24px; text-align: center; font-family: sans-serif; max-width: 600px; margin: 40px auto; line-height: 1.6;">
+        <h1>MyFinance - Asisten dan Pencatat Keuangan Pribadi</h1>
+        <p>Aplikasi pencatat keuangan cerdas dengan fitur asisten AI, pelacak pengeluaran, anggaran bulanan, dan tabungan impian.</p>
+        <p>Silakan aktifkan JavaScript di browser Anda untuk menjalankan aplikasi MyFinance.</p>
+      </div>
+    </noscript>
     
     <!-- Sidebar Overlay (Mobile Only) -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -97,6 +138,10 @@
             <i class="ph ph-user"></i>
             <span>Akun</span>
           </a>
+          <button type="button" class="nav-item pwa-nav-install-btn" id="btn-install-pwa-sidebar" data-pwa-install data-tooltip-right="Pasang Aplikasi" hidden style="display: none;">
+            <i class="ph ph-download-simple"></i>
+            <span>Pasang Aplikasi</span>
+          </button>
           <a href="/faq" class="nav-item nav-item-bottom" data-route="faq" data-tooltip-right="Bantuan">
             <i class="ph ph-question"></i>
             <span>Bantuan</span>
@@ -241,6 +286,9 @@
                 <a href="/faq" class="dropdown-item">
                   <i class="ph ph-question"></i> Bantuan
                 </a>
+                <button type="button" class="dropdown-item" id="btn-install-pwa-dropdown" data-pwa-install hidden style="display: none;">
+                  <i class="ph ph-download-simple"></i> Pasang Aplikasi
+                </button>
                 <div class="dropdown-divider profile-dropdown-theme-wrapper"></div>
                 <div class="dropdown-item profile-dropdown-theme-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; cursor: default; user-select: none;">
                   <div class="theme-toggle-group" style="display: flex !important; margin: 0 auto;">
@@ -288,7 +336,12 @@
               var c = document.getElementById('page-content');
               if (!c) return;
               if (p === '/transaksi') {
-                c.innerHTML = '<div class="transactions-section"><div class="section-header" style="flex-wrap: wrap; gap: 1rem;"><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px;"></div><div style="display: flex; gap: 1rem; align-items: center;"><div class="skeleton" style="width: 44px; height: 44px; border-radius: 12px;"></div><div class="skeleton" style="width: 120px; height: 44px; border-radius: 12px;"></div></div></div><div class="table-container"><div class="skeleton" style="height: 40px; width: 100%; border-radius: 10px;"></div><div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;"><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div><div class="skeleton" style="height: 64px; width: 100%; border-radius: 14px;"></div></div></div></div>';
+                var isM = window.innerWidth <= 768;
+                if (isM) {
+                  c.innerHTML = '<div class="transactions-section"><div class="section-header"><div class="section-header-top"><div class="skeleton" style="width: 170px; height: 26px; border-radius: 8px;"></div><div class="skeleton" style="width: 95px; height: 38px; border-radius: 10px;"></div></div></div><div class="table-container"><table class="transactions-table"><tbody id="tx-table-body">' + Array(6).fill('<tr class="tx-mobile-card"><td colspan="6" style="padding:0!important;border:none!important;background:transparent!important;display:block!important;width:100%!important;text-align:left!important;"><div class="tx-card-inner"><div class="tx-horizontal-ribbon-container ribbon-skeleton"><div class="tx-horizontal-ribbon"><div class="skeleton" style="width: 65px; height: 12px; border-radius: 4px;"></div></div><span class="tx-ribbon-ear" aria-hidden="true"></span></div><div class="tx-card-top-row"><div class="skeleton" style="width: 85px; height: 18px; border-radius: 6px;"></div></div><div class="tx-card-desc"><div class="skeleton" style="width: 55%; height: 16px; border-radius: 6px;"></div></div><div class="tx-card-meta"><div class="skeleton" style="width: 38%; height: 12px; border-radius: 4px; margin-top: 4px;"></div></div><div class="tx-card-kebab"><div class="skeleton" style="width: 24px; height: 24px; border-radius: 6px;"></div></div></div></td></tr>').join('') + '</tbody></table></div></div>';
+                } else {
+                  c.innerHTML = '<div class="transactions-section"><div class="section-header"><div class="section-header-top"><div class="skeleton" style="width: 170px; height: 26px; border-radius: 8px;"></div><div class="skeleton" style="width: 95px; height: 38px; border-radius: 10px;"></div></div></div><div class="table-container"><table class="transactions-table"><thead><tr><th>Tanggal</th><th>Kategori</th><th>Metode</th><th>Keterangan</th><th class="text-right">Harga</th><th class="text-right">Aksi</th></tr></thead><tbody id="tx-table-body">' + Array(7).fill('<tr><td><div class="skeleton" style="width: 80px; height: 16px; border-radius: 6px;"></div></td><td><span class="badge-soft" style="border: 1px solid var(--border);"><div class="skeleton" style="width: 80px; height: 14px; border-radius: 4px;"></div></span></td><td><div class="skeleton" style="width: 75px; height: 16px; border-radius: 6px;"></div></td><td><div class="skeleton" style="width: 140px; height: 16px; border-radius: 6px;"></div></td><td class="text-right"><div class="skeleton" style="width: 90px; height: 18px; border-radius: 6px; margin-left: auto;"></div></td><td class="text-right"><div class="skeleton" style="width: 28px; height: 28px; border-radius: 6px; margin-left: auto;"></div></td></tr>').join('') + '</tbody></table></div></div>';
+                }
               } else if (p === '/saldo') {
                 c.innerHTML = '<div class="saldo-section"><div class="section-header"><div><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 240px; height: 18px; border-radius: 8px;"></div></div><div class="skeleton" style="width: 160px; height: 44px; border-radius: 12px;"></div></div><div class="saldo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;"><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 160px; border-radius: 24px; border: none;"></div></div></div>';
               } else if (p === '/anggaran') {
@@ -298,7 +351,7 @@
               } else if (p === '/laporan') {
                 c.innerHTML = '<div class="section-header" style="flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem;"><div><div class="skeleton" style="width: 220px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 280px; height: 18px; border-radius: 8px;"></div></div><div style="display: flex; gap: 1rem; flex-wrap: wrap;"><div class="skeleton" style="width: 240px; height: 44px; border-radius: 12px;"></div><div class="skeleton" style="width: 130px; height: 44px; border-radius: 12px;"></div></div></div><div class="visual-analysis" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;"><div class="stat-card" style="padding: 1.5rem;"><div class="skeleton" style="width: 180px; height: 24px; border-radius: 8px; margin-bottom: 1.5rem;"></div><div style="height: 250px; display: flex; align-items: center; justify-content: center;"><div class="skeleton skeleton-circle" style="width: 170px; height: 170px; border-radius: 50%;"></div></div></div><div class="stat-card" style="padding: 1.5rem;"><div class="skeleton" style="width: 160px; height: 24px; border-radius: 8px; margin-bottom: 1.5rem;"></div><div style="height: 250px; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 10px 0;"><div class="skeleton" style="height: 40%; width: 100%; border-radius: 12px;"></div><div class="skeleton" style="height: 25%; width: 100%; border-radius: 12px;"></div></div></div></div>';
               } else if (p === '/akun') {
-                c.innerHTML = '<div class="account-settings"><div class="section-header"><div><div class="skeleton" style="width: 260px; height: 32px; border-radius: 10px; margin-bottom: 10px;"></div><div class="skeleton" style="width: 340px; height: 18px; border-radius: 8px;"></div></div></div><div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;"><div style="display: flex; flex-direction: column; gap: 1.5rem;"><div class="stat-card skeleton" style="height: 320px; border-radius: 24px; border: none;"></div><div class="stat-card skeleton" style="height: 140px; border-radius: 24px; border: none;"></div></div><div class="stat-card skeleton" style="height: 480px; border-radius: 24px; border: none;"></div></div></div>';
+                c.innerHTML = '<div class="account-settings"><div class="profile-hero-banner"><div class="profile-hero-glow glow-1"></div><div class="profile-hero-glow glow-2"></div><div class="profile-hero-header"><span class="profile-hero-badge" style="border: 1px solid rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.2);"><div class="skeleton" style="width: 100px; height: 12px; border-radius: 100px;"></div></span><div class="skeleton" style="width: 180px; height: 26px; border-radius: 8px; margin-top: 6px;"></div></div></div><div class="account-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr)); gap: 1.5rem; margin-top: 1.5rem; align-items: start;"><div style="display: flex; flex-direction: column; gap: 1.5rem;"><div class="stat-card profile-card"><div class="profile-card-body"><div class="avatar-wrapper"><div class="avatar-skeleton-circle"><div class="skeleton skeleton-circle" style="width: 100%; height: 100%;"></div></div></div><div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0.15rem 0 0.35rem;"><div class="skeleton" style="width: 130px; height: 24px; border-radius: 6px;"></div><div class="skeleton" style="width: 22px; height: 22px; border-radius: 6px;"></div></div><div style="display: flex; justify-content: center; margin-bottom: 1.15rem;"><div class="skeleton" style="width: 170px; height: 15px; border-radius: 6px;"></div></div><div class="profile-meta-grid"><div class="profile-meta-col" style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div class="skeleton" style="width: 48px; height: 11px; border-radius: 4px;"></div><div class="skeleton" style="width: 72px; height: 15px; border-radius: 4px;"></div></div><div class="profile-meta-col border-divider" style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div class="skeleton" style="width: 38px; height: 11px; border-radius: 4px;"></div><div class="skeleton" style="width: 48px; height: 15px; border-radius: 4px;"></div></div><div class="profile-meta-col" style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div class="skeleton" style="width: 28px; height: 11px; border-radius: 4px;"></div><div class="skeleton" style="width: 48px; height: 15px; border-radius: 4px;"></div></div></div></div></div></div><div style="display: flex; flex-direction: column; gap: 1.5rem; position: relative;"><div class="stat-card" style="padding: 2rem;"><div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;"><div class="skeleton" style="width: 22px; height: 22px; border-radius: 6px;"></div><div class="skeleton" style="width: 130px; height: 20px; border-radius: 6px;"></div></div><div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;"><div class="skeleton" style="width: 110px; height: 16px; border-radius: 4px;"></div><div class="skeleton" style="width: 18px; height: 18px; border-radius: 4px;"></div></div><div style="display: flex; justify-content: space-between; align-items: center;"><div style="display: flex; flex-direction: column; gap: 6px;"><div class="skeleton" style="width: 160px; height: 16px; border-radius: 4px;"></div><div class="skeleton" style="width: 210px; height: 12px; border-radius: 4px;"></div></div><div class="skeleton" style="width: 44px; height: 24px; border-radius: 100px;"></div></div></div><div class="stat-card" style="padding: 2rem; border: 1.5px solid rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.02);"><div class="skeleton" style="width: 95px; height: 18px; border-radius: 6px; margin-bottom: 0.5rem;"></div><div class="skeleton" style="width: 90%; height: 13px; border-radius: 4px; margin-bottom: 0.35rem;"></div><div class="skeleton" style="width: 60%; height: 13px; border-radius: 4px; margin-bottom: 1.25rem;"></div><div class="skeleton" style="width: 100%; height: 48px; border-radius: 12px;"></div></div></div></div></div>';
               } else if (p === '/ai') {
                 c.innerHTML = '<div class="ai-page-skeleton" style="display: flex; gap: 1.25rem; height: calc(100vh - 140px);"><div class="skeleton" style="width: 280px; height: 100%; border-radius: 20px;"></div><div class="skeleton" style="flex: 1; height: 100%; border-radius: 20px;"></div></div>';
               } else {

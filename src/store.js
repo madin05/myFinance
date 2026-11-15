@@ -7,7 +7,6 @@ import { budgetService } from "./services/budgetService.js";
 
 import {
   getInitialStorage,
-  DEFAULT_TRANSACTIONS,
   _mapSavingData,
   _mapAccountData,
   formatCurrency,
@@ -24,7 +23,7 @@ import { notificationStoreMethods } from "./store/notificationStore.js";
 
 export const store = {
   user: getInitialStorage("user", null),
-  transactions: getInitialStorage("transactions", DEFAULT_TRANSACTIONS),
+  transactions: getInitialStorage("transactions", []),
   savings: getInitialStorage("savings", []),
   budgets: getInitialStorage("budgets", []),
   saldos: getInitialStorage("saldos", []),
@@ -41,6 +40,9 @@ export const store = {
 
   async sync(extraData = {}) {
     if (!this.user?.token) return;
+    if (this._sessionPromise) {
+      await this._sessionPromise.catch(() => {});
+    }
     this.isSyncing = true;
 
     try {
@@ -63,10 +65,8 @@ export const store = {
         };
       }
 
-      if (Array.isArray(dbTxs) && dbTxs.length > 0) {
+      if (Array.isArray(dbTxs)) {
         this.transactions = dbTxs.map((tx) => this._mapTransaction(tx));
-      } else if (!this.transactions || this.transactions.length === 0) {
-        this.transactions = DEFAULT_TRANSACTIONS;
       }
 
       if (Array.isArray(dbBudgets)) {

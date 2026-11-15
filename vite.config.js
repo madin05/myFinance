@@ -6,7 +6,7 @@ export default defineConfig({
     target: 'es2020',
 
     // Batas warning chunk size (default 500kb, naikan biar gak spam warning)
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
 
     rollupOptions: {
       output: {
@@ -14,12 +14,12 @@ export default defineConfig({
         // agar browser bisa cache vendor lebih lama
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            // Biarkan jspdf dan exceljs di-split terpisah sesuai dynamic import on-demand
+            if (id.includes('jspdf') || id.includes('jspdf-autotable') || id.includes('exceljs')) {
+              return;
+            }
             // Firebase ke chunk sendiri
             if (id.includes('firebase')) return 'firebase';
-            // jsPDF ke chunk sendiri (library besar)
-            if (id.includes('jspdf') || id.includes('jspdf-autotable')) return 'pdf';
-            // xlsx ke chunk sendiri
-            if (id.includes('xlsx')) return 'xlsx';
             // Sisanya (floating-ui, dsb) ke vendor
             return 'vendor';
           }

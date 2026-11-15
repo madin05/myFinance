@@ -1,0 +1,426 @@
+/* Base Cards & Stats Summary Cards */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-cards-slider-container {
+  display: contents;
+}
+
+/* Slider Pagination Dots (hidden by default on desktop) */
+.slider-dots {
+  display: none;
+}
+
+.stat-card {
+  background-color: var(--card-bg);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.35rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-light);
+}
+
+/* Elegant Fintech Geometric Pattern Overlay */
+.stats-cards .stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: 
+    radial-gradient(circle at 88% 15%, rgba(255, 255, 255, 0.3) 0%, transparent 55%),
+    radial-gradient(circle at 10% 85%, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg width='44' height='44' viewBox='0 0 44 44' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.13'%3E%3Cpath d='M0 22 L22 0 L44 22 L22 44 Z'/%3E%3Ccircle cx='22' cy='22' r='1.5' fill='%23ffffff' fill-opacity='0.22' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 100% 100%, 100% 100%, 28px 28px;
+  background-position: 0 0, 0 0, 0 0;
+  opacity: 0.85;
+  transition: opacity 0.3s ease, transform 0.4s ease;
+}
+
+.stats-cards .stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 0.75rem;
+  position: relative;
+  z-index: 2;
+  min-height: 28px;
+}
+
+.stat-body {
+  position: relative;
+  z-index: 2;
+}
+
+.stat-footer {
+  position: relative;
+  z-index: 2;
+}
+
+.stat-watermark {
+  position: absolute !important;
+  right: 8px !important;
+  bottom: 4px !important;
+  font-size: 4.2rem !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease !important;
+  line-height: 1 !important;
+  transform: rotate(-6deg) !important;
+  opacity: 0.22 !important;
+}
+
+/* 3D Rendered Interactive Watermark Icons */
+.stat-3d-icon,
+.stat-watermark.stat-3d-icon,
+#card-total-saldo .stat-watermark.stat-3d-icon,
+#card-pemasukan .stat-watermark.stat-3d-icon,
+#card-pengeluaran .stat-watermark.stat-3d-icon {
+  width: 82px !important;
+  height: 82px !important;
+  object-fit: contain !important;
+  right: -2px !important;
+  bottom: -4px !important;
+  font-size: unset !important;
+  line-height: unset !important;
+  opacity: 0.85 !important;
+  transform: rotate(-4deg) scale(1) !important;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25)) !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, filter 0.3s ease !important;
+}
+
+.stat-card:hover .stat-3d-icon,
+.stat-card:hover .stat-watermark.stat-3d-icon,
+#card-total-saldo:hover .stat-watermark.stat-3d-icon,
+#card-pemasukan:hover .stat-watermark.stat-3d-icon,
+#card-pengeluaran:hover .stat-watermark.stat-3d-icon {
+  transform: translateY(-4px) scale(1.12) rotate(-8deg) !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.35)) !important;
+}
+
+[data-theme="dark"] .stat-3d-icon,
+[data-theme="dark"] .stat-watermark.stat-3d-icon,
+[data-theme="dark"] #card-total-saldo .stat-watermark.stat-3d-icon,
+[data-theme="dark"] #card-pemasukan .stat-watermark.stat-3d-icon,
+[data-theme="dark"] #card-pengeluaran .stat-watermark.stat-3d-icon,
+.dark .stat-3d-icon,
+.dark .stat-watermark.stat-3d-icon,
+.dark #card-total-saldo .stat-watermark.stat-3d-icon,
+.dark #card-pemasukan .stat-watermark.stat-3d-icon,
+.dark #card-pengeluaran .stat-watermark.stat-3d-icon {
+  opacity: 0.9 !important;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5)) !important;
+}
+
+[data-theme="dark"] .stat-card:hover .stat-3d-icon,
+[data-theme="dark"] .stat-card:hover .stat-watermark.stat-3d-icon,
+.dark .stat-card:hover .stat-3d-icon,
+.dark .stat-card:hover .stat-watermark.stat-3d-icon {
+  opacity: 1 !important;
+  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.65)) !important;
+}
+
+.icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  background-color: var(--border-light, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+/* Card Total Saldo (Light Mode) */
+#card-total-saldo {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 25px -5px rgba(2, 132, 199, 0.35) !important;
+}
+
+#card-total-saldo .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-total-saldo .stat-value {
+  color: #ffffff !important;
+}
+
+#card-total-saldo .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-total-saldo .stat-icon-wrapper i,
+#card-total-saldo i {
+  color: #ffffff !important;
+}
+
+#card-total-saldo .stat-watermark:not(.stat-3d-icon) {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+/* Card Pemasukan (Light Mode) */
+#card-pemasukan {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.28) !important;
+}
+
+#card-pemasukan .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-pemasukan .stat-value {
+  color: #ffffff !important;
+}
+
+#card-pemasukan .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-pemasukan .stat-icon-wrapper i {
+  color: #ffffff !important;
+}
+
+#card-pemasukan .stat-watermark:not(.stat-3d-icon) {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+#card-pemasukan .stat-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Card Pengeluaran (Light Mode) */
+#card-pengeluaran {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.28) !important;
+}
+
+#card-pengeluaran .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#card-pengeluaran .stat-value {
+  color: #ffffff !important;
+}
+
+#card-pengeluaran .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+#card-pengeluaran .stat-icon-wrapper i {
+  color: #ffffff !important;
+}
+
+#card-pengeluaran .stat-watermark:not(.stat-3d-icon) {
+  color: #ffffff !important;
+  opacity: 0.22 !important;
+}
+
+#card-pengeluaran .stat-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* Dark Mode Overrides for Stats Cards */
+[data-theme="dark"] #card-total-saldo,
+.dark #card-total-saldo {
+  background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #9d4edd 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 24px rgba(76, 29, 149, 0.45) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-value {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper i,
+[data-theme="dark"] #card-total-saldo i {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-watermark:not(.stat-3d-icon) {
+  color: #ffffff !important;
+  opacity: 0.2 !important;
+}
+
+[data-theme="dark"] #card-pemasukan,
+.dark #card-pemasukan {
+  background: linear-gradient(135deg, #064e3b 0%, #047857 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(6, 78, 59, 0.6) !important;
+}
+
+[data-theme="dark"] #card-pengeluaran,
+.dark #card-pengeluaran {
+  background: linear-gradient(135deg, #710e2b 0%, #be123c 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(113, 14, 43, 0.6) !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper,
+.dark #card-total-saldo .stat-icon-wrapper {
+  background-color: #292454;
+  border: 1px solid #5247A3;
+  color: #A5B4FC !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-icon-wrapper i,
+.dark #card-total-saldo .stat-icon-wrapper i {
+  color: #A5B4FC !important;
+}
+
+[data-theme="dark"] #card-pemasukan .stat-icon-wrapper,
+.dark #card-pemasukan .stat-icon-wrapper {
+  background-color: #104232;
+  border: 1px solid #1D7A5C;
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] #card-pemasukan .stat-icon-wrapper i,
+.dark #card-pemasukan .stat-icon-wrapper i {
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] #card-pengeluaran .stat-icon-wrapper,
+.dark #card-pengeluaran .stat-icon-wrapper {
+  background-color: #4C1926;
+  border: 1px solid #8A253E;
+  color: #F87171 !important;
+}
+
+[data-theme="dark"] #card-pengeluaran .stat-icon-wrapper i,
+.dark #card-pengeluaran .stat-icon-wrapper i {
+  color: #F87171 !important;
+}
+
+[data-theme="dark"] #card-total-saldo .stat-watermark:not(.stat-3d-icon), .dark #card-total-saldo .stat-watermark:not(.stat-3d-icon) { color: var(--primary, #818CF8); opacity: 0.22; }
+[data-theme="dark"] #card-pemasukan .stat-watermark:not(.stat-3d-icon), .dark #card-pemasukan .stat-watermark:not(.stat-3d-icon) { color: #ffffff; opacity: 0.24; }
+[data-theme="dark"] #card-pengeluaran .stat-watermark:not(.stat-3d-icon), .dark #card-pengeluaran .stat-watermark:not(.stat-3d-icon) { color: #ffffff; opacity: 0.24; }
+
+.stat-card:hover .stat-watermark:not(.stat-3d-icon) {
+  transform: scale(1.12) rotate(-10deg) !important;
+  opacity: 0.38 !important;
+}
+
+.stat-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-badge.up { background-color: var(--green-light); color: var(--green); }
+.stat-badge.down { background-color: var(--red-light); color: var(--red); }
+
+.stat-body {
+  z-index: 2;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.progress-bar-container {
+  height: 6px;
+  background-color: var(--bg-color);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.bg-green { background-color: var(--green); }
+.bg-red { background-color: var(--red); }
+.bg-blue { background-color: var(--primary); }
+.bg-white { background-color: var(--white); }
+.bg-gray-light { background-color: var(--border-light); }
+.bg-white-dim { background-color: rgba(255,255,255,0.2); }
+
+.stat-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar-group {
+  display: flex;
+}
+
+.avatar-group img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  margin-left: -8px;
+}
+.avatar-group img:first-child { margin-left: 0; }

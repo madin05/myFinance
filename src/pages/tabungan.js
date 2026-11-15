@@ -115,6 +115,35 @@ function renderHistoryGoalItem(g) {
 // Reference to current Esc listener for proper teardown
 let currentEscHandler = null;
 
+let sortablePromise = null;
+function loadSortableJs() {
+  if (typeof window.Sortable !== 'undefined') return Promise.resolve(window.Sortable);
+  if (sortablePromise) return sortablePromise;
+
+  sortablePromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src*="sortablejs"]');
+    if (existing) {
+      if (typeof window.Sortable !== 'undefined') {
+        resolve(window.Sortable);
+        return;
+      }
+      existing.addEventListener('load', () => resolve(window.Sortable));
+      existing.addEventListener('error', reject);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
+    script.async = true;
+    script.onload = () => resolve(window.Sortable);
+    script.onerror = (err) => {
+      sortablePromise = null;
+      reject(err);
+    };
+    document.head.appendChild(script);
+  });
+  return sortablePromise;
+}
+
 export function renderTabungan() {
   const existingPanel = document.getElementById('history-drawer');
   const isHistoryOpen = existingPanel ? existingPanel.classList.contains('open') : false;
@@ -337,36 +366,45 @@ export function renderTabungan() {
     });
   });
 
-  // --- SortableJS Logic ---
+  // --- SortableJS Logic (Lazy-loaded on-demand) ---
   const listContainer = document.getElementById('wishlist-container');
-  if (window.Sortable && listContainer) {
-    new Sortable(listContainer, {
-      animation: 250,
-      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-      handle: '.drag-handle',
-      ghostClass: 'dragging',
-      dragClass: 'sortable-drag',
-      forceFallback: true,
-      fallbackTolerance: 3,
-      fallbackOnBody: true,
-      delay: 0,
-      delayOnTouchOnly: false,
-      swapThreshold: 1,
-      onStart: function() {
-        listContainer.classList.add('is-dragging');
-        document.body.style.userSelect = 'none';
-      },
-      onEnd: function() {
-        listContainer.classList.remove('is-dragging');
-        document.body.style.userSelect = '';
-        const newOrderIds = [...listContainer.querySelectorAll('.wishlist-item')].map(el => Number(el.dataset.id));
-        const newOrder = newOrderIds.map(id => store.savings.find(s => s.id === id)).filter(Boolean);
-        
-        store.reorderSavingsRemote(newOrder).catch((err) => {
-          showToast('Gagal simpan urutan wishlist: ' + (err?.message || err), 'error');
-          store.reorderSavings(store.savings);
-        });
-      }
-    });
+  if (listContainer) {
+    const setupSortable = () => {
+      if (!window.Sortable || !document.getElementById('wishlist-container')) return;
+      new Sortable(listContainer, {
+        animation: 250,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        handle: '.drag-handle',
+        ghostClass: 'dragging',
+        dragClass: 'sortable-drag',
+        forceFallback: true,
+        fallbackTolerance: 3,
+        fallbackOnBody: true,
+        delay: 0,
+        delayOnTouchOnly: false,
+        swapThreshold: 1,
+        onStart: function() {
+          listContainer.classList.add('is-dragging');
+          document.body.style.userSelect = 'none';
+        },
+        onEnd: function() {
+          listContainer.classList.remove('is-dragging');
+          document.body.style.userSelect = '';
+          const newOrderIds = [...listContainer.querySelectorAll('.wishlist-item')].map(el => Number(el.dataset.id));
+          const newOrder = newOrderIds.map(id => store.savings.find(s => s.id === id)).filter(Boolean);
+          
+          store.reorderSavingsRemote(newOrder).catch((err) => {
+            showToast('Gagal simpan urutan wishlist: ' + (err?.message || err), 'error');
+            store.reorderSavings(store.savings);
+          });
+        }
+      });
+    };
+
+    if (window.Sortable) {
+      setupSortable();
+    } else {
+      loadSortableJs().then(setupSortable).catch(() => {});
+    }
   }
 }
