@@ -54,12 +54,19 @@ self.addEventListener('message', (event) => {
 
 async function handleNavigateRequest(request) {
   try {
-    return await fetch(request);
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put('/index.html', networkResponse.clone());
+    }
+    return networkResponse;
   } catch (err) {
+    const cachedShell = (await caches.match('/index.html')) || (await caches.match('/'));
+    if (cachedShell) return cachedShell;
     const offlinePage = await caches.match('/offline.html');
     if (offlinePage) return offlinePage;
     return new Response(
-      '<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>Offline - MyFinance</title></head><body style="font-family:sans-serif;padding:2rem;text-align:center"><h1>Tidak Ada Koneksi Internet</h1><p>MyFinance hanya dapat diakses saat perangkat terhubung ke internet.</p></body></html>',
+      '<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>Offline - MyFinance</title></head><body style="font-family:sans-serif;padding:2rem;text-align:center"><h1>Oops kamu offline nih, periksa jaringanmu kembali.</h1></body></html>',
       {
         status: 503,
         headers: { 'Content-Type': 'text/html; charset=utf-8' }

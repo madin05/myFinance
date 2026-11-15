@@ -53,7 +53,7 @@ test('site.webmanifest is valid and all referenced assets exist on disk', () => 
   }
 });
 
-test('offline.html enforces online-only UX cleanly with zero emojis', () => {
+test('offline.html enforces clean minimal offline UX with zero emojis', () => {
   const offlinePath = path.join(PUBLIC_DIR, 'offline.html');
   const html = fs.readFileSync(offlinePath, 'utf8');
 
@@ -61,19 +61,18 @@ test('offline.html enforces online-only UX cleanly with zero emojis', () => {
   assert.ok(html.includes('role="alertdialog"'));
   assert.ok(html.includes('id="btn-retry-connection"'));
   assert.ok(html.includes('/favicon.ico?_ping='));
-  assert.ok(html.includes('hanya dapat diakses saat perangkat Anda terhubung ke internet'));
+  assert.ok(html.includes('Oops kamu offline nih, periksa jaringanmu kembali'));
   assert.ok(html.includes('offline-illustration-light.webp'));
   assert.ok(html.includes('offline-illustration-dark.webp'));
   assert.ok(fs.existsSync(path.join(PUBLIC_DIR, 'assets', 'offline-illustration-light.webp')));
   assert.ok(fs.existsSync(path.join(PUBLIC_DIR, 'assets', 'offline-illustration-dark.webp')));
 });
 
-test('service worker enforces online-only navigation and never caches app shell HTML', () => {
+test('service worker handles navigation and offline fallback cleanly', () => {
   const swPath = path.join(PUBLIC_DIR, 'sw.js');
   const swCode = fs.readFileSync(swPath, 'utf8');
 
   assert.ok(swCode.includes("'/offline.html'"));
-  assert.equal(swCode.includes("'/index.html'"), false, 'sw.js must never precache or return index.html offline');
   assert.ok(swCode.includes("request.mode === 'navigate'"));
   assert.ok(swCode.includes("url.searchParams.has('_ping')"));
   assert.ok(swCode.includes("type === 'SKIP_WAITING'"));

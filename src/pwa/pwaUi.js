@@ -33,7 +33,6 @@ function ensureOfflineGate({ onRetry } = {}) {
   gate.setAttribute('role', 'alertdialog');
   gate.setAttribute('aria-modal', 'true');
   gate.setAttribute('aria-labelledby', 'pwa-offline-title');
-  gate.setAttribute('aria-describedby', 'pwa-offline-desc');
   gate.hidden = true;
 
   gate.innerHTML = `
@@ -54,19 +53,7 @@ function ensureOfflineGate({ onRetry } = {}) {
         <img src="/assets/offline-illustration-dark.webp" class="pwa-offline-img pwa-offline-img-dark" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="340" height="269" />
       </div>
 
-      <h2 id="pwa-offline-title" class="pwa-offline-sr-only">Koneksi Internet Terputus</h2>
-      <p id="pwa-offline-desc" class="pwa-offline-desc">
-        MyFinance hanya dapat diakses saat perangkat terhubung ke internet agar saldo, anggaran, dan riwayat transaksi Anda selalu sinkron dan aman.
-      </p>
-
-      <div class="pwa-offline-checklist">
-        <p class="pwa-offline-checklist-title">Yang perlu Anda periksa:</p>
-        <ul>
-          <li>Pastikan Wi-Fi atau paket data seluler dalam kondisi aktif.</li>
-          <li>Matikan mode pesawat jika sedang aktif.</li>
-          <li>Pindah ke jangkauan jaringan yang lebih stabil.</li>
-        </ul>
-      </div>
+      <h2 id="pwa-offline-title" class="pwa-offline-sr-only">Oops kamu offline nih, periksa jaringanmu kembali.</h2>
 
       <p id="pwa-offline-feedback" class="pwa-offline-feedback" aria-live="polite"></p>
 
