@@ -37,17 +37,6 @@ function ensureOfflineGate({ onRetry } = {}) {
 
   gate.innerHTML = `
     <div class="pwa-offline-card">
-      <div class="pwa-offline-top">
-        <div class="pwa-offline-brand">
-          <img src="/assets/favicon-32x32.png" width="22" height="22" alt="Logo MyFinance" />
-          <span>MyFinance</span>
-        </div>
-        <span class="pwa-status-chip">
-          <span class="pwa-status-dot" aria-hidden="true"></span>
-          <span>Offline</span>
-        </span>
-      </div>
-
       <div class="pwa-offline-illustration-wrapper">
         <img src="/assets/offline-illustration-light.webp" class="pwa-offline-img pwa-offline-img-light" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="340" height="269" />
         <img src="/assets/offline-illustration-dark.webp" class="pwa-offline-img pwa-offline-img-dark" alt="Oops kamu offline nih, periksa jaringanmu kembali" width="340" height="269" />
