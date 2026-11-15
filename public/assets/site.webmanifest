@@ -3,17 +3,12 @@
   "name": "MyFinance - Smart Financial Tracker",
   "short_name": "MyFinance",
   "description": "Catat keuangan cerdas dengan asisten AI, kelola anggaran, pantau saldo, dan wujudkan tabungan impian.",
-  "start_url": "/dashboard?source=pwa",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "lang": "id",
   "dir": "ltr",
   "orientation": "any",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui"
-  ],
   "categories": [
     "finance",
     "productivity"
