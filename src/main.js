@@ -410,21 +410,7 @@ export async function checkAuth() {
 
 // --- INITIALIZATION ---
 
-function preloadSvgAssets() {
-  const assets = [
-    '/assets/asset_notif_light.svg',
-    '/assets/asset_notif_dark.svg',
-    '/assets/warning_delete_light.svg',
-    '/assets/warning_delete_dark.svg'
-  ];
-  assets.forEach(src => {
-    const img = new Image();
-    img.src = src;
-  });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  preloadSvgAssets();
   hideLoading();
   initNavigation();
   initCustomSelects();
@@ -498,14 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 5. Scroll Lock Observer (Locks background scrolling smoothly when any modal or mobile sidebar is open)
-  const scrollLockObserver = new MutationObserver(() => {
+  let scrollLockRaf = null;
+  const updateScrollLock = () => {
     const hasActiveModal = Boolean(
-      document.querySelector('.modal-overlay.active') || 
-      document.querySelector('.modal-card.active') || 
-      document.querySelector('.detail-tx-overlay.active') || 
-      document.querySelector('.custom-alert-overlay.active') ||
-      document.querySelector('.sidebar.mobile-active') ||
-      document.querySelector('.sidebar-overlay.active')
+      document.querySelector(
+        '.modal-overlay.active, .modal-card.active, .detail-tx-overlay.active, .custom-alert-overlay.active, .sidebar.mobile-active, .sidebar-overlay.active, .pwa-ios-modal-overlay.active'
+      )
     );
 
     const isLocked = document.body.classList.contains('modal-open');
@@ -515,6 +499,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (!hasActiveModal && isLocked) {
       document.body.classList.remove('modal-open');
     }
+  };
+
+  const scrollLockObserver = new MutationObserver(() => {
+    if (scrollLockRaf) return;
+    scrollLockRaf = requestAnimationFrame(() => {
+      scrollLockRaf = null;
+      updateScrollLock();
+    });
   });
   scrollLockObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 

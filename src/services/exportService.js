@@ -1,14 +1,16 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import ExcelJS from "exceljs";
 import { formatRupiah } from "../store.js";
 
 export const exportService = {
   /**
-   * Export data ke PDF dengan template myfinanceid
+   * Export data ke PDF dengan template myfinanceid (Lazy-loaded on-demand)
    */
   async exportToPDF(transactions, metadata) {
     console.log('Exporting to PDF...', metadata);
+    const [{ jsPDF }, jspdfAutoTable] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable")
+    ]);
+    const autoTable = jspdfAutoTable.default || jspdfAutoTable;
     const doc = new jsPDF();
     const { periode, username, totalIncome, totalExpense, categories, chartImages } = metadata;
 
@@ -145,10 +147,11 @@ export const exportService = {
   },
 
   /**
-   * Export data ke XLSX dengan 3 Sheet menggunakan ExcelJS
+   * Export data ke XLSX dengan 3 Sheet menggunakan ExcelJS (Lazy-loaded on-demand)
    */
   async exportToExcel(transactions, metadata) {
     console.log('Exporting to Excel...', metadata);
+    const { default: ExcelJS } = await import("exceljs");
     const { periode, username, totalIncome, totalExpense, categories } = metadata;
 
     const workbook = new ExcelJS.Workbook();

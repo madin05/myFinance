@@ -14,12 +14,12 @@ export default defineConfig({
         // agar browser bisa cache vendor lebih lama
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            // Biarkan jspdf dan exceljs di-split terpisah sesuai dynamic import on-demand
+            if (id.includes('jspdf') || id.includes('jspdf-autotable') || id.includes('exceljs')) {
+              return;
+            }
             // Firebase ke chunk sendiri
             if (id.includes('firebase')) return 'firebase';
-            // jsPDF ke chunk sendiri (library besar)
-            if (id.includes('jspdf') || id.includes('jspdf-autotable')) return 'pdf';
-            // exceljs ke chunk sendiri
-            if (id.includes('exceljs')) return 'exceljs';
             // Sisanya (floating-ui, dsb) ke vendor
             return 'vendor';
           }

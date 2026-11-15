@@ -39,10 +39,51 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
+let chartJsPromise = null;
+
+/**
+ * Loads Chart.js on-demand asynchronously only when needed.
+ */
+export function loadChartJs() {
+  if (typeof Chart !== "undefined") return Promise.resolve(window.Chart);
+  if (chartJsPromise) return chartJsPromise;
+
+  chartJsPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src*="chart.js"]');
+    if (existing) {
+      if (typeof Chart !== "undefined") {
+        resolve(window.Chart);
+        return;
+      }
+      existing.addEventListener("load", () => resolve(window.Chart));
+      existing.addEventListener("error", reject);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/chart.js";
+    script.async = true;
+    script.onload = () => resolve(window.Chart);
+    script.onerror = (err) => {
+      chartJsPromise = null;
+      reject(err);
+    };
+    document.head.appendChild(script);
+  });
+  return chartJsPromise;
+}
+
 /**
  * Initializes Category Doughnut Chart and Cashflow Line Chart for Laporan Page
  */
-export function initReportCharts(sortedCategories, filteredTransactions, totalExpense, textColor, gridColor) {
+export async function initReportCharts(sortedCategories, filteredTransactions, totalExpense, textColor, gridColor) {
+  if (typeof Chart === "undefined") {
+    try {
+      await loadChartJs();
+    } catch (err) {
+      console.warn("Gagal memuat Chart.js on-demand:", err);
+      return;
+    }
+  }
   if (typeof Chart === "undefined") return;
 
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
