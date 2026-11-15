@@ -12,6 +12,7 @@ import { initCustomSelects } from './ui/select.js';
 import { showConfirm, checkVerification } from './components/notifications.js';
 
 import './style.css';
+import { initPwa } from './pwa/index.js';
 
 // --- reactive UI update ---
 window.addEventListener('store-updated', () => {
@@ -428,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initCustomSelects();
   initNetworkStatus();
+  initPwa();
   checkAuth();
 
   // Init sticky header global untuk semua halaman

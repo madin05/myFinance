@@ -22,6 +22,7 @@
 @import './css/pages/saldo.css';
 @import './css/pages/akun.css';
 @import './css/components/ai/index.css';
+@import './css/components/pwa.css';
 @import './css/responsive.css';
 
 /* Custom Styles (After Imports) */

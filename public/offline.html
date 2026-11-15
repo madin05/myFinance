@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Koneksi Terputus - MyFinance</title>
+  <meta name="theme-color" content="#09090b" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var resolved = (saved === 'dark' || saved === 'light') ? saved : (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', resolved);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg-canvas: #EBF0F5;
+      --bg-surface: #FFFFFF;
+      --bg-muted: #F1F5F9;
+      --border-subtle: #CBD5E1;
+      --fg-primary: #0F172A;
+      --fg-secondary: #475569;
+      --accent: #0369A1;
+      --accent-hover: #075985;
+      --accent-fg: #FFFFFF;
+      --status-bg: #FEF2F2;
+      --status-border: #FECACA;
+      --status-fg: #991B1B;
+      --status-dot: #DC2626;
+      --focus-ring: #0EA5E9;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg-canvas: #09090B;
+      --bg-surface: #18181B;
+      --bg-muted: #27272A;
+      --border-subtle: #3F3F46;
+      --fg-primary: #FAFAFA;
+      --fg-secondary: #A1A1AA;
+      --accent: #F4F4F5;
+      --accent-hover: #E4E4E7;
+      --accent-fg: #09090B;
+      --status-bg: rgba(239, 68, 68, 0.12);
+      --status-border: rgba(239, 68, 68, 0.28);
+      --status-fg: #FCA5A5;
+      --status-dot: #EF4444;
+      --focus-ring: #38BDF8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      background-color: var(--bg-canvas);
+      color: var(--fg-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .offline-card {
+      width: 100%;
+      max-width: 440px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.75rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .offline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .offline-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--fg-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      background-color: var(--status-bg);
+      border: 1px solid var(--status-border);
+      color: var(--status-fg);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--status-dot);
+    }
+
+    .icon-box {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      color: var(--fg-primary);
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+      color: var(--fg-primary);
+    }
+
+    .offline-desc {
+      font-size: 0.9375rem;
+      color: var(--fg-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    .offline-tips {
+      background-color: var(--bg-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--fg-secondary);
+    }
+
+    .offline-tips p {
+      font-weight: 600;
+      color: var(--fg-primary);
+      margin-bottom: 0.375rem;
+    }
+
+    .offline-tips ul {
+      padding-left: 1.125rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .status-feedback {
+      min-height: 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--fg-secondary);
+      margin-bottom: 0.875rem;
+    }
+
+    .btn-retry {
+      width: 100%;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--accent-fg);
+      background-color: var(--accent);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn-retry:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-retry:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .btn-retry:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 0.875rem;
+        align-items: flex-end;
+      }
+
+      .offline-card {
+        padding: 1.5rem 1.25rem;
+        border-radius: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="offline-card" role="alertdialog" aria-labelledby="offline-title" aria-describedby="offline-desc">
+    <div class="offline-header">
+      <div class="offline-brand">
+        <img src="/assets/favicon-32x32.png" width="22" height="22" alt="Logo MyFinance" style="border-radius: 4px;" />
+        <span>MyFinance</span>
+      </div>
+      <span class="status-chip" id="offline-chip">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Offline</span>
+      </span>
+    </div>
+
+    <div class="icon-box" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="2" y1="2" x2="22" y2="22"></line>
+        <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
+        <path d="M2 8.82a15 15 0 0 1 4.17-2.65"></path>
+        <path d="M10.66 5c4.01-.36 8.14.9 11.34 3.76"></path>
+        <path d="M16.85 11.25a10 10 0 0 1 2.22 1.68"></path>
+        <path d="M5 13a10 10 0 0 1 5.24-2.76"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+    </div>
+
+    <h1 id="offline-title">Tidak Ada Koneksi Internet</h1>
+    <p class="offline-desc" id="offline-desc">
+      MyFinance hanya dapat diakses saat perangkat Anda terhubung ke internet agar saldo, anggaran, dan catatan transaksi selalu akurat dan tersinkronisasi.
+    </p>
+
+    <div class="offline-tips">
+      <p>Langkah cepat memeriksa koneksi:</p>
+      <ul>
+        <li>Pastikan Wi-Fi atau data seluler dalam keadaan aktif.</li>
+        <li>Nonaktifkan mode pesawat jika sedang menyala.</li>
+        <li>Pindah ke area dengan sinyal jaringan yang lebih stabil.</li>
+      </ul>
+    </div>
+
+    <p class="status-feedback" id="offline-feedback" aria-live="polite"></p>
+
+    <button type="button" class="btn-retry" id="btn-retry-connection">
+      Coba Hubungkan Ulang
+    </button>
+  </main>
+
+  <script>
+    (function () {
+      var retryBtn = document.getElementById('btn-retry-connection');
+      var feedback = document.getElementById('offline-feedback');
+      var isChecking = false;
+
+      async function verifyAndReload() {
+        if (isChecking) return;
+        isChecking = true;
+        retryBtn.disabled = true;
+        retryBtn.textContent = 'Memeriksa koneksi...';
+        feedback.textContent = 'Mengecek ketersediaan jaringan ke server MyFinance...';
+
+        try {
+          var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          var timer = controller ? setTimeout(function () { controller.abort(); }, 4000) : null;
+          var res = await fetch('/favicon.ico?_ping=' + Date.now(), {
+            method: 'GET',
+            cache: 'no-store',
+            signal: controller ? controller.signal : undefined
+          });
+          if (timer) clearTimeout(timer);
+
+          if (res && res.ok) {
+            feedback.textContent = 'Koneksi internet pulih. Membuka MyFinance...';
+            window.location.replace('/dashboard');
+            return;
+          }
+          feedback.textContent = 'Jaringan belum merespons. Silakan coba lagi sebentar lagi.';
+        } catch (err) {
+          feedback.textContent = 'Masih belum terhubung. Periksa kembali Wi-Fi atau data seluler Anda.';
+        } finally {
+          isChecking = false;
+          retryBtn.disabled = false;
+          retryBtn.textContent = 'Coba Hubungkan Ulang';
+        }
+      }
+
+      retryBtn.addEventListener('click', verifyAndReload);
+      window.addEventListener('online', verifyAndReload);
+    })();
+  </script>
+</body>
+</html>

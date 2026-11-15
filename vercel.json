@@ -17,8 +17,32 @@
       "destination": "http://16.178.138.30/myfinance-api/api/:path*"
     },
     {
-      "source": "/((?!api|robots\\.txt|sitemap\\.xml|favicon\\.ico|google.*\\.html).*)",
+      "source": "/((?!api|sw\\.js|offline\\.html|assets/site\\.webmanifest|robots\\.txt|sitemap\\.xml|favicon\\.ico|google.*\\.html).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/assets/site.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }

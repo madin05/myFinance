@@ -2,7 +2,7 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>MyFinance - Catat Keuangan, Anggaran & Asisten Keuangan AI</title>
     <meta name="description" content="Aplikasi pencatat keuangan pintar dengan asisten AI, pelacak anggaran bulanan, pencatatan transaksi, dan tabungan impian. Kelola finansial pribadi lebih rapi dan terkontrol." />
     <meta name="keywords" content="aplikasi keuangan, pencatat keuangan, catat keuangan, asisten keuangan ai, money manager, financial tracker, anggaran bulanan, tabungan, myfinance" />
@@ -47,6 +47,10 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
     <link rel="manifest" href="/assets/site.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyFinance" />
     <!-- Preload Modal & Notification SVG Illustrations -->
     <link rel="preload" as="image" href="/assets/asset_notif_light.svg" type="image/svg+xml" />
     <link rel="preload" as="image" href="/assets/asset_notif_dark.svg" type="image/svg+xml" />
@@ -143,6 +147,10 @@
             <i class="ph ph-user"></i>
             <span>Akun</span>
           </a>
+          <button type="button" class="nav-item pwa-nav-install-btn" id="btn-install-pwa-sidebar" data-pwa-install data-tooltip-right="Pasang Aplikasi" hidden style="display: none;">
+            <i class="ph ph-download-simple"></i>
+            <span>Pasang Aplikasi</span>
+          </button>
           <a href="/faq" class="nav-item nav-item-bottom" data-route="faq" data-tooltip-right="Bantuan">
             <i class="ph ph-question"></i>
             <span>Bantuan</span>
@@ -287,6 +295,9 @@
                 <a href="/faq" class="dropdown-item">
                   <i class="ph ph-question"></i> Bantuan
                 </a>
+                <button type="button" class="dropdown-item" id="btn-install-pwa-dropdown" data-pwa-install hidden style="display: none;">
+                  <i class="ph ph-download-simple"></i> Pasang Aplikasi
+                </button>
                 <div class="dropdown-divider profile-dropdown-theme-wrapper"></div>
                 <div class="dropdown-item profile-dropdown-theme-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; cursor: default; user-select: none;">
                   <div class="theme-toggle-group" style="display: flex !important; margin: 0 auto;">
