@@ -9,6 +9,7 @@ import {
   getInitialStorage,
   _mapSavingData,
   _mapAccountData,
+  deduplicateAccounts,
   formatCurrency,
   formatRupiah,
   formatDate,
@@ -21,12 +22,49 @@ import { savingStoreMethods } from "./store/savingStore.js";
 import { accountStoreMethods } from "./store/accountStore.js";
 import { notificationStoreMethods } from "./store/notificationStore.js";
 
+let storeChannelInstance = null;
+let isStorageListenerInitialized = false;
+
+function getStoreChannel() {
+  if (typeof window === "undefined") return null;
+  if (!storeChannelInstance && typeof BroadcastChannel !== "undefined") {
+    try {
+      storeChannelInstance = new BroadcastChannel("myfinance_store_channel");
+      storeChannelInstance.onmessage = (event) => {
+        if (event.data?.type === "STORE_UPDATED") {
+          try {
+            const updatedUser = JSON.parse(localStorage.getItem("user"));
+            if (updatedUser) {
+              store.user = updatedUser;
+              store.updateUI();
+              window.dispatchEvent(new CustomEvent("store-updated"));
+            }
+          } catch (e) {}
+        }
+      };
+    } catch (e) {}
+  }
+  if (!isStorageListenerInitialized && typeof window.addEventListener === "function") {
+    isStorageListenerInitialized = true;
+    window.addEventListener("storage", (event) => {
+      if (event.key === "user" && event.newValue) {
+        try {
+          store.user = JSON.parse(event.newValue);
+          store.updateUI();
+          window.dispatchEvent(new CustomEvent("store-updated"));
+        } catch (e) {}
+      }
+    });
+  }
+  return storeChannelInstance;
+}
+
 export const store = {
   user: getInitialStorage("user", null),
   transactions: getInitialStorage("transactions", []),
   savings: getInitialStorage("savings", []),
   budgets: getInitialStorage("budgets", []),
-  saldos: getInitialStorage("saldos", []),
+  saldos: deduplicateAccounts(getInitialStorage("saldos", [])),
   notifications: getInitialStorage("notifications", []),
   isSyncing: false,
 
@@ -78,7 +116,7 @@ export const store = {
       }
 
       if (Array.isArray(dbAccounts)) {
-        this.saldos = dbAccounts.map(_mapAccountData);
+        this.saldos = deduplicateAccounts(dbAccounts.map(_mapAccountData));
       }
     } catch (err) {
       console.error("Sync Error:", err);
@@ -90,6 +128,7 @@ export const store = {
   },
 
   save() {
+    this.saldos = deduplicateAccounts(this.saldos);
     localStorage.setItem("user", JSON.stringify(this.user));
     localStorage.setItem("transactions", JSON.stringify(this.transactions));
     localStorage.setItem("savings", JSON.stringify(this.savings));
@@ -100,37 +139,12 @@ export const store = {
     this.syncHeaderBadge();
 
     // Cross-Tab Realtime Synchronization via BroadcastChannel & Storage Event
-    const storeChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('myfinance_store_channel') : null;
-
-    if (storeChannel) {
-      storeChannel.onmessage = (event) => {
-        if (event.data?.type === 'STORE_UPDATED') {
-          try {
-            const updatedUser = JSON.parse(localStorage.getItem('user'));
-            if (updatedUser) {
-              store.user = updatedUser;
-              store.updateUI();
-              window.dispatchEvent(new CustomEvent('store-updated'));
-            }
-          } catch (e) {}
-        }
-      };
-    }
-
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'user' && event.newValue) {
-        try {
-          store.user = JSON.parse(event.newValue);
-          store.updateUI();
-          window.dispatchEvent(new CustomEvent('store-updated'));
-        } catch (e) {}
-      }
-    });
+    const storeChannel = getStoreChannel();
 
     window.dispatchEvent(new CustomEvent("store-updated"));
     if (storeChannel) {
       try {
-        storeChannel.postMessage({ type: 'STORE_UPDATED' });
+        storeChannel.postMessage({ type: "STORE_UPDATED" });
       } catch (e) {}
     }
   },

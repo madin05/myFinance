@@ -1,8 +1,7 @@
 // src/services/apiClient.js
 import { auth } from "../firebase-config.js";
-import { store } from "../store.js";
 
-const hostname = window.location.hostname;
+const hostname = typeof window !== "undefined" && window.location ? window.location.hostname : "localhost";
 const isIpOrLocalhost =
   hostname === "localhost" ||
   hostname === "127.0.0.1" ||
@@ -14,7 +13,7 @@ const isIpOrLocalhost =
 // When accessing via LAN IP from HP, use http://<LAN_IP>:5000/api so API calls route to Laptop backend.
 // On production (e.g. Vercel / custom domains), ALWAYS use relative "/api" so requests
 // are proxied cleanly via vercel.json rewrites, preventing mixed content and stale env variable issues.
-const envApiUrl = import.meta.env.VITE_API_URL;
+const envApiUrl = typeof import.meta !== "undefined" && import.meta.env ? import.meta.env.VITE_API_URL : null;
 export const API_URL = !isIpOrLocalhost
   ? "/api"
   : (hostname !== "localhost" && hostname !== "127.0.0.1")
@@ -24,7 +23,7 @@ export const API_URL = !isIpOrLocalhost
 export function getAuthHeaders(token, isJson = true) {
   const headers = {};
   if (isJson) headers["Content-Type"] = "application/json";
-  const activeToken = token || store.user?.token;
+  const activeToken = token || (typeof window !== "undefined" && window.store?.user?.token ? window.store.user.token : null);
   if (activeToken) headers["Authorization"] = `Bearer ${activeToken}`;
   return headers;
 }

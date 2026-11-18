@@ -50,7 +50,32 @@ exports.getAccounts = async (req, res) => {
       where: { userId },
       orderBy: { orderIndex: 'asc' }
     }));
-    res.json(accounts);
+
+    // Auto-clean: jika terdapat duplikasi akun di PostgreSQL (misal akibat sync race-condition),
+    // deduplikasi dan bersihkan record duplikat yang berlebih dari DB.
+    const uniqueMap = new Map();
+    const duplicateIds = [];
+
+    for (const acc of accounts) {
+      const key = (acc.name || '').trim().toLowerCase();
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, acc);
+      } else {
+        const existing = uniqueMap.get(key);
+        duplicateIds.push(acc.id);
+        if (Number(existing.balance || 0) === 0 && Number(acc.balance || 0) !== 0) {
+          existing.balance = acc.balance;
+        }
+      }
+    }
+
+    if (duplicateIds.length > 0) {
+      prisma.account.deleteMany({
+        where: { id: { in: duplicateIds }, userId }
+      }).catch(err => console.warn('[Account] Gagal membersihkan row duplikat:', err.message));
+    }
+
+    res.json(Array.from(uniqueMap.values()));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -62,12 +87,38 @@ exports.createAccount = async (req, res) => {
     const userId = await getUserId(req);
     const { name, type, balance, logo } = req.body;
 
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ error: 'Nama akun wajib diisi' });
+    }
+
+    const cleanName = name.trim();
+
+    // Cek apakah akun dengan nama yang sama sudah ada untuk mencegah duplikasi saldo
+    const existing = await prisma.account.findFirst({
+      where: {
+        userId,
+        name: { equals: cleanName, mode: 'insensitive' }
+      }
+    });
+
+    if (existing) {
+      const updated = await prisma.account.update({
+        where: { id: existing.id },
+        data: {
+          balance: parseFloat(balance) || 0,
+          ...(type !== undefined ? { type } : {}),
+          ...(logo !== undefined ? { logo } : {})
+        }
+      });
+      return res.status(200).json(updated);
+    }
+
     const count = await prisma.account.count({ where: { userId } });
     const account = await prisma.account.create({
       data: {
         userId,
-        name,
-        type,
+        name: cleanName,
+        type: type || 'Bank',
         balance: parseFloat(balance) || 0,
         logo: logo || '',
         orderIndex: count
@@ -126,18 +177,38 @@ exports.syncAccounts = async (req, res) => {
       return res.status(400).json({ error: 'accounts harus berupa array' });
     }
 
-    // Hapus semua akun lama, replace dengan yang baru
-    await prisma.account.deleteMany({ where: { userId } });
-    
-    const created = await prisma.account.createMany({
-      data: accounts.map((a, idx) => ({
-        userId,
-        name: a.name,
-        type: a.type,
-        balance: parseFloat(a.balance) || 0,
-        logo: a.logo || '',
-        orderIndex: a.orderIndex ?? idx
-      }))
+    // Deduplikasi accounts di payload sebelum disimpan ke DB
+    const uniqueMap = new Map();
+    for (const a of accounts) {
+      if (!a || !a.name) continue;
+      const key = (a.name || '').trim().toLowerCase();
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, a);
+      } else {
+        const existing = uniqueMap.get(key);
+        if (Number(existing.balance || 0) === 0 && Number(a.balance || 0) !== 0) {
+          existing.balance = a.balance;
+        }
+      }
+    }
+
+    const uniqueList = Array.from(uniqueMap.values());
+
+    // Jalankan dalam $transaction atomik agar aman dari race-condition concurrent sync
+    await prisma.$transaction(async (tx) => {
+      await tx.account.deleteMany({ where: { userId } });
+      if (uniqueList.length > 0) {
+        await tx.account.createMany({
+          data: uniqueList.map((a, idx) => ({
+            userId,
+            name: a.name,
+            type: a.type || 'Bank',
+            balance: parseFloat(a.balance) || 0,
+            logo: a.logo || '',
+            orderIndex: a.orderIndex ?? idx
+          }))
+        });
+      }
     });
 
     const result = await prisma.account.findMany({

@@ -1,10 +1,39 @@
 // src/store/accountStore.js
 import { accountService } from "../services/accountService.js";
+import { isSameAccount, deduplicateAccounts } from "./storage.js";
 
 export const accountStoreMethods = {
   async addSaldo(saldo) {
+    if (!this.saldos) this.saldos = [];
+    this.saldos = deduplicateAccounts(this.saldos);
+
+    const existingIndex = this.saldos.findIndex((s) => isSameAccount(s.name, saldo.name));
+    if (existingIndex !== -1) {
+      // Akun sudah ada, update saldo akun yang ada untuk mencegah duplikasi
+      this.saldos[existingIndex].balance = Number(saldo.balance || 0);
+      if (saldo.type) this.saldos[existingIndex].type = saldo.type;
+      if (saldo.logo) this.saldos[existingIndex].logo = saldo.logo;
+      this.save();
+
+      const existing = this.saldos[existingIndex];
+      if (this.user?.token && existing.id) {
+        try {
+          await accountService.updateAccount(this.user.token, existing.id, {
+            name: existing.name,
+            type: existing.type,
+            balance: existing.balance,
+            logo: existing.logo
+          });
+        } catch (err) {
+          console.error("Update Saldo DB Error:", err);
+        }
+      }
+      return this.saldos[existingIndex];
+    }
+
     saldo.id = Date.now();
     this.saldos.push(saldo);
+    this.saldos = deduplicateAccounts(this.saldos);
     this.save();
 
     if (this.user?.token) {
@@ -55,7 +84,9 @@ export const accountStoreMethods = {
   },
 
   async syncSaldosToDB() {
-    if (!this.user?.token || this.saldos.length === 0) return;
+    if (!this.user?.token || !this.saldos || this.saldos.length === 0) return;
+    this.saldos = deduplicateAccounts(this.saldos);
+    this.save();
     try {
       await accountService.syncAccounts(this.user.token, this.saldos);
     } catch (err) {

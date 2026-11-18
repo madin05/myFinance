@@ -146,6 +146,66 @@ export function _mapAccountData(a) {
   };
 }
 
+export function normalizeAccountName(name) {
+  if (!name || typeof name !== 'string') return '';
+  const clean = name.trim().toLowerCase();
+
+  // Standarisasi variasi Blu BCA
+  if (clean === 'bank blu' || clean === 'blubca' || clean === 'blu') return 'blu';
+
+  // Standarisasi variasi Uang Tunai / Cash / Dompet
+  if (['cash', 'uang tunai', 'dompet', 'dompet tunai', 'dompet kas', 'brankas'].includes(clean)) {
+    return 'cash';
+  }
+
+  // Hilangkan prefix "bank " untuk bank umum (misal: "bank bca" -> "bca", "bank mandiri" -> "mandiri")
+  if (clean.startsWith('bank ')) {
+    return clean.replace(/^bank\s+/, '').trim();
+  }
+
+  return clean;
+}
+
+export function isSameAccount(nameA, nameB) {
+  if (!nameA || !nameB) return false;
+  const a = String(nameA).trim().toLowerCase();
+  const b = String(nameB).trim().toLowerCase();
+  if (a === b) return true;
+  return normalizeAccountName(a) === normalizeAccountName(b);
+}
+
+export function deduplicateAccounts(accounts) {
+  if (!Array.isArray(accounts)) return [];
+  const map = new Map();
+
+  for (const raw of accounts) {
+    if (!raw || !raw.name) continue;
+    const key = normalizeAccountName(raw.name);
+    if (!map.has(key)) {
+      map.set(key, { ...raw, balance: Number(raw.balance || 0) });
+    } else {
+      const existing = map.get(key);
+      // Utamakan ID database integer daripada temporary timestamp lokal
+      if (typeof raw.id === 'number' && raw.id < 1000000000000) {
+        existing.id = raw.id;
+      }
+      if (raw.logo && !existing.logo) {
+        existing.logo = raw.logo;
+      }
+      // Jika salah satu saldo bernilai 0 dan yang lain memiliki saldo riil, pertahankan saldo riil
+      if (Number(existing.balance || 0) === 0 && Number(raw.balance || 0) !== 0) {
+        existing.balance = Number(raw.balance);
+      }
+      // Pertahankan nama yang lebih spesifik/bersih
+      if (raw.name.length > existing.name.length && !existing.name.toLowerCase().startsWith('bank')) {
+        existing.name = raw.name;
+      }
+    }
+  }
+
+  return Array.from(map.values());
+}
+
 const formatterCache = new Map();
 
 export function formatCurrency(number, currency = "IDR") {

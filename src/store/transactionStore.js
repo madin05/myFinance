@@ -1,5 +1,6 @@
 // src/store/transactionStore.js
 import { transactionService } from "../services/transactionService.js";
+import { isSameAccount, deduplicateAccounts } from "./storage.js";
 
 export const transactionStoreMethods = {
   _mapTransaction(tx) {
@@ -20,16 +21,17 @@ export const transactionStoreMethods = {
 
   _applyTransactionToSaldo(tx, reverse = false) {
     if (!this.saldos) this.saldos = [];
+    this.saldos = deduplicateAccounts(this.saldos);
 
     // --- Transfer Antar Akun ---
     if (tx.type === 'transfer') {
-      const fromName = (tx.dariAkun || tx.akun || '').toLowerCase();
-      const toName = (tx.keAkun || '').toLowerCase();
+      const fromName = (tx.dariAkun || tx.akun || '').trim();
+      const toName = (tx.keAkun || '').trim();
       let amount = Math.abs(Number(tx.harga || tx.amount || 0));
       if (reverse) amount = -amount;
 
-      const fromSaldo = this.saldos.find((s) => (s.name || '').toLowerCase() === fromName);
-      const toSaldo = this.saldos.find((s) => (s.name || '').toLowerCase() === toName);
+      const fromSaldo = this.saldos.find((s) => isSameAccount(s.name, fromName));
+      const toSaldo = this.saldos.find((s) => isSameAccount(s.name, toName));
 
       if (fromSaldo) {
         fromSaldo.balance = Number(fromSaldo.balance) - amount;
@@ -46,16 +48,7 @@ export const transactionStoreMethods = {
     else if (tx.metode === "Bank Transfer" || tx.metode === "Kartu Kredit") targetType = "Bank";
     
     if (tx.akun) {
-      const searchAkun = tx.akun?.toLowerCase() || '';
-      targetSaldo = this.saldos.find((s) => {
-        const sName = s.name?.toLowerCase() || '';
-        if (sName === searchAkun) return true;
-        if ((searchAkun === 'bank blu' && sName === 'blubca') || 
-            (searchAkun === 'blubca' && sName === 'bank blu')) {
-          return true;
-        }
-        return false;
-      });
+      targetSaldo = this.saldos.find((s) => isSameAccount(s.name, tx.akun));
       
       if (!targetSaldo && !reverse) {
         targetSaldo = {
@@ -66,6 +59,7 @@ export const transactionStoreMethods = {
           logo: ''
         };
         this.saldos.push(targetSaldo);
+        this.saldos = deduplicateAccounts(this.saldos);
       }
     }
     
