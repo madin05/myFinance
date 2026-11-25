@@ -88,9 +88,9 @@
 }
 
 .filter-pill.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff !important;
+  background: var(--text-main);
+  border-color: var(--text-main);
+  color: var(--white) !important;
   box-shadow: 0 4px 14px var(--primary-light);
 }
 
