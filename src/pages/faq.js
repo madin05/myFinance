@@ -48,11 +48,6 @@ export function renderFaq() {
     },
     {
       category: 'teknis',
-      question: 'Bagaimana cara mengubah tema aplikasi (Dark / Light Mode)?',
-      answer: 'MyFinance menyediakan 3 mode tema: <strong>Terang (Light)</strong>, <strong>Gelap (Dark)</strong>, dan <strong>Otomatis (Ikut Perangkat)</strong>. Anda bisa mengubahnya kapan saja melalui tombol tema di kanan atas header navigasi.'
-    },
-    {
-      category: 'teknis',
       question: 'Bagaimana cara menghapus akun dan data saya secara permanen?',
       answer: 'Jika Anda ingin menghapus akun, silakan masuk ke menu <strong>Akun</strong>, scroll ke bagian bawah dan klik tombol merah <strong>"Hapus Akun"</strong>. Seluruh data transaksi, profil, anggaran, dan wishlist Anda akan dihapus secara permanen dari server database kami.'
     }
