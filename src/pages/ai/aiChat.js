@@ -22,7 +22,6 @@ import {
   renderTransactionCardInChat,
   renderWishlistCardInChat,
   renderMultiItemsContainer,
-  showCopySuccess,
 } from "./aiRenderers.js";
 import { renderHistorySidebar } from "./aiHistory.js";
 
@@ -146,16 +145,6 @@ export function renderActiveChatMessages() {
             </button>
             <button type="button" class="ai-msg-act-btn btn-dislike-msg" title="Tanggapan kurang tepat">
               <i class="ph ph-thumbs-down"></i>
-            </button>
-            <button type="button" class="ai-msg-act-btn btn-share-msg" data-text="${escapeHtml(msg.text)}" title="Bagikan tanggapan">
-              <i class="ph ph-share-network"></i>
-            </button>
-            <button type="button" class="ai-msg-act-btn btn-copy-msg" data-text="${escapeHtml(msg.text)}" title="Salin ke clipboard" aria-label="Salin tanggapan">
-              <i class="ph ph-copy"></i>
-              <span class="ai-act-label">Salin</span>
-            </button>
-            <button type="button" class="ai-msg-act-btn btn-more-msg" title="Opsi lainnya">
-              <i class="ph ph-dots-three-vertical"></i>
             </button>
           </div>
 
@@ -333,24 +322,9 @@ export function bindChatActionButtons() {
 }
 
 /**
- * Bind message response action icons (Thumbs Up, Thumbs Down, Copy, Share)
+ * Bind message response action icons (Thumbs Up, Thumbs Down)
  */
 export function bindMessageResponseActions() {
-  document.querySelectorAll(".btn-copy-msg").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const text = btn.getAttribute("data-text");
-      if (!text) return;
-      navigator.clipboard
-        .writeText(text)
-        .then(() => {
-          showCopySuccess(btn);
-        })
-        .catch(() => {
-          showToast("Salin Teks", "Gagal menyalin teks.", "error");
-        });
-    });
-  });
-
   document.querySelectorAll(".btn-like-msg").forEach((btn) => {
     btn.addEventListener("click", () => {
       btn.classList.toggle("active");
@@ -377,23 +351,6 @@ export function bindMessageResponseActions() {
           "Kami mencatat evaluasi ini untuk perbaikan.",
           "info",
         );
-      }
-    });
-  });
-
-  document.querySelectorAll(".btn-share-msg").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const text = btn.getAttribute("data-text");
-      if (navigator.share) {
-        navigator
-          .share({
-            title: "Jawaban Anya MyFinance",
-            text: text,
-          })
-          .catch(() => {});
-      } else {
-        navigator.clipboard.writeText(text);
-        showToast("Bagikan", "Teks tanggapan disalin untuk dibagikan.", "info");
       }
     });
   });
