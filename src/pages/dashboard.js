@@ -192,19 +192,9 @@ export function renderDashboard() {
               <i class="ph ${isSaldoHidden ? "ph-eye-slash" : "ph-eye"}" style="font-size:1.05rem;"></i>
             </button>
           </div>
-          ${
-            stats.hasAccounts
-              ? `
           <a href="/saldo" id="btn-goto-saldo" title="Lihat detail saldo akun" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;text-decoration:none;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
             <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
           </a>
-          `
-              : `
-          <button id="btn-adjust-balance" title="Sesuaikan saldo riil" style="background:transparent;border:none;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.2s;" onmouseenter="this.style.color='var(--primary)'" onmouseleave="this.style.color='var(--text-muted)'">
-            <i class="ph ph-arrow-right" style="font-size:1rem;"></i>
-          </button>
-          `
-          }
         </div>
         <div class="stat-body">
           <h2 class="stat-value text-main">${displayBalanceText}</h2>
@@ -369,14 +359,6 @@ export function renderDashboard() {
       navigateTo("/tabungan");
     });
 
-  // Tombol pensil hanya muncul jika belum ada akun saldo
-  const btnAdjust = document.getElementById("btn-adjust-balance");
-  if (btnAdjust) {
-    btnAdjust.addEventListener("click", () => {
-      openAdjustBalanceModal(stats.balance, () => renderDashboard());
-    });
-  }
-
   // Link ke halaman saldo (SPA navigation)
   const btnGotoSaldo = document.getElementById("btn-goto-saldo");
   if (btnGotoSaldo) {
@@ -399,21 +381,16 @@ export function renderDashboard() {
     });
   }
 
-  // Touch/Click seluruh card Total Saldo
+  // Touch/Click seluruh card Total Saldo -> Navigasi ke Halaman Saldo
   const cardTotalSaldo = document.getElementById("card-total-saldo");
   if (cardTotalSaldo) {
     cardTotalSaldo.addEventListener("click", (e) => {
       if (
-        e.target.closest("#btn-adjust-balance") ||
         e.target.closest("#btn-goto-saldo") ||
         e.target.closest("#btn-toggle-hide-saldo")
       )
         return;
-      if (stats.hasAccounts) {
-        navigateTo("/saldo");
-      } else {
-        openAdjustBalanceModal(stats.balance, () => renderDashboard());
-      }
+      navigateTo("/saldo");
     });
   }
 
