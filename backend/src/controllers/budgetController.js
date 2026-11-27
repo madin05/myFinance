@@ -63,11 +63,11 @@ exports.getBudgets = async (req, res) => {
     const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
 
+    const whereClause = period ? { userId, period: String(period) } : { userId };
+
     const budgets = await withRetry(() => prisma.budget.findMany({
-      where: {
-        userId,
-        period: period || new Date().toISOString().slice(0, 7)
-      }
+      where: whereClause,
+      orderBy: [{ period: 'desc' }, { id: 'asc' }]
     }));
     res.json(budgets);
   } catch (error) {
@@ -82,22 +82,28 @@ exports.upsertBudget = async (req, res) => {
     const userId = await getDbUserId(req.user);
     if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
 
-    const budget = await prisma.budget.upsert({
+    const targetPeriod = (period && String(period).trim()) || new Date().toISOString().slice(0, 7);
+    const cleanCategory = String(category || '').trim();
+    if (!cleanCategory) {
+      return res.status(400).json({ error: 'Kategori anggaran wajib diisi' });
+    }
+
+    const budget = await withRetry(() => prisma.budget.upsert({
       where: {
         userId_category_period: {
           userId,
-          category,
-          period: period || new Date().toISOString().slice(0, 7)
+          category: cleanCategory,
+          period: targetPeriod
         }
       },
-      update: { amount: parseFloat(amount) },
+      update: { amount: parseFloat(amount) || 0 },
       create: {
         userId,
-        category,
-        amount: parseFloat(amount),
-        period: period || new Date().toISOString().slice(0, 7)
+        category: cleanCategory,
+        amount: parseFloat(amount) || 0,
+        period: targetPeriod
       }
-    });
+    }));
     res.json(budget);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -106,10 +112,19 @@ exports.upsertBudget = async (req, res) => {
 
 exports.deleteBudget = async (req, res) => {
   try {
-    const { id } = req.params;
-    await prisma.budget.delete({
-      where: { id: parseInt(id) }
-    });
+    const id = parseInt(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'ID anggaran tidak valid' });
+
+    const userId = await getDbUserId(req.user);
+    if (!userId) return res.status(404).json({ error: 'User tidak ditemukan' });
+
+    const deleted = await withRetry(() => prisma.budget.deleteMany({
+      where: { id, userId }
+    }));
+
+    if (deleted.count === 0) {
+      return res.status(404).json({ error: 'Anggaran tidak ditemukan' });
+    }
     res.json({ message: 'Anggaran berhasil dihapus' });
   } catch (error) {
     res.status(500).json({ error: error.message });

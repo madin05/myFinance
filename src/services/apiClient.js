@@ -65,6 +65,18 @@ export async function extractErrorMessage(res, defaultMsg) {
   return rawMsg;
 }
 
+let _cachedStore = null;
+async function getStoreSafe() {
+  if (_cachedStore) return _cachedStore;
+  try {
+    const mod = await import("../store.js");
+    _cachedStore = mod.store;
+    return _cachedStore;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Intelligent fetch wrapper that handles credentials, automatic Firebase ID Token
  * refresh on 401 Unauthorized responses, session cookie renewal, and request retry.
@@ -73,9 +85,11 @@ export async function apiFetch(url, options = {}) {
   options.credentials = options.credentials || "include";
   options.headers = options.headers || {};
 
+  const storeRef = await getStoreSafe();
+
   // Attach Bearer token if not explicitly provided
   if (!options.headers["Authorization"]) {
-    const token = store.user?.token;
+    const token = storeRef?.user?.token;
     if (token) {
       options.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -88,9 +102,9 @@ export async function apiFetch(url, options = {}) {
     console.warn("[apiClient] Session expired (401). Auto-refreshing Firebase token...");
     try {
       const newToken = await auth.currentUser.getIdToken(true);
-      if (newToken && store.user) {
-        store.user.token = newToken;
-        store.save();
+      if (newToken && storeRef?.user) {
+        storeRef.user.token = newToken;
+        storeRef.save();
 
         // Renew backend session cookie in background
         fetch(`${API_URL}/auth/session`, {
