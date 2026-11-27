@@ -236,3 +236,13 @@ export function formatDate(dateString) {
   const options = { day: "numeric", month: "short", year: "numeric" };
   return new Date(dateString).toLocaleDateString("id-ID", options);
 }
+
+/**
+ * Format local YYYY-MM period key without UTC timezone shift.
+ */
+export function getLocalPeriodKey(date = new Date()) {
+  const d = date instanceof Date ? date : new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}

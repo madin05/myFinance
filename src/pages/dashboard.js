@@ -481,7 +481,17 @@ function renderBudgetWidget() {
   const container = document.getElementById("budget-widget-content");
   if (!container) return;
 
-  if (store.budgets.length === 0) {
+  // Hitung pengeluaran bulan ini (seperti di anggaran.js)
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const currentPeriodKey = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`;
+
+  const activeBudgets = (store.budgets || []).filter(
+    (b) => !b.period || b.period === currentPeriodKey
+  );
+
+  if (activeBudgets.length === 0) {
     container.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0;">
         <style>
@@ -496,30 +506,29 @@ function renderBudgetWidget() {
     return;
   }
 
-  // Hitung pengeluaran bulan ini (seperti di anggaran.js)
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
   const spendingByCategory = {};
   store.transactions.forEach((tx) => {
     const d = new Date(tx.tanggal);
     if (
       d.getMonth() === currentMonth &&
       d.getFullYear() === currentYear &&
-      tx.type === "expense"
+      (tx.type === "expense" || !tx.type)
     ) {
-      spendingByCategory[tx.kategori] =
-        (spendingByCategory[tx.kategori] || 0) + Math.abs(tx.harga);
+      const catKey = (tx.kategori || tx.category || "").trim().toLowerCase();
+      if (catKey) {
+        spendingByCategory[catKey] =
+          (spendingByCategory[catKey] || 0) + Math.abs(Number(tx.harga ?? tx.amount ?? 0));
+      }
     }
   });
 
   // Tampilkan max 3 anggaran
-  const topBudgets = store.budgets.slice(0, 3);
+  const topBudgets = activeBudgets.slice(0, 3);
 
   let html = "";
   topBudgets.forEach((b, index) => {
-    const spent = spendingByCategory[b.category] || 0;
+    const catKey = (b.category || "").trim().toLowerCase();
+    const spent = spendingByCategory[catKey] || 0;
     const percent = b.amount > 0 ? (spent / b.amount) * 100 : 0;
     const roundedPercent = Math.round(percent);
 

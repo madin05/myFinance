@@ -1,19 +1,27 @@
 import { store, formatRupiah } from '../store.js';
+import { getLocalPeriodKey } from '../store/storage.js';
 import { showLoading, hideLoading } from '../utils.js';
 import { showToast, checkVerification } from '../components/notifications.js';
 import { initCustomSelects } from '../ui/select.js';
 import { initKebabs, cleanupKebabs } from '../ui/kebab.js';
 import { animateCloseModal, bindModalEvents } from '../components/modal/index.js';
 
-let currentViewDate = new Date();
+let currentViewDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 export function renderAnggaran() {
   const container = document.getElementById('page-content');
   if (!container) return;
+
+  if (store.isSyncing && (!store.budgets || store.budgets.length === 0)) {
+    import('../components/skeleton.js').then((m) => {
+      container.innerHTML = m.getAnggaranSkeleton();
+    });
+    return;
+  }
   
   const currentMonth = currentViewDate.getMonth();
   const currentYear = currentViewDate.getFullYear();
-  const periodKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+  const periodKey = getLocalPeriodKey(currentViewDate);
   
   const spendingByCategory = {};
   store.transactions.forEach(tx => {
@@ -176,8 +184,12 @@ export function renderAnggaran() {
         const amount = Number(amountInput.value.replace(/\./g, ''));
 
         showLoading();
-        await store.updateBudget(category, amount, periodKey);
+        const saved = await store.updateBudget(category, amount, periodKey);
         hideLoading();
+        if (!saved) {
+          showToast('Gagal menyimpan anggaran. Periksa koneksi atau muat ulang halaman.', 'error');
+          return;
+        }
         closeBudgetModal();
         showToast(`Anggaran ${category} berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!`, 'success');
         renderAnggaran();
@@ -189,17 +201,17 @@ export function renderAnggaran() {
   document.getElementById('btn-set-budget').onclick = () => openBudgetModal();
 
   document.getElementById('prev-month').onclick = async () => {
-    currentViewDate.setMonth(currentViewDate.getMonth() - 1);
+    currentViewDate = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() - 1, 1);
     showLoading();
-    await store.fetchBudgets(currentViewDate.toISOString().slice(0, 7));
+    await store.fetchBudgets(getLocalPeriodKey(currentViewDate));
     hideLoading();
     renderAnggaran();
   };
 
   document.getElementById('next-month').onclick = async () => {
-    currentViewDate.setMonth(currentViewDate.getMonth() + 1);
+    currentViewDate = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() + 1, 1);
     showLoading();
-    await store.fetchBudgets(currentViewDate.toISOString().slice(0, 7));
+    await store.fetchBudgets(getLocalPeriodKey(currentViewDate));
     hideLoading();
     renderAnggaran();
   };
